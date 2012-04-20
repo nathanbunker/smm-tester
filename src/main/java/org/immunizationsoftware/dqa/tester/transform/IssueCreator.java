@@ -242,7 +242,7 @@ public abstract class IssueCreator {
     public static final String PATIENT_MEDICAID_NUMBER_IS_MISSING = "Patient Medicaid number is missing";
     public static final String PATIENT_MIDDLE_NAME_IS_MISSING = "Patient middle name is missing";
     public static final String PATIENT_MIDDLE_NAME_MAY_BE_INITIAL = "Patient middle name may be initial";
-    public static final String PATIENT_MOTHERS_MAIDEN_NAME_IS_MISSING = "Patient mother''s maiden name is missing";
+    public static final String PATIENT_MOTHERS_MAIDEN_NAME_IS_MISSING = "Patient mother's maiden name is missing";
     public static final String PATIENT_NAME_MAY_BE_TEMPORARY_NEWBORN_NAME = "Patient name may be temporary newborn name";
     public static final String PATIENT_NAME_MAY_BE_TEST_NAME = "Patient name may be test name";
     public static final String PATIENT_NAME_FIRST_IS_INVALID = "Patient name first is invalid";
