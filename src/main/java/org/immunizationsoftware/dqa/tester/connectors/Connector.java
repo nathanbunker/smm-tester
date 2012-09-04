@@ -101,7 +101,7 @@ public abstract class Connector {
         this.type = type;
     }
 
-    public abstract String submitMessage(String message) throws Exception;
+    public abstract String submitMessage(String message, boolean debug) throws Exception;
 
     public abstract String connectivityTest(String message) throws Exception;
 

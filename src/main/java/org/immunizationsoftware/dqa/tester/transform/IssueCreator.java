@@ -147,6 +147,7 @@ public abstract class IssueCreator {
     public static final String NEXT_OF_KIN_RELATIONSHIP_IS_INVALID = "Next-of-kin relationship is invalid";
     public static final String NEXT_OF_KIN_RELATIONSHIP_IS_MISSING = "Next-of-kin relationship is missing";
     public static final String NEXT_OF_KIN_RELATIONSHIP_IS_NOT_RESPONSIBLE_PARTY = "Next-of-kin relationship is not responsible party";
+    public static final String NEXT_OF_KIN_RELATIONSHIP_IS_UNEXPECTED = "Next-of-kin relationship is unexpected";
     public static final String NEXT_OF_KIN_RELATIONSHIP_IS_UNRECOGNIZED = "Next-of-kin relationship is unrecognized";
     public static final String NEXT_OF_KIN_SSN_IS_MISSING = "Next-of-kin SSN is missing";
     public static final String OBSERVATION_VALUE_TYPE_IS_DEPRECATED = "Observation value type is deprecated";

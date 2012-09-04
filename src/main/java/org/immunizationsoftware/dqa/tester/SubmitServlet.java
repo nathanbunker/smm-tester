@@ -4,8 +4,10 @@
  */
 package org.immunizationsoftware.dqa.tester;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -57,9 +59,10 @@ public class SubmitServlet extends ClientServlet {
             if (str == null || !str.equalsIgnoreCase("Submit") || id == 0) {
                 return;
             }
+            boolean debug = request.getParameter("debug") != null;
             Connector connector = getConnector(id, session);
             String message = request.getParameter("message");
-            String responseText = connector.submitMessage(message);
+            String responseText = connector.submitMessage(cleanMessage(message), debug);
             request.setAttribute("responseText", responseText);
         }
     }
@@ -128,6 +131,7 @@ public class SubmitServlet extends ClientServlet {
             session.setAttribute("id", id);
             session.setAttribute("message", message);
             PrintWriter out = new PrintWriter(response.getWriter());
+            response.setContentType("text/html;charset=UTF-8");
             printHtmlHead(out, "Send Message", request);
             out.println("    <form action=\"SubmitServlet\" method=\"POST\">");
             out.println("      <table border=\"0\">");
@@ -156,6 +160,10 @@ public class SubmitServlet extends ClientServlet {
             out.println("        <tr>");
             out.println("          <td valign=\"top\">Message</td>");
             out.println("          <td><textarea name=\"message\" cols=\"70\" rows=\"10\" wrap=\"off\">" + message + "</textarea></td>");
+            out.println("        </tr>");
+            out.println("        <tr>");
+            out.println("          <td>Debug</td>");
+            out.println("          <td><input type=\"checkbox\" name=\"debug\" value=\"true\" /></td>");
             out.println("        </tr>");
             out.println("        <tr>");
             out.println("          <td colspan=\"2\" align=\"right\">");
@@ -263,4 +271,27 @@ public class SubmitServlet extends ClientServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
+    
+    private static String cleanMessage(String message) {
+      if (message != null)
+      {
+        StringBuilder sb = new StringBuilder();
+         BufferedReader reader = new BufferedReader(new StringReader(message));
+         String line;
+         try {
+         while ((line = reader.readLine()) != null)
+         {
+           sb.append(line);
+           sb.append("\r");
+         }
+         }catch (IOException ioe)
+         {
+           sb.append(ioe.getMessage());
+         }
+             return sb.toString();
+      }
+      
+      return message;
+    
+    }
 }

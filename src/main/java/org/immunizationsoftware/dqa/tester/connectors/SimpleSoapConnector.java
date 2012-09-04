@@ -28,7 +28,7 @@ public class SimpleSoapConnector extends Connector
   }
 
   @Override
-  public String submitMessage(String message) throws Exception
+  public String submitMessage(String message, boolean debug) throws Exception
   {
     ClientConnection cc = new ClientConnection();
     cc.userId = userid;
