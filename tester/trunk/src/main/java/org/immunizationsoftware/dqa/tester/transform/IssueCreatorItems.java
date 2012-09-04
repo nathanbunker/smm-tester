@@ -149,6 +149,7 @@ public class IssueCreatorItems extends IssueCreator {
             issueList.add(NEXT_OF_KIN_RELATIONSHIP_IS_INVALID);
             issueList.add(NEXT_OF_KIN_RELATIONSHIP_IS_MISSING);
             issueList.add(NEXT_OF_KIN_RELATIONSHIP_IS_NOT_RESPONSIBLE_PARTY);
+            issueList.add(NEXT_OF_KIN_RELATIONSHIP_IS_UNEXPECTED);
             issueList.add(NEXT_OF_KIN_RELATIONSHIP_IS_UNRECOGNIZED);
             issueList.add(NEXT_OF_KIN_SSN_IS_MISSING);
             issueList.add(OBSERVATION_VALUE_TYPE_IS_DEPRECATED);

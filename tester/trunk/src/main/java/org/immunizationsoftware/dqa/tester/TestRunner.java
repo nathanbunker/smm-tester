@@ -46,7 +46,7 @@ public class TestRunner {
     public boolean runTest(Connector connector, TestCaseMessage testCaseMessage) throws Exception {
         pass = false;
         ack = null;
-        ack = connector.submitMessage(testCaseMessage.getMessageText());
+        ack = connector.submitMessage(testCaseMessage.getMessageText(), false);
         if (!testCaseMessage.getAssertResult().equalsIgnoreCase("")) {
             String msa = "";
             int startPos = ack.indexOf("MSA|");

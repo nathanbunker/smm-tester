@@ -19,7 +19,7 @@ public class SoapConnector extends Connector
   }
 
   @Override
-  public String submitMessage(String message) throws Exception
+  public String submitMessage(String message, boolean debug) throws Exception
   {
     throw new IllegalArgumentException("Not implemented");
   }
