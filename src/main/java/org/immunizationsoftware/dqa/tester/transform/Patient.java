@@ -11,6 +11,7 @@ package org.immunizationsoftware.dqa.tester.transform;
 public class Patient {
 
     private String medicalRecordNumber = "";
+    private String ssn = "";
     private String boyName = "";
     private String girlName = "";
     private String motherName = "";
@@ -41,6 +42,16 @@ public class Patient {
     private String phone = "";
     private int birthCount = 0;
     private String future = "";
+
+    public String getSsn()
+    {
+      return ssn;
+    }
+
+    public void setSsn(String ssn)
+    {
+      this.ssn = ssn;
+    }
 
     public String getFuture() {
         return future;

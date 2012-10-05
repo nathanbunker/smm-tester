@@ -18,6 +18,15 @@ Facility Id: 1201
 
 -----------------------------------------
 Connection
+Label: MCIR Test XFER
+Type: POST
+URL: https://ssoqa.state.mi.us/test-xfer/xfer/transfer
+User Id: 90000000113
+Password: T4r6v1ga73cLPQzT
+Facility Id: 1255-60-20
+
+-----------------------------------------
+Connection
 Label: ImmTrac Standard
 Type: POST
 URL: http://ois-dqa.net/in
