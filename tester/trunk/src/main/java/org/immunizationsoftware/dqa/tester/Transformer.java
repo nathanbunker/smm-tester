@@ -553,6 +553,8 @@ public class Transformer {
                             t.value = now;
                         } else if (t.value.equals("[MRN]")) {
                             t.value = patient.getMedicalRecordNumber();
+                        } else if (t.value.equals("[SSN]")) {
+                          t.value = patient.getSsn();
                         } else if (t.value.equals("[RACE]")) {
                             t.value = patient.getRace()[0];
                         } else if (t.value.equals("[RACE_LABEL]")) {
@@ -767,6 +769,7 @@ public class Transformer {
         Patient patient = new Patient();
         medicalRecordNumberInc++;
         patient.setMedicalRecordNumber("" + (char)(random.nextInt(26) + 'A') + medicalRecordNumberInc);
+        patient.setSsn("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
         patient.setBoyName(getValue("BOY"));
         patient.setGirlName(getValue("GIRL"));
         patient.setMotherName(getValue("GIRL"));

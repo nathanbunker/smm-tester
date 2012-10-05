@@ -41,9 +41,9 @@ import org.w3c.dom.NodeList;
 public class InterfaceProfileServlet extends ClientServlet
 {
 
-  private static final boolean RUN_BATCH_OUTPUT = false;
+  private static final boolean RUN_BATCH_OUTPUT = true;
   private static final int BATCH_SIZE = 1;
-  private static final File BATCH_OUTPUT_DIR = new File("C:\\data\\My Box Files\\MCIR\\in\\MCIR DQA\\generated");
+  private static final File BATCH_OUTPUT_DIR = new File("C:\\data\\work\\iis\\OR ALERT\\test2012-09-28\\generated");
 
   @Override
   public void init() throws ServletException
@@ -92,16 +92,16 @@ public class InterfaceProfileServlet extends ClientServlet
           }
         }
         session.setAttribute("id", id);
-        boolean goodToQuery = id > 0;
+        boolean goodToQuery = true;
         Connector connector = null;
-        if (goodToQuery)
+        if (id > 0)
         {
           connector = SubmitServlet.getConnector(id, session);
         } else
         {
           out.println("<p>No connection specified, not running interface profile.</p>");
         }
-        
+
         String testCase = request.getParameter("source");
         if (testCase == null || testCase.trim().length() == 0)
         {
@@ -158,42 +158,43 @@ public class InterfaceProfileServlet extends ClientServlet
         if (goodToQuery && testCaseMessageList.size() > 0)
         {
           testCaseMessageBase = testCaseMessageList.get(0);
-          try
+          if (connector != null)
           {
             try
             {
+              try
+              {
 
-              testRunner.runTest(connector, testCaseMessageBase);
-            } catch (Throwable t)
+                testRunner.runTest(connector, testCaseMessageBase);
+              } catch (Throwable t)
+              {
+                t.printStackTrace(out);
+              }
+
+            } catch (Exception e)
             {
-              t.printStackTrace(out);
+              out.println("Unable to run test: " + e.getMessage());
+              out.print("<pre>");
+              e.printStackTrace(out);
+              out.println("</pre>");
             }
-
-          } catch (Exception e)
-          {
-            out.println("Unable to run test: " + e.getMessage());
-            out.print("<pre>");
-            e.printStackTrace(out);
-            out.println("</pre>");
-          }
-          if (testRunner.getStatus().equals("A"))
-          {
-            goodToQuery = true;
-          } else
-          {
-            goodToQuery = false;
-            out.println("Unable to interface profile, base message failed: ");
-            out.print("<pre>" + testRunner.getAck() + "</pre>");
+            if (testRunner.getStatus().equals("A"))
+            {
+              goodToQuery = true;
+            } else
+            {
+              goodToQuery = false;
+              out.println("Unable to interface profile, base message failed: ");
+              out.print("<pre>" + testRunner.getAck() + "</pre>");
+            }
           }
 
-        }
-        else if (testCaseMessageList.size() == 0)
+        } else if (testCaseMessageList.size() == 0)
         {
           goodToQuery = false;
           out.println("Unable to profile interface, Test Case Message size == 0 ");
-          
+
         }
-        
 
         Transformer transformer = new Transformer();
 
@@ -284,39 +285,45 @@ public class InterfaceProfileServlet extends ClientServlet
               out.println("-");
             } else
             {
-              try
+              if (connector == null)
+              {
+                out.println("<div class=\"fail\">NOT RUN</div>");
+              } else
               {
                 try
                 {
-                  testRunner.runTest(connector, testCaseMessage);
-                  ack = testRunner.getAck();
-                } catch (Throwable t)
-                {
-                  t.printStackTrace(out);
-                }
-                if (expectedStatusMap != null && !expectedStatus.equals("-"))
-                {
-                  if (expectedStatus.equals("S"))
+                  try
                   {
-                    expectedStatus = "A";
+                    testRunner.runTest(connector, testCaseMessage);
+                    ack = testRunner.getAck();
+                  } catch (Throwable t)
+                  {
+                    t.printStackTrace(out);
                   }
-                  if (expectedStatus.equals(testRunner.getStatus()))
+                  if (expectedStatusMap != null && !expectedStatus.equals("-"))
                   {
-                    out.println("<div class=\"pass\">" + testRunner.getStatus() + "</div>");
+                    if (expectedStatus.equals("S"))
+                    {
+                      expectedStatus = "A";
+                    }
+                    if (expectedStatus.equals(testRunner.getStatus()))
+                    {
+                      out.println("<div class=\"pass\">" + testRunner.getStatus() + "</div>");
+                    } else
+                    {
+                      out.println("<div class=\"fail\">" + testRunner.getStatus() + "</div>");
+                    }
                   } else
                   {
-                    out.println("<div class=\"fail\">" + testRunner.getStatus() + "</div>");
+                    out.println(testRunner.getStatus());
                   }
-                } else
+                } catch (Exception e)
                 {
-                  out.println(testRunner.getStatus());
+                  out.println("Unable to run test: " + e.getMessage());
+                  out.print("<pre>");
+                  e.printStackTrace(out);
+                  out.println("</pre>");
                 }
-              } catch (Exception e)
-              {
-                out.println("Unable to run test: " + e.getMessage());
-                out.print("<pre>");
-                e.printStackTrace(out);
-                out.println("</pre>");
               }
               if (RUN_BATCH_OUTPUT)
               {
@@ -335,7 +342,7 @@ public class InterfaceProfileServlet extends ClientServlet
                 {
                   File file = new File(BATCH_OUTPUT_DIR, filenameBase + "-" + countText + " " + issueName + ".txt");
                   PrintWriter fileOut = new PrintWriter(new FileWriter(file));
-                  for (int i = 0; i < 100; i++)
+                  for (int i = 0; i < BATCH_SIZE; i++)
                   {
                     testCaseMessage = new TestCaseMessage(testCaseMessageBase);
                     testCaseMessage.addCauseIssues(i < 20 ? issueName : "NOT " + issueName);
@@ -369,35 +376,41 @@ public class InterfaceProfileServlet extends ClientServlet
               out.println("-");
             } else
             {
-              try
+              if (connector == null)
+              {
+                out.println("<div class=\"fail\">NOT RUN</div>");
+              } else
               {
                 try
                 {
-                  testRunner.runTest(connector, testCaseMessageNot);
-                  ack = testRunner.getAck();
-                } catch (Throwable t)
-                {
-                  t.printStackTrace(out);
-                }
-                if (expectedStatusMap != null && !expectedStatus.equals("-"))
-                {
-                  if ("A".equals(testRunner.getStatus()))
+                  try
                   {
-                    out.println("<div class=\"pass\">" + testRunner.getStatus() + "</div>");
+                    testRunner.runTest(connector, testCaseMessageNot);
+                    ack = testRunner.getAck();
+                  } catch (Throwable t)
+                  {
+                    t.printStackTrace(out);
+                  }
+                  if (expectedStatusMap != null && !expectedStatus.equals("-"))
+                  {
+                    if ("A".equals(testRunner.getStatus()))
+                    {
+                      out.println("<div class=\"pass\">" + testRunner.getStatus() + "</div>");
+                    } else
+                    {
+                      out.println("<div class=\"fail\">" + testRunner.getStatus() + "</div>");
+                    }
                   } else
                   {
-                    out.println("<div class=\"fail\">" + testRunner.getStatus() + "</div>");
+                    out.println(testRunner.getStatus());
                   }
-                } else
+                } catch (Exception e)
                 {
-                  out.println(testRunner.getStatus());
+                  out.println("Unable to run test: " + e.getMessage());
+                  out.print("<pre>");
+                  e.printStackTrace(out);
+                  out.println("</pre>");
                 }
-              } catch (Exception e)
-              {
-                out.println("Unable to run test: " + e.getMessage());
-                out.print("<pre>");
-                e.printStackTrace(out);
-                out.println("</pre>");
               }
             }
             out.println("    </td>");
