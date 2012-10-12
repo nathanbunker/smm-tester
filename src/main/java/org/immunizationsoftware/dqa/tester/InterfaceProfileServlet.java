@@ -41,7 +41,12 @@ import org.w3c.dom.NodeList;
 public class InterfaceProfileServlet extends ClientServlet
 {
 
-  private static final boolean RUN_BATCH_OUTPUT = true;
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
+  
+  private static final boolean RUN_BATCH_OUTPUT = false;
   private static final int BATCH_SIZE = 1;
   private static final File BATCH_OUTPUT_DIR = new File("C:\\data\\work\\iis\\OR ALERT\\test2012-09-28\\generated");
 

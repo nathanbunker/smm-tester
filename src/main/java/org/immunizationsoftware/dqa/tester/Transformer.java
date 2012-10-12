@@ -797,7 +797,7 @@ public class Transformer {
         patient.setState(patient.getAddress()[1]);
         patient.setZip(patient.getAddress()[2]);
         patient.setPhoneArea(patient.getAddress()[3]);
-        patient.setPhoneLocal("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + "-" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
+        patient.setPhoneLocal("" + (random.nextInt(8) + 2) + random.nextInt(10) + random.nextInt(10) + "-" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
         patient.setPhone("(" + patient.getPhoneArea() + ")" + patient.getPhoneLocal());
         patient.setBirthCount(makeBirthCount());
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
