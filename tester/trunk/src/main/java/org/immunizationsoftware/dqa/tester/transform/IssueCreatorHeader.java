@@ -270,6 +270,12 @@ public class IssueCreatorHeader extends IssueCreator {
                 transforms += "NK1#2-3=FTH\n";
                 transforms += "NK1#2-3.2=Father\n";
                 transforms += "NK1#2-3.3=HL70063\n";
+                transforms += "NK1#2-4.1=[STREET]\n";
+                transforms += "NK1#2-4.3=[CITY]\n";
+                transforms += "NK1#2-4.4=[STATE]\n";
+                transforms += "NK1#2-4.5=[ZIP]\n";
+                transforms += "NK1#2-4.6=USA\n";
+                transforms += "NK1#2-4.7=L\n";
                 testCaseMessage.setHasIssue(true);
             }
         } else if (line.equalsIgnoreCase(HL7_NK1_SET_ID_IS_MISSING)) {

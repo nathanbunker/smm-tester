@@ -8,6 +8,9 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -65,7 +68,6 @@ public class HttpConnector extends Connector
     String result = "";
     try
     {
-
       result = sendRequest(message, cc, debug);
     } catch (Exception e)
     {
@@ -102,67 +104,88 @@ public class HttpConnector extends Connector
   {
     StringBuilder debugLog = null;
     if (debug)
-      {
+    {
       debugLog = new StringBuilder();
+    }
+    try
+    {
+      HttpURLConnection urlConn;
+      DataOutputStream printout;
+      InputStreamReader input = null;
+      URL url = new URL(conn.url);
+      urlConn = (HttpURLConnection) url.openConnection();
+      urlConn.setRequestMethod("POST");
+      urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+      urlConn.setDoInput(true);
+      urlConn.setDoOutput(true);
+      urlConn.setUseCaches(false);
+      String content;
+      if (authenticationMethod == AuthenticationMethod.HEADER)
+      {
+        if (debug)
+        {
+          debugLog.append(">> Sending credentials using HTTP headers to " + conn.url + "\r");
+          debugLog.append(">> " + fieldNames[USERID] + " = '" + conn.userId + "' \r");
+          debugLog.append(">> " + fieldNames[PASSWORD] + " = '" + conn.password + "' \r");
+          debugLog.append(">> " + fieldNames[FACILITYID] + " = '" + conn.facilityId + "' \r");
+        }
+        content = request;
+        urlConn.setRequestProperty(fieldNames[USERID], conn.userId);
+        urlConn.setRequestProperty(fieldNames[PASSWORD], conn.password);
+        urlConn.setRequestProperty(fieldNames[FACILITYID], conn.facilityId);
+      } else
+      {
+        if (debug)
+        {
+          debugLog.append(">> Sending credentials using standard XML Encoded form to " + conn.url + "\r");
+          debugLog.append(">> " + fieldNames[USERID] + " = '" + conn.userId + "' \r");
+          debugLog.append(">> " + fieldNames[PASSWORD] + " = '" + conn.password + "' \r");
+          debugLog.append(">> " + fieldNames[FACILITYID] + " = '" + conn.facilityId + "' \r");
+          debugLog.append(">> " + fieldNames[MESSAGEDATA] + " \r");
+        }
+        content = fieldNames[USERID] + "=" + URLEncoder.encode(conn.userId, "UTF-8") + "&" + fieldNames[PASSWORD] + "="
+            + URLEncoder.encode(conn.password, "UTF-8") + "&" + fieldNames[FACILITYID] + "=" + URLEncoder.encode(conn.facilityId, "UTF-8") + "&"
+            + fieldNames[MESSAGEDATA] + "=" + URLEncoder.encode(request, "UTF-8");
       }
-    URLConnection urlConn;
-    DataOutputStream printout;
-    InputStreamReader input = null;
-    URL url = new URL(conn.url);
-    urlConn = url.openConnection();
-    urlConn.setDoInput(true);
-    urlConn.setDoOutput(true);
-    urlConn.setUseCaches(false);
-    urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-    String content;
-    if (authenticationMethod == AuthenticationMethod.HEADER)
+      printout = new DataOutputStream(urlConn.getOutputStream());
+      printout.writeBytes(content);
+      printout.flush();
+      printout.close();
+      input = new InputStreamReader(urlConn.getInputStream());
+      StringBuilder response = new StringBuilder();
+      BufferedReader in = new BufferedReader(input);
+      String line;
+      while ((line = in.readLine()) != null)
+      {
+        response.append(line);
+        response.append('\r');
+      }
+      input.close();
+      if (debug)
+      {
+        response.append("\r");
+        response.append("DEBUG LOG: \r");
+        response.append(debugLog);
+      }
+      return response.toString();
+    } catch (IOException e)
     {
       if (debug)
       {
-        debugLog.append(">> Sending credentials using HTTP headers \r");
-        debugLog.append(">> " + fieldNames[USERID] + " = '" + conn.userId + "' \r");
-        debugLog.append(">> " + fieldNames[PASSWORD] + " = '" + conn.password + "' \r");
-        debugLog.append(">> " + fieldNames[FACILITYID] + " = '" + conn.facilityId + "' \r");
-      }
-      content = request;
-      urlConn.setRequestProperty(fieldNames[USERID], conn.userId);
-      urlConn.setRequestProperty(fieldNames[PASSWORD], conn.password);
-      urlConn.setRequestProperty(fieldNames[FACILITYID], conn.facilityId);
-    } else
-    {
-      if (debug)
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter out = new PrintWriter(stringWriter);
+        out.println("Unable to complete request");
+        e.printStackTrace(out);
+        out.println("DEBUG LOG: \r");
+        out.println(debugLog);
+        out.close();
+        return stringWriter.toString();
+      } else
       {
-        debugLog.append(">> Sending credentials using standard XML Encoded form \r");
-        debugLog.append(">> " + fieldNames[USERID] + " = '" + conn.userId + "' \r");
-        debugLog.append(">> " + fieldNames[PASSWORD] + " = '" + conn.password + "' \r");
-        debugLog.append(">> " + fieldNames[FACILITYID] + " = '" + conn.facilityId + "' \r");
-        debugLog.append(">> " + fieldNames[MESSAGEDATA] + " \r");
+        throw e;
       }
-      content = fieldNames[USERID] + "=" + URLEncoder.encode(conn.userId, "UTF-8") + "&" + fieldNames[PASSWORD] + "="
-          + URLEncoder.encode(conn.password, "UTF-8") + "&" + fieldNames[FACILITYID] + "=" + URLEncoder.encode(conn.facilityId, "UTF-8") + "&"
-          + fieldNames[MESSAGEDATA] + "=" + URLEncoder.encode(request, "UTF-8");
     }
-    printout = new DataOutputStream(urlConn.getOutputStream());
-    printout.writeBytes(content);
-    printout.flush();
-    printout.close();
-    input = new InputStreamReader(urlConn.getInputStream());
-    StringBuilder response = new StringBuilder();
-    BufferedReader in = new BufferedReader(input);
-    String line;
-    while ((line = in.readLine()) != null)
-    {
-      response.append(line);
-      response.append('\r');
-    }
-    input.close();
-    if (debug)
-    {
-      response.append("\r");
-      response.append("DEBUG LOG: \r");
-      response.append(debugLog);
-    }
-    return response.toString();
+
   }
 
   @Override
@@ -203,7 +226,7 @@ public class HttpConnector extends Connector
       } else if (field.startsWith("Authentication Method:"))
       {
         String s = readValue(field);
-        if (s.equalsIgnoreCase(AuthenticationMethod.HEADER.toString()))         
+        if (s.equalsIgnoreCase(AuthenticationMethod.HEADER.toString()))
         {
           authenticationMethod = AuthenticationMethod.HEADER;
         }
