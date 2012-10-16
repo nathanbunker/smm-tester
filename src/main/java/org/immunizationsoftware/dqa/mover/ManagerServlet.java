@@ -29,12 +29,18 @@ public class ManagerServlet extends ClientServlet
   public static final String STANDARD_TIME_FORMAT = "HH:mm:ss";
   
   private static long checkInterval = 15;
+  private static Set<File> registeredFolders = new HashSet<File>();
   private static Set<SendData> sendDataSet = new HashSet<SendData>();
   private static String systemId = "";
   private static InetAddress localHostIp;
   private static byte[] localHostMac;
   private static Date startDate;
   private static String randomId = "";
+  
+  public static boolean isRegisteredFolder(File folder)
+  {
+    return registeredFolders.contains(folder);
+  }
 
   public static long getCheckInterval()
   {

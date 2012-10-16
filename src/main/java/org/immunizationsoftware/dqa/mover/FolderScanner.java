@@ -63,6 +63,11 @@ public class FolderScanner extends Thread
         }
       }
     }
+    if (ManagerServlet.isRegisteredFolder(folder))
+    {
+      // already found, don't look here again
+      return;
+    }
     log("Looking in folder " + folder.getAbsolutePath());
     File configFile = new File(folder, "smm.config.txt");
     if (configFile.exists() && configFile.isFile() && configFile.canRead())

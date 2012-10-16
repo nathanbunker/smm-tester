@@ -45,6 +45,12 @@ public class FileOut
     out.print('\r');
   }
   
+  public void println() throws IOException
+  {
+    init();
+    out.println();
+  }
+  
   public void println(String string) throws IOException
   {
     init();
@@ -59,7 +65,7 @@ public class FileOut
   
   public void close()
   {
-    if (out == null)
+    if (out != null)
     {
       out.close();
     }
