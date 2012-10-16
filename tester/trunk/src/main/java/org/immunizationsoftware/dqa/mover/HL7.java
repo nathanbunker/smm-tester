@@ -50,7 +50,8 @@ public class HL7
     {
       return "";
     }
-    int posLast = line.indexOf('|', posFirst + 1);
+    posFirst++;
+    int posLast = line.indexOf('|', posFirst);
     if (posLast == -1)
     {
       posLast = line.length();

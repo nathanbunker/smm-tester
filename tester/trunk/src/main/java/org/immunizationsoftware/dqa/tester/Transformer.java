@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.transform.IssueCreator;
 import org.immunizationsoftware.dqa.tester.transform.Patient;
 
@@ -199,6 +200,23 @@ public class Transformer {
             }
         }
     }
+    
+    public String transform(Connector connector, String messageText) {
+      String quickTransforms = "";
+
+      if (connector.getQuickTransformations() != null) {
+          for (String extra : connector.getQuickTransformations()) {
+             if (extra.equals("2.5.1")) {
+                  quickTransforms += "MSH-12=2.5.1\n";
+              } else if (extra.equals("2.3.1")) {
+                  quickTransforms += "MSH-12=2.3.1\n";
+              }
+          }
+      }
+
+      String transforms = quickTransforms + "\n" + connector.getCustomTransformations() + "\n";
+      return transform(messageText, transforms);
+  }
 
     public void transform(TestCaseMessage testCaseMessage) {
         String actualTestCase = testCaseMessage.getTestCaseNumber();
