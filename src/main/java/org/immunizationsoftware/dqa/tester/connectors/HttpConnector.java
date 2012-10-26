@@ -115,6 +115,7 @@ public class HttpConnector extends Connector
       URL url = new URL(conn.url);
       urlConn = (HttpURLConnection) url.openConnection();
       urlConn.setRequestMethod("POST");
+      
       urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);

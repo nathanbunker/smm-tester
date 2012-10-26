@@ -62,6 +62,7 @@ public class LoginServlet extends ClientServlet
             session.setAttribute("username", username);
             loginSuccess = true;
             Authenticate.User user = Authenticate.getUser(username);
+            session.setAttribute("user", user);
             if (!user.getName().equals(""))
             {
               message = "Welcome " + user.getName();
@@ -69,6 +70,7 @@ public class LoginServlet extends ClientServlet
             {
               message = "Welcome " + user.getUsername();
             }
+
             try
             {
               StringBuilder sb = new StringBuilder();
@@ -83,6 +85,20 @@ public class LoginServlet extends ClientServlet
             } catch (Exception e)
             {
               message = "Unable to create default connections: " + e.getMessage();
+            }
+            if (user.hasSendData())
+            {
+              if (user.getSendData().getConnector() != null)
+              {
+                SetupServlet.addConnector(user.getSendData().getConnector(), session);
+              }
+              try
+              {
+                CreateTestCaseServlet.loadTestCases(session);
+              } catch (Exception e)
+              {
+                message = "Unable to load test cases: " + e.getMessage();
+              }
             }
           } else
           {

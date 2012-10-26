@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.immunizationsoftware.dqa.SoftwareVersion;
+
 /**
  *
  * @author nathan
@@ -49,8 +51,8 @@ public class ClientServlet extends HttpServlet {
     public static String makeMenu(HttpServletRequest request) {
         return makeMenu(request, "&nbsp;");
     }
-    private static final String[][] MENU_LOGGED_OUT = {{"index.jsp", "Home"}, {"LoginServlet", "Login"}};
-    private static final String[][] MENU_LOGGED_IN = {{"index.jsp", "Home"}, {"SetupServlet", "Setup"}, {"CreateTestCaseServlet", "Edit"}, {"SubmitServlet", "Send Message"}, {"testCase", "Run Tests"}, {"interfaceProfile", "Profile Interface"}, {"LoginServlet?action=Logout", "Logout"}};
+    private static final String[][] MENU_LOGGED_OUT = {{Authenticate.APP_DEFAULT_HOME, "Home"}, {"LoginServlet", "Login"}};
+    private static final String[][] MENU_LOGGED_IN = {{Authenticate.APP_DEFAULT_HOME, "Home"}, {"SetupServlet", "Setup"}, {"CreateTestCaseServlet", "Edit"}, {"SubmitServlet", "Send Message"}, {"testCase", "Run Tests"}, {"interfaceProfile", "Profile Interface"}, {"LoginServlet?action=Logout", "Logout"}};
 
     public static String makeMenu(HttpServletRequest request, String title) {
         boolean loggedIn = false;
@@ -100,8 +102,8 @@ public class ClientServlet extends HttpServlet {
     }
 
     public static void printFooter(PrintWriter out) {
-        out.println("    <p>Open Immunization Software - Immunization Registry Tester 2011 - Version 1.1<br>"
-                + "For questions or support please contact <a href=\"http://nathanbunker.com/\">Nathan Bunker</a>.</p>");
+        out.println("    <p>Open Immunization Software - Immunization Registry Tester &amp; Simple Message Mover - Version " + SoftwareVersion.VERSION + "<br>"
+                + "For questions or support please contact <a href=\"http://openimmunizationsoftare.org/\">Nathan Bunker</a>.</p>");
 
     }
 

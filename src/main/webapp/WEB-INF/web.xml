@@ -9,7 +9,7 @@
     <servlet-class>org.immunizationsoftware.dqa.mover.ManagerServlet</servlet-class>
     <init-param>
       <param-name>scan.start.folders</param-name>
-      <param-value>c:\data\work\product</param-value>
+      <param-value>c:\Export\;c:\data\work\product</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>

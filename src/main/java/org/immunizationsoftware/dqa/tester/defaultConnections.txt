@@ -1,6 +1,6 @@
 -----------------------------------------
 Connection
-Label: CDC Standard
+Label: OIS-DQA CDC Standard
 Type: POST
 URL: http://ois-dqa.net/in
 User Id: CDC Standard
@@ -9,7 +9,7 @@ Facility Id: 1200
 
 -----------------------------------------
 Connection
-Label: MCIR Standard
+Label: OIS-DQA MCIR Standard
 Type: POST
 URL: http://ois-dqa.net/in
 User Id: MCIR Standard
@@ -18,16 +18,7 @@ Facility Id: 1201
 
 -----------------------------------------
 Connection
-Label: MCIR Test XFER
-Type: POST
-URL: https://ssoqa.state.mi.us/test-xfer/xfer/transfer
-User Id: 90000000113
-Password: T4r6v1ga73cLPQzT
-Facility Id: 1255-60-20
-
------------------------------------------
-Connection
-Label: ImmTrac Standard
+Label: OIS-DQA ImmTrac Standard
 Type: POST
 URL: http://ois-dqa.net/in
 User Id: ImmTrac Standard
@@ -36,7 +27,7 @@ Facility Id: 1202
 
 -----------------------------------------
 Connection
-Label: IHS Certification
+Label: OIS-DQA IHS Certification
 Type: POST
 URL: http://ois-dqa.net/in
 User Id: IHS Certification
@@ -45,7 +36,7 @@ Facility Id: 1203
 
 -----------------------------------------
 Connection
-Label: ASIIS Standard
+Label: OIS-DQA ASIIS Standard
 Type: POST
 URL: http://ois-dqa.net/in
 User Id: ASIIS Standard

@@ -3,17 +3,22 @@ package org.immunizationsoftware.dqa.mover;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+
+import javax.net.ssl.SSLSocketFactory;
 
 import org.immunizationsoftware.dqa.tester.Transformer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
@@ -32,6 +37,7 @@ public class SendData extends Thread
   public static final String CONFIG_FILE_NAME = "smm.config.txt";
   public static final String LOCK_FILE_NAME = "smm.lock";
   public static final String LOGIN_FILE_NAME = "smm.login.html";
+  public static final String KEYSTORE_FILE_NAME = "smm.jks";
 
   public static final String REQUEST_FOLDER = "request";
   public static final String RESPONSE_FOLDER = "response";
@@ -42,10 +48,13 @@ public class SendData extends Thread
   public static final String UPDATES_FOLDER = "updates";
   public static final String WORK_FOLDER = ".work";
   public static final String BACKUP_FOLDER = "backup";
+  public static final String TEST_FOLDER = "test";
+  public static final String GENERATED_FOLDER = "generated";
+  public static final String TEST_CASES_FOLDER = "cases";
 
   private static final long LOCK_TIMEOUT = 2 * 60 * 60 * 1000; // two hours
   private static final long FILE_CHANGE_TIMEOUT = 60 * 1000;
-  
+
   @Override
   public void run()
   {
@@ -57,8 +66,8 @@ public class SendData extends Thread
       {
         try
         {
-          obtainLock();
           setupConnector();
+          obtainLock();
           createWorkingDirs();
           createTransformer();
 
@@ -84,7 +93,6 @@ public class SendData extends Thread
       waitAwhile();
     }
   }
-
 
   private ScanStatus scanStatus = ScanStatus.STARTING;
 
@@ -130,7 +138,7 @@ public class SendData extends Thread
   private static final long[] retryWait = { 30 * SEC, 1 * MIN, 2 * MIN, 4 * MIN, 8 * MIN, 16 * MIN, 30 * MIN, HOUR, 2 * HOUR, 4 * HOUR, 8 * HOUR,
       12 * HOUR, DAY };
   private Transformer transformer = null;
-  
+
   private int randomId = 0;
 
   public int getRandomId()
@@ -194,10 +202,8 @@ public class SendData extends Thread
     }
   }
 
-
   private void createTransformer()
   {
-    statusLogger.log("--> Custom Transofrmations = " + connector.getCustomTransformations());
     if (!connector.getCustomTransformations().equals(""))
     {
       transformer = new Transformer();
@@ -231,6 +237,10 @@ public class SendData extends Thread
     {
       statusLogger.setSomethingInterestingHappened(true);
       statusLogger.log(e);
+    } else
+    {
+      System.out.println("Unable to send data");
+      e.printStackTrace();
     }
   }
 
@@ -474,7 +484,11 @@ public class SendData extends Thread
       throw new Exception("Script does not define connection");
     }
     connector = connectors.get(0);
-    statusLogger.log("Looking for data to send to: " + connector.getLabel());
+    if (statusLogger != null)
+    {
+      statusLogger.log("Looking for data to send to: " + connector.getLabel());
+    }
+    readKeyStore();
   }
 
   private void obtainLock() throws TransmissionException, IOException
@@ -500,7 +514,10 @@ public class SendData extends Thread
       long waitTime = retryWait[retryCount - 1];
       Date waitUntil = new Date(System.currentTimeMillis() + waitTime);
       SimpleDateFormat sdf = new SimpleDateFormat(ManagerServlet.STANDARD_DATE_FORMAT);
-      statusLogger.log("Problem sending data, will try again " + sdf.format(waitUntil));
+      if (statusLogger != null)
+      {
+        statusLogger.log("Problem sending data, will try again " + sdf.format(waitUntil));
+      }
       synchronized (this)
       {
         try
@@ -618,6 +635,63 @@ public class SendData extends Thread
     responseDir = createDir(rootDir, RESPONSE_FOLDER, RESPONSES_FOLDER);
     updateDir = createDir(rootDir, UPDATE_FOLDER, UPDATES_FOLDER);
     sentDir = createDir(rootDir, SENT_FOLDER);
+  }
+
+  public File getGeneratedDir()
+  {
+    File testDir = getTestDir();
+    File generatedDir = new File(testDir, GENERATED_FOLDER);
+    if (!generatedDir.exists())
+    {
+      generatedDir.mkdir();
+    }
+    return generatedDir;
+  }
+
+  private File getTestDir()
+  {
+    File testDir = new File(rootDir, TEST_FOLDER);
+    if (!testDir.exists())
+    {
+      testDir.mkdir();
+    }
+    return testDir;
+  }
+
+  public File getTestCaseDir()
+  {
+    File testDir = getTestDir();
+    File testCaseDir = new File(testDir, TEST_CASES_FOLDER);
+    if (!testCaseDir.exists())
+    {
+      testCaseDir.mkdir();
+    }
+    return testCaseDir;
+  }
+
+  private void readKeyStore()
+  {
+    File keyStoreFile = new File(rootDir, KEYSTORE_FILE_NAME);
+    if (keyStoreFile.exists() && keyStoreFile.isFile())
+    {
+      try
+      {
+        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        FileInputStream instream = new FileInputStream(keyStoreFile);
+        try
+        {
+          keyStore.load(instream, connector.getKeyStorePassword().toCharArray());
+        } finally
+        {
+          instream.close();
+        }
+        connector.setKeyStore(keyStore);
+      } catch (Exception e)
+      {
+        statusLogger.log("Unable to load key store file: " + e.getMessage());
+        statusLogger.log(e);
+      }
+    }
   }
 
   private void createWorkingFiles()

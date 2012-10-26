@@ -45,10 +45,6 @@ public class InterfaceProfileServlet extends ClientServlet
    * 
    */
   private static final long serialVersionUID = 1L;
-  
-  private static final boolean RUN_BATCH_OUTPUT = false;
-  private static final int BATCH_SIZE = 1;
-  private static final File BATCH_OUTPUT_DIR = new File("C:\\data\\work\\iis\\OR ALERT\\test2012-09-28\\generated");
 
   @Override
   public void init() throws ServletException
@@ -75,9 +71,10 @@ public class InterfaceProfileServlet extends ClientServlet
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
+    Authenticate.User user = (Authenticate.User) session.getAttribute("user");
     if (username == null)
     {
-      response.sendRedirect("index.jsp");
+      response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
     } else
     {
       PrintWriter out = response.getWriter();
@@ -147,6 +144,20 @@ public class InterfaceProfileServlet extends ClientServlet
           }
 
         }
+        
+        int batchSize = 0;
+        String batchSizeString = request.getParameter("batchSize");
+        if (batchSizeString != null && !batchSizeString.equals(""))
+        {
+          try
+          {
+            batchSize = Integer.parseInt(batchSizeString);
+          }
+          catch (NumberFormatException nfe)
+          {
+batchSize = 0;
+          }
+        }
 
         List<TestCaseMessage> testCaseMessageList = null;
         if (testCase == null || testCase.equals(""))
@@ -211,17 +222,18 @@ public class InterfaceProfileServlet extends ClientServlet
         if (goodToQuery)
         {
 
-          if (RUN_BATCH_OUTPUT)
+          if (user.hasSendData() && batchSize > 0)
           {
             try
             {
               TestCaseMessage testCaseMessage = new TestCaseMessage(testCaseMessageBase);
 
-              File file = new File(BATCH_OUTPUT_DIR, filenameBase + "-000 Base Messages.txt");
+              File generatedDir = user.getSendData().getGeneratedDir();
+              File file = new File(generatedDir, filenameBase + "-000 Base Messages.txt");
               PrintWriter fileOut = new PrintWriter(new FileWriter(file));
-              file = new File(BATCH_OUTPUT_DIR, filenameBase + " Sample Messages.txt");
+              file = new File(generatedDir, filenameBase + " Sample Messages.txt");
               sampleFileOut = new PrintWriter(new FileWriter(file));
-              for (int i = 0; i < BATCH_SIZE; i++)
+              for (int i = 0; i <  batchSize ; i++)
               {
                 testCaseMessage = new TestCaseMessage(testCaseMessageBase);
                 testCaseMessage.setTestCaseNumber(mrnBase + (i < 10 ? "00" : (i < 100 ? "0" : "")) + i);
@@ -330,7 +342,7 @@ public class InterfaceProfileServlet extends ClientServlet
                   out.println("</pre>");
                 }
               }
-              if (RUN_BATCH_OUTPUT)
+              if (user.hasSendData())
               {
                 String countText = "" + count;
                 if (count < 100)
@@ -345,9 +357,9 @@ public class InterfaceProfileServlet extends ClientServlet
                 }
                 try
                 {
-                  File file = new File(BATCH_OUTPUT_DIR, filenameBase + "-" + countText + " " + issueName + ".txt");
+                  File file = new File(user.getSendData().getGeneratedDir(), filenameBase + "-" + countText + " " + issueName + ".txt");
                   PrintWriter fileOut = new PrintWriter(new FileWriter(file));
-                  for (int i = 0; i < BATCH_SIZE; i++)
+                  for (int i = 0; i < batchSize; i++)
                   {
                     testCaseMessage = new TestCaseMessage(testCaseMessageBase);
                     testCaseMessage.addCauseIssues(i < 20 ? issueName : "NOT " + issueName);
@@ -574,7 +586,7 @@ public class InterfaceProfileServlet extends ClientServlet
     String username = (String) session.getAttribute("username");
     if (username == null)
     {
-      response.sendRedirect("index.jsp");
+      response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
     } else
     {
       PrintWriter out = response.getWriter();
@@ -633,6 +645,14 @@ public class InterfaceProfileServlet extends ClientServlet
         out.println("          <td>DQA Report Template XML</td>");
         out.println("          <td><textarea name=\"expected\" cols=\"70\" rows=\"10\" wrap=\"off\"></textarea></td>");
         out.println("        </tr>");
+        Authenticate.User user = (Authenticate.User) session.getAttribute("user");
+        if (user.hasSendData())
+        {
+          out.println("        <tr>");
+          out.println("          <td>Save Sample Count</td>");
+          out.println("          <td><input name=\"batchSize\" type=\"text\" size=\"2\" value=\"0\"/> (Samples saved to " + user.getSendData().getGeneratedDir() + ")</td>");
+          out.println("        </tr>");
+        }
         out.println("        <tr>");
         out.println("          <td colspan=\"2\" align=\"right\">");
         out.println("            <input type=\"submit\" name=\"method\" value=\"Submit\"/>");

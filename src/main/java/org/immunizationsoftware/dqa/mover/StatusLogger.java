@@ -7,13 +7,14 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.immunizationsoftware.dqa.SoftwareVersion;
 import org.immunizationsoftware.dqa.mover.SendData.ScanStatus;
 
 public class StatusLogger
 {
 
-  private static final String RUNNING_FILE_NAME = "smm.running-log.html";
-  private static final String LOG_FILE_NAME = "smm.log.html";
+  private static final String RUNNING_FILE_NAME = "smm.running-log.txt";
+  private static final String LOG_FILE_NAME = "smm.log.txt";
 
   private File rootFolder;
   private File statusLoggerFile;
@@ -45,9 +46,16 @@ public class StatusLogger
     logStatusFile();
     out = new PrintWriter(new FileWriter(statusLoggerFile));
     out.println("--- SIMPLE MESSAGE MOVER ----------------------------------------------------- ");
-    out.println(sendData.getConnector().getLabelDisplay() + " - " + sdf.format(new Date()));
+    String label = "";
+    if (sendData.getConnector() != null)
+    {
+      label = sendData.getConnector().getLabel();
+      out.println(sendData.getConnector().getLabelDisplay() + " - " + sdf.format(new Date()));
+    }
     out.println();
-    out.println("Login PIN: " + sendData.getRandomId());
+    out.println("Software Version: " + SoftwareVersion.VERSION);
+    out.println("Login Username: " + label);
+    out.println("Login Password: " + sendData.getRandomId());
     out.println();
     out.println("--- Log ---");
 

@@ -10,8 +10,10 @@ import java.util.List;
  * 
  * @author nathan
  */
-public class SoapConnector extends Connector
+public class SoapConnector extends HttpConnector
 {
+  
+  
 
   public SoapConnector(String label, String serviceName) throws Exception {
     super(label, "SOAP");
@@ -39,7 +41,10 @@ public class SoapConnector extends Connector
   @Override
   protected void setupFields(List<String> fields)
   {
-    // do nothing
+    super.setupFields(fields);
+    
   }
+  
+  
 
 }
