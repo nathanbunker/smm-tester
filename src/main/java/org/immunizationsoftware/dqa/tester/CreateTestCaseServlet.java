@@ -175,7 +175,7 @@ public class CreateTestCaseServlet extends ClientServlet
       }
       if (originalMessage == null)
       {
-        originalMessage = "MSH|\nPID|\nNK1|\nPV1|\nORC|\nRXA|\nORC|\nRXA|\nORC|\nRXA|\nOBX|\n";
+        originalMessage = "MSH|\nPID|\nNK1|\nPV1|\nORC|\nRXA|\nORC|\nRXA|\nORC|\nRXA|\nOBX|\nOBX|\nOBX|\nOBX|\n";
       }
       if (customTransformations == null && testCaseMessage != null)
       {
@@ -207,6 +207,7 @@ public class CreateTestCaseServlet extends ClientServlet
     }
 
     Transformer transformer = new Transformer();
+    testCaseMessage.setPreparedMessage(null);
     transformer.transform(testCaseMessage);
     session.setAttribute("message", testCaseMessage.getMessageText());
     try
