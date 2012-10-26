@@ -37,6 +37,21 @@ public class ManagerServlet extends ClientServlet
   private static Date startDate;
   private static String randomId = "";
   
+  public static SendData authenticateSendData(String label, int sendDataId)
+  {
+    for (SendData sendData : sendDataSet)
+    {
+      if (sendData.getConnector() != null)
+      {
+        if (sendData.getConnector().getLabel().equalsIgnoreCase(label) && sendData.getRandomId() == sendDataId)
+        {
+          return sendData;
+        }
+      }
+    }
+   return null;
+  }
+  
   public static boolean isRegisteredFolder(File folder)
   {
     return registeredFolders.contains(folder);

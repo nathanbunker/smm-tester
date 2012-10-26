@@ -5,9 +5,18 @@
 package org.immunizationsoftware.dqa.tester.connectors;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.StringReader;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
 
 /**
  * 
@@ -18,8 +27,8 @@ public abstract class Connector
 
   protected abstract void setupFields(List<String> fields);
 
-  protected static void addConnector(String label, String type, String url, String userid, String facilityid, String password, List<String> fields,
-      String customTransformations, List<Connector> connectors) throws Exception
+  protected static Connector addConnector(String label, String type, String url, String userid, String facilityid, String password,
+      String keyStorePassword, List<String> fields, String customTransformations, List<Connector> connectors) throws Exception
   {
     if (!label.equals("") && !type.equals(""))
     {
@@ -39,8 +48,11 @@ public abstract class Connector
       connector.setPassword(password);
       connector.setupFields(fields);
       connector.setCustomTransformations(customTransformations);
+      connector.setKeyStorePassword(keyStorePassword);
       connectors.add(connector);
+      return connector;
     }
+    return null;
   }
 
   protected String label = "";
@@ -51,6 +63,29 @@ public abstract class Connector
   protected String url = "";
   private String customTransformations = "";
   private String[] quickTransformations;
+  private KeyStore keyStore = null;
+  private File keyStoreFile = null;
+  private String keyStorePassword = null;
+
+  public String getKeyStorePassword()
+  {
+    return keyStorePassword;
+  }
+
+  public void setKeyStorePassword(String keyStorePassword)
+  {
+    this.keyStorePassword = keyStorePassword;
+  }
+
+  public KeyStore getKeyStore()
+  {
+    return keyStore;
+  }
+
+  public void setKeyStore(KeyStore keyStore)
+  {
+    this.keyStore = keyStore;
+  }
 
   public String[] getQuickTransformations()
   {
@@ -161,6 +196,24 @@ public abstract class Connector
     sb.append("User Id: " + userid + "\n");
     sb.append("Password: \n");
     sb.append("Facility Id: " + facilityid + "\n");
+    if (customTransformations != null && customTransformations.length() > 0)
+    {
+      sb.append("Custom Transformations:");
+      try
+      {
+        BufferedReader inTransform = new BufferedReader(new StringReader(customTransformations));
+        String line;
+        while ((line = inTransform.readLine()) != null)
+        {
+          line = line.trim();
+          sb.append(" + " + line + "\n");
+        }
+      } catch (IOException ioe)
+      {
+        // IOException not expected when reading a string
+        throw new RuntimeException("Exception while reading string", ioe);
+      }
+    }
     makeScriptAdditions(sb);
     return sb.toString();
   }
@@ -177,6 +230,7 @@ public abstract class Connector
     String facilityid = "";
     String url = "";
     String customTransformations = "";
+    String keyStorePassword = "";
     List<String> fields = new ArrayList<String>();
     BufferedReader in = new BufferedReader(new StringReader(script));
     String line;
@@ -186,7 +240,7 @@ public abstract class Connector
       line = line.trim();
       if (line.startsWith("Connection"))
       {
-        addConnector(label, type, url, userid, facilityid, password, fields, customTransformations, connectors);
+        addConnector(label, type, url, userid, facilityid, password, keyStorePassword, fields, customTransformations, connectors);
         label = "";
         type = "";
         url = "";
@@ -194,6 +248,7 @@ public abstract class Connector
         facilityid = "";
         password = "";
         customTransformations = "";
+        keyStorePassword = "";
         fields = new ArrayList<String>();
       } else if (line.startsWith("Label:"))
       {
@@ -213,6 +268,9 @@ public abstract class Connector
       } else if (line.startsWith("Facility Id:"))
       {
         facilityid = readValue(line);
+      } else if (line.startsWith("Key Store Password:"))
+      {
+        keyStorePassword = readValue(line);
       } else if (line.startsWith("Cause Issues:"))
       {
         lastList = "CI";
@@ -231,7 +289,7 @@ public abstract class Connector
       }
 
     }
-    addConnector(label, type, url, userid, facilityid, password, fields, customTransformations, connectors);
+    addConnector(label, type, url, userid, facilityid, password, keyStorePassword, fields, customTransformations, connectors);
     return connectors;
   }
 
@@ -244,4 +302,44 @@ public abstract class Connector
     }
     return line.substring(pos + 1).trim();
   }
+
+//  private SSLServerSocket createServerSocketFromKeyStore()
+//  {
+//    SSLServerSocketFactory ssf; // server socket factory
+//    SSLServerSocket skt; // server socket
+//
+//    // LOAD EXTERNAL KEY STORE
+//    KeyStore mstkst;
+//    try
+//    {
+//      mstkst = KeyStore.getInstance("jks");
+//      mstkst.load(new FileInputStream(keyStoreFile), keyStorePassword.toCharArray());
+//    } catch (java.security.GeneralSecurityException thr)
+//    {
+//      throw new IOException("Cannot load keystore (" + thr + ")");
+//    }
+//
+//    // CREATE EPHEMERAL KEYSTORE FOR THIS SOCKET USING DESIRED CERTIFICATE
+//    try
+//    {
+//      SSLContext ctx = SSLContext.getInstance("TLS");
+//      KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+//      KeyStore sktkst;
+//      char[] blkpwd = new char[0];
+//
+//      sktkst = KeyStore.getInstance("jks");
+//      sktkst.load(null, blkpwd);
+//      sktkst.setKeyEntry(svrctfals, mstkst.getKey(svrctfals, blkpwd), blkpwd, mstkst.getCertificateChain(svrctfals));
+//      kmf.init(sktkst, blkpwd);
+//      ctx.init(kmf.getKeyManagers(), null, null);
+//      ssf = ctx.getServerSocketFactory();
+//    } catch (java.security.GeneralSecurityException thr)
+//    {
+//      throw new IOException("Cannot create secure socket (" + thr + ")");
+//    }
+//
+//    // CREATE AND INITIALIZE SERVER SOCKET
+//    skt = (SSLServerSocket) ssf.createServerSocket(prt, bcklog, adr);
+//    return skt;
+//  }
 }

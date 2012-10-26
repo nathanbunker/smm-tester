@@ -6,6 +6,7 @@ import java.util.List;
 
 public class FolderScanner extends Thread
 {
+  private static final int SCAN_PAUSE = 15 * 1000;
   private List<File> foldersToScan = null;
   private String scanningStatus = "";
   private boolean scanning = false;
@@ -37,12 +38,32 @@ public class FolderScanner extends Thread
   @Override
   public void run()
   {
-    log("Scan started");
-    for (File folderToScan : foldersToScan)
+    // while (true)
     {
-      search(folderToScan, true);
+      try
+      {
+        log("Scan started");
+        for (File folderToScan : foldersToScan)
+        {
+          search(folderToScan, true);
+        }
+        log("Scan completed");
+      } catch (Throwable t)
+      {
+        t.printStackTrace();
+      }
+      synchronized (scanningStatus)
+      {
+        try
+        {
+          scanningStatus.wait(SCAN_PAUSE);
+        } catch (InterruptedException ie)
+        {
+          // continue
+        }
+      }
+
     }
-    log("Scan completed");
   }
 
   private void log(String status)

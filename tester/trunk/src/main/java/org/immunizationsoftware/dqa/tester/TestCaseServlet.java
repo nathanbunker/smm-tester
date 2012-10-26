@@ -47,7 +47,7 @@ public class TestCaseServlet extends ClientServlet {
         HttpSession session = request.getSession(true);
         String username = (String) session.getAttribute("username");
         if (username == null) {
-            response.sendRedirect("index.jsp");
+            response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
         } else {
             PrintWriter out = response.getWriter();
             try {
@@ -308,7 +308,7 @@ public class TestCaseServlet extends ClientServlet {
         HttpSession session = request.getSession(true);
         String username = (String) session.getAttribute("username");
         if (username == null) {
-            response.sendRedirect("index.jsp");
+            response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
         } else {
             PrintWriter out = response.getWriter();
             try {

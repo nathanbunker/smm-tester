@@ -36,7 +36,7 @@ public class DownloadServlet extends HttpServlet {
         HttpSession session = request.getSession(true);
         String username = (String) session.getAttribute("username");
         if (username == null) {
-            response.sendRedirect("index.jsp");
+            response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
         } else {
 
             String action = request.getParameter("action");
