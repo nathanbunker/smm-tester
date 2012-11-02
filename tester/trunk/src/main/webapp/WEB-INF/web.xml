@@ -11,6 +11,14 @@
       <param-name>scan.start.folders</param-name>
       <param-value>c:\Export\;c:\data\work\product</param-value>
     </init-param>
+    <init-param>
+      <param-name>support_center.code</param-name>
+      <param-value>IHS</param-value>
+    </init-param>
+    <init-param>
+      <param-name>support_center.url</param-name>
+      <param-value>http://localhost:8281/remote</param-value>
+    </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet>
@@ -20,6 +28,10 @@
   <servlet>
     <servlet-name>DownloadServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.tester.DownloadServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>HomeServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.tester.HomeServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>TestCaseServlet</servlet-name>
@@ -68,6 +80,10 @@
   <servlet-mapping>
     <servlet-name>SetupServlet</servlet-name>
     <url-pattern>/SetupServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>HomeServlet</servlet-name>
+    <url-pattern>/HomeServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>ManagerServlet</servlet-name>

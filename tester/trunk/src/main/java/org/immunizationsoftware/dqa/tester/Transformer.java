@@ -42,6 +42,12 @@ public class Transformer
   private static final int VACCINE_VIS_PUB = 9;
   private static final int VACCINE_VIS_PUB_CODE = 10;
   private static final int VACCINE_VIS_PUB_DATE = 11;
+  private static final int VACCINE_VIS2_PUB = 12;
+  private static final int VACCINE_VIS2_PUB_CODE = 13;
+  private static final int VACCINE_VIS2_PUB_DATE = 14;
+  private static final int VACCINE_VIS3_PUB = 15;
+  private static final int VACCINE_VIS3_PUB_CODE = 16;
+  private static final int VACCINE_VIS3_PUB_DATE = 17;
 
   private static Map<String, List<String[]>> conceptMap = null;
   private static Random random = new Random();
@@ -110,11 +116,15 @@ public class Transformer
     return alsoHas;
   }
 
-  protected String createDates(String[] dates)
+  public enum PatientType {
+    ANY_CHILD, BABY, TODDLER, TWEEN, ADULT, NONE
+  };
+
+  protected PatientType createDates(String[] dates, PatientType type)
   {
     {
       SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-      if (random.nextBoolean())
+      if (type == PatientType.BABY || (type == PatientType.ANY_CHILD && random.nextBoolean()))
       {
         // Setting up baby, 6 months old today
         // 6 month appointment
@@ -141,10 +151,10 @@ public class Transformer
         cal4Month.add(Calendar.DAY_OF_MONTH, random.nextInt(10) - 3);
         dates[1] = sdf.format(cal2Month.getTime());
 
-        return "BABY";
+        return PatientType.BABY;
       } else
       {
-        if (random.nextBoolean())
+        if (type == PatientType.TODDLER || (type == PatientType.ANY_CHILD && random.nextBoolean()))
         {
           // Setting up toddler
           Calendar calendar = Calendar.getInstance();
@@ -162,10 +172,10 @@ public class Transformer
           calendar.add(Calendar.MONTH, -12);
           calendar.add(Calendar.DAY_OF_MONTH, 7 - random.nextInt(15));
           dates[0] = sdf.format(calendar.getTime());
-          return "TODDLER";
-        } else
+          return PatientType.TODDLER;
+        } else if (type == PatientType.ANY_CHILD || type == PatientType.TWEEN)
         {
-          // Setting up toddler
+          // Setting up tween
           Calendar calendar = Calendar.getInstance();
           // 13 years (today)
           dates[3] = sdf.format(calendar.getTime());
@@ -181,7 +191,27 @@ public class Transformer
           calendar.add(Calendar.YEAR, -9);
           calendar.add(Calendar.DAY_OF_MONTH, 7 - random.nextInt(15));
           dates[0] = sdf.format(calendar.getTime());
-          return "TWEEN";
+          return PatientType.TWEEN;
+        } else
+        {
+          // Setting up adult
+          Calendar calendar = Calendar.getInstance();
+          // 67 years (today)
+          dates[3] = sdf.format(calendar.getTime());
+          // last year
+          calendar.add(Calendar.YEAR, -1);
+          calendar.add(Calendar.DAY_OF_MONTH, 7 - random.nextInt(15));
+          dates[2] = sdf.format(calendar.getTime());
+          // two years before that
+          calendar.add(Calendar.YEAR, -2);
+          calendar.add(Calendar.DAY_OF_MONTH, 7 - random.nextInt(15));
+          dates[1] = sdf.format(calendar.getTime());
+          // birth
+          calendar.add(Calendar.YEAR, -64);
+          calendar.add(Calendar.DAY_OF_MONTH, 7 - random.nextInt(15));
+          dates[0] = sdf.format(calendar.getTime());
+          return PatientType.ADULT;
+
         }
       }
     }
@@ -265,7 +295,7 @@ public class Transformer
     }
 
     String transforms = quickTransforms + "\n" + connector.getCustomTransformations() + "\n";
-    return transform(messageText, transforms);
+    return transform(messageText, transforms, PatientType.NONE);
   }
 
   public void transform(TestCaseMessage testCaseMessage)
@@ -273,7 +303,7 @@ public class Transformer
     String actualTestCase = testCaseMessage.getTestCaseNumber();
     if (actualTestCase.equals(""))
     {
-      actualTestCase = "NONE";
+      actualTestCase = "[MRN]";
     }
     String quickTransforms = "";
 
@@ -348,134 +378,21 @@ public class Transformer
           int count = 3;
           count = count - (alsoHas(testCaseMessage, "VAC2_ADMIN") || alsoHas(testCaseMessage, "VAC2_HIST") ? 1 : 0);
           count = count - (alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1 : 0);
-          quickTransforms += "RXA-3=[VAC" + count + "_DATE]\n";
-          quickTransforms += "RXA-9.1=00\n";
-          quickTransforms += "RXA-9.2=Administered\n";
-          quickTransforms += "RXA-9.3=NIP001\n";
-          quickTransforms += "RXA-5.1=[VAC" + count + "_CVX]\n";
-          quickTransforms += "RXA-5.2=[VAC" + count + "_CVX_LABEL]\n";
-          quickTransforms += "RXA-5.3=CVX\n";
-          quickTransforms += "RXA-6=[VAC" + count + "_AMOUNT]\n";
-          quickTransforms += "RXA-7.1=mL\n";
-          quickTransforms += "RXA-7.2=milliliters\n";
-          quickTransforms += "RXA-7.3=UCUM\n";
-          quickTransforms += "RXA-15=[VAC" + count + "_LOT]\n";
-          quickTransforms += "RXA-17.1=[VAC" + count + "_MVX]\n";
-          quickTransforms += "RXA-17.2=[VAC" + count + "_MVX_LABEL]\n";
-          quickTransforms += "RXA-17.3=MVX\n";
-          quickTransforms += "RXA-21=A\n";
-          quickTransforms += "RXA:RXR-1.1=IM\n";
-          quickTransforms += "RXA:RXR-1.2=Intramuscular\n";
-          quickTransforms += "RXA:RXR-1.3=HL70162\n";
-          quickTransforms += "RXA:OBX-1=1\n";
-          quickTransforms += "RXA:OBX-2=CE\n";
-          quickTransforms += "RXA:OBX-3.1=64994-7\n";
-          quickTransforms += "RXA:OBX-3.2=Vaccine funding program eligibility category\n";
-          quickTransforms += "RXA:OBX-3.3=LN\n";
-          quickTransforms += "RXA:OBX-5.1=[VFC]\n";
-          quickTransforms += "RXA:OBX-5.2=[VFC_LABEL]\n";
-          quickTransforms += "RXA:OBX-5.3=HL70064\n";
-          quickTransforms += "RXA:OBX-11=F\n";
-          quickTransforms += "RXA:OBX-14=[TODAY]\n";
+          quickTransforms = addAdmin(quickTransforms, "1", count);
         } else if (extra.equals("VAC2_ADMIN"))
         {
           int count = 3;
           count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1 : 0;
-          quickTransforms += "RXA#2-3=[VAC" + count + "_DATE]\n";
-          quickTransforms += "RXA#2-9.1=00\n";
-          quickTransforms += "RXA#2-9.2=Administered\n";
-          quickTransforms += "RXA#2-9.3=NIP001\n";
-          quickTransforms += "RXA#2-5.1=[VAC" + count + "_CVX]\n";
-          quickTransforms += "RXA#2-5.2=[VAC" + count + "_CVX_LABEL]\n";
-          quickTransforms += "RXA#2-5.3=CVX\n";
-          quickTransforms += "RXA#2-6=[VAC2_AMOUNT]\n";
-          quickTransforms += "RXA#2-7.1=mL\n";
-          quickTransforms += "RXA#2-7.2=milliliters\n";
-          quickTransforms += "RXA#2-7.3=UCUM\n";
-          quickTransforms += "RXA#2-15=[VAC" + count + "_LOT]\n";
-          quickTransforms += "RXA#2-17.1=[VAC" + count + "_MVX]\n";
-          quickTransforms += "RXA#2-17.2=[VAC" + count + "_MVX_LABEL]\n";
-          quickTransforms += "RXA#2-17.3=MVX\n";
-          quickTransforms += "RXA#2-21=A\n";
-          quickTransforms += "RXA#2:RXR-1.1=IM\n";
-          quickTransforms += "RXA#2:RXR-1.2=Intramuscular\n";
-          quickTransforms += "RXA#2:RXR-1.3=HL70162\n";
-          quickTransforms += "RXA#2:OBX-1=1\n";
-          quickTransforms += "RXA#2:OBX-2=CE\n";
-          quickTransforms += "RXA#2:OBX-3.1=64994-7\n";
-          quickTransforms += "RXA#2:OBX-3.2=Vaccine funding program eligibility category\n";
-          quickTransforms += "RXA#2:OBX-3.3=LN\n";
-          quickTransforms += "RXA#2:OBX-5.1=[VFC]\n";
-          quickTransforms += "RXA#2:OBX-5.2=[VFC_LABEL]\n";
-          quickTransforms += "RXA#2:OBX-5.3=HL70064\n";
-          quickTransforms += "RXA#2:OBX-11=F\n";
-          quickTransforms += "RXA#2:OBX-14=[TODAY]\n";
+          quickTransforms = addAdmin(quickTransforms, "2", count);
         } else if (extra.equals("VAC3_ADMIN"))
         {
-          quickTransforms += "RXA#3-3=[VAC3_DATE]\n";
-          quickTransforms += "RXA#3-9.1=00\n";
-          quickTransforms += "RXA#3-9.2=Administered\n";
-          quickTransforms += "RXA#3-9.3=NIP001\n";
-          quickTransforms += "RXA#3-5.1=[VAC3_CVX]\n";
-          quickTransforms += "RXA#3-5.2=[VAC3_CVX_LABEL]\n";
-          quickTransforms += "RXA#3-5.3=CVX\n";
-          quickTransforms += "RXA#3-6=[VAC3_AMOUNT]\n";
-          quickTransforms += "RXA#3-7.1=mL\n";
-          quickTransforms += "RXA#3-7.2=milliliters\n";
-          quickTransforms += "RXA#3-7.3=UCUM\n";
-          quickTransforms += "RXA#3-15=[VAC3_LOT]\n";
-          quickTransforms += "RXA#3-17.1=[VAC3_MVX]\n";
-          quickTransforms += "RXA#3-17.2=[VAC3_MVX_LABEL]\n";
-          quickTransforms += "RXA#3-17.3=MVX\n";
-          quickTransforms += "RXA#3-21=A\n";
-          quickTransforms += "RXA#3:RXR-1.1=IM\n";
-          quickTransforms += "RXA#3:RXR-1.2=Intramuscular\n";
-          quickTransforms += "RXA#3:RXR-1.3=HL70162\n";
-          quickTransforms += "RXA#3:OBX-1=1\n";
-          quickTransforms += "RXA#3:OBX-2=CE\n";
-          quickTransforms += "RXA#3:OBX-3.1=64994-7\n";
-          quickTransforms += "RXA#3:OBX-3.2=Vaccine funding program eligibility category\n";
-          quickTransforms += "RXA#3:OBX-3.3=LN\n";
-          quickTransforms += "RXA#3:OBX-4=1\n";
-          quickTransforms += "RXA#3:OBX-5.1=[VFC]\n";
-          quickTransforms += "RXA#3:OBX-5.2=[VFC_LABEL]\n";
-          quickTransforms += "RXA#3:OBX-5.3=HL70064\n";
-          quickTransforms += "RXA#3:OBX-11=F\n";
-          quickTransforms += "RXA#3:OBX-14=[TODAY]\n";
-          quickTransforms += "RXA#3:OBX-17.1=VXC40\n";
-          quickTransforms += "RXA#3:OBX-17.2=Eligibility captured at the immunization level\n";
-          quickTransforms += "RXA#3:OBX-17.3=CDCPHINVS\n";
-          quickTransforms += "RXA#3:OBX#2-1=2\n";
-          quickTransforms += "RXA#3:OBX#2-2=CE\n";
-          quickTransforms += "RXA#3:OBX#2-3.1=30956-7\n";
-          quickTransforms += "RXA#3:OBX#2-3.2=Vaccine Type\n";
-          quickTransforms += "RXA#3:OBX#2-3.3=LN\n";
-          quickTransforms += "RXA#3:OBX#2-4=2\n";
-          quickTransforms += "RXA#3:OBX#2-5.1=[VAC3_VIS_PUB_CODE]\n";
-          quickTransforms += "RXA#3:OBX#2-5.2=[VAC3_VIS_PUB_NAME]\n";
-          quickTransforms += "RXA#3:OBX#2-5.3=CVX\n";
-          quickTransforms += "RXA#3:OBX#2-11=F\n";
-          quickTransforms += "RXA#3:OBX#3-1=3\n";
-          quickTransforms += "RXA#3:OBX#3-2=TS\n";
-          quickTransforms += "RXA#3:OBX#3-3.1=29768-9\n";
-          quickTransforms += "RXA#3:OBX#3-3.2=Date vaccine information statement published\n";
-          quickTransforms += "RXA#3:OBX#3-3.3=LN\n";
-          quickTransforms += "RXA#3:OBX#3-4=2\n";
-          quickTransforms += "RXA#3:OBX#3-5.1=[VAC3_VIS_PUB_DATE]\n";
-          quickTransforms += "RXA#3:OBX#3-11=F\n";
-          quickTransforms += "RXA#3:OBX#4-1=4\n";
-          quickTransforms += "RXA#3:OBX#4-2=TS\n";
-          quickTransforms += "RXA#3:OBX#4-3.1=29769-7\n";
-          quickTransforms += "RXA#3:OBX#4-3.2=Date vaccine information statement presented\n";
-          quickTransforms += "RXA#3:OBX#4-3.3=LN\n";
-          quickTransforms += "RXA#3:OBX#4-4=2\n";
-          quickTransforms += "RXA#3:OBX#4-5.1=[VAC3_DATE]\n";
-          quickTransforms += "RXA#3:OBX#4-11=F\n";
+          quickTransforms = addAdmin(quickTransforms, "3", 3);
         } else if (extra.equals("VAC1_HIST"))
         {
           int count = 3;
           count -= alsoHas(testCaseMessage, "VAC2_ADMIN") || alsoHas(testCaseMessage, "VAC2_HIST") ? 1 : 0;
           count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1 : 0;
+          quickTransforms += "ORC-3=[VAC" + count + "_ID]\n";         
           quickTransforms += "RXA-3=[VAC" + count + "_DATE]\n";
           quickTransforms += "RXA-5.1=[VAC" + count + "_CVX]\n";
           quickTransforms += "RXA-5.2=[VAC" + count + "_CVX_LABEL]\n";
@@ -489,6 +406,7 @@ public class Transformer
         {
           int count = 3;
           count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1 : 0;
+          quickTransforms += "ORC#2-3=[VAC" + count + "_ID]\n";         
           quickTransforms += "RXA#2-3=[VAC" + count + "_DATE]\n";
           quickTransforms += "RXA#2-5.1=[VAC" + count + "_CVX]\n";
           quickTransforms += "RXA#2-5.2=[VAC" + count + "_CVX_LABEL]\n";
@@ -500,7 +418,8 @@ public class Transformer
           quickTransforms += "RXA#2-21=A\n";
         } else if (extra.equals("VAC3_HIST"))
         {
-          quickTransforms += "RXA#3-3=[VAC2_DATE]\n";
+          quickTransforms += "ORC#2-3=[VAC3_ID]\n";         
+          quickTransforms += "RXA#3-3=[VAC3_DATE]\n";
           quickTransforms += "RXA#3-5.1=[VAC3_CVX]\n";
           quickTransforms += "RXA#3-5.2=[VAC3_CVX_LABEL]\n";
           quickTransforms += "RXA#3-5.3=CVX\n";
@@ -528,12 +447,12 @@ public class Transformer
         {
           quickTransforms += "PID-10.1=[RACE]\n";
           quickTransforms += "PID-10.2=[RACE_LABEL]\n";
-          quickTransforms += "PID-10.3=HL7005\n";
+          quickTransforms += "PID-10.3=HL70005\n";
         } else if (extra.equals("ETHNICITY"))
         {
           quickTransforms += "PID-22.1=[ETHNICITY]\n";
           quickTransforms += "PID-22.2=[ETHNICITY_LABEL]\n";
-          quickTransforms += "PID-22.3=HL70189\n";
+          quickTransforms += "PID-22.3=CDCREC\n";
         } else if (extra.equals("2.5.1"))
         {
           quickTransforms += "MSH-2=^~\\&\n";
@@ -553,19 +472,16 @@ public class Transformer
           quickTransforms += "PV1-1=1\n";
           quickTransforms += "PV1-2=R\n";
           quickTransforms += "ORC-1=RE\n";
-          quickTransforms += "ORC-3=" + actualTestCase + ".1\n";
           quickTransforms += "ORC-3.2=OIS\n";
           quickTransforms += "RXA-1=0\n";
           quickTransforms += "RXA-2=1\n";
           quickTransforms += "RXA-6=999\n";
           quickTransforms += "ORC#2-1=RE\n";
-          quickTransforms += "ORC#2-3=" + actualTestCase + ".2\n";
           quickTransforms += "ORC#2-3.2=OIS\n";
           quickTransforms += "RXA#2-1=0\n";
           quickTransforms += "RXA#2-2=1\n";
           quickTransforms += "RXA#2-6=999\n";
           quickTransforms += "ORC#3-1=RE\n";
-          quickTransforms += "ORC#3-3=" + actualTestCase + ".3\n";
           quickTransforms += "ORC#3-3.2=OIS\n";
           quickTransforms += "RXA#3-1=0\n";
           quickTransforms += "RXA#3-2=1\n";
@@ -606,19 +522,94 @@ public class Transformer
 
     String causeIssueTransforms = IssueCreator.createTransforms(testCaseMessage);
     String transforms = quickTransforms + "\n" + testCaseMessage.getCustomTransformations() + "\n" + causeIssueTransforms;
-    String result = transform(testCaseMessage.getPreparedMessage(), transforms);
+    String result = transform(testCaseMessage.getPreparedMessage(), transforms, testCaseMessage.getPatientType());
     testCaseMessage.setMessageText(result);
     testCaseMessage.setQuickTransformationsConverted(quickTransforms);
   }
 
-  protected String transform(String baseText, String transformText)
+  private String addAdmin(String quickTransforms, String vaccineNumber, int count)
+  {
+    quickTransforms += "ORC#" + vaccineNumber + "-3=[VAC" + count + "_ID]\n";
+    String front = "RXA#" + vaccineNumber;
+    quickTransforms += front + "-3=[VAC" + count + "_DATE]\n";
+    quickTransforms += front + "-9.1=00\n";
+    quickTransforms += front + "-9.2=Administered\n";
+    quickTransforms += front + "-9.3=NIP001\n";
+    quickTransforms += front + "-5.1=[VAC" + count + "_CVX]\n";
+    quickTransforms += front + "-5.2=[VAC" + count + "_CVX_LABEL]\n";
+    quickTransforms += front + "-5.3=CVX\n";
+    quickTransforms += front + "-6=[VAC2_AMOUNT]\n";
+    quickTransforms += front + "-7.1=mL\n";
+    quickTransforms += front + "-7.2=milliliters\n";
+    quickTransforms += front + "-7.3=UCUM\n";
+    quickTransforms += front + "-15=[VAC" + count + "_LOT]\n";
+    quickTransforms += front + "-17.1=[VAC" + count + "_MVX]\n";
+    quickTransforms += front + "-17.2=[VAC" + count + "_MVX_LABEL]\n";
+    quickTransforms += front + "-17.3=MVX\n";
+    quickTransforms += front + "-21=A\n";
+    quickTransforms += front + ":RXR-1.1=[VAC" + count + "_ROUTE]\n";
+    quickTransforms += front + ":RXR-1.2=\n";
+    quickTransforms += front + ":RXR-1.3=HL70162\n";
+    quickTransforms += front + ":RXR-2.1=[VAC" + count + "_SITE]\n";
+    quickTransforms += front + ":RXR-2.2=\n";
+    quickTransforms += front + ":RXR-2.3=HL70163\n";
+    quickTransforms = addObx(quickTransforms, vaccineNumber, count);
+    return quickTransforms;
+  }
+
+  private String addObx(String quickTransforms, String vaccineNumber, int count)
+  {
+    String start = "RXA#" + vaccineNumber + ":OBX#";
+    quickTransforms += start + "1-1=1\n";
+    quickTransforms += start + "1-2=CE\n";
+    quickTransforms += start + "1-3.1=64994-7\n";
+    quickTransforms += start + "1-3.2=Vaccine funding program eligibility category\n";
+    quickTransforms += start + "1-3.3=LN\n";
+    quickTransforms += start + "1-4=1\n";
+    quickTransforms += start + "1-5.1=[VFC]\n";
+    quickTransforms += start + "1-5.2=[VFC_LABEL]\n";
+    quickTransforms += start + "1-5.3=HL70064\n";
+    quickTransforms += start + "1-11=F\n";
+    quickTransforms += start + "1-14=[TODAY]\n";
+    quickTransforms += start + "1-17.1=VXC40\n";
+    quickTransforms += start + "1-17.2=Eligibility captured at the immunization level\n";
+    quickTransforms += start + "1-17.3=CDCPHINVS\n";
+    quickTransforms += start + "2-1=2\n";
+    quickTransforms += start + "2-2=CE\n";
+    quickTransforms += start + "2-3.1=30956-7\n";
+    quickTransforms += start + "2-3.2=Vaccine Type\n";
+    quickTransforms += start + "2-3.3=LN\n";
+    quickTransforms += start + "2-4=2\n";
+    quickTransforms += start + "2-5.1=[VAC" + count + "_VIS_PUB_CODE]\n";
+    quickTransforms += start + "2-5.2=[VAC" + count + "_VIS_PUB_NAME]\n";
+    quickTransforms += start + "2-5.3=CVX\n";
+    quickTransforms += start + "2-11=F\n";
+    quickTransforms += start + "3-1=3\n";
+    quickTransforms += start + "3-2=TS\n";
+    quickTransforms += start + "3-3.1=29768-9\n";
+    quickTransforms += start + "3-3.2=Date vaccine information statement published\n";
+    quickTransforms += start + "3-3.3=LN\n";
+    quickTransforms += start + "3-4=2\n";
+    quickTransforms += start + "3-5.1=[VAC" + count + "_VIS_PUB_DATE]\n";
+    quickTransforms += start + "3-11=F\n";
+    quickTransforms += start + "4-1=4\n";
+    quickTransforms += start + "4-2=TS\n";
+    quickTransforms += start + "4-3.1=29769-7\n";
+    quickTransforms += start + "4-3.2=Date vaccine information statement presented\n";
+    quickTransforms += start + "4-3.3=LN\n";
+    quickTransforms += start + "4-4=2\n";
+    quickTransforms += start + "4-5.1=[VAC" + count + "_DATE]\n";
+    quickTransforms += start + "4-11=F\n";
+    return quickTransforms;
+  }
+
+  protected String transform(String baseText, String transformText, PatientType patientType)
   {
     String resultText = baseText;
     try
     {
-      List<Transform> transforms = new ArrayList<Transform>();
       BufferedReader inTransform = new BufferedReader(new StringReader(transformText));
-      Patient patient = setupPatient();
+      Patient patient = setupPatient(patientType);
       SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
       String today = sdf.format(new Date());
       sdf = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -672,243 +663,8 @@ public class Transformer
             }
             t.value = line.substring(posEqual + 1).trim();
             handleSometimes(t);
-            if (t.value.equals("[BOY]"))
-            {
-              t.value = patient.getBoyName();
-            } else if (t.value.equals("[GIRL]"))
-            {
-              t.value = patient.getGirlName();
-            } else if (t.value.equals("[BOY_OR_GIRL]"))
-            {
-              t.value = patient.getGender().equals("F") ? patient.getGirlName() : patient.getBoyName();
-            } else if (t.value.equals("[GENDER]"))
-            {
-              t.value = patient.getGender();
-            } else if (t.value.equals("[FATHER]"))
-            {
-              t.value = patient.getFatherName();
-            } else if (t.value.equals("[SUFFIX]"))
-            {
-              t.value = patient.getSuffix();
-            } else if (t.value.equals("[MOTHER]"))
-            {
-              t.value = patient.getMotherName();
-            } else if (t.value.equals("[MOTHER_MAIDEN]"))
-            {
-              t.value = patient.getMotherMaidenName();
-            } else if (t.value.equals("[DOB]"))
-            {
-              t.value = patient.getDates()[0];
-            } else if (t.value.equals("[BIRTH_MULTIPLE]"))
-            {
-              t.value = patient.getBirthCount() > 1 ? "Y" : "N";
-            } else if (t.value.equals("[BIRTH_ORDER]"))
-            {
-              t.value = "" + patient.getBirthCount();
-            } else if (t.value.equals("[NOW]"))
-            {
-              t.value = now;
-            } else if (t.value.equals("[MRN]"))
-            {
-              t.value = patient.getMedicalRecordNumber();
-            } else if (t.value.equals("[SSN]"))
-            {
-              t.value = patient.getSsn();
-            } else if (t.value.equals("[RACE]"))
-            {
-              t.value = patient.getRace()[0];
-            } else if (t.value.equals("[RACE_LABEL]"))
-            {
-              t.value = patient.getRace()[1];
-            } else if (t.value.equals("[ETHNICITY]"))
-            {
-              t.value = patient.getEthnicity()[0];
-            } else if (t.value.equals("[ETHNICITY_LABEL]"))
-            {
-              t.value = patient.getEthnicity()[1];
-            } else if (t.value.equals("[LANGUAGE]"))
-            {
-              t.value = patient.getLanguage()[0];
-            } else if (t.value.equals("[LANGUAGE_LABEL]"))
-            {
-              t.value = patient.getLanguage()[1];
-            } else if (t.value.equals("[VFC]"))
-            {
-              t.value = patient.getVfc()[0];
-            } else if (t.value.equals("[VFC_LABEL]"))
-            {
-              t.value = patient.getVfc()[1];
-            } else if (t.value.equals("[TODAY]"))
-            {
-              t.value = today;
-            } else if (t.value.equals("[LAST]"))
-            {
-              t.value = patient.getLastName();
-            } else if (t.value.equals("[FUTURE]"))
-            {
-              t.value = patient.getFuture();
-            } else if (t.value.equals("[LAST_DIFFERENT]"))
-            {
-              t.value = patient.getDifferentLastName();
-            } else if (t.value.equals("[GIRL_MIDDLE]"))
-            {
-              t.value = patient.getMiddleNameGirl();
-            } else if (t.value.equals("[BOY_MIDDLE]"))
-            {
-              t.value = patient.getMiddleNameBoy();
-            } else if (t.value.equals("[BOY_OR_GIRL_MIDDLE]"))
-            {
-              t.value = patient.getGender().equals("F") ? patient.getMiddleNameGirl() : patient.getMiddleNameBoy();
-            } else if (t.value.equals("[GIRL_MIDDLE_INITIAL]"))
-            {
-              t.value = patient.getMiddleNameGirl().substring(0, 1);
-            } else if (t.value.equals("[BOY_MIDDLE_INITIAL]"))
-            {
-              t.value = patient.getMiddleNameBoy().substring(0, 1);
-            } else if (t.value.equals("[VAC1_DATE]"))
-            {
-              t.value = patient.getDates()[1];
-            } else if (t.value.equals("[VAC2_DATE]"))
-            {
-              t.value = patient.getDates()[2];
-            } else if (t.value.equals("[VAC3_DATE]"))
-            {
-              t.value = patient.getDates()[3];
-            } else if (t.value.equals("[VAC1_CVX]"))
-            {
-              t.value = patient.getVaccine1()[VACCINE_CVX];
-            } else if (t.value.equals("[VAC1_CVX_LABEL]"))
-            {
-              t.value = patient.getVaccine1()[VACCINE_NAME];
-            } else if (t.value.equals("[VAC1_LOT]"))
-            {
-              t.value = patient.getVaccine1()[VACCINE_LOT];
-            } else if (t.value.equals("[VAC1_MVX]"))
-            {
-              t.value = patient.getVaccine1()[VACCINE_MVX];
-            } else if (t.value.equals("[VAC1_MVX_LABEL]"))
-            {
-              t.value = patient.getVaccine1()[VACCINE_MANUFACTURER];
-            } else if (t.value.equals("[VAC1_TRADE_NAME]"))
-            {
-              t.value = patient.getVaccine1()[VACCINE_TRADE_NAME];
-            } else if (t.value.equals("[VAC1_AMOUNT]"))
-            {
-              t.value = patient.getVaccine1()[VACCINE_AMOUNT];
-            } else if (t.value.equals("[VAC1_ROUTE]"))
-            {
-              t.value = patient.getVaccine1()[VACCINE_ROUTE];
-            } else if (t.value.equals("[VAC1_SITE]"))
-            {
-              t.value = patient.getVaccine1()[VACCINE_SITE];
-            } else if (t.value.equals("[VAC1_VIS_PUB_NAME]"))
-            {
-              t.value = patient.getVaccine1()[VACCINE_VIS_PUB];
-            } else if (t.value.equals("[VAC1_VIS_PUB_CODE]"))
-            {
-              t.value = patient.getVaccine1()[VACCINE_VIS_PUB_CODE];
-            } else if (t.value.equals("[VAC1_VIS_PUB_DATE]"))
-            {
-              t.value = patient.getVaccine1()[VACCINE_VIS_PUB_DATE];
 
-            } else if (t.value.equals("[VAC2_CVX]"))
-            {
-              t.value = patient.getVaccine2()[VACCINE_CVX];
-            } else if (t.value.equals("[VAC2_CVX_LABEL]"))
-            {
-              t.value = patient.getVaccine2()[VACCINE_NAME];
-            } else if (t.value.equals("[VAC2_LOT]"))
-            {
-              t.value = patient.getVaccine2()[VACCINE_LOT];
-            } else if (t.value.equals("[VAC2_MVX]"))
-            {
-              t.value = patient.getVaccine2()[VACCINE_MVX];
-            } else if (t.value.equals("[VAC2_MVX_LABEL]"))
-            {
-              t.value = patient.getVaccine2()[VACCINE_MANUFACTURER];
-            } else if (t.value.equals("[VAC2_TRADE_NAME]"))
-            {
-              t.value = patient.getVaccine2()[VACCINE_TRADE_NAME];
-            } else if (t.value.equals("[VAC1_AMOUNT]"))
-            {
-              t.value = patient.getVaccine2()[VACCINE_AMOUNT];
-            } else if (t.value.equals("[VAC1_ROUTE]"))
-            {
-              t.value = patient.getVaccine2()[VACCINE_ROUTE];
-            } else if (t.value.equals("[VAC1_SITE]"))
-            {
-              t.value = patient.getVaccine2()[VACCINE_SITE];
-            } else if (t.value.equals("[VAC2_VIS_PUB_NAME]"))
-            {
-              t.value = patient.getVaccine2()[VACCINE_VIS_PUB];
-            } else if (t.value.equals("[VAC2_VIS_PUB_CODE]"))
-            {
-              t.value = patient.getVaccine2()[VACCINE_VIS_PUB_CODE];
-            } else if (t.value.equals("[VAC2_VIS_PUB_DATE]"))
-            {
-              t.value = patient.getVaccine2()[VACCINE_VIS_PUB_DATE];
-            } else if (t.value.equals("[VAC3_CVX]"))
-            {
-              t.value = patient.getVaccine3()[0];
-            } else if (t.value.equals("[VAC3_CVX_LABEL]"))
-            {
-              t.value = patient.getVaccine3()[1];
-            } else if (t.value.equals("[VAC3_LOT]"))
-            {
-              t.value = patient.getVaccine3()[2];
-            } else if (t.value.equals("[VAC3_MVX]"))
-            {
-              t.value = patient.getVaccine3()[3];
-            } else if (t.value.equals("[VAC3_MVX_LABEL]"))
-            {
-              t.value = patient.getVaccine3()[4];
-
-            } else if (t.value.equals("[VAC3_TRADE_NAME]"))
-            {
-              t.value = patient.getVaccine3()[VACCINE_TRADE_NAME];
-            } else if (t.value.equals("[VAC3_AMOUNT]"))
-            {
-              t.value = patient.getVaccine3()[VACCINE_AMOUNT];
-            } else if (t.value.equals("[VAC3_ROUTE]"))
-            {
-              t.value = patient.getVaccine3()[VACCINE_ROUTE];
-            } else if (t.value.equals("[VAC3_SITE]"))
-            {
-              t.value = patient.getVaccine3()[VACCINE_SITE];
-            } else if (t.value.equals("[VAC3_VIS_PUB_NAME]"))
-            {
-              t.value = patient.getVaccine3()[VACCINE_VIS_PUB];
-            } else if (t.value.equals("[VAC3_VIS_PUB_CODE]"))
-            {
-              t.value = patient.getVaccine3()[VACCINE_VIS_PUB_CODE];
-            } else if (t.value.equals("[VAC3_VIS_PUB_DATE]"))
-            {
-              t.value = patient.getVaccine3()[VACCINE_VIS_PUB_DATE];
-            } else if (t.value.equals("[CITY]"))
-            {
-              t.value = patient.getCity();
-            } else if (t.value.equals("[STREET]"))
-            {
-              t.value = patient.getStreet();
-            } else if (t.value.equals("[STATE]"))
-            {
-              t.value = patient.getState();
-            } else if (t.value.equals("[ZIP]"))
-            {
-              t.value = patient.getZip();
-            } else if (t.value.equals("[PHONE]"))
-            {
-              t.value = patient.getPhone();
-            } else if (t.value.equals("[PHONE_AREA]"))
-            {
-              t.value = patient.getPhoneArea();
-            } else if (t.value.equals("[PHONE_LOCAL]"))
-            {
-              t.value = patient.getPhoneLocal();
-            } else if (t.value.equals("[VAC3_DATE]"))
-            {
-              t.value = patient.getDates()[3];
-            }
+            doReplacements(patientType, patient, today, now, t);
 
             BufferedReader inResult = new BufferedReader(new StringReader(resultText));
             boolean foundBoundStart = false;
@@ -1061,13 +817,301 @@ public class Transformer
     return resultText;
   }
 
+  private void doReplacements(PatientType patientType, Patient patient, String today, String now, Transform t)
+  {
+    if (patientType != PatientType.NONE)
+    {
+      doPatientReplacements(patient, t);
+    }
+    if (t.value.equals("[NOW]"))
+    {
+      t.value = now;
+    } else if (t.value.equals("[TODAY]"))
+    {
+      t.value = today;
+    }
+  }
+
+  private void doPatientReplacements(Patient patient, Transform t)
+  {
+    if (t.value.equals("[BOY]"))
+    {
+      t.value = patient.getBoyName();
+    } else if (t.value.equals("[GIRL]"))
+    {
+      t.value = patient.getGirlName();
+    } else if (t.value.equals("[BOY_OR_GIRL]"))
+    {
+      t.value = patient.getGender().equals("F") ? patient.getGirlName() : patient.getBoyName();
+    } else if (t.value.equals("[GENDER]"))
+    {
+      t.value = patient.getGender();
+    } else if (t.value.equals("[FATHER]"))
+    {
+      t.value = patient.getFatherName();
+    } else if (t.value.equals("[SUFFIX]"))
+    {
+      t.value = patient.getSuffix();
+    } else if (t.value.equals("[MOTHER]"))
+    {
+      t.value = patient.getMotherName();
+    } else if (t.value.equals("[MOTHER_MAIDEN]"))
+    {
+      t.value = patient.getMotherMaidenName();
+    } else if (t.value.equals("[DOB]"))
+    {
+      t.value = patient.getDates()[0];
+    } else if (t.value.equals("[BIRTH_MULTIPLE]"))
+    {
+      t.value = patient.getBirthCount() > 1 ? "Y" : "N";
+    } else if (t.value.equals("[BIRTH_ORDER]"))
+    {
+      t.value = "" + patient.getBirthCount();
+    } else if (t.value.equals("[MRN]"))
+    {
+      t.value = patient.getMedicalRecordNumber();
+    } else if (t.value.equals("[SSN]"))
+    {
+      t.value = patient.getSsn();
+    } else if (t.value.equals("[RACE]"))
+    {
+      t.value = patient.getRace()[0];
+    } else if (t.value.equals("[RACE_LABEL]"))
+    {
+      t.value = patient.getRace()[1];
+    } else if (t.value.equals("[ETHNICITY]"))
+    {
+      t.value = patient.getEthnicity()[0];
+    } else if (t.value.equals("[ETHNICITY_LABEL]"))
+    {
+      t.value = patient.getEthnicity()[1];
+    } else if (t.value.equals("[LANGUAGE]"))
+    {
+      t.value = patient.getLanguage()[0];
+    } else if (t.value.equals("[LANGUAGE_LABEL]"))
+    {
+      t.value = patient.getLanguage()[1];
+    } else if (t.value.equals("[VFC]"))
+    {
+      t.value = patient.getVfc()[0];
+    } else if (t.value.equals("[VFC_LABEL]"))
+    {
+      t.value = patient.getVfc()[1];
+    } else if (t.value.equals("[LAST]"))
+    {
+      t.value = patient.getLastName();
+    } else if (t.value.equals("[FUTURE]"))
+    {
+      t.value = patient.getFuture();
+    } else if (t.value.equals("[LAST_DIFFERENT]"))
+    {
+      t.value = patient.getDifferentLastName();
+    } else if (t.value.equals("[GIRL_MIDDLE]"))
+    {
+      t.value = patient.getMiddleNameGirl();
+    } else if (t.value.equals("[BOY_MIDDLE]"))
+    {
+      t.value = patient.getMiddleNameBoy();
+    } else if (t.value.equals("[BOY_OR_GIRL_MIDDLE]"))
+    {
+      t.value = patient.getGender().equals("F") ? patient.getMiddleNameGirl() : patient.getMiddleNameBoy();
+    } else if (t.value.equals("[GIRL_MIDDLE_INITIAL]"))
+    {
+      t.value = patient.getMiddleNameGirl().substring(0, 1);
+    } else if (t.value.equals("[BOY_MIDDLE_INITIAL]"))
+    {
+      t.value = patient.getMiddleNameBoy().substring(0, 1);
+    } else if (t.value.equals("[VAC1_ID]"))
+    {
+      t.value = patient.getMedicalRecordNumber() + ".1";
+    } else if (t.value.equals("[VAC2_ID]"))
+    {
+      t.value = patient.getMedicalRecordNumber() + ".2";
+    } else if (t.value.equals("[VAC3_ID]"))
+    {
+      t.value = patient.getMedicalRecordNumber() + ".3";
+    } else if (t.value.equals("[VAC1_DATE]"))
+    {
+      t.value = patient.getDates()[1];
+    } else if (t.value.equals("[VAC2_DATE]"))
+    {
+      t.value = patient.getDates()[2];
+    } else if (t.value.equals("[VAC3_DATE]"))
+    {
+      t.value = patient.getDates()[3];
+    } else if (t.value.equals("[VAC1_CVX]"))
+    {
+      t.value = patient.getVaccine1()[VACCINE_CVX];
+    } else if (t.value.equals("[VAC1_CVX_LABEL]"))
+    {
+      t.value = patient.getVaccine1()[VACCINE_NAME];
+    } else if (t.value.equals("[VAC1_LOT]"))
+    {
+      t.value = patient.getVaccine1()[VACCINE_LOT];
+    } else if (t.value.equals("[VAC1_MVX]"))
+    {
+      t.value = patient.getVaccine1()[VACCINE_MVX];
+    } else if (t.value.equals("[VAC1_MVX_LABEL]"))
+    {
+      t.value = patient.getVaccine1()[VACCINE_MANUFACTURER];
+    } else if (t.value.equals("[VAC1_TRADE_NAME]"))
+    {
+      t.value = patient.getVaccine1()[VACCINE_TRADE_NAME];
+    } else if (t.value.equals("[VAC1_AMOUNT]"))
+    {
+      t.value = patient.getVaccine1()[VACCINE_AMOUNT];
+    } else if (t.value.equals("[VAC1_ROUTE]"))
+    {
+      t.value = patient.getVaccine1()[VACCINE_ROUTE];
+    } else if (t.value.equals("[VAC1_SITE]"))
+    {
+      t.value = patient.getVaccine1()[VACCINE_SITE];
+    } else if (t.value.equals("[VAC1_VIS_PUB_NAME]"))
+    {
+      t.value = patient.getVaccine1()[VACCINE_VIS_PUB];
+    } else if (t.value.equals("[VAC1_VIS_PUB_CODE]"))
+    {
+      t.value = patient.getVaccine1()[VACCINE_VIS_PUB_CODE];
+    } else if (t.value.equals("[VAC1_VIS_PUB_DATE]"))
+    {
+      t.value = patient.getVaccine1()[VACCINE_VIS_PUB_DATE];
+    } else if (t.value.equals("[COMBO_VIS1_PUB_NAME]"))
+    {
+      t.value = patient.getCombo()[VACCINE_VIS_PUB];
+    } else if (t.value.equals("[COMBO_VIS1_PUB_CODE]"))
+    {
+      t.value = patient.getCombo()[VACCINE_VIS_PUB_CODE];
+    } else if (t.value.equals("[COMBO_VIS1_PUB_DATE]"))
+    {
+      t.value = patient.getCombo()[VACCINE_VIS_PUB_DATE];
+    } else if (t.value.equals("[COMBO_VIS2_PUB_NAME]"))
+    {
+      t.value = patient.getCombo()[VACCINE_VIS2_PUB];
+    } else if (t.value.equals("[COMBO_VIS2_PUB_CODE]"))
+    {
+      t.value = patient.getCombo()[VACCINE_VIS2_PUB_CODE];
+    } else if (t.value.equals("[COMBO_VIS2_PUB_DATE]"))
+    {
+      t.value = patient.getCombo()[VACCINE_VIS2_PUB_DATE];
+    } else if (t.value.equals("[COMBO_VIS3_PUB_NAME]"))
+    {
+      t.value = patient.getCombo()[VACCINE_VIS3_PUB];
+    } else if (t.value.equals("[COMBO_VIS3_PUB_CODE]"))
+    {
+      t.value = patient.getCombo()[VACCINE_VIS3_PUB_CODE];
+    } else if (t.value.equals("[COMBO_VIS3_PUB_DATE]"))
+    {
+      t.value = patient.getCombo()[VACCINE_VIS3_PUB_DATE];
+    } else if (t.value.equals("[VAC2_CVX]"))
+    {
+      t.value = patient.getVaccine2()[VACCINE_CVX];
+    } else if (t.value.equals("[VAC2_CVX_LABEL]"))
+    {
+      t.value = patient.getVaccine2()[VACCINE_NAME];
+    } else if (t.value.equals("[VAC2_LOT]"))
+    {
+      t.value = patient.getVaccine2()[VACCINE_LOT];
+    } else if (t.value.equals("[VAC2_MVX]"))
+    {
+      t.value = patient.getVaccine2()[VACCINE_MVX];
+    } else if (t.value.equals("[VAC2_MVX_LABEL]"))
+    {
+      t.value = patient.getVaccine2()[VACCINE_MANUFACTURER];
+    } else if (t.value.equals("[VAC2_TRADE_NAME]"))
+    {
+      t.value = patient.getVaccine2()[VACCINE_TRADE_NAME];
+    } else if (t.value.equals("[VAC2_AMOUNT]"))
+    {
+      t.value = patient.getVaccine2()[VACCINE_AMOUNT];
+    } else if (t.value.equals("[VAC1_ROUTE]"))
+    {
+      t.value = patient.getVaccine2()[VACCINE_ROUTE];
+    } else if (t.value.equals("[VAC1_SITE]"))
+    {
+      t.value = patient.getVaccine2()[VACCINE_SITE];
+    } else if (t.value.equals("[VAC2_VIS_PUB_NAME]"))
+    {
+      t.value = patient.getVaccine2()[VACCINE_VIS_PUB];
+    } else if (t.value.equals("[VAC2_VIS_PUB_CODE]"))
+    {
+      t.value = patient.getVaccine2()[VACCINE_VIS_PUB_CODE];
+    } else if (t.value.equals("[VAC2_VIS_PUB_DATE]"))
+    {
+      t.value = patient.getVaccine2()[VACCINE_VIS_PUB_DATE];
+    } else if (t.value.equals("[VAC3_CVX]"))
+    {
+      t.value = patient.getVaccine3()[0];
+    } else if (t.value.equals("[VAC3_CVX_LABEL]"))
+    {
+      t.value = patient.getVaccine3()[1];
+    } else if (t.value.equals("[VAC3_LOT]"))
+    {
+      t.value = patient.getVaccine3()[2];
+    } else if (t.value.equals("[VAC3_MVX]"))
+    {
+      t.value = patient.getVaccine3()[3];
+    } else if (t.value.equals("[VAC3_MVX_LABEL]"))
+    {
+      t.value = patient.getVaccine3()[4];
+    } else if (t.value.equals("[VAC3_TRADE_NAME]"))
+    {
+      t.value = patient.getVaccine3()[VACCINE_TRADE_NAME];
+    } else if (t.value.equals("[VAC3_AMOUNT]"))
+    {
+      t.value = patient.getVaccine3()[VACCINE_AMOUNT];
+    } else if (t.value.equals("[VAC3_ROUTE]"))
+    {
+      t.value = patient.getVaccine3()[VACCINE_ROUTE];
+    } else if (t.value.equals("[VAC3_SITE]"))
+    {
+      t.value = patient.getVaccine3()[VACCINE_SITE];
+    } else if (t.value.equals("[VAC3_VIS_PUB_NAME]"))
+    {
+      t.value = patient.getVaccine3()[VACCINE_VIS_PUB];
+    } else if (t.value.equals("[VAC3_VIS_PUB_CODE]"))
+    {
+      t.value = patient.getVaccine3()[VACCINE_VIS_PUB_CODE];
+    } else if (t.value.equals("[VAC3_VIS_PUB_DATE]"))
+    {
+      t.value = patient.getVaccine3()[VACCINE_VIS_PUB_DATE];
+    } else if (t.value.equals("[CITY]"))
+    {
+      t.value = patient.getCity();
+    } else if (t.value.equals("[STREET]"))
+    {
+      t.value = patient.getStreet();
+    } else if (t.value.equals("[STATE]"))
+    {
+      t.value = patient.getState();
+    } else if (t.value.equals("[ZIP]"))
+    {
+      t.value = patient.getZip();
+    } else if (t.value.equals("[PHONE]"))
+    {
+      t.value = patient.getPhone();
+    } else if (t.value.equals("[PHONE_AREA]"))
+    {
+      t.value = patient.getPhoneArea();
+    } else if (t.value.equals("[PHONE_LOCAL]"))
+    {
+      t.value = patient.getPhoneLocal();
+    } else if (t.value.equals("[VAC3_DATE]"))
+    {
+      t.value = patient.getDates()[3];
+    }
+  }
+
   private static int medicalRecordNumberInc = 0;
 
-  protected Patient setupPatient() throws IOException
+  protected Patient setupPatient(PatientType patientType) throws IOException
   {
     Patient patient = new Patient();
+    if (patientType == PatientType.NONE)
+    {
+      return patient;
+    }
     medicalRecordNumberInc++;
-    patient.setMedicalRecordNumber("" + (char) (random.nextInt(26) + 'A') + medicalRecordNumberInc);
+    patient.setMedicalRecordNumber("" + (char) (random.nextInt(26) + 'A')  +  random.nextInt(10) +  random.nextInt(10) + (char) (random.nextInt(26) + 'A') + medicalRecordNumberInc);
     patient.setSsn("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
         + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
     patient.setBoyName(getValue("BOY"));
@@ -1081,11 +1125,12 @@ public class Transformer
     patient.setMiddleNameGirl(getValue("GIRL"));
     String[] dates = new String[4];
     patient.setDates(dates);
-    patient.setVaccineType(createDates(dates));
+    patient.setVaccineType(createDates(dates, patientType));
     patient.setGender(random.nextBoolean() ? "F" : "M");
     patient.setVaccine1(getValueArray("VACCINE_" + patient.getVaccineType(), VACCINE_VIS_PUB_DATE + 1));
     patient.setVaccine2(getValueArray("VACCINE_" + patient.getVaccineType(), VACCINE_VIS_PUB_DATE + 1));
     patient.setVaccine3(getValueArray("VACCINE_" + patient.getVaccineType(), VACCINE_VIS_PUB_DATE + 1));
+    patient.setCombo(getValueArray("VACCINE_COMBO", VACCINE_VIS3_PUB_DATE +1));
     patient.setRace(getValueArray("RACE", 2));
     patient.setEthnicity(getValueArray("ETHNICITY", 2));
     patient.setLanguage(getValueArray("LANGUAGE", 2));
