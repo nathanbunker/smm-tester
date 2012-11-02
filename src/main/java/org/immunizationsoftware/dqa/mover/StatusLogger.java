@@ -33,45 +33,11 @@ public class StatusLogger
   
   private StatusReporter statusReporter = null;
   
-  private int attemptCount = 0;
-  private int sentCount = 0;
-  private int errorCount = 0;
-  
   protected PrintWriter getOut()
   {
     return out;
   }
-
-  public int getAttemptCount()
-  {
-    return attemptCount;
-  }
-
-  public int getSentCount()
-  {
-    return sentCount;
-  }
-
-  public int getErrorCount()
-  {
-    return errorCount;
-  }
-
-  public void incAttemptCount()
-  {
-    attemptCount++;
-  }
-
-  public void incSentCount()
-  {
-    sentCount++;
-  }
-
-  public void incErrorCount()
-  {
-    errorCount++;
-  }
-
+  
   public boolean isSomethingInterestingHappened()
   {
     return somethingInterestingHappened;
@@ -106,10 +72,19 @@ public class StatusLogger
     out.println("Software Version: " + SoftwareVersion.VERSION);
     out.println("Login Username: " + label);
     out.println("Login Password: " + sendData.getRandomId());
+    out.println("Connection Id: " + sendData.getStableSystemId());
     out.println();
     out.println("--- Log ---");
     statusReporter = new StatusReporter(sendData, this);
     statusReporter.start();
+  }
+  
+  public void shutdown()
+  {
+    if (statusReporter != null)
+    {
+      statusReporter.shutdown();
+    }
   }
 
 
@@ -131,7 +106,7 @@ public class StatusLogger
     writeStatusOrDelete(new File(rootFolder, "smm-is-starting"), ScanStatus.STARTING, scanStatus);
     writeStatusOrDelete(new File(rootFolder, "smm-has-problem"), ScanStatus.PROBLEM, scanStatus);
     writeStatusOrDelete(new File(rootFolder, "smm-is-preparing"), ScanStatus.PREPARING, scanStatus);
-    writeStatusOrDelete(new File(rootFolder, "smm-is-reading"), ScanStatus.READING, scanStatus);
+    writeStatusOrDelete(new File(rootFolder, "smm-is-looking"), ScanStatus.LOOKING, scanStatus);
     writeStatusOrDelete(new File(rootFolder, "smm-is-sending"), ScanStatus.SENDING, scanStatus);
     writeStatusOrDelete(new File(rootFolder, "smm-is-waiting"), ScanStatus.WAITING, scanStatus);
   }
@@ -167,6 +142,17 @@ public class StatusLogger
   {
     log(message, LOG_LEVEL_DEBUG);
   }
+  
+  public void logFile(String filename, ScanStatus scanStatus, int messageCount)
+  {
+    statusReporter.registerFile(filename, scanStatus, messageCount, 0, 0);
+  }
+  
+  public void logFile(String filename, ScanStatus scanStatus, int sentCount, int errorCount)
+  {
+    statusReporter.registerFile(filename, scanStatus, 0, sentCount, errorCount);
+  }
+  
 
   public void log(String message, int logLevel)
   {

@@ -41,7 +41,8 @@ public class ManagerServlet extends ClientServlet
   private static String randomId = "";
   private static String supportCenterUrl = null;
   private static String supportCenterCode = "";
-
+  private static ShutdownInterceptor shutdownInterceptor;
+  
   public static String getStableSystemId()
   {
      return stableSystemId;
@@ -196,6 +197,9 @@ public class ManagerServlet extends ClientServlet
     }
     supportCenterUrl = getInitParameter("support_center.url");
     supportCenterCode = getInitParameter("support_center.code");
+    
+    ShutdownInterceptor shutdownInterceptor = new ShutdownInterceptor();
+    Runtime.getRuntime().addShutdownHook(shutdownInterceptor);
   }
 
   protected static String doHash(String valueIn)

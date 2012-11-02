@@ -12,7 +12,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.List;
 
@@ -59,7 +58,6 @@ public class HttpConnector extends Connector
   @Override
   public String submitMessage(String message, boolean debug) throws Exception
   {
-
     ClientConnection cc = new ClientConnection();
     cc.userId = userid;
     cc.password = password;
@@ -71,6 +69,10 @@ public class HttpConnector extends Connector
       result = sendRequest(message, cc, debug);
     } catch (Exception e)
     {
+      if (throwExceptions)
+      {
+        throw e;
+      }
       return "Unable to relay message, received this error: " + e.getMessage();
     }
 
