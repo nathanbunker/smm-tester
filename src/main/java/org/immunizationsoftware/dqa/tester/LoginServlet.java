@@ -97,6 +97,7 @@ public class LoginServlet extends ClientServlet
                 CreateTestCaseServlet.loadTestCases(session);
               } catch (Exception e)
               {
+                e.printStackTrace();
                 message = "Unable to load test cases: " + e.getMessage();
               }
             }
@@ -149,7 +150,7 @@ public class LoginServlet extends ClientServlet
         out.println("  </tr>");
         out.println("  <tr>");
         out.println("    <td>Password</td>");
-        out.println("    <td><input type=\"text\" name=\"password\" value=\"" + password + "\"></td>");
+        out.println("    <td><input type=\"password\" name=\"password\" value=\"" + password + "\"></td>");
         out.println("  </tr>");
         out.println("  <tr>");
         out.println("    <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"action\" value=\"Login\"></td>");
@@ -176,7 +177,7 @@ public class LoginServlet extends ClientServlet
       }
     } else
     {
-      RequestDispatcher dispatcher = request.getRequestDispatcher("SetupServlet");
+      RequestDispatcher dispatcher = request.getRequestDispatcher("HomeServlet");
       dispatcher.forward(request, response);
     }
   }

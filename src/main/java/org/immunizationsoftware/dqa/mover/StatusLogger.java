@@ -1,5 +1,10 @@
 package org.immunizationsoftware.dqa.mover;
 
+import static org.immunizationsoftware.dqa.mover.RemoteConnectionReportingInterface.LOG_LEVEL_DEBUG;
+import static org.immunizationsoftware.dqa.mover.RemoteConnectionReportingInterface.LOG_LEVEL_ERROR;
+import static org.immunizationsoftware.dqa.mover.RemoteConnectionReportingInterface.LOG_LEVEL_INFO;
+import static org.immunizationsoftware.dqa.mover.RemoteConnectionReportingInterface.LOG_LEVEL_WARNING;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,12 +22,55 @@ public class StatusLogger
   private static final String LOG_FILE_NAME = "smm.log.txt";
 
   private File rootFolder;
+  private SendData sendData;
   private File statusLoggerFile;
   private ScanStatus scanStatus = null;
   private PrintWriter out;
   private SimpleDateFormat sdf = new SimpleDateFormat(ManagerServlet.STANDARD_DATE_FORMAT);
   private SimpleDateFormat sdfTime = new SimpleDateFormat(ManagerServlet.STANDARD_TIME_FORMAT);
   private boolean somethingInterestingHappened = false;
+  private int logLevel = LOG_LEVEL_DEBUG;
+  
+  private StatusReporter statusReporter = null;
+  
+  private int attemptCount = 0;
+  private int sentCount = 0;
+  private int errorCount = 0;
+  
+  protected PrintWriter getOut()
+  {
+    return out;
+  }
+
+  public int getAttemptCount()
+  {
+    return attemptCount;
+  }
+
+  public int getSentCount()
+  {
+    return sentCount;
+  }
+
+  public int getErrorCount()
+  {
+    return errorCount;
+  }
+
+  public void incAttemptCount()
+  {
+    attemptCount++;
+  }
+
+  public void incSentCount()
+  {
+    sentCount++;
+  }
+
+  public void incErrorCount()
+  {
+    errorCount++;
+  }
 
   public boolean isSomethingInterestingHappened()
   {
@@ -32,10 +80,12 @@ public class StatusLogger
   public void setSomethingInterestingHappened(boolean somethingInterestingHappened)
   {
     this.somethingInterestingHappened = somethingInterestingHappened;
+    statusReporter.setSendStatus();
   }
 
   public StatusLogger(File rootFolder, SendData sendData) throws IOException {
     this.rootFolder = rootFolder;
+    this.sendData = sendData;
     this.scanStatus = sendData.getScanStatus();
     this.statusLoggerFile = new File(rootFolder, RUNNING_FILE_NAME);
     File oldLogFile = new File(rootFolder, LOG_FILE_NAME);
@@ -58,8 +108,10 @@ public class StatusLogger
     out.println("Login Password: " + sendData.getRandomId());
     out.println();
     out.println("--- Log ---");
-
+    statusReporter = new StatusReporter(sendData, this);
+    statusReporter.start();
   }
+
 
   private void writeStatusOrDelete(File file, ScanStatus scanStatusExpected, ScanStatus scanStatusActual) throws IOException
   {
@@ -96,19 +148,50 @@ public class StatusLogger
     }
   }
 
-  public void log(String message)
+  public void logInfo(String message)
   {
-    out.print(sdfTime.format(new Date()));
-    out.print(" ");
-    out.println(message);
-    out.flush();
+    log(message, LOG_LEVEL_INFO);
   }
 
-  public void log(Throwable t)
+  public void logError(String message)
   {
-    out.println(sdfTime.format(new Date()) + " Unexpected exception occurred");
-    t.printStackTrace(out);
-    out.flush();
+    log(message, LOG_LEVEL_ERROR);
+  }
+
+  public void logWarn(String message)
+  {
+    log(message, LOG_LEVEL_WARNING);
+  }
+
+  public void logDebug(String message)
+  {
+    log(message, LOG_LEVEL_DEBUG);
+  }
+
+  public void log(String message, int logLevel)
+  {
+    if (this.logLevel >= logLevel)
+    {
+      out.print(sdfTime.format(new Date()));
+      out.print(" ");
+      out.println(message);
+      out.flush();
+      statusReporter.registerIssue(message, logLevel, null);
+    }
+  }
+
+  public void logError(String message, Throwable t)
+  {
+    if (this.logLevel >= LOG_LEVEL_ERROR)
+    {
+      out.print(sdfTime.format(new Date()));
+      out.print(" ");
+      out.println(message);
+      out.flush();
+      t.printStackTrace(out);
+      out.flush();
+      statusReporter.registerIssue(message, LOG_LEVEL_ERROR, t);
+    }
   }
 
   public void close()

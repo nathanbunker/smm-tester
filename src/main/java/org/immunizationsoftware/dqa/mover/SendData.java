@@ -10,15 +10,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-
-import javax.net.ssl.SSLSocketFactory;
 
 import org.immunizationsoftware.dqa.tester.Transformer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
@@ -55,6 +52,29 @@ public class SendData extends Thread
   private static final long LOCK_TIMEOUT = 2 * 60 * 60 * 1000; // two hours
   private static final long FILE_CHANGE_TIMEOUT = 60 * 1000;
 
+  private String stableSystemId = null;
+  private Date upSinceDate = new Date();
+
+  public Date getUpSinceDate()
+  {
+    return upSinceDate;
+  }
+
+  public void setUpSinceDate(Date upSinceDate)
+  {
+    this.upSinceDate = upSinceDate;
+  }
+
+  public String getStableSystemId()
+  {
+    if (stableSystemId == null)
+    {
+      String baseValue = ManagerServlet.doHash(rootDir.getAbsolutePath());
+      stableSystemId = ManagerServlet.getStableSystemId() + ":" + baseValue;
+    }
+    return stableSystemId;
+  }
+
   @Override
   public void run()
   {
@@ -67,24 +87,26 @@ public class SendData extends Thread
         try
         {
           setupConnector();
-          obtainLock();
-          createWorkingDirs();
-          createTransformer();
-
-          if (workDirIsEmpty())
+          if (obtainLock())
           {
-            if (lookForFilesToProcess())
+            createWorkingDirs();
+            createTransformer();
+
+            if (workDirIsEmpty())
             {
-              prepareDataToSend();
+              if (lookForFilesToProcess())
+              {
+                prepareDataToSend();
+              }
             }
+            sendData();
+            setScanStatus(ScanStatus.WAITING);
+            resetProblemRetryCount();
+            deleteWorkingDir();
           }
-          sendData();
-          setScanStatus(ScanStatus.WAITING);
-          resetProblemRetryCount();
-          deleteWorkingDir();
         } catch (Throwable e)
         {
-          handleException(e);
+          handleException("Problem encountered while trying to send data", e);
         } finally
         {
           closeLoggerAndUnlock();
@@ -207,13 +229,16 @@ public class SendData extends Thread
     if (!connector.getCustomTransformations().equals(""))
     {
       transformer = new Transformer();
-      statusLogger.log("Custom transformations are defined, setting up transformer");
+      statusLogger.logInfo("Custom transformations are defined, setting up transformer");
     }
   }
 
   private void deleteWorkingDir()
   {
-    workDir.delete();
+    if (workDir.exists())
+    {
+      workDir.delete();
+    }
   }
 
   private void closeLoggerAndUnlock()
@@ -230,13 +255,13 @@ public class SendData extends Thread
     transformer = null;
   }
 
-  private void handleException(Throwable e)
+  private void handleException(String message, Throwable e)
   {
     setScanStatus(ScanStatus.PROBLEM);
     if (statusLogger != null)
     {
       statusLogger.setSomethingInterestingHappened(true);
-      statusLogger.log(e);
+      statusLogger.logError(message, e);
     } else
     {
       System.out.println("Unable to send data");
@@ -265,43 +290,48 @@ public class SendData extends Thread
 
   private void sendData() throws IOException, FileNotFoundException, Exception
   {
-    statusLogger.log("Looking for files to send from working directory");
-    String[] filesToSend = workDir.list();
-    Arrays.sort(filesToSend);
-    String lastRequestFilename = "";
-    for (String fileToSend : filesToSend)
+    if (workDir.exists())
     {
-      statusLogger.setSomethingInterestingHappened(true);
-      workFile = new File(workDir, fileToSend);
-      sendDataLocker.renewLock();
-      String requestFilename = getOriginalFileName(fileToSend);
-      if (workFile.isFile() && !requestFilename.equals(""))
+      statusLogger.logInfo("Looking for files to send from working directory");
+      String[] filesToSend = workDir.list();
+      Arrays.sort(filesToSend);
+      String lastRequestFilename = "";
+      for (String fileToSend : filesToSend)
       {
-        openSendingMessageInputs();
-        try
+        statusLogger.setSomethingInterestingHappened(true);
+        workFile = new File(workDir, fileToSend);
+        sendDataLocker.renewLock();
+        String requestFilename = getOriginalFileName(fileToSend);
+        if (workFile.isFile() && !requestFilename.equals(""))
         {
-          StringBuilder sb = new StringBuilder();
-          String line = null;
-          BufferedReader in = new BufferedReader(new FileReader(workFile));
-          while ((line = in.readLine()) != null)
+          readFilename(requestFilename);
+          openSendingMessageInputs();
+          try
           {
-            sb.append(line);
-            sb.append("\r");
+            StringBuilder sb = new StringBuilder();
+            String line = null;
+            BufferedReader in = new BufferedReader(new FileReader(workFile));
+            while ((line = in.readLine()) != null)
+            {
+              sb.append(line);
+              sb.append("\r");
+            }
+            in.close();
+            String messageText = sb.toString();
+            statusLogger.incAttemptCount();
+            String responseText = connector.submitMessage(messageText, false);
+            saveAndHandleResponse(messageText, responseText);
+          } finally
+          {
+            closeSendingMethodInputs();
           }
-          in.close();
-          String messageText = sb.toString();
-          String responseText = connector.submitMessage(messageText, false);
-          saveAndHandleResponse(messageText, responseText);
-        } finally
-        {
-          closeSendingMethodInputs();
         }
+        workFile.delete();
+        deleteRequestFile(lastRequestFilename, requestFilename);
+        lastRequestFilename = requestFilename;
       }
-      workFile.delete();
-      deleteRequestFile(lastRequestFilename, requestFilename);
-      lastRequestFilename = requestFilename;
+      deleteRequestFile(lastRequestFilename, "");
     }
-    deleteRequestFile(lastRequestFilename, "");
   }
 
   private void deleteRequestFile(String lastOriginalFilename, String originalFilename)
@@ -355,10 +385,12 @@ public class SendData extends Thread
       responseMessage.append("\r");
     }
     handleResponse(responseMessage, responseMessageType);
+    statusLogger.incSentCount();
 
     sentFileOut.print(messageText);
     if (acknowledgmentCode == null || acknowledgmentCode.equals(HL7.AE) || acknowledgmentCode.equals(HL7.AR))
     {
+      statusLogger.incErrorCount();
       errorFileOut.printCommentLn("MESSAGE REJECTED");
 
       errorFileOut.printCommentLn(errorDescription);
@@ -392,7 +424,7 @@ public class SendData extends Thread
 
   private void prepareDataToSend() throws IOException
   {
-    statusLogger.log("Preparing to send data");
+    statusLogger.logInfo("Preparing to send data");
     statusLogger.setSomethingInterestingHappened(true);
     setScanStatus(ScanStatus.PREPARING);
     for (File fileToSend : filesToProcessList)
@@ -401,13 +433,12 @@ public class SendData extends Thread
       try
       {
         sendDataLocker.renewLock();
-        statusLogger.log(" + Preparing file " + requestFile.getName());
+        statusLogger.logInfo(" + Preparing file " + requestFile.getName());
         createWorkingFiles();
         prepareFile();
       } catch (Throwable t)
       {
-        statusLogger.log("Unable to send the data: " + t.getMessage());
-        statusLogger.log(t);
+        statusLogger.logError("Unable to send data", t);
         problemFileOut = new FileOut(new File(filenameStart + "." + PROBLEM_NAME + "." + filenameEnd), false);
         problemFileOut.println("Unable to send the data: " + t.getMessage());
         problemFileOut.print(t);
@@ -465,7 +496,11 @@ public class SendData extends Thread
 
   private boolean workDirIsEmpty()
   {
-    boolean workDirEmpty = false;
+    boolean workDirEmpty = !workDir.exists();
+    if (workDirEmpty)
+    {
+      return workDirEmpty;
+    }
     File[] filesInWorking = workDir.listFiles(new FileFilter() {
       public boolean accept(File file)
       {
@@ -486,20 +521,22 @@ public class SendData extends Thread
     connector = connectors.get(0);
     if (statusLogger != null)
     {
-      statusLogger.log("Looking for data to send to: " + connector.getLabel());
+      statusLogger.logInfo("Looking for data to send to: " + connector.getLabel());
     }
     readKeyStore();
   }
 
-  private void obtainLock() throws TransmissionException, IOException
+  private boolean obtainLock() throws TransmissionException, IOException
   {
     lockFile = new File(rootDir, LOCK_FILE_NAME);
     sendDataLocker = new SendDataLocker(lockFile, LOCK_TIMEOUT);
     if (!sendDataLocker.obtainLock())
     {
-      throw new TransmissionException("Unable to get lock, it appears that some other instance of the SMM application is running");
+      sendDataLocker = null;
+      return false;
     }
     statusLogger = new StatusLogger(rootDir, this);
+    return true;
   }
 
   private void waitAwhileMoreForProblem()
@@ -516,7 +553,7 @@ public class SendData extends Thread
       SimpleDateFormat sdf = new SimpleDateFormat(ManagerServlet.STANDARD_DATE_FORMAT);
       if (statusLogger != null)
       {
-        statusLogger.log("Problem sending data, will try again " + sdf.format(waitUntil));
+        statusLogger.logInfo("Problem sending data, will try again " + sdf.format(waitUntil));
       }
       synchronized (this)
       {
@@ -583,6 +620,10 @@ public class SendData extends Thread
       messageNumber++;
       String messageText = message.toString();
       messageText = transform(messageText);
+      if (!workDir.exists())
+      {
+        workDir.mkdir();
+      }
       File workFile = new File(workDir, filename + "-m" + getMessageNumberString());
       PrintWriter out = new PrintWriter(workFile);
       out.print(messageText);
@@ -631,7 +672,7 @@ public class SendData extends Thread
   {
     backupDir = createDir(rootDir, BACKUP_FOLDER);
     requestDir = createDir(rootDir, REQUEST_FOLDER, REQUESTS_FOLDER);
-    workDir = createDir(requestDir, WORK_FOLDER);
+    workDir = new File(requestDir, WORK_FOLDER);
     responseDir = createDir(rootDir, RESPONSE_FOLDER, RESPONSES_FOLDER);
     updateDir = createDir(rootDir, UPDATE_FOLDER, UPDATES_FOLDER);
     sentDir = createDir(rootDir, SENT_FOLDER);
@@ -688,8 +729,7 @@ public class SendData extends Thread
         connector.setKeyStore(keyStore);
       } catch (Exception e)
       {
-        statusLogger.log("Unable to load key store file: " + e.getMessage());
-        statusLogger.log(e);
+        statusLogger.logError("Unable to load key store file", e);
       }
     }
   }
@@ -738,7 +778,12 @@ public class SendData extends Thread
 
   private void readFilename()
   {
-    filename = requestFile.getName();
+    readFilename(requestFile.getName());
+  }
+
+  private void readFilename(String f)
+  {
+    filename = f;
     int pos = filename.lastIndexOf('.');
     if (pos == -1)
     {
@@ -760,7 +805,7 @@ public class SendData extends Thread
 
   private boolean lookForFilesToProcess() throws IOException
   {
-    statusLogger.log("Looking for files to process");
+    statusLogger.logInfo("Looking for files to process");
     File[] filesToRead = requestDir.listFiles(new FileFilter() {
       public boolean accept(File file)
       {
@@ -783,17 +828,17 @@ public class SendData extends Thread
     for (File fileToRead : filesToRead)
     {
       long timeSinceLastChange = System.currentTimeMillis() - fileToRead.lastModified();
-      statusLogger.log(" + Considering " + fileToRead.getName());
+      statusLogger.logInfo(" + Considering " + fileToRead.getName());
       long fileChangeTimeout = FILE_CHANGE_TIMEOUT;
       if (!fileToRead.canRead())
       {
-        statusLogger.log("   Not allowed to read file");
+        statusLogger.logInfo("   Not allowed to read file");
       } else if (timeSinceLastChange < fileChangeTimeout)
       {
-        statusLogger.log("   File was recently modified, not processing yet");
+        statusLogger.logInfo("   File was recently modified, not processing yet");
       } else if (!fileContainsHL7(fileToRead))
       {
-        statusLogger.log("   File does not contain HL7, not processing");
+        statusLogger.logInfo("   File does not contain HL7, not processing");
       } else
       {
         filesToProcessList.add(fileToRead);
@@ -834,34 +879,34 @@ public class SendData extends Thread
       okay = lastLine.startsWith(HL7.FTS);
       if (!okay)
       {
-        statusLogger.log("   ERROR: File does not end with FTS segment as expected, not processing");
+        statusLogger.logWarn("File '" + inFile.getName() +  "' does not end with FTS segment as expected, not processing");
       }
     } else if (line.startsWith(HL7.MSH))
     {
-      statusLogger.log("    WARNING: File does not start with FHS segment as expected. ");
+      statusLogger.logWarn("File '" + inFile.getName() +  "' does not start with FHS segment as expected. ");
       okay = true;
     } else
     {
       okay = false;
-      statusLogger.log("   ERROR: File does not appear to contain HL7. Must start with FHS or MSH segment.");
+      statusLogger.logWarn("File '" + inFile.getName() +  "' does not appear to contain HL7. Must start with FHS or MSH segment.");
     }
     in.close();
     return okay;
   }
 
-  private File createDir(File rootDir, String preferredName, String alternateName)
+  private File createDir(File dir, String preferredName, String alternateName)
   {
-    File file = new File(rootDir, preferredName);
+    File file = new File(dir, preferredName);
     if (!file.exists())
     {
-      File alternateFile = new File(rootDir, alternateName);
+      File alternateFile = new File(dir, alternateName);
       if (alternateFile.exists())
       {
         file = alternateFile;
       } else
       {
         file.mkdir();
-        statusLogger.log("Creating new folder " + file.getName());
+        statusLogger.logInfo("Creating new folder " + file.getName());
       }
     }
     return file;
@@ -873,7 +918,7 @@ public class SendData extends Thread
     if (!file.exists())
     {
       file.mkdir();
-      statusLogger.log("Creating new folder " + file.getName());
+      statusLogger.logInfo("Creating new folder " + file.getName());
     }
     return file;
   }

@@ -7,6 +7,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,16 +29,49 @@ public class ManagerServlet extends ClientServlet
 
   public static final String STANDARD_DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
   public static final String STANDARD_TIME_FORMAT = "HH:mm:ss";
-  
+
   private static long checkInterval = 15;
   private static Set<File> registeredFolders = new HashSet<File>();
   private static Set<SendData> sendDataSet = new HashSet<SendData>();
-  private static String systemId = "";
+  private static String instanceSystemId = "";
+  private static String stableSystemId = "";
   private static InetAddress localHostIp;
   private static byte[] localHostMac;
   private static Date startDate;
   private static String randomId = "";
+  private static String supportCenterUrl = null;
+  private static String supportCenterCode = "";
+
+  public static String getStableSystemId()
+  {
+     return stableSystemId;
+  }
   
+  public static void setStableSystemId(String stableSystemId)
+  {
+    ManagerServlet.stableSystemId = stableSystemId;
+  }
+  
+  public static String getSupportCenterUrl()
+  {
+    return supportCenterUrl;
+  }
+
+  public static void setSupportCenterUrl(String supportCenterUrl)
+  {
+    ManagerServlet.supportCenterUrl = supportCenterUrl;
+  }
+
+  public static String getSupportCenterCode()
+  {
+    return supportCenterCode;
+  }
+
+  public static void setSupportCenterCode(String supportCenterCode)
+  {
+    ManagerServlet.supportCenterCode = supportCenterCode;
+  }
+
   public static SendData authenticateSendData(String label, int sendDataId)
   {
     for (SendData sendData : sendDataSet)
@@ -49,9 +84,9 @@ public class ManagerServlet extends ClientServlet
         }
       }
     }
-   return null;
+    return null;
   }
-  
+
   public static boolean isRegisteredFolder(File folder)
   {
     return registeredFolders.contains(folder);
@@ -61,7 +96,7 @@ public class ManagerServlet extends ClientServlet
   {
     return checkInterval;
   }
-  
+
   public static Set<SendData> getSendDataSet()
   {
     return sendDataSet;
@@ -77,9 +112,9 @@ public class ManagerServlet extends ClientServlet
     return startDate;
   }
 
-  public static String getSystemId()
+  public static String getInstanceSystemId()
   {
-    return systemId;
+    return instanceSystemId;
   }
 
   public static InetAddress getLocalHostIp()
@@ -128,7 +163,10 @@ public class ManagerServlet extends ClientServlet
       SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
       Random random = new Random();
       randomId = "" + (random.nextInt(9000) + 1000);
-      systemId = "date" + sdf.format(startDate) + ":rand" + randomId + getIpMacAddress();
+      stableSystemId = getIpMacAddress();
+      instanceSystemId = "date" + sdf.format(startDate) + ":rand" + randomId + stableSystemId;
+
+      stableSystemId = doHash(stableSystemId);
     }
     String scanStartFolders = getInitParameter("scan.start.folders");
     if (scanStartFolders != null)
@@ -156,6 +194,27 @@ public class ManagerServlet extends ClientServlet
         folderScanner.start();
       }
     }
+    supportCenterUrl = getInitParameter("support_center.url");
+    supportCenterCode = getInitParameter("support_center.code");
+  }
+
+  protected static String doHash(String valueIn)
+  {
+    String valueOut = null;
+    try
+    {
+      MessageDigest md = MessageDigest.getInstance("MD5");
+      byte[] hashed = md.digest(valueIn.getBytes());
+      valueOut = "";
+      for (byte b : hashed)
+      {
+        valueOut += String.format("%02X", b);
+      }
+    } catch (NoSuchAlgorithmException nsae)
+    {
+      valueOut = valueIn;
+    }
+    return valueOut;
   }
 
   private static String getIpMacAddress()

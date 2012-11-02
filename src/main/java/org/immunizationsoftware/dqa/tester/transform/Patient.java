@@ -4,6 +4,8 @@
  */
 package org.immunizationsoftware.dqa.tester.transform;
 
+import org.immunizationsoftware.dqa.tester.Transformer.PatientType;
+
 /**
  *
  * @author nathan
@@ -21,12 +23,13 @@ public class Patient {
     private String differentLastName = "";
     private String middleNameBoy = "";
     private String middleNameGirl = "";
-    private String[] dates = new String[4];
-    private String vaccineType = "";
+    private String[] datesAny = new String[4];
+    private PatientType vaccineType = null;
     private String gender = "";
     private String[] vaccine1 = null;
     private String[] vaccine2 = null;
     private String[] vaccine3 = null;
+    private String[] combo = null;
     private String[] race = null;
     private String[] ethnicity = null;
     private String[] language = null;
@@ -94,11 +97,11 @@ public class Patient {
     }
 
     public String[] getDates() {
-        return dates;
+        return datesAny;
     }
 
     public void setDates(String[] dates) {
-        this.dates = dates;
+        this.datesAny = dates;
     }
 
     public String getDifferentLastName() {
@@ -269,11 +272,19 @@ public class Patient {
         this.vaccine3 = vaccine3;
     }
 
-    public String getVaccineType() {
+    public String[] getCombo() {
+      return combo;
+  }
+
+  public void setCombo(String[] combo) {
+      this.combo = combo;
+  }
+
+    public PatientType getVaccineType() {
         return vaccineType;
     }
 
-    public void setVaccineType(String vaccineType) {
+    public void setVaccineType(PatientType vaccineType) {
         this.vaccineType = vaccineType;
     }
 

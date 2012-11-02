@@ -138,5 +138,5 @@ public class Authenticate {
         }
     }
 
-    public static final String APP_DEFAULT_HOME = "index.html";
+    public static final String APP_DEFAULT_HOME = "HomeServlet";
 }
