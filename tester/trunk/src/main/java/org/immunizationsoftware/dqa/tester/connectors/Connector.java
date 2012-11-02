@@ -66,6 +66,17 @@ public abstract class Connector
   private KeyStore keyStore = null;
   private File keyStoreFile = null;
   private String keyStorePassword = null;
+  protected boolean throwExceptions = false;
+
+  public boolean isThrowExceptions()
+  {
+    return throwExceptions;
+  }
+
+  public void setThrowExceptions(boolean throwExceptions)
+  {
+    this.throwExceptions = throwExceptions;
+  }
 
   public String getKeyStorePassword()
   {

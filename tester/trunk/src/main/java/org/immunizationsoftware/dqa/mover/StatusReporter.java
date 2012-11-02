@@ -13,7 +13,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StatusReporter extends Thread implements RemoteConnectionReportingInterface
 {
@@ -24,8 +26,9 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
   private StatusLogger statusLogger;
   private URL supportCenterUrl = null;
   private List<StatusLog> statusLogList = new ArrayList<StatusLog>();
+  private Map<String, StatusFile> statusFileMap = new HashMap<String, StatusFile>();
   private boolean sendStatus = true;
-  private int logLevel = LOG_LEVEL_WARNING;
+  private int logLevel = LOG_LEVEL_INFO;
 
   public void setSendStatus()
   {
@@ -47,45 +50,79 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
   @Override
   public void run()
   {
-    while (true)
+    while (sendData.isOkayToRun())
     {
-      boolean shouldUpdate = false;
       long timeSinceLastUpdate = System.currentTimeMillis() - lastUpdate;
-      if (sendStatus)
+      if (sendStatus || timeSinceLastUpdate > SEND_MAXIMUM_INTERVAL)
       {
-        shouldUpdate = true;
-      } else if (statusLogList.size() > 0)
-      {
-        shouldUpdate = true;
-      } else if (timeSinceLastUpdate > SEND_MAXIMUM_INTERVAL)
-      {
-        shouldUpdate = true;
+        updateSupportCenter();
       }
-
-      if (shouldUpdate)
-      {
-        List<StatusLog> statusLogListToSend = getStatusLogList();
-        if (statusLogListToSend == null)
-        {
-          updateSupportCenter(null);
-        } else
-        {
-          for (StatusLog statusLog : statusLogListToSend)
-          {
-            updateSupportCenter(statusLog);
-          }
-        }
-      }
-      synchronized (statusLogList)
+      synchronized (this)
       {
         try
         {
-          statusLogList.wait(SEND_MINIMUM_INTERVAL);
+          this.wait(SEND_MINIMUM_INTERVAL);
         } catch (InterruptedException ie)
         {
           // continue
         }
       }
+    }
+  }
+
+  public void updateSupportCenter()
+  {
+    List<StatusLog> statusLogListToSend = getStatusLogList();
+    List<StatusFile> statusFileListToSend = getStatusFileList();
+    updateSupportCenter(statusLogListToSend, statusFileListToSend);
+  }
+
+  public void shutdown()
+  {
+    synchronized (this)
+    {
+      this.interrupt();
+    }
+  }
+
+  public void registerFile(String fileName, SendData.ScanStatus scanStatus, int messageCount, int sentCount, int errorCount)
+  {
+    synchronized (statusFileMap)
+    {
+      StatusFile statusFile = statusFileMap.get(fileName);
+      if (statusFile == null)
+      {
+        statusFile = new StatusFile();
+        statusFile.setFileName(fileName);
+        statusFileMap.put(fileName, statusFile);
+      }
+      statusFile.setStatusLabel(scanStatus.toString());
+      if (messageCount > 0)
+      {
+        statusFile.setMessageCount(messageCount);
+      }
+      if (sentCount > 0)
+      {
+        statusFile.setSentCount(sentCount);
+      }
+      if (errorCount > 0)
+      {
+        statusFile.setErrorCount(errorCount);
+      }
+    }
+  }
+
+  private List<StatusFile> getStatusFileList()
+  {
+    synchronized (statusFileMap)
+    {
+      if (statusFileMap.size() == 0)
+      {
+        return null;
+      }
+      List<StatusFile> statusFileList = new ArrayList<StatusFile>(statusFileMap.values());
+      statusFileMap.clear();
+      return statusFileList;
     }
   }
 
@@ -118,7 +155,7 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
     }
   }
 
-  private void updateSupportCenter(StatusLog statusLog)
+  public void updateSupportCenter(List<StatusLog> statusLogList, List<StatusFile> statusFileList)
   {
 
     if (supportCenterUrl != null)
@@ -156,19 +193,38 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_TIME_FORMAT);
         append(UP_SINCE_DATE, sdf.format(sendData.getUpSinceDate()), content);
         append(STATUS_LABEL, sendData.getScanStatus().toString(), content);
-        append(ATTEMPT_COUNT, String.valueOf(statusLogger.getAttemptCount()), content);
-        append(SENT_COUNT, String.valueOf(statusLogger.getSentCount()), content);
-        append(ERROR_COUNT, String.valueOf(statusLogger.getErrorCount()), content);
-        if (statusLog != null)
+        append(ATTEMPT_COUNT, String.valueOf(sendData.getAttemptCount()), content);
+        append(SENT_COUNT, String.valueOf(sendData.getSentCount()), content);
+        append(ERROR_COUNT, String.valueOf(sendData.getErrorCount()), content);
+        if (statusLogList != null)
         {
-          append(ISSUE_TEXT, statusLog.getIssueText(), content);
-          append(LOG_LEVEL, String.valueOf(statusLog.getLogLevel()), content);
-          if (statusLog.getException() != null)
+          int pos = 0;
+          for (StatusLog statusLog : statusLogList)
           {
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            statusLog.getException().printStackTrace(pw);
-            append(EXCEPTION_TRACE, sw.toString(), content);
+            append(ISSUE_TEXT + pos, statusLog.getIssueText(), content);
+            append(REPORTED_DATE + pos, sdf.format(statusLog.getReportedData()), content);
+            append(LOG_LEVEL + pos, String.valueOf(statusLog.getLogLevel()), content);
+            if (statusLog.getException() != null)
+            {
+              StringWriter sw = new StringWriter();
+              PrintWriter pw = new PrintWriter(sw);
+              statusLog.getException().printStackTrace(pw);
+              append(EXCEPTION_TRACE + pos, sw.toString(), content);
+            }
+            pos++;
+          }
+        }
+        if (statusFileList != null)
+        {
+          int pos = 0;
+          for (StatusFile statusFile : statusFileList)
+          {
+            append(FILE_NAME + pos, statusFile.getFileName(), content);
+            append(FILE_MESSAGE_COUNT + pos, String.valueOf(statusFile.getMessageCount()), content);
+            append(FILE_SENT_COUNT + pos, String.valueOf(statusFile.getSentCount()), content);
+            append(FILE_ERROR_COUNT + pos, String.valueOf(statusFile.getErrorCount()), content);
+            append(FILE_STATUS_LABEL + pos, statusFile.getStatusLabel(), content);
+            pos++;
           }
         }
         printout = new DataOutputStream(urlConn.getOutputStream());
@@ -190,9 +246,12 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
       } catch (IOException e)
       {
         String message = "Unable to update support center";
-        statusLogger.logError(message);
-        e.printStackTrace(statusLogger.getOut());
-        statusLogger.getOut().flush();
+        if (statusLogger != null)
+        {
+          statusLogger.logError(message);
+          e.printStackTrace(statusLogger.getOut());
+          statusLogger.getOut().flush();
+        }
       }
     }
   }

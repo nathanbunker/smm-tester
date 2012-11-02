@@ -24,7 +24,7 @@ public class SendData extends Thread
 {
 
   public enum ScanStatus {
-    STARTING, READING, PREPARING, SENDING, WAITING, PROBLEM;
+    STARTING, LOOKING, PREPARING, SENDING, WAITING, PROBLEM, SENT, STOPPED;
   };
 
   public static final String SMM_PREFIX = "smm.";
@@ -50,7 +50,7 @@ public class SendData extends Thread
   public static final String TEST_CASES_FOLDER = "cases";
 
   private static final long LOCK_TIMEOUT = 2 * 60 * 60 * 1000; // two hours
-  private static final long FILE_CHANGE_TIMEOUT = 60 * 1000;
+  private static final long FILE_CHANGE_TIMEOUT = 0;
 
   private String stableSystemId = null;
   private Date upSinceDate = new Date();
@@ -75,44 +75,85 @@ public class SendData extends Thread
     return stableSystemId;
   }
 
+  private boolean okayToRun = true;
+
+  public boolean isOkayToRun()
+  {
+    return okayToRun;
+  }
+
+  public void shutdown()
+  {
+    this.scanStatus = ScanStatus.STOPPED;
+    okayToRun = false;
+    synchronized (this)
+    {
+      this.interrupt();
+    }
+    if (statusLogger != null)
+    {
+      statusLogger.shutdown();
+    }
+  }
+
   @Override
   public void run()
   {
-    while (true)
+    while (okayToRun)
     {
       waitAwhileMoreForProblem();
-      scanStatus = ScanStatus.READING;
-      if (configFile.exists() && configFile.isFile() && configFile.canRead())
+      if (okayToRun)
       {
-        try
+        scanStatus = ScanStatus.LOOKING;
+        if (configFile.exists() && configFile.isFile() && configFile.canRead())
         {
-          setupConnector();
-          if (obtainLock())
+          try
           {
-            createWorkingDirs();
-            createTransformer();
-
-            if (workDirIsEmpty())
+            setupConnector();
+            if (obtainLock() && okayToRun)
             {
-              if (lookForFilesToProcess())
+              createWorkingDirs();
+              createTransformer();
+
+              if (workDirIsEmpty())
               {
-                prepareDataToSend();
+                if (lookForFilesToProcess())
+                {
+                  prepareDataToSend();
+                }
               }
+              sendData();
+              setScanStatus(ScanStatus.WAITING);
+              resetProblemRetryCount();
+              deleteWorkingDir();
             }
-            sendData();
-            setScanStatus(ScanStatus.WAITING);
-            resetProblemRetryCount();
-            deleteWorkingDir();
           }
-        } catch (Throwable e)
-        {
-          handleException("Problem encountered while trying to send data", e);
-        } finally
-        {
-          closeLoggerAndUnlock();
+          catch (ApplicationShuttingDown asd)
+          {
+            // Application is shutting down, continue on out
+          } catch (Throwable e)
+          {
+            handleException("Problem encountered while trying to send data", e);
+          } finally
+          {
+            closeLoggerAndUnlock();
+          }
         }
+        waitAwhile();
       }
-      waitAwhile();
+    }
+    logShutdown();
+  }
+
+  private void logShutdown()
+  {
+    try
+    {
+      StatusReporter statusReporter = new StatusReporter(this, null);
+      statusReporter.updateSupportCenter(null, null);
+    } catch (Throwable t)
+    {
+      t.printStackTrace();
     }
   }
 
@@ -151,6 +192,42 @@ public class SendData extends Thread
   private String filenameEnd = null;
   private List<File> filesToProcessList = null;
   private int messageNumber = 0;
+  private int fileSentCount = 0;
+  private int fileErrorCount = 0;
+
+  private int attemptCount = 0;
+  private int sentCount = 0;
+  private int errorCount = 0;
+
+  public int getAttemptCount()
+  {
+    return attemptCount;
+  }
+
+  public int getSentCount()
+  {
+    return sentCount;
+  }
+
+  public int getErrorCount()
+  {
+    return errorCount;
+  }
+
+  public void incAttemptCount()
+  {
+    attemptCount++;
+  }
+
+  public void incSentCount()
+  {
+    sentCount++;
+  }
+
+  public void incErrorCount()
+  {
+    errorCount++;
+  }
 
   private int retryCount = 0;
   private static final long SEC = 1000;
@@ -292,18 +369,27 @@ public class SendData extends Thread
   {
     if (workDir.exists())
     {
-      statusLogger.logInfo("Looking for files to send from working directory");
+      setScanStatus(ScanStatus.SENDING);
+      statusLogger.logDebug("Looking for files to send from working directory");
       String[] filesToSend = workDir.list();
       Arrays.sort(filesToSend);
       String lastRequestFilename = "";
       for (String fileToSend : filesToSend)
       {
+        verifyOkayToKeepRunning();
         statusLogger.setSomethingInterestingHappened(true);
         workFile = new File(workDir, fileToSend);
         sendDataLocker.renewLock();
         String requestFilename = getOriginalFileName(fileToSend);
+        if (!lastRequestFilename.equals(requestFilename))
+        {
+          fileSentCount = 0;
+          fileErrorCount = 0;
+          statusLogger.logDebug("Sending file: " + requestFilename);
+        }
         if (workFile.isFile() && !requestFilename.equals(""))
         {
+          fileSentCount++;
           readFilename(requestFilename);
           openSendingMessageInputs();
           try
@@ -318,8 +404,9 @@ public class SendData extends Thread
             }
             in.close();
             String messageText = sb.toString();
-            statusLogger.incAttemptCount();
+            incAttemptCount();
             String responseText = connector.submitMessage(messageText, false);
+            verifyOkayToKeepRunning();
             saveAndHandleResponse(messageText, responseText);
           } finally
           {
@@ -341,8 +428,18 @@ public class SendData extends Thread
       File fileToDelete = new File(requestDir, lastOriginalFilename);
       if (fileToDelete.exists())
       {
+        statusLogger.logFile(fileToDelete.getName(), ScanStatus.SENT, fileSentCount, fileErrorCount);
+        String message = "File sent: " + fileToDelete.getName() + " Message count: " + fileSentCount;
+        if (fileErrorCount > 0)
+        {
+          message += " Error count: " + fileErrorCount;
+        }
+        statusLogger.logDebug(message);
         fileToDelete.delete();
       }
+    } else
+    {
+      statusLogger.logFile(originalFilename, ScanStatus.SENDING, fileSentCount, fileErrorCount);
     }
   }
 
@@ -385,12 +482,13 @@ public class SendData extends Thread
       responseMessage.append("\r");
     }
     handleResponse(responseMessage, responseMessageType);
-    statusLogger.incSentCount();
+    incSentCount();
 
     sentFileOut.print(messageText);
     if (acknowledgmentCode == null || acknowledgmentCode.equals(HL7.AE) || acknowledgmentCode.equals(HL7.AR))
     {
-      statusLogger.incErrorCount();
+      incErrorCount();
+      fileErrorCount++;
       errorFileOut.printCommentLn("MESSAGE REJECTED");
 
       errorFileOut.printCommentLn(errorDescription);
@@ -424,21 +522,23 @@ public class SendData extends Thread
 
   private void prepareDataToSend() throws IOException
   {
-    statusLogger.logInfo("Preparing to send data");
+    statusLogger.logDebug("Preparing to send data");
     statusLogger.setSomethingInterestingHappened(true);
     setScanStatus(ScanStatus.PREPARING);
     for (File fileToSend : filesToProcessList)
     {
+      verifyOkayToKeepRunning();
       requestFile = fileToSend;
       try
       {
         sendDataLocker.renewLock();
-        statusLogger.logInfo(" + Preparing file " + requestFile.getName());
+        statusLogger.logFile(requestFile.getName(), ScanStatus.PREPARING, 0);
+        statusLogger.logDebug("Preparing file: " + requestFile.getName());
         createWorkingFiles();
         prepareFile();
       } catch (Throwable t)
       {
-        statusLogger.logError("Unable to send data", t);
+        statusLogger.logError("Unable to send data for file: " + requestFile.getName(), t);
         problemFileOut = new FileOut(new File(filenameStart + "." + PROBLEM_NAME + "." + filenameEnd), false);
         problemFileOut.println("Unable to send the data: " + t.getMessage());
         problemFileOut.print(t);
@@ -489,6 +589,8 @@ public class SendData extends Thread
       } while ((line = in.readLine()) != null);
     }
     moveMessageToWorking(message, messageType);
+    statusLogger.logFile(requestFile.getName(), ScanStatus.WAITING, messageNumber);
+    statusLogger.logDebug("File prepared: " + requestFile.getName() + " Message count: " + messageNumber);
     in.close();
     backupFileOut.close();
     backupFileOut = null;
@@ -519,9 +621,10 @@ public class SendData extends Thread
       throw new Exception("Script does not define connection");
     }
     connector = connectors.get(0);
+    connector.setThrowExceptions(true);
     if (statusLogger != null)
     {
-      statusLogger.logInfo("Looking for data to send to: " + connector.getLabel());
+      statusLogger.logDebug("Looking for data to send to: " + connector.getLabel());
     }
     readKeyStore();
   }
@@ -553,7 +656,7 @@ public class SendData extends Thread
       SimpleDateFormat sdf = new SimpleDateFormat(ManagerServlet.STANDARD_DATE_FORMAT);
       if (statusLogger != null)
       {
-        statusLogger.logInfo("Problem sending data, will try again " + sdf.format(waitUntil));
+        statusLogger.logInfo("Problem sending data, will try again: " + sdf.format(waitUntil));
       }
       synchronized (this)
       {
@@ -805,7 +908,8 @@ public class SendData extends Thread
 
   private boolean lookForFilesToProcess() throws IOException
   {
-    statusLogger.logInfo("Looking for files to process");
+    statusLogger.logDebug("Looking for files to process");
+    verifyOkayToKeepRunning();
     File[] filesToRead = requestDir.listFiles(new FileFilter() {
       public boolean accept(File file)
       {
@@ -827,24 +931,39 @@ public class SendData extends Thread
 
     for (File fileToRead : filesToRead)
     {
+      verifyOkayToKeepRunning();
       long timeSinceLastChange = System.currentTimeMillis() - fileToRead.lastModified();
-      statusLogger.logInfo(" + Considering " + fileToRead.getName());
+      statusLogger.logFile(fileToRead.getName(), ScanStatus.LOOKING, 0);
+      statusLogger.logDebug(" + Considering '" + fileToRead.getName() + "'");
       long fileChangeTimeout = FILE_CHANGE_TIMEOUT;
       if (!fileToRead.canRead())
       {
-        statusLogger.logInfo("   Not allowed to read file");
-      } else if (timeSinceLastChange < fileChangeTimeout)
+        statusLogger.logFile(fileToRead.getName(), ScanStatus.PROBLEM, 0);
+        statusLogger.logError("Not allowed to read file: " + fileToRead.getName());
+      } else if (fileChangeTimeout > 0 && timeSinceLastChange < fileChangeTimeout)
       {
-        statusLogger.logInfo("   File was recently modified, not processing yet");
+        statusLogger.logFile(fileToRead.getName(), ScanStatus.WAITING, 0);
+        statusLogger.logInfo("File was recently modified, not processing yet: " + fileToRead.getName());
       } else if (!fileContainsHL7(fileToRead))
       {
-        statusLogger.logInfo("   File does not contain HL7, not processing");
+        statusLogger.logFile(fileToRead.getName(), ScanStatus.PROBLEM, 0);
+        statusLogger.logError("File does not contain HL7, not processing: " + fileToRead.getName());
       } else
       {
+        statusLogger.logFile(fileToRead.getName(), ScanStatus.PREPARING, 0);
+        statusLogger.logDebug("File found to send: " + fileToRead.getName());
         filesToProcessList.add(fileToRead);
       }
     }
     return filesToProcessList.size() > 0;
+  }
+
+  private void verifyOkayToKeepRunning()
+  {
+    if (!okayToRun)
+    {
+      throw new ApplicationShuttingDown();
+    }
   }
 
   /**
@@ -879,16 +998,18 @@ public class SendData extends Thread
       okay = lastLine.startsWith(HL7.FTS);
       if (!okay)
       {
-        statusLogger.logWarn("File '" + inFile.getName() +  "' does not end with FTS segment as expected, not processing");
+        statusLogger.logFile(inFile.getName(), ScanStatus.PROBLEM, 0);
+        statusLogger.logWarn("File does not end with FTS segment as expected, not processing: " + inFile.getName());
       }
     } else if (line.startsWith(HL7.MSH))
     {
-      statusLogger.logWarn("File '" + inFile.getName() +  "' does not start with FHS segment as expected. ");
+      statusLogger.logDebug("File does not start with FHS segment as expected: " + inFile.getName());
       okay = true;
     } else
     {
       okay = false;
-      statusLogger.logWarn("File '" + inFile.getName() +  "' does not appear to contain HL7. Must start with FHS or MSH segment.");
+      statusLogger.logFile(inFile.getName(), ScanStatus.PROBLEM, 0);
+      statusLogger.logWarn("File does not appear to contain HL7 (Must start with FHS or MSH segment): " + inFile.getName());
     }
     in.close();
     return okay;
@@ -906,7 +1027,7 @@ public class SendData extends Thread
       } else
       {
         file.mkdir();
-        statusLogger.logInfo("Creating new folder " + file.getName());
+        statusLogger.logInfo("Creating new folder: " + file.getName());
       }
     }
     return file;
@@ -918,7 +1039,7 @@ public class SendData extends Thread
     if (!file.exists())
     {
       file.mkdir();
-      statusLogger.logInfo("Creating new folder " + file.getName());
+      statusLogger.logInfo("Creating new folder: " + file.getName());
     }
     return file;
   }

@@ -3,7 +3,7 @@ package org.immunizationsoftware.dqa.mover;
 public interface RemoteConnectionReportingInterface
 {
   public static final String VERSION = "1.05";
-  public static final String DATE_TIME_FORMAT = "yyyyMMddHHmmssZ";
+  public static final String DATE_TIME_FORMAT = "yyyyMMddHHmmssSSSZ";
   
   public static final String CONNECTION_CODE = "connectionCode";
   public static final String CONNECTION_LABEL = "connectionLabel";
@@ -17,8 +17,14 @@ public interface RemoteConnectionReportingInterface
   public static final String SENT_COUNT = "sentCount";
   public static final String ERROR_COUNT = "errorCount";
   public static final String LOG_LEVEL = "logLevel";
+  public static final String REPORTED_DATE = "reportedDate";
   public static final String ISSUE_TEXT = "issueText";
   public static final String EXCEPTION_TRACE = "exceptionTrace";
+  public static final String FILE_NAME = "fileName";
+  public static final String FILE_MESSAGE_COUNT = "fileMessageCount";
+  public static final String FILE_SENT_COUNT = "fileSentCount";
+  public static final String FILE_ERROR_COUNT = "fileErrorCount";
+  public static final String FILE_STATUS_LABEL = "fileStatusLabel";
   
   public static final int LOG_LEVEL_ERROR = 0;
   public static final int LOG_LEVEL_WARNING = 1;
