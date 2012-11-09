@@ -13,11 +13,11 @@
     </init-param>
     <init-param>
       <param-name>support_center.code</param-name>
-      <param-value>IHS</param-value>
+      <param-value>general</param-value>
     </init-param>
     <init-param>
       <param-name>support_center.url</param-name>
-      <param-value>http://localhost:8281/remote</param-value>
+      <param-value>http://ois-dqa.net/dqa/remote</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
