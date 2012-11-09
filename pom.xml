@@ -4,7 +4,7 @@
 	<groupId>org.immunizationsoftware.dqa</groupId>
 	<artifactId>tester</artifactId>
 	<packaging>war</packaging>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.05</version>
 	<!-- TODO project name  -->
 	<name>quickstart</name>
 	<description></description>
