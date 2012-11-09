@@ -20,7 +20,7 @@ import java.util.Map;
 public class StatusReporter extends Thread implements RemoteConnectionReportingInterface
 {
   public static final int SEND_MAXIMUM_INTERVAL = 2 * 60 * 1000;
-  public static final int SEND_MINIMUM_INTERVAL = 1 * 1000;
+  public static final int SEND_MINIMUM_INTERVAL = 10 * 1000;
 
   private SendData sendData;
   private StatusLogger statusLogger;
