@@ -1,0 +1,44 @@
+-----------------------------------------
+Connection
+Label: OIS-DQA CDC Standard
+Type: POST
+URL: http://ois-dqa.net/in
+User Id: CDC Standard
+Password: test
+Facility Id: 1200
+
+-----------------------------------------
+Connection
+Label: OIS-DQA MCIR Standard
+Type: POST
+URL: http://ois-dqa.net/in
+User Id: MCIR Standard
+Password: test
+Facility Id: 1201
+
+-----------------------------------------
+Connection
+Label: OIS-DQA ImmTrac Standard
+Type: POST
+URL: http://ois-dqa.net/in
+User Id: ImmTrac Standard
+Password: test
+Facility Id: 1202
+
+-----------------------------------------
+Connection
+Label: OIS-DQA IHS Certification
+Type: POST
+URL: http://ois-dqa.net/in
+User Id: IHS Certification
+Password: test
+Facility Id: 1203
+
+-----------------------------------------
+Connection
+Label: OIS-DQA ASIIS Standard
+Type: POST
+URL: http://ois-dqa.net/in
+User Id: ASIIS Standard
+Password: test
+Facility Id: 1204
