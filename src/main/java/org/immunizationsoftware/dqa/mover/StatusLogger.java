@@ -75,16 +75,7 @@ public class StatusLogger
     out.println("Connection Id: " + sendData.getStableSystemId());
     out.println();
     out.println("--- Log ---");
-    statusReporter = new StatusReporter(sendData, this);
-    statusReporter.start();
-  }
-  
-  public void shutdown()
-  {
-    if (statusReporter != null)
-    {
-      statusReporter.shutdown();
-    }
+    statusReporter = sendData.getStatusReporter();
   }
 
 
