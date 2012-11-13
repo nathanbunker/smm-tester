@@ -90,9 +90,15 @@ public class SendData extends Thread
     {
       this.interrupt();
     }
+    if (statusReporter != null)
+    {
+      statusReporter.shutdown();
+      statusReporter = null;
+    }
     if (statusLogger != null)
     {
-      statusLogger.shutdown();
+      statusLogger.close();
+      statusLogger = null;
     }
   }
 
@@ -101,6 +107,7 @@ public class SendData extends Thread
   {
     while (okayToRun)
     {
+      setupStatusReporter();
       waitAwhileMoreForProblem();
       if (okayToRun)
       {
@@ -127,8 +134,7 @@ public class SendData extends Thread
               resetProblemRetryCount();
               deleteWorkingDir();
             }
-          }
-          catch (ApplicationShuttingDown asd)
+          } catch (ApplicationShuttingDown asd)
           {
             // Application is shutting down, continue on out
           } catch (Throwable e)
@@ -145,11 +151,30 @@ public class SendData extends Thread
     logShutdown();
   }
 
+  private void setupStatusReporter()
+  {
+    if (statusReporter == null)
+    {
+      try
+      {
+        statusReporter = new StatusReporter(this);
+      } catch (IOException ioe)
+      {
+        statusReporterException = ioe;
+      }
+      statusReporter.start();
+    }
+    if (statusReporter != null)
+    {
+      statusReporterException = statusReporter.getException();
+    }
+  }
+
   private void logShutdown()
   {
     try
     {
-      StatusReporter statusReporter = new StatusReporter(this, null);
+      StatusReporter statusReporter = new StatusReporter(this);
       statusReporter.updateSupportCenter(null, null);
     } catch (Throwable t)
     {
@@ -186,6 +211,8 @@ public class SendData extends Thread
 
   private Connector connector = null;
   private StatusLogger statusLogger = null;
+  private StatusReporter statusReporter = null;
+  private Throwable statusReporterException = null;
   private SendDataLocker sendDataLocker = null;
   private String filename = null;
   private String filenameStart = null;
@@ -198,6 +225,16 @@ public class SendData extends Thread
   private int attemptCount = 0;
   private int sentCount = 0;
   private int errorCount = 0;
+
+  public StatusReporter getStatusReporter()
+  {
+    return statusReporter;
+  }
+
+  public StatusLogger getStatusLogger()
+  {
+    return statusLogger;
+  }
 
   public int getAttemptCount()
   {
@@ -285,6 +322,7 @@ public class SendData extends Thread
     this.configFile = new File(rootDir, CONFIG_FILE_NAME);
     Random random = new Random();
     randomId = random.nextInt(10000) + 1000;
+
   }
 
   public ScanStatus getScanStatus()
@@ -639,6 +677,10 @@ public class SendData extends Thread
       return false;
     }
     statusLogger = new StatusLogger(rootDir, this);
+    if (statusReporterException != null)
+    {
+      statusLogger.logError("Unable to update central support center", statusReporterException);
+    }
     return true;
   }
 

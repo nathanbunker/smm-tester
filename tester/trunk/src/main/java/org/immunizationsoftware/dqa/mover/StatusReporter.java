@@ -19,16 +19,17 @@ import java.util.Map;
 
 public class StatusReporter extends Thread implements RemoteConnectionReportingInterface
 {
-  public static final int SEND_MAXIMUM_INTERVAL = 2 * 60 * 1000;
-  public static final int SEND_MINIMUM_INTERVAL = 10 * 1000;
+  public static final int SEND_MAXIMUM_INTERVAL = 15 * 60 * 1000;
+  public static final int SEND_MINIMUM_INTERVAL = 30 * 1000;
 
   private SendData sendData;
-  private StatusLogger statusLogger;
   private URL supportCenterUrl = null;
   private List<StatusLog> statusLogList = new ArrayList<StatusLog>();
   private Map<String, StatusFile> statusFileMap = new HashMap<String, StatusFile>();
   private boolean sendStatus = true;
   private int logLevel = LOG_LEVEL_INFO;
+  private Throwable exception = null;
+  private boolean notStopped = true;
 
   public void setSendStatus()
   {
@@ -37,20 +38,18 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
 
   private long lastUpdate = 0l;
 
-  public StatusReporter(SendData sendData, StatusLogger statusLogger) throws MalformedURLException {
+  public StatusReporter(SendData sendData) throws MalformedURLException {
     this.sendData = sendData;
-    this.statusLogger = statusLogger;
     if (ManagerServlet.getSupportCenterUrl() != null)
     {
       supportCenterUrl = new URL(ManagerServlet.getSupportCenterUrl());
     }
-
   }
 
   @Override
   public void run()
   {
-    while (sendData.isOkayToRun())
+    while (sendData.isOkayToRun() && notStopped)
     {
       long timeSinceLastUpdate = System.currentTimeMillis() - lastUpdate;
       if (sendStatus || timeSinceLastUpdate > SEND_MAXIMUM_INTERVAL)
@@ -163,6 +162,7 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
 
       try
       {
+        exception = null;
         HttpURLConnection urlConn;
         DataOutputStream printout;
         InputStreamReader input = null;
@@ -235,25 +235,28 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
         BufferedReader in = new BufferedReader(input);
         String response = in.readLine();
         input.close();
-        if (response == null || !response.equals("OK"))
+        if (response == null)
         {
-          throw new IOException("Unexpected response: " + response);
-        } else
+          exception = new IOException("Unexpected response from support center (null) ");
+        } else if (response.equals("STOP"))
+        {
+          exception = new IOException("Support center requested that all updates be STOPPED, stopping status reporter");
+          notStopped = false;
+        } else if (response.equals("OK"))
         {
           lastUpdate = System.currentTimeMillis();
           sendStatus = false;
         }
       } catch (IOException e)
       {
-        String message = "Unable to update support center";
-        if (statusLogger != null)
-        {
-          statusLogger.logError(message);
-          e.printStackTrace(statusLogger.getOut());
-          statusLogger.getOut().flush();
-        }
+        exception = e;
       }
     }
+  }
+
+  public Throwable getException()
+  {
+    return exception;
   }
 
   private void append(String field, String value, StringBuilder content) throws UnsupportedEncodingException
