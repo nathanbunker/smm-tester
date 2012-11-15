@@ -1,54 +1,180 @@
 
 /**
- * ConnectivityTestResponseType.java
+ * SubmitSingleMessageRequestType.java
  *
  * This file was auto-generated from WSDL
  * by the Apache Axis2 version: 1.6.2  Built on : Apr 17, 2012 (05:34:40 IST)
  */
 
             
-                package org.immunizationsoftware.dqa.tester.connectors.nm._2011.iisb.cdc;
+                package org.immunizationsoftware.dqa.tester.connectors.tlep;
             
 
             /**
-            *  ConnectivityTestResponseType bean class
+            *  SubmitSingleMessageRequestType bean class
             */
             @SuppressWarnings({"unchecked","unused"})
         
-        public  class ConnectivityTestResponseType
+        public  class SubmitSingleMessageRequestType
         implements org.apache.axis2.databinding.ADBBean{
         /* This type was generated from the piece of schema that had
-                name = connectivityTestResponseType
+                name = submitSingleMessageRequestType
                 Namespace URI = urn:cdc:iisb:2011
                 Namespace Prefix = ns1
                 */
             
 
                         /**
-                        * field for _return
+                        * field for Username
                         */
 
                         
-                                    protected java.lang.String local_return ;
+                                    protected java.lang.String localUsername ;
                                 
+                           /*  This tracker boolean wil be used to detect whether the user called the set method
+                          *   for this attribute. It will be used to determine whether to include this field
+                           *   in the serialized XML
+                           */
+                           protected boolean localUsernameTracker = false ;
+
+                           public boolean isUsernameSpecified(){
+                               return localUsernameTracker;
+                           }
+
+                           
 
                            /**
                            * Auto generated getter method
                            * @return java.lang.String
                            */
-                           public  java.lang.String get_return(){
-                               return local_return;
+                           public  java.lang.String getUsername(){
+                               return localUsername;
                            }
 
                            
                         
                             /**
                                * Auto generated setter method
-                               * @param param _return
+                               * @param param Username
                                */
-                               public void set_return(java.lang.String param){
+                               public void setUsername(java.lang.String param){
+                            localUsernameTracker = true;
+                                   
+                                            this.localUsername=param;
+                                    
+
+                               }
                             
-                                            this.local_return=param;
+
+                        /**
+                        * field for Password
+                        */
+
+                        
+                                    protected java.lang.String localPassword ;
+                                
+                           /*  This tracker boolean wil be used to detect whether the user called the set method
+                          *   for this attribute. It will be used to determine whether to include this field
+                           *   in the serialized XML
+                           */
+                           protected boolean localPasswordTracker = false ;
+
+                           public boolean isPasswordSpecified(){
+                               return localPasswordTracker;
+                           }
+
+                           
+
+                           /**
+                           * Auto generated getter method
+                           * @return java.lang.String
+                           */
+                           public  java.lang.String getPassword(){
+                               return localPassword;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param Password
+                               */
+                               public void setPassword(java.lang.String param){
+                            localPasswordTracker = true;
+                                   
+                                            this.localPassword=param;
+                                    
+
+                               }
+                            
+
+                        /**
+                        * field for FacilityID
+                        */
+
+                        
+                                    protected java.lang.String localFacilityID ;
+                                
+                           /*  This tracker boolean wil be used to detect whether the user called the set method
+                          *   for this attribute. It will be used to determine whether to include this field
+                           *   in the serialized XML
+                           */
+                           protected boolean localFacilityIDTracker = false ;
+
+                           public boolean isFacilityIDSpecified(){
+                               return localFacilityIDTracker;
+                           }
+
+                           
+
+                           /**
+                           * Auto generated getter method
+                           * @return java.lang.String
+                           */
+                           public  java.lang.String getFacilityID(){
+                               return localFacilityID;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param FacilityID
+                               */
+                               public void setFacilityID(java.lang.String param){
+                            localFacilityIDTracker = true;
+                                   
+                                            this.localFacilityID=param;
+                                    
+
+                               }
+                            
+
+                        /**
+                        * field for Hl7Message
+                        */
+
+                        
+                                    protected java.lang.String localHl7Message ;
+                                
+
+                           /**
+                           * Auto generated getter method
+                           * @return java.lang.String
+                           */
+                           public  java.lang.String getHl7Message(){
+                               return localHl7Message;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param Hl7Message
+                               */
+                               public void setHl7Message(java.lang.String param){
+                            
+                                            this.localHl7Message=param;
                                     
 
                                }
@@ -102,22 +228,22 @@
                    java.lang.String namespacePrefix = registerPrefix(xmlWriter,"urn:cdc:iisb:2011");
                    if ((namespacePrefix != null) && (namespacePrefix.trim().length() > 0)){
                        writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
-                           namespacePrefix+":connectivityTestResponseType",
+                           namespacePrefix+":submitSingleMessageRequestType",
                            xmlWriter);
                    } else {
                        writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
-                           "connectivityTestResponseType",
+                           "submitSingleMessageRequestType",
                            xmlWriter);
                    }
 
                
                    }
-               
+                if (localUsernameTracker){
                                     namespace = "urn:cdc:iisb:2011";
-                                    writeStartElement(null, namespace, "return", xmlWriter);
+                                    writeStartElement(null, namespace, "username", xmlWriter);
                              
 
-                                          if (local_return==null){
+                                          if (localUsername==null){
                                               // write the nil attribute
                                               
                                                      writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","nil","1",xmlWriter);
@@ -125,7 +251,61 @@
                                           }else{
 
                                         
-                                                   xmlWriter.writeCharacters(local_return);
+                                                   xmlWriter.writeCharacters(localUsername);
+                                            
+                                          }
+                                    
+                                   xmlWriter.writeEndElement();
+                             } if (localPasswordTracker){
+                                    namespace = "urn:cdc:iisb:2011";
+                                    writeStartElement(null, namespace, "password", xmlWriter);
+                             
+
+                                          if (localPassword==null){
+                                              // write the nil attribute
+                                              
+                                                     writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","nil","1",xmlWriter);
+                                                  
+                                          }else{
+
+                                        
+                                                   xmlWriter.writeCharacters(localPassword);
+                                            
+                                          }
+                                    
+                                   xmlWriter.writeEndElement();
+                             } if (localFacilityIDTracker){
+                                    namespace = "urn:cdc:iisb:2011";
+                                    writeStartElement(null, namespace, "facilityID", xmlWriter);
+                             
+
+                                          if (localFacilityID==null){
+                                              // write the nil attribute
+                                              
+                                                     writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","nil","1",xmlWriter);
+                                                  
+                                          }else{
+
+                                        
+                                                   xmlWriter.writeCharacters(localFacilityID);
+                                            
+                                          }
+                                    
+                                   xmlWriter.writeEndElement();
+                             }
+                                    namespace = "urn:cdc:iisb:2011";
+                                    writeStartElement(null, namespace, "hl7Message", xmlWriter);
+                             
+
+                                          if (localHl7Message==null){
+                                              // write the nil attribute
+                                              
+                                                     writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","nil","1",xmlWriter);
+                                                  
+                                          }else{
+
+                                        
+                                                   xmlWriter.writeCharacters(localHl7Message);
                                             
                                           }
                                     
@@ -315,12 +495,30 @@
                  java.util.ArrayList elementList = new java.util.ArrayList();
                  java.util.ArrayList attribList = new java.util.ArrayList();
 
-                
+                 if (localUsernameTracker){
                                       elementList.add(new javax.xml.namespace.QName("urn:cdc:iisb:2011",
-                                                                      "return"));
+                                                                      "username"));
                                  
-                                         elementList.add(local_return==null?null:
-                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(local_return));
+                                         elementList.add(localUsername==null?null:
+                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localUsername));
+                                    } if (localPasswordTracker){
+                                      elementList.add(new javax.xml.namespace.QName("urn:cdc:iisb:2011",
+                                                                      "password"));
+                                 
+                                         elementList.add(localPassword==null?null:
+                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localPassword));
+                                    } if (localFacilityIDTracker){
+                                      elementList.add(new javax.xml.namespace.QName("urn:cdc:iisb:2011",
+                                                                      "facilityID"));
+                                 
+                                         elementList.add(localFacilityID==null?null:
+                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localFacilityID));
+                                    }
+                                      elementList.add(new javax.xml.namespace.QName("urn:cdc:iisb:2011",
+                                                                      "hl7Message"));
+                                 
+                                         elementList.add(localHl7Message==null?null:
+                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localHl7Message));
                                     
 
                 return new org.apache.axis2.databinding.utils.reader.ADBXMLStreamReaderImpl(qName, elementList.toArray(), attribList.toArray());
@@ -346,9 +544,9 @@
         * Postcondition: If this object is an element, the reader is positioned at its end element
         *                If this object is a complex type, the reader is positioned at the end element of its outer element
         */
-        public static ConnectivityTestResponseType parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
-            ConnectivityTestResponseType object =
-                new ConnectivityTestResponseType();
+        public static SubmitSingleMessageRequestType parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
+            SubmitSingleMessageRequestType object =
+                new SubmitSingleMessageRequestType();
 
             int event;
             java.lang.String nillableValue = null;
@@ -372,10 +570,10 @@
 
                     java.lang.String type = fullTypeName.substring(fullTypeName.indexOf(":")+1);
                     
-                            if (!"connectivityTestResponseType".equals(type)){
+                            if (!"submitSingleMessageRequestType".equals(type)){
                                 //find namespace for the prefix
                                 java.lang.String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
-                                return (ConnectivityTestResponseType)org.immunizationsoftware.dqa.tester.connectors.tlep.ExtensionMapper.getTypeObject(
+                                return (SubmitSingleMessageRequestType)org.immunizationsoftware.dqa.tester.connectors.tlep.ExtensionMapper.getTypeObject(
                                      nsUri,type,reader);
                               }
                         
@@ -400,7 +598,7 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","return").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","username").equals(reader.getName())){
                                 
                                        nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
                                        if (!"true".equals(nillableValue) && !"1".equals(nillableValue)){
@@ -408,7 +606,91 @@
 
                                     java.lang.String content = reader.getElementText();
                                     
-                                              object.set_return(
+                                              object.setUsername(
+                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
+                                            
+                                       } else {
+                                           
+                                           
+                                           reader.getElementText(); // throw away text nodes if any.
+                                       }
+                                      
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                                
+                                    else {
+                                        
+                                    }
+                                
+                                    
+                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
+                                
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","password").equals(reader.getName())){
+                                
+                                       nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
+                                       if (!"true".equals(nillableValue) && !"1".equals(nillableValue)){
+                                    
+
+                                    java.lang.String content = reader.getElementText();
+                                    
+                                              object.setPassword(
+                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
+                                            
+                                       } else {
+                                           
+                                           
+                                           reader.getElementText(); // throw away text nodes if any.
+                                       }
+                                      
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                                
+                                    else {
+                                        
+                                    }
+                                
+                                    
+                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
+                                
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","facilityID").equals(reader.getName())){
+                                
+                                       nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
+                                       if (!"true".equals(nillableValue) && !"1".equals(nillableValue)){
+                                    
+
+                                    java.lang.String content = reader.getElementText();
+                                    
+                                              object.setFacilityID(
+                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
+                                            
+                                       } else {
+                                           
+                                           
+                                           reader.getElementText(); // throw away text nodes if any.
+                                       }
+                                      
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                                
+                                    else {
+                                        
+                                    }
+                                
+                                    
+                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
+                                
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","hl7Message").equals(reader.getName())){
+                                
+                                       nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
+                                       if (!"true".equals(nillableValue) && !"1".equals(nillableValue)){
+                                    
+
+                                    java.lang.String content = reader.getElementText();
+                                    
+                                              object.setHl7Message(
                                                     org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
                                             
                                        } else {

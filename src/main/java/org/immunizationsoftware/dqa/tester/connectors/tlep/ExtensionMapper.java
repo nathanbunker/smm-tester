@@ -7,7 +7,7 @@
  */
 
         
-            package _2011.iisb.cdc;
+            package org.immunizationsoftware.dqa.tester.connectors.tlep;
         
             /**
             *  ExtensionMapper class
@@ -25,7 +25,7 @@
                   "urn:cdc:iisb:2011".equals(namespaceURI) &&
                   "soapFaultType".equals(typeName)){
                    
-                            return  _2011.iisb.cdc.SoapFaultType.Factory.parse(reader);
+                            return  org.immunizationsoftware.dqa.tester.connectors.tlep.SoapFaultType.Factory.parse(reader);
                         
 
                   }
@@ -35,7 +35,7 @@
                   "urn:cdc:iisb:2011".equals(namespaceURI) &&
                   "submitSingleMessageResponseType".equals(typeName)){
                    
-                            return  _2011.iisb.cdc.SubmitSingleMessageResponseType.Factory.parse(reader);
+                            return  org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageResponseType.Factory.parse(reader);
                         
 
                   }
@@ -45,7 +45,7 @@
                   "urn:cdc:iisb:2011".equals(namespaceURI) &&
                   "connectivityTestRequestType".equals(typeName)){
                    
-                            return  _2011.iisb.cdc.ConnectivityTestRequestType.Factory.parse(reader);
+                            return  org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestRequestType.Factory.parse(reader);
                         
 
                   }
@@ -55,7 +55,7 @@
                   "urn:cdc:iisb:2011".equals(namespaceURI) &&
                   "SecurityFaultType".equals(typeName)){
                    
-                            return  _2011.iisb.cdc.SecurityFaultType.Factory.parse(reader);
+                            return  org.immunizationsoftware.dqa.tester.connectors.tlep.SecurityFaultType.Factory.parse(reader);
                         
 
                   }
@@ -65,7 +65,7 @@
                   "urn:cdc:iisb:2011".equals(namespaceURI) &&
                   "submitSingleMessageRequestType".equals(typeName)){
                    
-                            return  _2011.iisb.cdc.SubmitSingleMessageRequestType.Factory.parse(reader);
+                            return  org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageRequestType.Factory.parse(reader);
                         
 
                   }
@@ -75,7 +75,7 @@
                   "urn:cdc:iisb:2011".equals(namespaceURI) &&
                   "MessageTooLargeFaultType".equals(typeName)){
                    
-                            return  _2011.iisb.cdc.MessageTooLargeFaultType.Factory.parse(reader);
+                            return  org.immunizationsoftware.dqa.tester.connectors.tlep.MessageTooLargeFaultType.Factory.parse(reader);
                         
 
                   }
@@ -85,7 +85,7 @@
                   "urn:cdc:iisb:2011".equals(namespaceURI) &&
                   "connectivityTestResponseType".equals(typeName)){
                    
-                            return  _2011.iisb.cdc.ConnectivityTestResponseType.Factory.parse(reader);
+                            return  org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestResponseType.Factory.parse(reader);
                         
 
                   }
@@ -95,7 +95,7 @@
                   "urn:cdc:iisb:2011".equals(namespaceURI) &&
                   "UnsupportedOperationFaultType".equals(typeName)){
                    
-                            return  _2011.iisb.cdc.UnsupportedOperationFaultType.Factory.parse(reader);
+                            return  org.immunizationsoftware.dqa.tester.connectors.tlep.UnsupportedOperationFaultType.Factory.parse(reader);
                         
 
                   }

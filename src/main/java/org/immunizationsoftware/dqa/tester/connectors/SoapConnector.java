@@ -6,14 +6,15 @@ package org.immunizationsoftware.dqa.tester.connectors;
 
 import java.util.List;
 
-import _2011.iisb.cdc.Client_Service;
-import _2011.iisb.cdc.Client_ServiceStub;
-import _2011.iisb.cdc.ConnectivityTest;
-import _2011.iisb.cdc.ConnectivityTestRequestType;
-import _2011.iisb.cdc.ConnectivityTestResponse;
-import _2011.iisb.cdc.SubmitSingleMessage;
-import _2011.iisb.cdc.SubmitSingleMessageRequestType;
-import _2011.iisb.cdc.SubmitSingleMessageResponse;
+import org.immunizationsoftware.dqa.tester.connectors.tlep.Client_Service;
+import org.immunizationsoftware.dqa.tester.connectors.tlep.Client_ServiceStub;
+import org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTest;
+import org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestRequestType;
+import org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestResponse;
+import org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessage;
+import org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageRequestType;
+import org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageResponse;
+
 
 /**
  * 

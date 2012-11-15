@@ -30,14 +30,14 @@
                         */
 
                         
-                                    protected _2011.iisb.cdc.UnsupportedOperationFaultType localUnsupportedOperationFault ;
+                                    protected org.immunizationsoftware.dqa.tester.connectors.tlep.UnsupportedOperationFaultType localUnsupportedOperationFault ;
                                 
 
                            /**
                            * Auto generated getter method
                            * @return _2011.iisb.cdc.UnsupportedOperationFaultType
                            */
-                           public  _2011.iisb.cdc.UnsupportedOperationFaultType getUnsupportedOperationFault(){
+                           public  org.immunizationsoftware.dqa.tester.connectors.tlep.UnsupportedOperationFaultType getUnsupportedOperationFault(){
                                return localUnsupportedOperationFault;
                            }
 
@@ -47,7 +47,7 @@
                                * Auto generated setter method
                                * @param param UnsupportedOperationFault
                                */
-                               public void setUnsupportedOperationFault(_2011.iisb.cdc.UnsupportedOperationFaultType param){
+                               public void setUnsupportedOperationFault(org.immunizationsoftware.dqa.tester.connectors.tlep.UnsupportedOperationFaultType param){
                             
                                             this.localUnsupportedOperationFault=param;
                                     
@@ -323,7 +323,7 @@
                 
                                     if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","UnsupportedOperationFault").equals(reader.getName())){
                                 
-                                                object.setUnsupportedOperationFault(_2011.iisb.cdc.UnsupportedOperationFaultType.Factory.parse(reader));
+                                                object.setUnsupportedOperationFault(org.immunizationsoftware.dqa.tester.connectors.tlep.UnsupportedOperationFaultType.Factory.parse(reader));
                                             
                               }  // End of if for expected property start element
                                 

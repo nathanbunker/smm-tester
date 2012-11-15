@@ -49,7 +49,7 @@
             * override this method for handling normal response from submitSingleMessage operation
             */
            public void receiveResultsubmitSingleMessage(
-                    _2011.iisb.cdc.SubmitSingleMessageResponse result
+                    org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageResponse result
                         ) {
            }
 
@@ -65,7 +65,7 @@
             * override this method for handling normal response from connectivityTest operation
             */
            public void receiveResultconnectivityTest(
-                    _2011.iisb.cdc.ConnectivityTestResponse result
+                    org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestResponse result
                         ) {
            }
 

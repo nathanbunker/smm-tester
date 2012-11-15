@@ -22,6 +22,7 @@ import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.connectors.HttpConnector;
+import org.immunizationsoftware.dqa.tester.connectors.NMSoapConnector;
 import org.immunizationsoftware.dqa.tester.connectors.SoapConnector;
 
 /**
@@ -219,6 +220,7 @@ public class SetupServlet extends ClientServlet
         out.println("        <option value=\"\">select</option>");
         out.println("        <option value=\"SOAP\"" + (type.equals("SOAP") ? " selected=\"true\"" : "") + ">SOAP</option>");
         out.println("        <option value=\"POST\"" + (type.equals("POST") ? " selected=\"true\"" : "") + ">POST</option>");
+        out.println("        <option value=\"SOAP\"" + (type.equals("NM SOAP") ? " selected=\"true\"" : "") + ">NM SOAP</option>");
         out.println("      </select>");
         out.println("    </td>");
         out.println("    <td class=\"boxed\"><input type=\"text\" name=\"url\" size=\"20\" value=\"" + url + "\"></td>");
@@ -348,6 +350,9 @@ public class SetupServlet extends ClientServlet
         if (type.equals("SOAP"))
         {
           connector = new SoapConnector(label, url);
+        } else if (type.equals("NM SOAP"))
+        {
+          connector = new NMSoapConnector(label, url);
         } else if (type.equals("POST"))
         {
           connector = new HttpConnector(label, url);
@@ -416,7 +421,7 @@ public class SetupServlet extends ClientServlet
     oldConnectors.addAll(newConnectors);
   }
 
-  protected static void addConnector(Connector newConnector, HttpSession session) 
+  protected static void addConnector(Connector newConnector, HttpSession session)
   {
     List<Connector> oldConnectors = getConnectors(session);
     for (Iterator<Connector> it = oldConnectors.iterator(); it.hasNext();)

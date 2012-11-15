@@ -491,7 +491,7 @@
                             if (!"MessageTooLargeFaultType".equals(type)){
                                 //find namespace for the prefix
                                 java.lang.String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
-                                return (MessageTooLargeFaultType)_2011.iisb.cdc.ExtensionMapper.getTypeObject(
+                                return (MessageTooLargeFaultType)org.immunizationsoftware.dqa.tester.connectors.tlep.ExtensionMapper.getTypeObject(
                                      nsUri,type,reader);
                               }
                         

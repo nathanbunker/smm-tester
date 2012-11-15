@@ -6,7 +6,7 @@
  * by the Apache Axis2 version: 1.6.2  Built on : Apr 17, 2012 (05:33:49 IST)
  */
 
-    package _2011.iisb.cdc;
+    package org.immunizationsoftware.dqa.tester.connectors.tlep;
 
     /**
      *  Client_ServiceCallbackHandler Callback class, Users can extend this class and implement
@@ -49,7 +49,7 @@
             * override this method for handling normal response from submitSingleMessage operation
             */
            public void receiveResultsubmitSingleMessage(
-                    _2011.iisb.cdc.SubmitSingleMessageResponse result
+                    org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageResponse result
                         ) {
            }
 
@@ -65,7 +65,7 @@
             * override this method for handling normal response from connectivityTest operation
             */
            public void receiveResultconnectivityTest(
-                    _2011.iisb.cdc.ConnectivityTestResponse result
+                    org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestResponse result
                         ) {
            }
 

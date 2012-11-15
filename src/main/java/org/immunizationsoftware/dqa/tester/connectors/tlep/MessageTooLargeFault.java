@@ -7,7 +7,7 @@
  */
 
             
-                package _2011.iisb.cdc;
+                package org.immunizationsoftware.dqa.tester.connectors.tlep;
             
 
             /**
@@ -30,14 +30,14 @@
                         */
 
                         
-                                    protected _2011.iisb.cdc.MessageTooLargeFaultType localMessageTooLargeFault ;
+                                    protected org.immunizationsoftware.dqa.tester.connectors.tlep.MessageTooLargeFaultType localMessageTooLargeFault ;
                                 
 
                            /**
                            * Auto generated getter method
                            * @return _2011.iisb.cdc.MessageTooLargeFaultType
                            */
-                           public  _2011.iisb.cdc.MessageTooLargeFaultType getMessageTooLargeFault(){
+                           public  org.immunizationsoftware.dqa.tester.connectors.tlep.MessageTooLargeFaultType getMessageTooLargeFault(){
                                return localMessageTooLargeFault;
                            }
 
@@ -47,7 +47,7 @@
                                * Auto generated setter method
                                * @param param MessageTooLargeFault
                                */
-                               public void setMessageTooLargeFault(_2011.iisb.cdc.MessageTooLargeFaultType param){
+                               public void setMessageTooLargeFault(org.immunizationsoftware.dqa.tester.connectors.tlep.MessageTooLargeFaultType param){
                             
                                             this.localMessageTooLargeFault=param;
                                     
@@ -323,7 +323,7 @@
                 
                                     if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","MessageTooLargeFault").equals(reader.getName())){
                                 
-                                                object.setMessageTooLargeFault(_2011.iisb.cdc.MessageTooLargeFaultType.Factory.parse(reader));
+                                                object.setMessageTooLargeFault(org.immunizationsoftware.dqa.tester.connectors.tlep.MessageTooLargeFaultType.Factory.parse(reader));
                                             
                               }  // End of if for expected property start element
                                 

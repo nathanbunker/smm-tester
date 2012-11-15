@@ -492,7 +492,7 @@
                             if (!"soapFaultType".equals(type)){
                                 //find namespace for the prefix
                                 java.lang.String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
-                                return (SoapFaultType)_2011.iisb.cdc.ExtensionMapper.getTypeObject(
+                                return (SoapFaultType)org.immunizationsoftware.dqa.tester.connectors.tlep.ExtensionMapper.getTypeObject(
                                      nsUri,type,reader);
                               }
                         

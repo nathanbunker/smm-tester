@@ -1,24 +1,24 @@
 
 /**
- * SoapFaultType.java
+ * SecurityFaultType.java
  *
  * This file was auto-generated from WSDL
  * by the Apache Axis2 version: 1.6.2  Built on : Apr 17, 2012 (05:34:40 IST)
  */
 
             
-                package _2011.iisb.cdc;
+                package org.immunizationsoftware.dqa.tester.connectors.tlep;
             
 
             /**
-            *  SoapFaultType bean class
+            *  SecurityFaultType bean class
             */
             @SuppressWarnings({"unchecked","unused"})
         
-        public  class SoapFaultType
+        public  class SecurityFaultType
         implements org.apache.axis2.databinding.ADBBean{
         /* This type was generated from the piece of schema that had
-                name = soapFaultType
+                name = SecurityFaultType
                 Namespace URI = urn:cdc:iisb:2011
                 Namespace Prefix = ns1
                 */
@@ -59,14 +59,14 @@
                         */
 
                         
-                                    protected java.lang.String localReason ;
+                                    protected org.apache.axiom.om.OMElement localReason ;
                                 
 
                            /**
                            * Auto generated getter method
-                           * @return java.lang.String
+                           * @return org.apache.axiom.om.OMElement
                            */
-                           public  java.lang.String getReason(){
+                           public  org.apache.axiom.om.OMElement getReason(){
                                return localReason;
                            }
 
@@ -76,7 +76,7 @@
                                * Auto generated setter method
                                * @param param Reason
                                */
-                               public void setReason(java.lang.String param){
+                               public void setReason(org.apache.axiom.om.OMElement param){
                             
                                             this.localReason=param;
                                     
@@ -162,11 +162,11 @@
                    java.lang.String namespacePrefix = registerPrefix(xmlWriter,"urn:cdc:iisb:2011");
                    if ((namespacePrefix != null) && (namespacePrefix.trim().length() > 0)){
                        writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
-                           namespacePrefix+":soapFaultType",
+                           namespacePrefix+":SecurityFaultType",
                            xmlWriter);
                    } else {
                        writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
-                           "soapFaultType",
+                           "SecurityFaultType",
                            xmlWriter);
                    }
 
@@ -202,8 +202,7 @@
                                                   
                                           }else{
 
-                                        
-                                                   xmlWriter.writeCharacters(localReason);
+                                        localReason.serialize(xmlWriter);
                                             
                                           }
                                     
@@ -463,9 +462,9 @@
         * Postcondition: If this object is an element, the reader is positioned at its end element
         *                If this object is a complex type, the reader is positioned at the end element of its outer element
         */
-        public static SoapFaultType parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
-            SoapFaultType object =
-                new SoapFaultType();
+        public static SecurityFaultType parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
+            SecurityFaultType object =
+                new SecurityFaultType();
 
             int event;
             java.lang.String nillableValue = null;
@@ -489,10 +488,10 @@
 
                     java.lang.String type = fullTypeName.substring(fullTypeName.indexOf(":")+1);
                     
-                            if (!"soapFaultType".equals(type)){
+                            if (!"SecurityFaultType".equals(type)){
                                 //find namespace for the prefix
                                 java.lang.String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
-                                return (SoapFaultType)_2011.iisb.cdc.ExtensionMapper.getTypeObject(
+                                return (SecurityFaultType)org.immunizationsoftware.dqa.tester.connectors.tlep.ExtensionMapper.getTypeObject(
                                      nsUri,type,reader);
                               }
                         
@@ -542,7 +541,7 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","Reason").equals(reader.getName())){
+                                   if (reader.isStartElement()){
                                 
                                     nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
                                     if ("true".equals(nillableValue) || "1".equals(nillableValue)){
@@ -552,8 +551,11 @@
 
                                     java.lang.String content = reader.getElementText();
                                     
-                                              object.setReason(
-                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
+                                                org.apache.axiom.om.OMFactory fac = org.apache.axiom.om.OMAbstractFactory.getOMFactory();
+                                                org.apache.axiom.om.OMNamespace omNs = fac.createOMNamespace("urn:cdc:iisb:2011", "");
+                                                org.apache.axiom.om.OMElement _valueReason = fac.createOMElement("Reason", omNs);
+                                                _valueReason.addChild(fac.createOMText(_valueReason, content));
+                                                object.setReason(_valueReason);
                                               
                                         reader.next();
                                     

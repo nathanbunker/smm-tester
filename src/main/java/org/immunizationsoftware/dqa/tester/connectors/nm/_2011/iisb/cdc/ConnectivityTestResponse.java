@@ -30,14 +30,14 @@
                         */
 
                         
-                                    protected _2011.iisb.cdc.ConnectivityTestResponseType localConnectivityTestResponse ;
+                                    protected org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestResponseType localConnectivityTestResponse ;
                                 
 
                            /**
                            * Auto generated getter method
                            * @return _2011.iisb.cdc.ConnectivityTestResponseType
                            */
-                           public  _2011.iisb.cdc.ConnectivityTestResponseType getConnectivityTestResponse(){
+                           public  org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestResponseType getConnectivityTestResponse(){
                                return localConnectivityTestResponse;
                            }
 
@@ -47,7 +47,7 @@
                                * Auto generated setter method
                                * @param param ConnectivityTestResponse
                                */
-                               public void setConnectivityTestResponse(_2011.iisb.cdc.ConnectivityTestResponseType param){
+                               public void setConnectivityTestResponse(org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestResponseType param){
                             
                                             this.localConnectivityTestResponse=param;
                                     
@@ -323,7 +323,7 @@
                 
                                     if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","connectivityTestResponse").equals(reader.getName())){
                                 
-                                                object.setConnectivityTestResponse(_2011.iisb.cdc.ConnectivityTestResponseType.Factory.parse(reader));
+                                                object.setConnectivityTestResponse(org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestResponseType.Factory.parse(reader));
                                             
                               }  // End of if for expected property start element
                                 

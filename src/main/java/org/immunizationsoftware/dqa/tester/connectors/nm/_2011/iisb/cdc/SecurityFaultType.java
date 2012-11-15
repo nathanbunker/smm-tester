@@ -491,7 +491,7 @@
                             if (!"SecurityFaultType".equals(type)){
                                 //find namespace for the prefix
                                 java.lang.String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
-                                return (SecurityFaultType)_2011.iisb.cdc.ExtensionMapper.getTypeObject(
+                                return (SecurityFaultType)org.immunizationsoftware.dqa.tester.connectors.tlep.ExtensionMapper.getTypeObject(
                                      nsUri,type,reader);
                               }
                         
