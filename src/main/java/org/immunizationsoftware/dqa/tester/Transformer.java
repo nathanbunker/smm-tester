@@ -387,6 +387,18 @@ public class Transformer
         } else if (extra.equals("VAC3_ADMIN"))
         {
           quickTransforms = addAdmin(quickTransforms, "3", 3);
+        } else if (extra.equals("VAC1_NA"))
+        {
+          int count = 3;
+          count -= alsoHas(testCaseMessage, "VAC2_ADMIN") || alsoHas(testCaseMessage, "VAC2_HIST") ? 1 : 0;
+          count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1 : 0;
+          quickTransforms += "ORC-3=[VAC" + count + "_ID]\n";         
+          quickTransforms += "RXA-3=[VAC" + count + "_DATE]\n";
+          quickTransforms += "RXA-5.1=[VAC" + count + "_CVX]\n";
+          quickTransforms += "RXA-5.2=[VAC" + count + "_CVX_LABEL]\n";
+          quickTransforms += "RXA-5.3=CVX\n";
+          quickTransforms += "RXA-6=999\n";
+          quickTransforms += "RXA-21=A\n";
         } else if (extra.equals("VAC1_HIST"))
         {
           int count = 3;
@@ -427,6 +439,28 @@ public class Transformer
           quickTransforms += "RXA#3-6=999\n";
           quickTransforms += "RXA#3-9.2=Historical\n";
           quickTransforms += "RXA#3-9.3=NIP001\n";
+          quickTransforms += "RXA#3-21=A\n";
+        } else if (extra.equals("VAC2_NA"))
+        {
+          int count = 3;
+          count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1 : 0;
+          quickTransforms += "ORC#2-3=[VAC" + count + "_ID]\n";         
+          quickTransforms += "RXA#2-3=[VAC" + count + "_DATE]\n";
+          quickTransforms += "RXA#2-5.1=[VAC" + count + "_CVX]\n";
+          quickTransforms += "RXA#2-5.2=[VAC" + count + "_CVX_LABEL]\n";
+          quickTransforms += "RXA#2-5.3=CVX\n";
+          quickTransforms += "RXA#2-9.1=01\n";
+          quickTransforms += "RXA#2-6=999\n";
+          quickTransforms += "RXA#2-21=A\n";
+        } else if (extra.equals("VAC3_NA"))
+        {
+          quickTransforms += "ORC#2-3=[VAC3_ID]\n";         
+          quickTransforms += "RXA#3-3=[VAC3_DATE]\n";
+          quickTransforms += "RXA#3-5.1=[VAC3_CVX]\n";
+          quickTransforms += "RXA#3-5.2=[VAC3_CVX_LABEL]\n";
+          quickTransforms += "RXA#3-5.3=CVX\n";
+          quickTransforms += "RXA#3-9.1=01\n";
+          quickTransforms += "RXA#3-6=999\n";
           quickTransforms += "RXA#3-21=A\n";
         } else if (extra.equals("ADDRESS"))
         {

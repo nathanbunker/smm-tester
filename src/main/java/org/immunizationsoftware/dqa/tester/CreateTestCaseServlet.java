@@ -240,36 +240,48 @@ public class CreateTestCaseServlet extends ClientServlet
 
         if (scenario.equals(SCENARIO_1_ADMIN_CHILD))
         {
+          description = "NIST IZ #1: Admininistered for Child";
           originalMessage = "MSH|\nPID|\nPD1|\nNK1|\nORC|\nRXA|\nRXR|\nOBX|\nOBX|\nOBX|\nOBX|\n";
           quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "MOTHER", "RACE", "ETHNICITY", "VAC1_ADMIN" };
           patientType = PatientType.TODDLER;
         } else if (scenario.equals(SCENARIO_2_ADMIN_ADULT))
         {
+          description = "NIST IZ #2: Administered for Adult";
           originalMessage = "MSH|\nPID|\nORC|\nRXA|\nOBX|\nOBX|\nOBX|\nOBX|\n";
           quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY", "VAC1_ADMIN" };
           patientType = PatientType.ADULT;
         } else if (scenario.equals(SCENARIO_3_HISTORICAL_CHILD))
         {
+          description = "NIST IZ #3: Historical for Child";
           originalMessage = "MSH|\nPID|\nORC|\nRXA|\n";
           quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY", "VAC1_HIST" };
           patientType = PatientType.TWEEN;
         } else if (scenario.equals(SCENARIO_4_CONSENTED_CHILD))
         {
+          description = "NIST IZ #4: Consented for Child";
           originalMessage = "MSH|\nPID|\nPD1|\nORC|\nRXA|\n";
           quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY", "VAC1_HIST" };
           patientType = PatientType.TWEEN;
+          customTransformations = "PD1-12=N\n";
         } else if (scenario.equals(SCENARIO_5_REFUSED_TODDLER))
         {
+          description = "NIST IZ #5: Refused for Toddler";
           originalMessage = "MSH|\nPID|\nORC|\nRXA|\n";
           patientType = PatientType.TODDLER;
-          quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY", "VAC1_HIST" };
+          quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY", "VAC1_NA" };
+          customTransformations = "RXA-18.1=00\n" + "RXA-18.2=Parental Decision\n" + "RXA-18.3=NIP002\n" + "RXA-20=RE\n";
         } else if (scenario.equals(SCENARIO_6_VARICELLA_HISTORY_CHILD))
         {
+          description = "NIST IZ #6: Varicella History for Child";
           originalMessage = "MSH|\nPID|\nORC|\nRXA|\nOBX|\n";
-          quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY" };
+          quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY", "VAC1_NA" };
+          customTransformations = "RXA-5.1=998\n" + "RXA-5.2=No vaccine administered\n" + "RXA-5.1=998\n" + "OBX-1=1\n" + "OBX-2=CE\n"
+              + "OBX-3.1=59784-9\n" + "OBX-3.2=Disease with presumed immunity\n" + "OBX-3.3=LN\n" + "OBX-4=1\n" + "OBX-5.1=38907003\n"
+              + "OBX-5.2=Varicella infection\n" + "OBX-5.3=SCT\n" + "OBX-11=F\n";
           patientType = PatientType.TWEEN;
         } else if (scenario.equals(SCENARIO_7_COMPLETE_RECORD))
         {
+          description = "NIST IZ #7: Complete Record";
           originalMessage = "MSH|\nPID|\nORC|\nRXA|\nRXR|\nOBX|\nOBX|\nOBX|\nOBX|\nORC|\nRXA|\nORC|\nRXA|\nRXR|\nOBX|\nOBX|\nOBX|\nOBX|\n";
           quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY", "VAC1_ADMIN", "VAC2_HIST",
               "VAC3_ADMIN" };
