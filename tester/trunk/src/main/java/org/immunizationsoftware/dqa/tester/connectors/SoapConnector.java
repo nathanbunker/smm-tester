@@ -25,8 +25,9 @@ public class SoapConnector extends HttpConnector
   private Client_Service clientService = null;
 
 
-  public SoapConnector(String label, String serviceName) throws Exception {
+  public SoapConnector(String label, String url) throws Exception {
     super(label, "SOAP");
+    this.url = url;
     clientService = new Client_ServiceStub(this.url);
   }
 
