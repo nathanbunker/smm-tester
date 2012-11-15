@@ -30,14 +30,14 @@
                         */
 
                         
-                                    protected _2011.iisb.cdc.SecurityFaultType localSecurityFault ;
+                                    protected org.immunizationsoftware.dqa.tester.connectors.tlep.SecurityFaultType localSecurityFault ;
                                 
 
                            /**
                            * Auto generated getter method
                            * @return _2011.iisb.cdc.SecurityFaultType
                            */
-                           public  _2011.iisb.cdc.SecurityFaultType getSecurityFault(){
+                           public  org.immunizationsoftware.dqa.tester.connectors.tlep.SecurityFaultType getSecurityFault(){
                                return localSecurityFault;
                            }
 
@@ -47,7 +47,7 @@
                                * Auto generated setter method
                                * @param param SecurityFault
                                */
-                               public void setSecurityFault(_2011.iisb.cdc.SecurityFaultType param){
+                               public void setSecurityFault(org.immunizationsoftware.dqa.tester.connectors.tlep.SecurityFaultType param){
                             
                                             this.localSecurityFault=param;
                                     
@@ -323,7 +323,7 @@
                 
                                     if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","SecurityFault").equals(reader.getName())){
                                 
-                                                object.setSecurityFault(_2011.iisb.cdc.SecurityFaultType.Factory.parse(reader));
+                                                object.setSecurityFault(org.immunizationsoftware.dqa.tester.connectors.tlep.SecurityFaultType.Factory.parse(reader));
                                             
                               }  // End of if for expected property start element
                                 

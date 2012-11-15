@@ -12,7 +12,7 @@ public class ConnectivityTestFault extends java.lang.Exception{
 
     private static final long serialVersionUID = 1352994966042L;
     
-    private _2011.iisb.cdc.UnsupportedOperationFault faultMessage;
+    private org.immunizationsoftware.dqa.tester.connectors.tlep.UnsupportedOperationFault faultMessage;
 
     
         public ConnectivityTestFault() {
@@ -32,11 +32,11 @@ public class ConnectivityTestFault extends java.lang.Exception{
         }
     
 
-    public void setFaultMessage(_2011.iisb.cdc.UnsupportedOperationFault msg){
+    public void setFaultMessage(org.immunizationsoftware.dqa.tester.connectors.tlep.UnsupportedOperationFault msg){
        faultMessage = msg;
     }
     
-    public _2011.iisb.cdc.UnsupportedOperationFault getFaultMessage(){
+    public org.immunizationsoftware.dqa.tester.connectors.tlep.UnsupportedOperationFault getFaultMessage(){
        return faultMessage;
     }
 }

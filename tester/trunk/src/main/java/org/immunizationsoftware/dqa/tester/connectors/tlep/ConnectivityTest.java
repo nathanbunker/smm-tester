@@ -1,54 +1,55 @@
 
 /**
- * ConnectivityTestRequestType.java
+ * ConnectivityTest.java
  *
  * This file was auto-generated from WSDL
  * by the Apache Axis2 version: 1.6.2  Built on : Apr 17, 2012 (05:34:40 IST)
  */
 
             
-                package _2011.iisb.cdc;
+                package org.immunizationsoftware.dqa.tester.connectors.tlep;
             
 
             /**
-            *  ConnectivityTestRequestType bean class
+            *  ConnectivityTest bean class
             */
             @SuppressWarnings({"unchecked","unused"})
         
-        public  class ConnectivityTestRequestType
+        public  class ConnectivityTest
         implements org.apache.axis2.databinding.ADBBean{
-        /* This type was generated from the piece of schema that had
-                name = connectivityTestRequestType
-                Namespace URI = urn:cdc:iisb:2011
-                Namespace Prefix = ns1
-                */
+        
+                public static final javax.xml.namespace.QName MY_QNAME = new javax.xml.namespace.QName(
+                "urn:cdc:iisb:2011",
+                "connectivityTest",
+                "ns1");
+
             
 
                         /**
-                        * field for EchoBack
+                        * field for ConnectivityTest
                         */
 
                         
-                                    protected java.lang.String localEchoBack ;
+                                    protected org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestRequestType localConnectivityTest ;
                                 
 
                            /**
                            * Auto generated getter method
-                           * @return java.lang.String
+                           * @return _2011.iisb.cdc.ConnectivityTestRequestType
                            */
-                           public  java.lang.String getEchoBack(){
-                               return localEchoBack;
+                           public  org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestRequestType getConnectivityTest(){
+                               return localConnectivityTest;
                            }
 
                            
                         
                             /**
                                * Auto generated setter method
-                               * @param param EchoBack
+                               * @param param ConnectivityTest
                                */
-                               public void setEchoBack(java.lang.String param){
+                               public void setConnectivityTest(org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestRequestType param){
                             
-                                            this.localEchoBack=param;
+                                            this.localConnectivityTest=param;
                                     
 
                                }
@@ -69,8 +70,8 @@
 
         
                org.apache.axiom.om.OMDataSource dataSource =
-                       new org.apache.axis2.databinding.ADBDataSource(this,parentQName);
-               return factory.createOMElement(dataSource,parentQName);
+                       new org.apache.axis2.databinding.ADBDataSource(this,MY_QNAME);
+               return factory.createOMElement(dataSource,MY_QNAME);
             
         }
 
@@ -86,53 +87,13 @@
             throws javax.xml.stream.XMLStreamException, org.apache.axis2.databinding.ADBException{
             
                 
-
-
-                java.lang.String prefix = null;
-                java.lang.String namespace = null;
+                //We can safely assume an element has only one type associated with it
                 
-
-                    prefix = parentQName.getPrefix();
-                    namespace = parentQName.getNamespaceURI();
-                    writeStartElement(prefix, namespace, parentQName.getLocalPart(), xmlWriter);
-                
-                  if (serializeType){
-               
-
-                   java.lang.String namespacePrefix = registerPrefix(xmlWriter,"urn:cdc:iisb:2011");
-                   if ((namespacePrefix != null) && (namespacePrefix.trim().length() > 0)){
-                       writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
-                           namespacePrefix+":connectivityTestRequestType",
-                           xmlWriter);
-                   } else {
-                       writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
-                           "connectivityTestRequestType",
-                           xmlWriter);
-                   }
-
-               
-                   }
-               
-                                    namespace = "urn:cdc:iisb:2011";
-                                    writeStartElement(null, namespace, "echoBack", xmlWriter);
-                             
-
-                                          if (localEchoBack==null){
-                                              // write the nil attribute
-                                              
-                                                     writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","nil","1",xmlWriter);
-                                                  
-                                          }else{
-
-                                        
-                                                   xmlWriter.writeCharacters(localEchoBack);
-                                            
-                                          }
-                                    
-                                   xmlWriter.writeEndElement();
-                             
-                    xmlWriter.writeEndElement();
-               
+                                 if (localConnectivityTest==null){
+                                   throw new org.apache.axis2.databinding.ADBException("connectivityTest cannot be null!");
+                                 }
+                                 localConnectivityTest.serialize(MY_QNAME,xmlWriter);
+                            
 
         }
 
@@ -312,20 +273,9 @@
 
 
         
-                 java.util.ArrayList elementList = new java.util.ArrayList();
-                 java.util.ArrayList attribList = new java.util.ArrayList();
-
                 
-                                      elementList.add(new javax.xml.namespace.QName("urn:cdc:iisb:2011",
-                                                                      "echoBack"));
-                                 
-                                         elementList.add(localEchoBack==null?null:
-                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localEchoBack));
-                                    
-
-                return new org.apache.axis2.databinding.utils.reader.ADBXMLStreamReaderImpl(qName, elementList.toArray(), attribList.toArray());
-            
-            
+                //We can safely assume an element has only one type associated with it
+                return localConnectivityTest.getPullParser(MY_QNAME);
 
         }
 
@@ -346,9 +296,9 @@
         * Postcondition: If this object is an element, the reader is positioned at its end element
         *                If this object is a complex type, the reader is positioned at the end element of its outer element
         */
-        public static ConnectivityTestRequestType parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
-            ConnectivityTestRequestType object =
-                new ConnectivityTestRequestType();
+        public static ConnectivityTest parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
+            ConnectivityTest object =
+                new ConnectivityTest();
 
             int event;
             java.lang.String nillableValue = null;
@@ -360,32 +310,6 @@
                     reader.next();
 
                 
-                if (reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","type")!=null){
-                  java.lang.String fullTypeName = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance",
-                        "type");
-                  if (fullTypeName!=null){
-                    java.lang.String nsPrefix = null;
-                    if (fullTypeName.indexOf(":") > -1){
-                        nsPrefix = fullTypeName.substring(0,fullTypeName.indexOf(":"));
-                    }
-                    nsPrefix = nsPrefix==null?"":nsPrefix;
-
-                    java.lang.String type = fullTypeName.substring(fullTypeName.indexOf(":")+1);
-                    
-                            if (!"connectivityTestRequestType".equals(type)){
-                                //find namespace for the prefix
-                                java.lang.String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
-                                return (ConnectivityTestRequestType)_2011.iisb.cdc.ExtensionMapper.getTypeObject(
-                                     nsUri,type,reader);
-                              }
-                        
-
-                  }
-                
-
-                }
-
-                
 
                 
                 // Note all attributes that were handled. Used to differ normal attributes
@@ -393,46 +317,26 @@
                 java.util.Vector handledAttributes = new java.util.Vector();
                 
 
+                   
+                while(!reader.isEndElement()) {
+                    if (reader.isStartElement() ){
                 
-                    
-                    reader.next();
-                
-                                    
-                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","connectivityTest").equals(reader.getName())){
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","echoBack").equals(reader.getName())){
-                                
-                                       nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
-                                       if (!"true".equals(nillableValue) && !"1".equals(nillableValue)){
-                                    
-
-                                    java.lang.String content = reader.getElementText();
-                                    
-                                              object.setEchoBack(
-                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
+                                                object.setConnectivityTest(org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestRequestType.Factory.parse(reader));
                                             
-                                       } else {
-                                           
-                                           
-                                           reader.getElementText(); // throw away text nodes if any.
-                                       }
-                                      
-                                        reader.next();
-                                    
                               }  // End of if for expected property start element
                                 
-                                else{
-                                    // A start element we are not expecting indicates an invalid parameter was passed
-                                    throw new org.apache.axis2.databinding.ADBException("Unexpected subelement " + reader.getName());
-                                }
-                              
-                            while (!reader.isStartElement() && !reader.isEndElement())
+                             else{
+                                        // A start element we are not expecting indicates an invalid parameter was passed
+                                        throw new org.apache.axis2.databinding.ADBException("Unexpected subelement " + reader.getName());
+                             }
+                          
+                             } else {
                                 reader.next();
-                            
-                                if (reader.isStartElement())
-                                // A start element we are not expecting indicates a trailing invalid property
-                                throw new org.apache.axis2.databinding.ADBException("Unexpected subelement " + reader.getName());
-                            
+                             }  
+                           }  // end of while loop
+                        
 
 
 

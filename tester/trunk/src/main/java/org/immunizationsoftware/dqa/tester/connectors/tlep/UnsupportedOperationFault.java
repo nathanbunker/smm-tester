@@ -1,55 +1,55 @@
 
 /**
- * ConnectivityTestResponse.java
+ * UnsupportedOperationFault.java
  *
  * This file was auto-generated from WSDL
  * by the Apache Axis2 version: 1.6.2  Built on : Apr 17, 2012 (05:34:40 IST)
  */
 
             
-                package _2011.iisb.cdc;
+                package org.immunizationsoftware.dqa.tester.connectors.tlep;
             
 
             /**
-            *  ConnectivityTestResponse bean class
+            *  UnsupportedOperationFault bean class
             */
             @SuppressWarnings({"unchecked","unused"})
         
-        public  class ConnectivityTestResponse
+        public  class UnsupportedOperationFault
         implements org.apache.axis2.databinding.ADBBean{
         
                 public static final javax.xml.namespace.QName MY_QNAME = new javax.xml.namespace.QName(
                 "urn:cdc:iisb:2011",
-                "connectivityTestResponse",
+                "UnsupportedOperationFault",
                 "ns1");
 
             
 
                         /**
-                        * field for ConnectivityTestResponse
+                        * field for UnsupportedOperationFault
                         */
 
                         
-                                    protected _2011.iisb.cdc.ConnectivityTestResponseType localConnectivityTestResponse ;
+                                    protected org.immunizationsoftware.dqa.tester.connectors.tlep.UnsupportedOperationFaultType localUnsupportedOperationFault ;
                                 
 
                            /**
                            * Auto generated getter method
-                           * @return _2011.iisb.cdc.ConnectivityTestResponseType
+                           * @return _2011.iisb.cdc.UnsupportedOperationFaultType
                            */
-                           public  _2011.iisb.cdc.ConnectivityTestResponseType getConnectivityTestResponse(){
-                               return localConnectivityTestResponse;
+                           public  org.immunizationsoftware.dqa.tester.connectors.tlep.UnsupportedOperationFaultType getUnsupportedOperationFault(){
+                               return localUnsupportedOperationFault;
                            }
 
                            
                         
                             /**
                                * Auto generated setter method
-                               * @param param ConnectivityTestResponse
+                               * @param param UnsupportedOperationFault
                                */
-                               public void setConnectivityTestResponse(_2011.iisb.cdc.ConnectivityTestResponseType param){
+                               public void setUnsupportedOperationFault(org.immunizationsoftware.dqa.tester.connectors.tlep.UnsupportedOperationFaultType param){
                             
-                                            this.localConnectivityTestResponse=param;
+                                            this.localUnsupportedOperationFault=param;
                                     
 
                                }
@@ -89,10 +89,10 @@
                 
                 //We can safely assume an element has only one type associated with it
                 
-                                 if (localConnectivityTestResponse==null){
-                                   throw new org.apache.axis2.databinding.ADBException("connectivityTestResponse cannot be null!");
+                                 if (localUnsupportedOperationFault==null){
+                                   throw new org.apache.axis2.databinding.ADBException("UnsupportedOperationFault cannot be null!");
                                  }
-                                 localConnectivityTestResponse.serialize(MY_QNAME,xmlWriter);
+                                 localUnsupportedOperationFault.serialize(MY_QNAME,xmlWriter);
                             
 
         }
@@ -275,7 +275,7 @@
         
                 
                 //We can safely assume an element has only one type associated with it
-                return localConnectivityTestResponse.getPullParser(MY_QNAME);
+                return localUnsupportedOperationFault.getPullParser(MY_QNAME);
 
         }
 
@@ -296,9 +296,9 @@
         * Postcondition: If this object is an element, the reader is positioned at its end element
         *                If this object is a complex type, the reader is positioned at the end element of its outer element
         */
-        public static ConnectivityTestResponse parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
-            ConnectivityTestResponse object =
-                new ConnectivityTestResponse();
+        public static UnsupportedOperationFault parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
+            UnsupportedOperationFault object =
+                new UnsupportedOperationFault();
 
             int event;
             java.lang.String nillableValue = null;
@@ -321,9 +321,9 @@
                 while(!reader.isEndElement()) {
                     if (reader.isStartElement() ){
                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","connectivityTestResponse").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","UnsupportedOperationFault").equals(reader.getName())){
                                 
-                                                object.setConnectivityTestResponse(_2011.iisb.cdc.ConnectivityTestResponseType.Factory.parse(reader));
+                                                object.setUnsupportedOperationFault(org.immunizationsoftware.dqa.tester.connectors.tlep.UnsupportedOperationFaultType.Factory.parse(reader));
                                             
                               }  // End of if for expected property start element
                                 

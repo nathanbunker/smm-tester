@@ -12,7 +12,7 @@ public class SubmitSingleMessageFault extends java.lang.Exception{
 
     private static final long serialVersionUID = 1352994966060L;
     
-    private _2011.iisb.cdc.Fault faultMessage;
+    private org.immunizationsoftware.dqa.tester.connectors.tlep.Fault faultMessage;
 
     
         public SubmitSingleMessageFault() {
@@ -32,11 +32,11 @@ public class SubmitSingleMessageFault extends java.lang.Exception{
         }
     
 
-    public void setFaultMessage(_2011.iisb.cdc.Fault msg){
+    public void setFaultMessage(org.immunizationsoftware.dqa.tester.connectors.tlep.Fault msg){
        faultMessage = msg;
     }
     
-    public _2011.iisb.cdc.Fault getFaultMessage(){
+    public org.immunizationsoftware.dqa.tester.connectors.tlep.Fault getFaultMessage(){
        return faultMessage;
     }
 }

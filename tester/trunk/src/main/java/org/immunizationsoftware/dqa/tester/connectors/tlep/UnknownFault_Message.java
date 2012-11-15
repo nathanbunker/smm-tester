@@ -6,13 +6,13 @@
  * by the Apache Axis2 version: 1.6.2  Built on : Apr 17, 2012 (05:33:49 IST)
  */
 
-package _2011.iisb.cdc;
+package org.immunizationsoftware.dqa.tester.connectors.tlep;
 
 public class UnknownFault_Message extends java.lang.Exception{
 
     private static final long serialVersionUID = 1352987427388L;
     
-    private _2011.iisb.cdc.Fault faultMessage;
+    private org.immunizationsoftware.dqa.tester.connectors.tlep.Fault faultMessage;
 
     
         public UnknownFault_Message() {
@@ -32,11 +32,11 @@ public class UnknownFault_Message extends java.lang.Exception{
         }
     
 
-    public void setFaultMessage(_2011.iisb.cdc.Fault msg){
+    public void setFaultMessage(org.immunizationsoftware.dqa.tester.connectors.tlep.Fault msg){
        faultMessage = msg;
     }
     
-    public _2011.iisb.cdc.Fault getFaultMessage(){
+    public org.immunizationsoftware.dqa.tester.connectors.tlep.Fault getFaultMessage(){
        return faultMessage;
     }
 }

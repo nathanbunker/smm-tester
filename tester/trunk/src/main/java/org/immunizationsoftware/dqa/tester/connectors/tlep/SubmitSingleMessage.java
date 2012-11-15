@@ -1,55 +1,55 @@
 
 /**
- * SubmitSingleMessageResponse.java
+ * SubmitSingleMessage.java
  *
  * This file was auto-generated from WSDL
  * by the Apache Axis2 version: 1.6.2  Built on : Apr 17, 2012 (05:34:40 IST)
  */
 
             
-                package _2011.iisb.cdc;
+                package org.immunizationsoftware.dqa.tester.connectors.tlep;
             
 
             /**
-            *  SubmitSingleMessageResponse bean class
+            *  SubmitSingleMessage bean class
             */
             @SuppressWarnings({"unchecked","unused"})
         
-        public  class SubmitSingleMessageResponse
+        public  class SubmitSingleMessage
         implements org.apache.axis2.databinding.ADBBean{
         
                 public static final javax.xml.namespace.QName MY_QNAME = new javax.xml.namespace.QName(
                 "urn:cdc:iisb:2011",
-                "submitSingleMessageResponse",
+                "submitSingleMessage",
                 "ns1");
 
             
 
                         /**
-                        * field for SubmitSingleMessageResponse
+                        * field for SubmitSingleMessage
                         */
 
                         
-                                    protected _2011.iisb.cdc.SubmitSingleMessageResponseType localSubmitSingleMessageResponse ;
+                                    protected org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageRequestType localSubmitSingleMessage ;
                                 
 
                            /**
                            * Auto generated getter method
-                           * @return _2011.iisb.cdc.SubmitSingleMessageResponseType
+                           * @return _2011.iisb.cdc.SubmitSingleMessageRequestType
                            */
-                           public  _2011.iisb.cdc.SubmitSingleMessageResponseType getSubmitSingleMessageResponse(){
-                               return localSubmitSingleMessageResponse;
+                           public  org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageRequestType getSubmitSingleMessage(){
+                               return localSubmitSingleMessage;
                            }
 
                            
                         
                             /**
                                * Auto generated setter method
-                               * @param param SubmitSingleMessageResponse
+                               * @param param SubmitSingleMessage
                                */
-                               public void setSubmitSingleMessageResponse(_2011.iisb.cdc.SubmitSingleMessageResponseType param){
+                               public void setSubmitSingleMessage(org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageRequestType param){
                             
-                                            this.localSubmitSingleMessageResponse=param;
+                                            this.localSubmitSingleMessage=param;
                                     
 
                                }
@@ -89,10 +89,10 @@
                 
                 //We can safely assume an element has only one type associated with it
                 
-                                 if (localSubmitSingleMessageResponse==null){
-                                   throw new org.apache.axis2.databinding.ADBException("submitSingleMessageResponse cannot be null!");
+                                 if (localSubmitSingleMessage==null){
+                                   throw new org.apache.axis2.databinding.ADBException("submitSingleMessage cannot be null!");
                                  }
-                                 localSubmitSingleMessageResponse.serialize(MY_QNAME,xmlWriter);
+                                 localSubmitSingleMessage.serialize(MY_QNAME,xmlWriter);
                             
 
         }
@@ -275,7 +275,7 @@
         
                 
                 //We can safely assume an element has only one type associated with it
-                return localSubmitSingleMessageResponse.getPullParser(MY_QNAME);
+                return localSubmitSingleMessage.getPullParser(MY_QNAME);
 
         }
 
@@ -296,9 +296,9 @@
         * Postcondition: If this object is an element, the reader is positioned at its end element
         *                If this object is a complex type, the reader is positioned at the end element of its outer element
         */
-        public static SubmitSingleMessageResponse parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
-            SubmitSingleMessageResponse object =
-                new SubmitSingleMessageResponse();
+        public static SubmitSingleMessage parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
+            SubmitSingleMessage object =
+                new SubmitSingleMessage();
 
             int event;
             java.lang.String nillableValue = null;
@@ -321,9 +321,9 @@
                 while(!reader.isEndElement()) {
                     if (reader.isStartElement() ){
                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","submitSingleMessageResponse").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","submitSingleMessage").equals(reader.getName())){
                                 
-                                                object.setSubmitSingleMessageResponse(_2011.iisb.cdc.SubmitSingleMessageResponseType.Factory.parse(reader));
+                                                object.setSubmitSingleMessage(org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageRequestType.Factory.parse(reader));
                                             
                               }  // End of if for expected property start element
                                 

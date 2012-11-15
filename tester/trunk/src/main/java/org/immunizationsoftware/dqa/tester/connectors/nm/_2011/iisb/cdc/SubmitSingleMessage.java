@@ -30,14 +30,14 @@
                         */
 
                         
-                                    protected _2011.iisb.cdc.SubmitSingleMessageRequestType localSubmitSingleMessage ;
+                                    protected org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageRequestType localSubmitSingleMessage ;
                                 
 
                            /**
                            * Auto generated getter method
                            * @return _2011.iisb.cdc.SubmitSingleMessageRequestType
                            */
-                           public  _2011.iisb.cdc.SubmitSingleMessageRequestType getSubmitSingleMessage(){
+                           public  org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageRequestType getSubmitSingleMessage(){
                                return localSubmitSingleMessage;
                            }
 
@@ -47,7 +47,7 @@
                                * Auto generated setter method
                                * @param param SubmitSingleMessage
                                */
-                               public void setSubmitSingleMessage(_2011.iisb.cdc.SubmitSingleMessageRequestType param){
+                               public void setSubmitSingleMessage(org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageRequestType param){
                             
                                             this.localSubmitSingleMessage=param;
                                     
@@ -323,7 +323,7 @@
                 
                                     if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","submitSingleMessage").equals(reader.getName())){
                                 
-                                                object.setSubmitSingleMessage(_2011.iisb.cdc.SubmitSingleMessageRequestType.Factory.parse(reader));
+                                                object.setSubmitSingleMessage(org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageRequestType.Factory.parse(reader));
                                             
                               }  // End of if for expected property start element
                                 

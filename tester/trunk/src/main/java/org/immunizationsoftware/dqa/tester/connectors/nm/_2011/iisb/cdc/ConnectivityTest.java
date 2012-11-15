@@ -30,14 +30,14 @@
                         */
 
                         
-                                    protected _2011.iisb.cdc.ConnectivityTestRequestType localConnectivityTest ;
+                                    protected org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestRequestType localConnectivityTest ;
                                 
 
                            /**
                            * Auto generated getter method
                            * @return _2011.iisb.cdc.ConnectivityTestRequestType
                            */
-                           public  _2011.iisb.cdc.ConnectivityTestRequestType getConnectivityTest(){
+                           public  org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestRequestType getConnectivityTest(){
                                return localConnectivityTest;
                            }
 
@@ -47,7 +47,7 @@
                                * Auto generated setter method
                                * @param param ConnectivityTest
                                */
-                               public void setConnectivityTest(_2011.iisb.cdc.ConnectivityTestRequestType param){
+                               public void setConnectivityTest(org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestRequestType param){
                             
                                             this.localConnectivityTest=param;
                                     
@@ -323,7 +323,7 @@
                 
                                     if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","connectivityTest").equals(reader.getName())){
                                 
-                                                object.setConnectivityTest(_2011.iisb.cdc.ConnectivityTestRequestType.Factory.parse(reader));
+                                                object.setConnectivityTest(org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestRequestType.Factory.parse(reader));
                                             
                               }  // End of if for expected property start element
                                 

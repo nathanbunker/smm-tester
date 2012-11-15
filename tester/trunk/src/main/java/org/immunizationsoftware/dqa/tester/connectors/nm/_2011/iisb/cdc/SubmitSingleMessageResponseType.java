@@ -375,7 +375,7 @@
                             if (!"submitSingleMessageResponseType".equals(type)){
                                 //find namespace for the prefix
                                 java.lang.String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
-                                return (SubmitSingleMessageResponseType)_2011.iisb.cdc.ExtensionMapper.getTypeObject(
+                                return (SubmitSingleMessageResponseType)org.immunizationsoftware.dqa.tester.connectors.tlep.ExtensionMapper.getTypeObject(
                                      nsUri,type,reader);
                               }
                         

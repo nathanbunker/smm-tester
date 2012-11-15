@@ -1,180 +1,114 @@
 
 /**
- * SubmitSingleMessageRequestType.java
+ * SoapFaultType.java
  *
  * This file was auto-generated from WSDL
  * by the Apache Axis2 version: 1.6.2  Built on : Apr 17, 2012 (05:34:40 IST)
  */
 
             
-                package _2011.iisb.cdc;
+                package org.immunizationsoftware.dqa.tester.connectors.tlep;
             
 
             /**
-            *  SubmitSingleMessageRequestType bean class
+            *  SoapFaultType bean class
             */
             @SuppressWarnings({"unchecked","unused"})
         
-        public  class SubmitSingleMessageRequestType
+        public  class SoapFaultType
         implements org.apache.axis2.databinding.ADBBean{
         /* This type was generated from the piece of schema that had
-                name = submitSingleMessageRequestType
+                name = soapFaultType
                 Namespace URI = urn:cdc:iisb:2011
                 Namespace Prefix = ns1
                 */
             
 
                         /**
-                        * field for Username
+                        * field for Code
                         */
 
                         
-                                    protected java.lang.String localUsername ;
+                                    protected java.math.BigInteger localCode ;
                                 
-                           /*  This tracker boolean wil be used to detect whether the user called the set method
-                          *   for this attribute. It will be used to determine whether to include this field
-                           *   in the serialized XML
-                           */
-                           protected boolean localUsernameTracker = false ;
-
-                           public boolean isUsernameSpecified(){
-                               return localUsernameTracker;
-                           }
-
-                           
 
                            /**
                            * Auto generated getter method
-                           * @return java.lang.String
+                           * @return java.math.BigInteger
                            */
-                           public  java.lang.String getUsername(){
-                               return localUsername;
+                           public  java.math.BigInteger getCode(){
+                               return localCode;
                            }
 
                            
                         
                             /**
                                * Auto generated setter method
-                               * @param param Username
+                               * @param param Code
                                */
-                               public void setUsername(java.lang.String param){
-                            localUsernameTracker = true;
-                                   
-                                            this.localUsername=param;
+                               public void setCode(java.math.BigInteger param){
+                            
+                                            this.localCode=param;
                                     
 
                                }
                             
 
                         /**
-                        * field for Password
+                        * field for Reason
                         */
 
                         
-                                    protected java.lang.String localPassword ;
+                                    protected java.lang.String localReason ;
                                 
-                           /*  This tracker boolean wil be used to detect whether the user called the set method
-                          *   for this attribute. It will be used to determine whether to include this field
-                           *   in the serialized XML
-                           */
-                           protected boolean localPasswordTracker = false ;
-
-                           public boolean isPasswordSpecified(){
-                               return localPasswordTracker;
-                           }
-
-                           
 
                            /**
                            * Auto generated getter method
                            * @return java.lang.String
                            */
-                           public  java.lang.String getPassword(){
-                               return localPassword;
+                           public  java.lang.String getReason(){
+                               return localReason;
                            }
 
                            
                         
                             /**
                                * Auto generated setter method
-                               * @param param Password
+                               * @param param Reason
                                */
-                               public void setPassword(java.lang.String param){
-                            localPasswordTracker = true;
-                                   
-                                            this.localPassword=param;
+                               public void setReason(java.lang.String param){
+                            
+                                            this.localReason=param;
                                     
 
                                }
                             
 
                         /**
-                        * field for FacilityID
+                        * field for Detail
                         */
 
                         
-                                    protected java.lang.String localFacilityID ;
-                                
-                           /*  This tracker boolean wil be used to detect whether the user called the set method
-                          *   for this attribute. It will be used to determine whether to include this field
-                           *   in the serialized XML
-                           */
-                           protected boolean localFacilityIDTracker = false ;
-
-                           public boolean isFacilityIDSpecified(){
-                               return localFacilityIDTracker;
-                           }
-
-                           
-
-                           /**
-                           * Auto generated getter method
-                           * @return java.lang.String
-                           */
-                           public  java.lang.String getFacilityID(){
-                               return localFacilityID;
-                           }
-
-                           
-                        
-                            /**
-                               * Auto generated setter method
-                               * @param param FacilityID
-                               */
-                               public void setFacilityID(java.lang.String param){
-                            localFacilityIDTracker = true;
-                                   
-                                            this.localFacilityID=param;
-                                    
-
-                               }
-                            
-
-                        /**
-                        * field for Hl7Message
-                        */
-
-                        
-                                    protected java.lang.String localHl7Message ;
+                                    protected java.lang.String localDetail ;
                                 
 
                            /**
                            * Auto generated getter method
                            * @return java.lang.String
                            */
-                           public  java.lang.String getHl7Message(){
-                               return localHl7Message;
+                           public  java.lang.String getDetail(){
+                               return localDetail;
                            }
 
                            
                         
                             /**
                                * Auto generated setter method
-                               * @param param Hl7Message
+                               * @param param Detail
                                */
-                               public void setHl7Message(java.lang.String param){
+                               public void setDetail(java.lang.String param){
                             
-                                            this.localHl7Message=param;
+                                            this.localDetail=param;
                                     
 
                                }
@@ -228,84 +162,66 @@
                    java.lang.String namespacePrefix = registerPrefix(xmlWriter,"urn:cdc:iisb:2011");
                    if ((namespacePrefix != null) && (namespacePrefix.trim().length() > 0)){
                        writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
-                           namespacePrefix+":submitSingleMessageRequestType",
+                           namespacePrefix+":soapFaultType",
                            xmlWriter);
                    } else {
                        writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
-                           "submitSingleMessageRequestType",
+                           "soapFaultType",
                            xmlWriter);
                    }
 
                
                    }
-                if (localUsernameTracker){
+               
                                     namespace = "urn:cdc:iisb:2011";
-                                    writeStartElement(null, namespace, "username", xmlWriter);
+                                    writeStartElement(null, namespace, "Code", xmlWriter);
                              
 
-                                          if (localUsername==null){
+                                          if (localCode==null){
                                               // write the nil attribute
                                               
-                                                     writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","nil","1",xmlWriter);
+                                                     throw new org.apache.axis2.databinding.ADBException("Code cannot be null!!");
                                                   
                                           }else{
 
                                         
-                                                   xmlWriter.writeCharacters(localUsername);
+                                                   xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localCode));
                                             
                                           }
                                     
                                    xmlWriter.writeEndElement();
-                             } if (localPasswordTracker){
+                             
                                     namespace = "urn:cdc:iisb:2011";
-                                    writeStartElement(null, namespace, "password", xmlWriter);
+                                    writeStartElement(null, namespace, "Reason", xmlWriter);
                              
 
-                                          if (localPassword==null){
+                                          if (localReason==null){
                                               // write the nil attribute
                                               
-                                                     writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","nil","1",xmlWriter);
+                                                     throw new org.apache.axis2.databinding.ADBException("Reason cannot be null!!");
                                                   
                                           }else{
 
                                         
-                                                   xmlWriter.writeCharacters(localPassword);
+                                                   xmlWriter.writeCharacters(localReason);
                                             
                                           }
                                     
                                    xmlWriter.writeEndElement();
-                             } if (localFacilityIDTracker){
+                             
                                     namespace = "urn:cdc:iisb:2011";
-                                    writeStartElement(null, namespace, "facilityID", xmlWriter);
+                                    writeStartElement(null, namespace, "Detail", xmlWriter);
                              
 
-                                          if (localFacilityID==null){
+                                          if (localDetail==null){
                                               // write the nil attribute
                                               
-                                                     writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","nil","1",xmlWriter);
+                                                     throw new org.apache.axis2.databinding.ADBException("Detail cannot be null!!");
                                                   
                                           }else{
 
                                         
-                                                   xmlWriter.writeCharacters(localFacilityID);
-                                            
-                                          }
-                                    
-                                   xmlWriter.writeEndElement();
-                             }
-                                    namespace = "urn:cdc:iisb:2011";
-                                    writeStartElement(null, namespace, "hl7Message", xmlWriter);
-                             
-
-                                          if (localHl7Message==null){
-                                              // write the nil attribute
-                                              
-                                                     writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","nil","1",xmlWriter);
-                                                  
-                                          }else{
-
-                                        
-                                                   xmlWriter.writeCharacters(localHl7Message);
+                                                   xmlWriter.writeCharacters(localDetail);
                                             
                                           }
                                     
@@ -495,30 +411,33 @@
                  java.util.ArrayList elementList = new java.util.ArrayList();
                  java.util.ArrayList attribList = new java.util.ArrayList();
 
-                 if (localUsernameTracker){
+                
                                       elementList.add(new javax.xml.namespace.QName("urn:cdc:iisb:2011",
-                                                                      "username"));
+                                                                      "Code"));
                                  
-                                         elementList.add(localUsername==null?null:
-                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localUsername));
-                                    } if (localPasswordTracker){
+                                        if (localCode != null){
+                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localCode));
+                                        } else {
+                                           throw new org.apache.axis2.databinding.ADBException("Code cannot be null!!");
+                                        }
+                                    
                                       elementList.add(new javax.xml.namespace.QName("urn:cdc:iisb:2011",
-                                                                      "password"));
+                                                                      "Reason"));
                                  
-                                         elementList.add(localPassword==null?null:
-                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localPassword));
-                                    } if (localFacilityIDTracker){
+                                        if (localReason != null){
+                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localReason));
+                                        } else {
+                                           throw new org.apache.axis2.databinding.ADBException("Reason cannot be null!!");
+                                        }
+                                    
                                       elementList.add(new javax.xml.namespace.QName("urn:cdc:iisb:2011",
-                                                                      "facilityID"));
+                                                                      "Detail"));
                                  
-                                         elementList.add(localFacilityID==null?null:
-                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localFacilityID));
-                                    }
-                                      elementList.add(new javax.xml.namespace.QName("urn:cdc:iisb:2011",
-                                                                      "hl7Message"));
-                                 
-                                         elementList.add(localHl7Message==null?null:
-                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localHl7Message));
+                                        if (localDetail != null){
+                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localDetail));
+                                        } else {
+                                           throw new org.apache.axis2.databinding.ADBException("Detail cannot be null!!");
+                                        }
                                     
 
                 return new org.apache.axis2.databinding.utils.reader.ADBXMLStreamReaderImpl(qName, elementList.toArray(), attribList.toArray());
@@ -544,9 +463,9 @@
         * Postcondition: If this object is an element, the reader is positioned at its end element
         *                If this object is a complex type, the reader is positioned at the end element of its outer element
         */
-        public static SubmitSingleMessageRequestType parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
-            SubmitSingleMessageRequestType object =
-                new SubmitSingleMessageRequestType();
+        public static SoapFaultType parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
+            SoapFaultType object =
+                new SoapFaultType();
 
             int event;
             java.lang.String nillableValue = null;
@@ -570,10 +489,10 @@
 
                     java.lang.String type = fullTypeName.substring(fullTypeName.indexOf(":")+1);
                     
-                            if (!"submitSingleMessageRequestType".equals(type)){
+                            if (!"soapFaultType".equals(type)){
                                 //find namespace for the prefix
                                 java.lang.String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
-                                return (SubmitSingleMessageRequestType)_2011.iisb.cdc.ExtensionMapper.getTypeObject(
+                                return (SoapFaultType)org.immunizationsoftware.dqa.tester.connectors.tlep.ExtensionMapper.getTypeObject(
                                      nsUri,type,reader);
                               }
                         
@@ -598,107 +517,69 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","username").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","Code").equals(reader.getName())){
                                 
-                                       nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
-                                       if (!"true".equals(nillableValue) && !"1".equals(nillableValue)){
+                                    nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
+                                    if ("true".equals(nillableValue) || "1".equals(nillableValue)){
+                                        throw new org.apache.axis2.databinding.ADBException("The element: "+"Code" +"  cannot be null");
+                                    }
                                     
 
                                     java.lang.String content = reader.getElementText();
                                     
-                                              object.setUsername(
-                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
-                                            
-                                       } else {
-                                           
-                                           
-                                           reader.getElementText(); // throw away text nodes if any.
-                                       }
-                                      
+                                              object.setCode(
+                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToInteger(content));
+                                              
                                         reader.next();
                                     
                               }  // End of if for expected property start element
                                 
-                                    else {
-                                        
-                                    }
-                                
+                                else{
+                                    // A start element we are not expecting indicates an invalid parameter was passed
+                                    throw new org.apache.axis2.databinding.ADBException("Unexpected subelement " + reader.getName());
+                                }
+                            
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","password").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","Reason").equals(reader.getName())){
                                 
-                                       nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
-                                       if (!"true".equals(nillableValue) && !"1".equals(nillableValue)){
+                                    nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
+                                    if ("true".equals(nillableValue) || "1".equals(nillableValue)){
+                                        throw new org.apache.axis2.databinding.ADBException("The element: "+"Reason" +"  cannot be null");
+                                    }
                                     
 
                                     java.lang.String content = reader.getElementText();
                                     
-                                              object.setPassword(
+                                              object.setReason(
                                                     org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
-                                            
-                                       } else {
-                                           
-                                           
-                                           reader.getElementText(); // throw away text nodes if any.
-                                       }
-                                      
+                                              
                                         reader.next();
                                     
                               }  // End of if for expected property start element
                                 
-                                    else {
-                                        
-                                    }
-                                
+                                else{
+                                    // A start element we are not expecting indicates an invalid parameter was passed
+                                    throw new org.apache.axis2.databinding.ADBException("Unexpected subelement " + reader.getName());
+                                }
+                            
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","facilityID").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","Detail").equals(reader.getName())){
                                 
-                                       nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
-                                       if (!"true".equals(nillableValue) && !"1".equals(nillableValue)){
+                                    nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
+                                    if ("true".equals(nillableValue) || "1".equals(nillableValue)){
+                                        throw new org.apache.axis2.databinding.ADBException("The element: "+"Detail" +"  cannot be null");
+                                    }
                                     
 
                                     java.lang.String content = reader.getElementText();
                                     
-                                              object.setFacilityID(
+                                              object.setDetail(
                                                     org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
-                                            
-                                       } else {
-                                           
-                                           
-                                           reader.getElementText(); // throw away text nodes if any.
-                                       }
-                                      
-                                        reader.next();
-                                    
-                              }  // End of if for expected property start element
-                                
-                                    else {
-                                        
-                                    }
-                                
-                                    
-                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
-                                
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","hl7Message").equals(reader.getName())){
-                                
-                                       nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
-                                       if (!"true".equals(nillableValue) && !"1".equals(nillableValue)){
-                                    
-
-                                    java.lang.String content = reader.getElementText();
-                                    
-                                              object.setHl7Message(
-                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
-                                            
-                                       } else {
-                                           
-                                           
-                                           reader.getElementText(); // throw away text nodes if any.
-                                       }
-                                      
+                                              
                                         reader.next();
                                     
                               }  // End of if for expected property start element

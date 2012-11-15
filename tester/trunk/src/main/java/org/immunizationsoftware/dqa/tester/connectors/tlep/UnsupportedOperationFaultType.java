@@ -1,54 +1,114 @@
 
 /**
- * ConnectivityTestResponseType.java
+ * UnsupportedOperationFaultType.java
  *
  * This file was auto-generated from WSDL
  * by the Apache Axis2 version: 1.6.2  Built on : Apr 17, 2012 (05:34:40 IST)
  */
 
             
-                package org.immunizationsoftware.dqa.tester.connectors.nm._2011.iisb.cdc;
+                package org.immunizationsoftware.dqa.tester.connectors.tlep;
             
 
             /**
-            *  ConnectivityTestResponseType bean class
+            *  UnsupportedOperationFaultType bean class
             */
             @SuppressWarnings({"unchecked","unused"})
         
-        public  class ConnectivityTestResponseType
+        public  class UnsupportedOperationFaultType
         implements org.apache.axis2.databinding.ADBBean{
         /* This type was generated from the piece of schema that had
-                name = connectivityTestResponseType
+                name = UnsupportedOperationFaultType
                 Namespace URI = urn:cdc:iisb:2011
                 Namespace Prefix = ns1
                 */
             
 
                         /**
-                        * field for _return
+                        * field for Code
                         */
 
                         
-                                    protected java.lang.String local_return ;
+                                    protected java.math.BigInteger localCode ;
                                 
 
                            /**
                            * Auto generated getter method
-                           * @return java.lang.String
+                           * @return java.math.BigInteger
                            */
-                           public  java.lang.String get_return(){
-                               return local_return;
+                           public  java.math.BigInteger getCode(){
+                               return localCode;
                            }
 
                            
                         
                             /**
                                * Auto generated setter method
-                               * @param param _return
+                               * @param param Code
                                */
-                               public void set_return(java.lang.String param){
+                               public void setCode(java.math.BigInteger param){
                             
-                                            this.local_return=param;
+                                            this.localCode=param;
+                                    
+
+                               }
+                            
+
+                        /**
+                        * field for Reason
+                        */
+
+                        
+                                    protected org.apache.axiom.om.OMElement localReason ;
+                                
+
+                           /**
+                           * Auto generated getter method
+                           * @return org.apache.axiom.om.OMElement
+                           */
+                           public  org.apache.axiom.om.OMElement getReason(){
+                               return localReason;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param Reason
+                               */
+                               public void setReason(org.apache.axiom.om.OMElement param){
+                            
+                                            this.localReason=param;
+                                    
+
+                               }
+                            
+
+                        /**
+                        * field for Detail
+                        */
+
+                        
+                                    protected java.lang.String localDetail ;
+                                
+
+                           /**
+                           * Auto generated getter method
+                           * @return java.lang.String
+                           */
+                           public  java.lang.String getDetail(){
+                               return localDetail;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param Detail
+                               */
+                               public void setDetail(java.lang.String param){
+                            
+                                            this.localDetail=param;
                                     
 
                                }
@@ -102,11 +162,11 @@
                    java.lang.String namespacePrefix = registerPrefix(xmlWriter,"urn:cdc:iisb:2011");
                    if ((namespacePrefix != null) && (namespacePrefix.trim().length() > 0)){
                        writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
-                           namespacePrefix+":connectivityTestResponseType",
+                           namespacePrefix+":UnsupportedOperationFaultType",
                            xmlWriter);
                    } else {
                        writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
-                           "connectivityTestResponseType",
+                           "UnsupportedOperationFaultType",
                            xmlWriter);
                    }
 
@@ -114,18 +174,53 @@
                    }
                
                                     namespace = "urn:cdc:iisb:2011";
-                                    writeStartElement(null, namespace, "return", xmlWriter);
+                                    writeStartElement(null, namespace, "Code", xmlWriter);
                              
 
-                                          if (local_return==null){
+                                          if (localCode==null){
                                               // write the nil attribute
                                               
-                                                     writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","nil","1",xmlWriter);
+                                                     throw new org.apache.axis2.databinding.ADBException("Code cannot be null!!");
                                                   
                                           }else{
 
                                         
-                                                   xmlWriter.writeCharacters(local_return);
+                                                   xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localCode));
+                                            
+                                          }
+                                    
+                                   xmlWriter.writeEndElement();
+                             
+                                    namespace = "urn:cdc:iisb:2011";
+                                    writeStartElement(null, namespace, "Reason", xmlWriter);
+                             
+
+                                          if (localReason==null){
+                                              // write the nil attribute
+                                              
+                                                     throw new org.apache.axis2.databinding.ADBException("Reason cannot be null!!");
+                                                  
+                                          }else{
+
+                                        localReason.serialize(xmlWriter);
+                                            
+                                          }
+                                    
+                                   xmlWriter.writeEndElement();
+                             
+                                    namespace = "urn:cdc:iisb:2011";
+                                    writeStartElement(null, namespace, "Detail", xmlWriter);
+                             
+
+                                          if (localDetail==null){
+                                              // write the nil attribute
+                                              
+                                                     throw new org.apache.axis2.databinding.ADBException("Detail cannot be null!!");
+                                                  
+                                          }else{
+
+                                        
+                                                   xmlWriter.writeCharacters(localDetail);
                                             
                                           }
                                     
@@ -317,10 +412,31 @@
 
                 
                                       elementList.add(new javax.xml.namespace.QName("urn:cdc:iisb:2011",
-                                                                      "return"));
+                                                                      "Code"));
                                  
-                                         elementList.add(local_return==null?null:
-                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(local_return));
+                                        if (localCode != null){
+                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localCode));
+                                        } else {
+                                           throw new org.apache.axis2.databinding.ADBException("Code cannot be null!!");
+                                        }
+                                    
+                                      elementList.add(new javax.xml.namespace.QName("urn:cdc:iisb:2011",
+                                                                      "Reason"));
+                                 
+                                        if (localReason != null){
+                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localReason));
+                                        } else {
+                                           throw new org.apache.axis2.databinding.ADBException("Reason cannot be null!!");
+                                        }
+                                    
+                                      elementList.add(new javax.xml.namespace.QName("urn:cdc:iisb:2011",
+                                                                      "Detail"));
+                                 
+                                        if (localDetail != null){
+                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localDetail));
+                                        } else {
+                                           throw new org.apache.axis2.databinding.ADBException("Detail cannot be null!!");
+                                        }
                                     
 
                 return new org.apache.axis2.databinding.utils.reader.ADBXMLStreamReaderImpl(qName, elementList.toArray(), attribList.toArray());
@@ -346,9 +462,9 @@
         * Postcondition: If this object is an element, the reader is positioned at its end element
         *                If this object is a complex type, the reader is positioned at the end element of its outer element
         */
-        public static ConnectivityTestResponseType parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
-            ConnectivityTestResponseType object =
-                new ConnectivityTestResponseType();
+        public static UnsupportedOperationFaultType parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
+            UnsupportedOperationFaultType object =
+                new UnsupportedOperationFaultType();
 
             int event;
             java.lang.String nillableValue = null;
@@ -372,10 +488,10 @@
 
                     java.lang.String type = fullTypeName.substring(fullTypeName.indexOf(":")+1);
                     
-                            if (!"connectivityTestResponseType".equals(type)){
+                            if (!"UnsupportedOperationFaultType".equals(type)){
                                 //find namespace for the prefix
                                 java.lang.String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
-                                return (ConnectivityTestResponseType)org.immunizationsoftware.dqa.tester.connectors.tlep.ExtensionMapper.getTypeObject(
+                                return (UnsupportedOperationFaultType)org.immunizationsoftware.dqa.tester.connectors.tlep.ExtensionMapper.getTypeObject(
                                      nsUri,type,reader);
                               }
                         
@@ -400,23 +516,72 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","return").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","Code").equals(reader.getName())){
                                 
-                                       nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
-                                       if (!"true".equals(nillableValue) && !"1".equals(nillableValue)){
+                                    nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
+                                    if ("true".equals(nillableValue) || "1".equals(nillableValue)){
+                                        throw new org.apache.axis2.databinding.ADBException("The element: "+"Code" +"  cannot be null");
+                                    }
                                     
 
                                     java.lang.String content = reader.getElementText();
                                     
-                                              object.set_return(
+                                              object.setCode(
+                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToInteger(content));
+                                              
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                                
+                                else{
+                                    // A start element we are not expecting indicates an invalid parameter was passed
+                                    throw new org.apache.axis2.databinding.ADBException("Unexpected subelement " + reader.getName());
+                                }
+                            
+                                    
+                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
+                                
+                                   if (reader.isStartElement()){
+                                
+                                    nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
+                                    if ("true".equals(nillableValue) || "1".equals(nillableValue)){
+                                        throw new org.apache.axis2.databinding.ADBException("The element: "+"Reason" +"  cannot be null");
+                                    }
+                                    
+
+                                    java.lang.String content = reader.getElementText();
+                                    
+                                                org.apache.axiom.om.OMFactory fac = org.apache.axiom.om.OMAbstractFactory.getOMFactory();
+                                                org.apache.axiom.om.OMNamespace omNs = fac.createOMNamespace("urn:cdc:iisb:2011", "");
+                                                org.apache.axiom.om.OMElement _valueReason = fac.createOMElement("Reason", omNs);
+                                                _valueReason.addChild(fac.createOMText(_valueReason, content));
+                                                object.setReason(_valueReason);
+                                              
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                                
+                                else{
+                                    // A start element we are not expecting indicates an invalid parameter was passed
+                                    throw new org.apache.axis2.databinding.ADBException("Unexpected subelement " + reader.getName());
+                                }
+                            
+                                    
+                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
+                                
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","Detail").equals(reader.getName())){
+                                
+                                    nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","nil");
+                                    if ("true".equals(nillableValue) || "1".equals(nillableValue)){
+                                        throw new org.apache.axis2.databinding.ADBException("The element: "+"Detail" +"  cannot be null");
+                                    }
+                                    
+
+                                    java.lang.String content = reader.getElementText();
+                                    
+                                              object.setDetail(
                                                     org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
-                                            
-                                       } else {
-                                           
-                                           
-                                           reader.getElementText(); // throw away text nodes if any.
-                                       }
-                                      
+                                              
                                         reader.next();
                                     
                               }  // End of if for expected property start element

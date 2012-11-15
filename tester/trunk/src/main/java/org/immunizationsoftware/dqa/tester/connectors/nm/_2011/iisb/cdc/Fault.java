@@ -30,14 +30,14 @@
                         */
 
                         
-                                    protected _2011.iisb.cdc.SoapFaultType localFault ;
+                                    protected org.immunizationsoftware.dqa.tester.connectors.tlep.SoapFaultType localFault ;
                                 
 
                            /**
                            * Auto generated getter method
                            * @return _2011.iisb.cdc.SoapFaultType
                            */
-                           public  _2011.iisb.cdc.SoapFaultType getFault(){
+                           public  org.immunizationsoftware.dqa.tester.connectors.tlep.SoapFaultType getFault(){
                                return localFault;
                            }
 
@@ -47,7 +47,7 @@
                                * Auto generated setter method
                                * @param param Fault
                                */
-                               public void setFault(_2011.iisb.cdc.SoapFaultType param){
+                               public void setFault(org.immunizationsoftware.dqa.tester.connectors.tlep.SoapFaultType param){
                             
                                             this.localFault=param;
                                     
@@ -323,7 +323,7 @@
                 
                                     if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011","fault").equals(reader.getName())){
                                 
-                                                object.setFault(_2011.iisb.cdc.SoapFaultType.Factory.parse(reader));
+                                                object.setFault(org.immunizationsoftware.dqa.tester.connectors.tlep.SoapFaultType.Factory.parse(reader));
                                             
                               }  // End of if for expected property start element
                                 
