@@ -368,6 +368,7 @@ public class SetupServlet extends ClientServlet
       } catch (Exception e)
       {
         message = "Unable to create connector: " + e.getMessage();
+        e.printStackTrace();
       }
     }
     if (message != null)
