@@ -69,6 +69,8 @@ public class HomeServlet extends ClientServlet
         out.println("<h2>Send a Message</h2>");
         out.println("<h2>Run Test</h2>");
         out.println("<h2>Profile Interface</h2>");
+        out.println("<h2>Stress Test</h2>");
+        out.println("<a href=\"StressTestServlet\">Stress Test</a>");
       }
       printHtmlFoot(out);
 
