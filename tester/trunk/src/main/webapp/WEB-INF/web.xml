@@ -38,6 +38,10 @@
     <servlet-class>org.immunizationsoftware.dqa.tester.TestCaseServlet</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>StressTestServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.tester.StressTestServlet</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>SubmitServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.tester.SubmitServlet</servlet-class>
   </servlet>
@@ -68,6 +72,10 @@
   <servlet-mapping>
     <servlet-name>SubmitServlet</servlet-name>
     <url-pattern>/SubmitServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>StressTestServlet</servlet-name>
+    <url-pattern>/StressTestServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>LoginServlet</servlet-name>
