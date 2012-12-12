@@ -11,9 +11,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -33,6 +37,8 @@ public class ManagerServlet extends ClientServlet
   private static long checkInterval = 15;
   private static Set<File> registeredFolders = new HashSet<File>();
   private static Set<SendData> sendDataSet = new HashSet<SendData>();
+  private static Map<Integer, SendData> sendDataMap = new HashMap<Integer, SendData>();
+  private static int nextSendDataInternalId = 1;
   private static String instanceSystemId = "";
   private static String stableSystemId = "";
   private static InetAddress localHostIp;
@@ -42,17 +48,17 @@ public class ManagerServlet extends ClientServlet
   private static String supportCenterUrl = null;
   private static String supportCenterCode = "";
   private static ShutdownInterceptor shutdownInterceptor;
-  
+
   public static String getStableSystemId()
   {
-     return stableSystemId;
+    return stableSystemId;
   }
-  
+
   public static void setStableSystemId(String stableSystemId)
   {
     ManagerServlet.stableSystemId = stableSystemId;
   }
-  
+
   public static String getSupportCenterUrl()
   {
     return supportCenterUrl;
@@ -132,7 +138,30 @@ public class ManagerServlet extends ClientServlet
   {
     SendData sendData = new SendData(folder);
     sendDataSet.add(sendData);
+    synchronized (sendDataMap)
+    {
+      sendData.setInternalId(nextSendDataInternalId);
+      sendDataMap.put(nextSendDataInternalId, sendData);
+      nextSendDataInternalId++;
+    }
     sendData.start();
+  }
+  
+  public static SendData getSendData(int internalId)
+  {
+    return sendDataMap.get(internalId);
+  }
+  
+  public static List<SendData> getSendDataList()
+  {
+    ArrayList<SendData> sendDataList = new ArrayList<SendData>(sendDataMap.values());
+    Collections.sort(sendDataList, new Comparator<SendData>() {
+      public int compare(SendData o1, SendData o2)
+      {
+        return o1.getRootDir().getName().compareTo(o2.getRootDir().getName());
+      }
+    });
+    return sendDataList;
   }
 
   private static FolderScanner folderScanner = null;
@@ -197,7 +226,7 @@ public class ManagerServlet extends ClientServlet
     }
     supportCenterUrl = getInitParameter("support_center.url");
     supportCenterCode = getInitParameter("support_center.code");
-    
+
     ShutdownInterceptor shutdownInterceptor = new ShutdownInterceptor();
     Runtime.getRuntime().addShutdownHook(shutdownInterceptor);
   }

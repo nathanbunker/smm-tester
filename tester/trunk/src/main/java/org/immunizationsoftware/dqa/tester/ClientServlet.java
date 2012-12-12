@@ -89,9 +89,6 @@ public class ClientServlet extends HttpServlet {
                     result.append(user.getUsername());
                 } else {
                     result.append(user.getName());
-                    result.append(" (");
-                    result.append(user.getUsername());
-                    result.append(")");
                 }
             }
         } else {

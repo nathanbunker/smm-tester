@@ -20,6 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.immunizationsoftware.dqa.mover.ManagerServlet;
+import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.connectors.HttpConnector;
 import org.immunizationsoftware.dqa.tester.connectors.NMSoapConnector;
@@ -55,6 +57,7 @@ public class SetupServlet extends ClientServlet
       response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
     } else
     {
+      Authenticate.User user = (Authenticate.User) session.getAttribute("user");
       String testScript = request.getParameter("testScript");
       List<TestCaseMessage> selectedTestCaseMessageList = null;
       if (testScript == null)
@@ -68,6 +71,7 @@ public class SetupServlet extends ClientServlet
       }
 
       String action = request.getParameter("action");
+      String message = null;
       if (action != null)
       {
         if (action.equals("Delete"))
@@ -97,12 +101,69 @@ public class SetupServlet extends ClientServlet
           RequestDispatcher dispatcher = request.getRequestDispatcher("testCase");
           dispatcher.forward(request, response);
           return;
+        } else if (action.equals("Switch"))
+        {
+          CreateTestCaseServlet.getTestCaseMessageMap(session).clear();
+          int internalId = Integer.parseInt(request.getParameter("sendDataInternalId"));
+          if (internalId == 0)
+          {
+            user.setSendData(null);
+          } else
+          {
+            SendData sendData = ManagerServlet.getSendData(internalId);
+            user.setSendData(sendData);
+            SetupServlet.addConnector(sendData.getConnector(), session);
+            try
+            {
+              CreateTestCaseServlet.loadTestCases(session);
+            } catch (Exception e)
+            {
+              e.printStackTrace();
+              message = "Unable to load test cases: " + e.getMessage();
+            }
+          }
         }
       }
+      if (message != null)
+      {
+        request.setAttribute("message", message);
+      }
+
       PrintWriter out = response.getWriter();
       try
       {
         printHtmlHead(out, "Setup", request);
+        if (user.isAdmin())
+        {
+          out.println("<h2>Send Data Account</h2>");
+          out.println("<form action=\"SetupServlet\" method=\"POST\">");
+          out.println("<table border=\"0\">");
+          out.println("  <tr>");
+          out.println("    <td valign=\"top\">Account</td>");
+          out.println("    <td>");
+          out.println("      <select name=\"sendDataInternalId\" >");
+          boolean selected = !user.hasSendData();
+          out.println("              <option value=\"0\"" + (selected ? " selected=\"true\"" : "") + ">-- none selected --</option>");
+          for (SendData sendData : ManagerServlet.getSendDataList())
+          {
+            if (sendData.getConnector() != null)
+            {
+              selected = user.hasSendData() && user.getSendData().getInternalId() == sendData.getInternalId();
+              out.println("              <option value=\"" + sendData.getInternalId() + "\"" + (selected ? " selected=\"true\"" : "") + ">"
+                  + sendData.getConnector().getLabel() + "</option>");
+            }
+          }
+          out.println("      </select>");
+          out.println("    </td>");
+          out.println("    <td align=\"right\">");
+          out.println("      <input type=\"submit\" name=\"action\" value=\"Switch\">");
+          out.println("    </td>");
+          out.println("  </tr>");
+
+          out.println("</table>");
+          out.println("</form>");
+
+        }
         out.println("<h2>Test Cases</h2>");
         out.println("<table border=\"0\">");
         Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(session);
@@ -433,6 +494,10 @@ public class SetupServlet extends ClientServlet
       }
     }
     oldConnectors.add(newConnector);
+    if (session.getAttribute("id") == null)
+    {
+      session.setAttribute("id", oldConnectors.size());
+    }
   }
 
   public static List<Connector> getConnectors(HttpSession session)

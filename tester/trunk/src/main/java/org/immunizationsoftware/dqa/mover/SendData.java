@@ -54,6 +54,17 @@ public class SendData extends Thread
 
   private String stableSystemId = null;
   private Date upSinceDate = new Date();
+  private int internalId = 0;
+
+  public int getInternalId()
+  {
+    return internalId;
+  }
+
+  public void setInternalId(int internalId)
+  {
+    this.internalId = internalId;
+  }
 
   public Date getUpSinceDate()
   {
@@ -322,7 +333,6 @@ public class SendData extends Thread
     this.configFile = new File(rootDir, CONFIG_FILE_NAME);
     Random random = new Random();
     randomId = random.nextInt(10000) + 1000;
-
   }
 
   public ScanStatus getScanStatus()
