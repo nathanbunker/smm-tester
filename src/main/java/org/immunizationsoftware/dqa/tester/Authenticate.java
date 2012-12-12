@@ -23,7 +23,18 @@ public class Authenticate {
         private String name = "";
         private String email = "";
         private SendData sendData = null;
+        private boolean isAdmin = false;
         
+        public boolean isAdmin()
+        {
+          return isAdmin;
+        }
+
+        public void setAdmin(boolean isAdmin)
+        {
+          this.isAdmin = isAdmin;
+        }
+
         public boolean hasSendData()
         {
           return sendData != null;
@@ -105,6 +116,12 @@ public class Authenticate {
         map.put(u.username, u);
     }
 
+    private static void addUser(String username, String password, String name, String email, boolean isAdmin) {
+      User u = new User(username, password, name, email);
+      u.setAdmin(isAdmin);
+      map.put(u.username, u);
+  }
+
     public static boolean isValid(String username, String password) {
         init();
         int passwordInt = 0;
@@ -134,7 +151,6 @@ public class Authenticate {
     private static void init() {
         if (map == null) {
             map = new HashMap<String, User>();
-            
         }
     }
 

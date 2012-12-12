@@ -25,9 +25,6 @@ import javax.servlet.http.HttpSession;
 public class LoginServlet extends ClientServlet
 {
 
-  private static String DEFAULT_CONNECTION_SCRIPT = "Connection\n" + "Label: OIS DQA\n" + "Type: SOAP\n"
-      + "URL: http://openimmunizationsoftware.us:6394/ImmMessagingServer/client_Service?wsdl\n" + "User Id: CDCTLWG\n" + "Password: H3490\n"
-      + "Facility Id: 1200\n";
 
   /**
    * Processes requests for both HTTP <code>GET</code> and <code>POST</code>

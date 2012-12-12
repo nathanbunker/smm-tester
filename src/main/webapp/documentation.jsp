@@ -15,7 +15,7 @@
         <link rel="stylesheet" type="text/css" href="index.css" />
     </head>
     <body>
-        <%=org.immunizationsoftware.dqa.tester.ClientServlet.makeMenu(request, "Documentation")%>
+        <%=org.immunizationsoftware.pt.servlet.ClientServlet.makeMenu(request, "Documentation")%>
         <h1>OIS Immunization Registry Tester</h1>
 
         <h2>Contents</h2>
