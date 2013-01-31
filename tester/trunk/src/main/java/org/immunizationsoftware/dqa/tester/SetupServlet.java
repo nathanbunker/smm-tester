@@ -23,6 +23,8 @@ import javax.servlet.http.HttpSession;
 import org.immunizationsoftware.dqa.mover.ManagerServlet;
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.connectors.ConnectorFactory;
+import org.immunizationsoftware.dqa.tester.connectors.HISoapConnector;
 import org.immunizationsoftware.dqa.tester.connectors.HttpConnector;
 import org.immunizationsoftware.dqa.tester.connectors.NMSoapConnector;
 import org.immunizationsoftware.dqa.tester.connectors.SoapConnector;
@@ -279,9 +281,11 @@ public class SetupServlet extends ClientServlet
         out.println("    <td class=\"boxed\">");
         out.println("      <select name=\"type\">");
         out.println("        <option value=\"\">select</option>");
-        out.println("        <option value=\"SOAP\"" + (type.equals("SOAP") ? " selected=\"true\"" : "") + ">SOAP</option>");
-        out.println("        <option value=\"POST\"" + (type.equals("POST") ? " selected=\"true\"" : "") + ">POST</option>");
-        out.println("        <option value=\"SOAP\"" + (type.equals("NM SOAP") ? " selected=\"true\"" : "") + ">NM SOAP</option>");
+        for (String[] option : ConnectorFactory.TYPES)
+        {
+          out.println("        <option value=\"" + option[0] + "\"" + (type.equals(option[0]) ? " selected=\"true\"" : "") + ">" + option[1]
+              + "</option>");
+        }
         out.println("      </select>");
         out.println("    </td>");
         out.println("    <td class=\"boxed\"><input type=\"text\" name=\"url\" size=\"20\" value=\"" + url + "\"></td>");
@@ -408,16 +412,7 @@ public class SetupServlet extends ClientServlet
       Connector connector = null;
       try
       {
-        if (type.equals("SOAP"))
-        {
-          connector = new SoapConnector(label, url);
-        } else if (type.equals("NM SOAP"))
-        {
-          connector = new NMSoapConnector(label, url);
-        } else if (type.equals("POST"))
-        {
-          connector = new HttpConnector(label, url);
-        }
+        connector = ConnectorFactory.getConnector(type, label, url);
         if (connector == null)
         {
           message = "Unable to find connection type";

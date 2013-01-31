@@ -9,7 +9,7 @@
     <servlet-class>org.immunizationsoftware.dqa.mover.ManagerServlet</servlet-class>
     <init-param>
       <param-name>scan.start.folders</param-name>
-      <param-value>/home/oisdqane/ois-dqa.net/data/tester;c:\Export\;c:\data\work\product</param-value>
+      <param-value>/home/oisptorg/ois-pt.org/data/tester;c:\Export\;c:\data\work\product</param-value>
     </init-param>
     <init-param>
       <param-name>support_center.code</param-name>
@@ -18,6 +18,10 @@
     <init-param>
       <param-name>support_center.url</param-name>
       <param-value>http://ois-dqa.net/dqa/remote</param-value>
+    </init-param>
+    <init-param>
+      <param-name>software.dir</param-name>
+      <param-value>c:\data\work\product\smm\dist</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
@@ -46,6 +50,10 @@
     <servlet-class>org.immunizationsoftware.dqa.tester.SubmitServlet</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>InstallCertServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.tester.InstallCertServlet</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>LoginServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.tester.LoginServlet</servlet-class>
   </servlet>
@@ -56,6 +64,22 @@
   <servlet>
     <servlet-name>SetupServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.tester.SetupServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>smm.install.ConfigureServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.mover.install.ConfigureServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>smm.install.DownloadServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.mover.install.DownloadServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>smm.install.PrepareServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.mover.install.PrepareServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>smm.install.InstallServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.mover.install.InstallServlet</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>CreateTestCaseServlet</servlet-name>
@@ -72,6 +96,10 @@
   <servlet-mapping>
     <servlet-name>SubmitServlet</servlet-name>
     <url-pattern>/SubmitServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>InstallCertServlet</servlet-name>
+    <url-pattern>/InstallCertServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>StressTestServlet</servlet-name>
@@ -92,6 +120,22 @@
   <servlet-mapping>
     <servlet-name>HomeServlet</servlet-name>
     <url-pattern>/HomeServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>smm.install.ConfigureServlet</servlet-name>
+    <url-pattern>/install/ConfigureServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>smm.install.DownloadServlet</servlet-name>
+    <url-pattern>/install/DownloadServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>smm.install.PrepareServlet</servlet-name>
+    <url-pattern>/install/PrepareServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>smm.install.InstallServlet</servlet-name>
+    <url-pattern>/install/InstallServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>ManagerServlet</servlet-name>

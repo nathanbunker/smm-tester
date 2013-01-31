@@ -25,6 +25,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.axis.AxisProperties;
 import org.immunizationsoftware.dqa.tester.ClientServlet;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 
@@ -48,6 +49,12 @@ public class ManagerServlet extends ClientServlet
   private static String supportCenterUrl = null;
   private static String supportCenterCode = "";
   private static ShutdownInterceptor shutdownInterceptor;
+  private static File softwareDir = null;
+  
+  public static File getSoftwareDir()
+  {
+    return softwareDir;
+  }
 
   public static String getStableSystemId()
   {
@@ -146,12 +153,12 @@ public class ManagerServlet extends ClientServlet
     }
     sendData.start();
   }
-  
+
   public static SendData getSendData(int internalId)
   {
     return sendDataMap.get(internalId);
   }
-  
+
   public static List<SendData> getSendDataList()
   {
     ArrayList<SendData> sendDataList = new ArrayList<SendData>(sendDataMap.values());
@@ -199,6 +206,7 @@ public class ManagerServlet extends ClientServlet
       stableSystemId = doHash(stableSystemId);
     }
     String scanStartFolders = getInitParameter("scan.start.folders");
+    System.out.println("SMM Initializing Manager Servlet");
     if (scanStartFolders != null)
     {
       String[] scanStartFolderNames = scanStartFolders.split("\\;");
@@ -210,9 +218,11 @@ public class ManagerServlet extends ClientServlet
           scanStartFolderName = scanStartFolderName.trim();
           if (scanStartFolderName.length() > 0)
           {
+            System.out.println("SMM Looking for folder " + scanStartFolderName);
             File scanStartFile = new File(scanStartFolderName);
             if (scanStartFile.exists() && scanStartFile.isDirectory())
             {
+              System.out.println("SMM fold exists, adding to scan directory");
               foldersToScan.add(scanStartFile);
             }
           }
@@ -226,6 +236,12 @@ public class ManagerServlet extends ClientServlet
     }
     supportCenterUrl = getInitParameter("support_center.url");
     supportCenterCode = getInitParameter("support_center.code");
+    
+    String softwareDirString = getInitParameter("software.dir");
+    if (softwareDirString != null && softwareDirString.length() > 0)
+    {
+      softwareDir = new File(softwareDirString);
+    }
 
     ShutdownInterceptor shutdownInterceptor = new ShutdownInterceptor();
     Runtime.getRuntime().addShutdownHook(shutdownInterceptor);
@@ -271,6 +287,9 @@ public class ManagerServlet extends ClientServlet
     } catch (SocketException e)
     {
       sb.append(":ip{SocketException:" + e.getMessage() + "}");
+    } catch (Exception e)
+    {
+      sb.append(":ip{Exception:" + e.getMessage() + "}");
     }
     return sb.toString();
   }

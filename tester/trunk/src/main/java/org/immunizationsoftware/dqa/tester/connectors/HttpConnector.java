@@ -15,6 +15,14 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+
 /**
  * 
  * @author nathan
@@ -111,13 +119,21 @@ public class HttpConnector extends Connector
     }
     try
     {
+      SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
+
       HttpURLConnection urlConn;
       DataOutputStream printout;
       InputStreamReader input = null;
       URL url = new URL(conn.url);
+
       urlConn = (HttpURLConnection) url.openConnection();
+      if (factory != null && urlConn instanceof HttpsURLConnection)
+      {
+        ((HttpsURLConnection) urlConn).setSSLSocketFactory(factory);
+      }
+
       urlConn.setRequestMethod("POST");
-      
+
       urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
@@ -189,6 +205,47 @@ public class HttpConnector extends Connector
       }
     }
 
+  }
+
+  protected SSLSocketFactory setupSSLSocketFactory(boolean debug, StringBuilder debugLog)
+  {
+    SSLSocketFactory factory = null;
+
+    if (getKeyStore() != null)
+    {
+      if (debug)
+      {
+        debugLog.append("Key store defined, looking to load it for use on this connection \r");
+      }
+      try
+      {
+        SSLContext context = SSLContext.getInstance("TLS");
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(getKeyStore());
+        X509TrustManager defaultTrustManager = (X509TrustManager) tmf.getTrustManagers()[0];
+        SavingTrustManager tm = new SavingTrustManager(defaultTrustManager);
+        context.init(null, new TrustManager[] { tm }, null);
+        factory = context.getSocketFactory();
+        if (debug)
+        {
+          debugLog.append("Key store loaded \r");
+        }
+      } catch (Exception e)
+      {
+        e.printStackTrace();
+        if (debug)
+        {
+          debugLog.append("Unable to load key store: " + e.getMessage() + " \r");
+        }
+      }
+    } else
+    {
+      if (debug)
+      {
+        debugLog.append("Key store was not defined, using default for this connection \r");
+      }
+    }
+    return factory;
   }
 
   @Override

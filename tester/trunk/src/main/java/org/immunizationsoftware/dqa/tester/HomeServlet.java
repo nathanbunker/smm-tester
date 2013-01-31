@@ -71,6 +71,12 @@ public class HomeServlet extends ClientServlet
         out.println("<h2>Profile Interface</h2>");
         out.println("<h2>Stress Test</h2>");
         out.println("<a href=\"StressTestServlet\">Stress Test</a>");
+        Authenticate.User user = (Authenticate.User) session.getAttribute("user");
+        if (user.hasSendData())
+        {
+          out.println("<h2>Install Cert</h2>");
+          out.println("<a href=\"InstallCertServlet\">Install Cert</a>");
+        }
       }
       printHtmlFoot(out);
 

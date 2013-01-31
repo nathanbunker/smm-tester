@@ -5,18 +5,17 @@
 package org.immunizationsoftware.dqa.tester.connectors;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.security.KeyStore;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.X509TrustManager;
+
+import org.immunizationsoftware.dqa.tester.PasswordEncryptUtil;
 
 /**
  * 
@@ -64,7 +63,6 @@ public abstract class Connector
   private String customTransformations = "";
   private String[] quickTransformations;
   private KeyStore keyStore = null;
-  private File keyStoreFile = null;
   private String keyStorePassword = null;
   protected boolean throwExceptions = false;
 
@@ -205,8 +203,26 @@ public abstract class Connector
     sb.append("Type: " + type + "\n");
     sb.append("URL: " + url + "\n");
     sb.append("User Id: " + userid + "\n");
-    sb.append("Password: \n");
+    try
+    {
+      sb.append("Password: " + PasswordEncryptUtil.encrypt(password) + "\n");
+    } catch (Exception e)
+    {
+      sb.append("Password: \n");
+      e.printStackTrace();
+    }
     sb.append("Facility Id: " + facilityid + "\n");
+    if (keyStorePassword != null && keyStorePassword.length() > 0)
+    {
+      try
+      {
+        sb.append("Key Store Password: " + PasswordEncryptUtil.encrypt(keyStorePassword) + "\n");
+      } catch (Exception e)
+      {
+        sb.append("Key Store Password: \n");
+        e.printStackTrace();
+      }
+    }
     if (customTransformations != null && customTransformations.length() > 0)
     {
       sb.append("Custom Transformations:");
@@ -275,13 +291,13 @@ public abstract class Connector
         userid = readValue(line);
       } else if (line.startsWith("Password:"))
       {
-        password = readValue(line);
+        password = PasswordEncryptUtil.decrypt(readValue(line));
       } else if (line.startsWith("Facility Id:"))
       {
         facilityid = readValue(line);
       } else if (line.startsWith("Key Store Password:"))
       {
-        keyStorePassword = readValue(line);
+        keyStorePassword = PasswordEncryptUtil.decrypt(readValue(line));
       } else if (line.startsWith("Cause Issues:"))
       {
         lastList = "CI";
@@ -314,43 +330,73 @@ public abstract class Connector
     return line.substring(pos + 1).trim();
   }
 
-//  private SSLServerSocket createServerSocketFromKeyStore()
-//  {
-//    SSLServerSocketFactory ssf; // server socket factory
-//    SSLServerSocket skt; // server socket
-//
-//    // LOAD EXTERNAL KEY STORE
-//    KeyStore mstkst;
-//    try
-//    {
-//      mstkst = KeyStore.getInstance("jks");
-//      mstkst.load(new FileInputStream(keyStoreFile), keyStorePassword.toCharArray());
-//    } catch (java.security.GeneralSecurityException thr)
-//    {
-//      throw new IOException("Cannot load keystore (" + thr + ")");
-//    }
-//
-//    // CREATE EPHEMERAL KEYSTORE FOR THIS SOCKET USING DESIRED CERTIFICATE
-//    try
-//    {
-//      SSLContext ctx = SSLContext.getInstance("TLS");
-//      KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-//      KeyStore sktkst;
-//      char[] blkpwd = new char[0];
-//
-//      sktkst = KeyStore.getInstance("jks");
-//      sktkst.load(null, blkpwd);
-//      sktkst.setKeyEntry(svrctfals, mstkst.getKey(svrctfals, blkpwd), blkpwd, mstkst.getCertificateChain(svrctfals));
-//      kmf.init(sktkst, blkpwd);
-//      ctx.init(kmf.getKeyManagers(), null, null);
-//      ssf = ctx.getServerSocketFactory();
-//    } catch (java.security.GeneralSecurityException thr)
-//    {
-//      throw new IOException("Cannot create secure socket (" + thr + ")");
-//    }
-//
-//    // CREATE AND INITIALIZE SERVER SOCKET
-//    skt = (SSLServerSocket) ssf.createServerSocket(prt, bcklog, adr);
-//    return skt;
-//  }
+  // private SSLServerSocket createServerSocketFromKeyStore()
+  // {
+  // SSLServerSocketFactory ssf; // server socket factory
+  // SSLServerSocket skt; // server socket
+  //
+  // // LOAD EXTERNAL KEY STORE
+  // KeyStore mstkst;
+  // try
+  // {
+  // mstkst = KeyStore.getInstance("jks");
+  // mstkst.load(new FileInputStream(keyStoreFile),
+  // keyStorePassword.toCharArray());
+  // } catch (java.security.GeneralSecurityException thr)
+  // {
+  // throw new IOException("Cannot load keystore (" + thr + ")");
+  // }
+  //
+  // // CREATE EPHEMERAL KEYSTORE FOR THIS SOCKET USING DESIRED CERTIFICATE
+  // try
+  // {
+  // SSLContext ctx = SSLContext.getInstance("TLS");
+  // KeyManagerFactory kmf =
+  // KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+  // KeyStore sktkst;
+  // char[] blkpwd = new char[0];
+  //
+  // sktkst = KeyStore.getInstance("jks");
+  // sktkst.load(null, blkpwd);
+  // sktkst.setKeyEntry(svrctfals, mstkst.getKey(svrctfals, blkpwd), blkpwd,
+  // mstkst.getCertificateChain(svrctfals));
+  // kmf.init(sktkst, blkpwd);
+  // ctx.init(kmf.getKeyManagers(), null, null);
+  // ssf = ctx.getServerSocketFactory();
+  // } catch (java.security.GeneralSecurityException thr)
+  // {
+  // throw new IOException("Cannot create secure socket (" + thr + ")");
+  // }
+  //
+  // // CREATE AND INITIALIZE SERVER SOCKET
+  // skt = (SSLServerSocket) ssf.createServerSocket(prt, bcklog, adr);
+  // return skt;
+  // }
+
+  protected static class SavingTrustManager implements X509TrustManager
+  {
+
+    private final X509TrustManager tm;
+    private X509Certificate[] chain;
+
+    SavingTrustManager(X509TrustManager tm) {
+      this.tm = tm;
+    }
+
+    public X509Certificate[] getAcceptedIssuers()
+    {
+      throw new UnsupportedOperationException();
+    }
+
+    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException
+    {
+      throw new UnsupportedOperationException();
+    }
+
+    public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException
+    {
+      this.chain = chain;
+      tm.checkServerTrusted(chain, authType);
+    }
+  }
 }
