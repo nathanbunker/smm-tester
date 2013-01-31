@@ -1,5 +1,8 @@
 body {font-family: Tahoma, Geneva, sans-serif; background:#D5E1DD}
 p {width:650px; color:#2B3E42;}
+ol {width:650px; color:#2B3E42;}
+li {width:650px; color:#2B3E42;}
+td {color:#2B3E42;}
 .menu {width:720px; padding:0px; background-color:#F7F3E8; margin: 0px; border-color: #2B3E42; border-width: 1px; border-style: solid}
 a:link.menuLink {padding:5px; color:#2B3E42; text-decoration:none}
 a:visited.menuLink {padding:5px; color:#2B3E42; text-decoration:none}

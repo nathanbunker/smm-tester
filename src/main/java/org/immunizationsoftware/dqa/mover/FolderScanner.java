@@ -10,6 +10,7 @@ public class FolderScanner extends Thread
   private List<File> foldersToScan = null;
   private String scanningStatus = "";
   private boolean scanning = false;
+  private boolean keepRunning = true;
 
   public List<File> getFoldersToScan()
   {
@@ -38,7 +39,7 @@ public class FolderScanner extends Thread
   @Override
   public void run()
   {
-    // while (true)
+   // while (keepRunning)
     {
       try
       {

@@ -870,13 +870,18 @@ public class SendData extends Thread
     File keyStoreFile = new File(rootDir, KEYSTORE_FILE_NAME);
     if (keyStoreFile.exists() && keyStoreFile.isFile())
     {
+      String keyStorePassword = connector.getKeyStorePassword();
+      if (keyStorePassword.equals(""))
+      {
+        keyStorePassword = "changeit";
+      }
       try
       {
         KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
         FileInputStream instream = new FileInputStream(keyStoreFile);
         try
         {
-          keyStore.load(instream, connector.getKeyStorePassword().toCharArray());
+          keyStore.load(instream, keyStorePassword.toCharArray());
         } finally
         {
           instream.close();
@@ -884,7 +889,11 @@ public class SendData extends Thread
         connector.setKeyStore(keyStore);
       } catch (Exception e)
       {
-        statusLogger.logError("Unable to load key store file", e);
+        e.printStackTrace();
+        if (statusLogger != null)
+        {
+          statusLogger.logError("Unable to load key store file with password '" + keyStorePassword + "'", e);
+        }
       }
     }
   }

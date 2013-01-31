@@ -6,37 +6,38 @@ package org.immunizationsoftware.dqa.tester.connectors;
 
 import java.util.List;
 
-import org.apache.axis2.context.ConfigurationContext;
-import org.immunizationsoftware.dqa.tester.connectors.tlep.Client_Service;
-import org.immunizationsoftware.dqa.tester.connectors.tlep.Client_ServiceStub;
-import org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTest;
-import org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestRequestType;
-import org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestResponse;
-import org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessage;
-import org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageRequestType;
-import org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageResponse;
+import org.immunizationsoftware.dqa.tester.connectors.hi.Client_Service;
+import org.immunizationsoftware.dqa.tester.connectors.hi.Client_ServiceStub;
+import org.immunizationsoftware.dqa.tester.connectors.hi.ConnectivityTest;
+import org.immunizationsoftware.dqa.tester.connectors.hi.ConnectivityTestRequestType;
+import org.immunizationsoftware.dqa.tester.connectors.hi.ConnectivityTestResponse;
+import org.immunizationsoftware.dqa.tester.connectors.hi.SubmitSingleMessage;
+import org.immunizationsoftware.dqa.tester.connectors.hi.SubmitSingleMessageRequestType;
+import org.immunizationsoftware.dqa.tester.connectors.hi.SubmitSingleMessageResponse;
+
 
 
 /**
  * 
  * @author nathan
  */
-public class SoapConnector extends HttpConnector
+public class HISoapConnector extends HttpConnector
 {
 
   private Client_Service clientService = null;
 
 
-  public SoapConnector(String label, String url) throws Exception {
-    super(label, "SOAP");
+  public HISoapConnector(String label, String url) throws Exception {
+    super(label, "HI SOAP");
     this.url = url;
     clientService = new Client_ServiceStub(this.url);
-    
   }
 
   @Override
   public String submitMessage(String message, boolean debug) throws Exception
   {
+    
+    
     SubmitSingleMessage submitSingleMessage = new SubmitSingleMessage();
     SubmitSingleMessageRequestType request = new SubmitSingleMessageRequestType();
     request.setFacilityID(this.facilityid);
