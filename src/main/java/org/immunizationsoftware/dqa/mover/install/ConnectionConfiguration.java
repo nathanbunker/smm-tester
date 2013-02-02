@@ -1,4 +1,4 @@
-package org.immunizationsoftware.dqa.mover.install.configurations;
+package org.immunizationsoftware.dqa.mover.install;
 
 import java.io.PrintWriter;
 
@@ -340,16 +340,16 @@ public class ConnectionConfiguration
     out.println("    <td class=\"boxed\"><input type=\"submit\" name=\"action\" value=\"Step 2: Download and Save\"></td>");
     if (baseDir.equals("") && folderName.equals(""))
     {
-      out.println("    <td class=\"boxed\">Download and save in the transfer directory you created in the <em>Primary SMM Directory</em>.</td>");
+      out.println("    <td class=\"boxed\">Download and save in the <a href=\"https://openimmunizationsoftware.net/interfacing/smm/installation.html#IISTransferFolder\" target=\"blank\">IIS Transfer Folder</a>.</td>");
     } else if (!baseDir.equals("") && !folderName.equals(""))
     {
       out.println("    <td class=\"boxed\">Download and save in: " + baseDir + folderName + " </td>");
     } else if (!folderName.equals(""))
     {
-      out.println("    <td class=\"boxed\">Download and save in your local directory: " + folderName + " </td>");
+      out.println("    <td class=\"boxed\">Download and save in the <a href=\"https://openimmunizationsoftware.net/interfacing/smm/installation.html#IISTransferFolder\" target=\"blank\">IIS Transfer Folder</a>: " + folderName + " </td>");
     } else
     {
-      out.println("    <td class=\"boxed\">Download and save in the transfer directory in your local directory: " + baseDir + " </td>");
+      out.println("    <td class=\"boxed\">Download and save in the IIS Tranfer Folder in the <a href=\"https://openimmunizationsoftware.net/interfacing/smm/installation.html#SSMRootFolder\" target=\"blank\">SMM Root Folder</a>: " + baseDir + " </td>");
     }
     out.println("  </tr>");
     out.println(" </table>");

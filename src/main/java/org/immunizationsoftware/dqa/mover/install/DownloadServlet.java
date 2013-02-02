@@ -37,7 +37,7 @@ public class DownloadServlet extends ClientServlet
   private static final String FIELD_SC_LOCATION = "scLocation";
 
   private static final String[][] SUPPORT_CENTER_CODE = { { "general", "General" }, { "IHS", "Indian Health Service" } };
-  private static final String[][] SUPPORT_CENTER_LOCATION = { { "http://ois-dqa.net/dqa/remote", "OIS" }, { "", "none" } };
+  private static final String[][] SUPPORT_CENTER_LOCATION = { { "http://ois-dqa.net/dqa/remote", "OIS" }, { "none", "none" } };
 
   private static Random random = new Random();
 
@@ -74,7 +74,7 @@ public class DownloadServlet extends ClientServlet
         message = "Software Version is required";
       } else if (dataDir == null || dataDir.equals(""))
       {
-        message = "Data Directory is required";
+        message = "SMM Root Folder is required";
       } else if (scLocation == null || scLocation.equals(""))
       {
         message = "Support Center is required";
@@ -147,7 +147,7 @@ public class DownloadServlet extends ClientServlet
                     } else if (trigger == 1)
                     {
                       value = scCode;
-                    } else if (trigger == 2)
+                    } else if (trigger == 2 && !scLocation.equals("none"))
                     {
                       value = scLocation;
                     } else if (trigger == 4)
@@ -266,9 +266,9 @@ public class DownloadServlet extends ClientServlet
       out.println("    <td class=\"boxed\">The version of the software to download.</td>");
       out.println("  </tr>");
       out.println("  <tr class=\"boxed\">");
-      out.println("    <th class=\"boxed\">Data Directory</th>");
+      out.println("    <th class=\"boxed\">SMM Root Folder</th>");
       out.println("    <td class=\"boxed\"><input type=\"text\" name=\"" + FIELD_DATA_DIR + "\" size=\"20\" value=\"" + folderName + "\"></td>");
-      out.println("    <td class=\"boxed\">The local folder where the data to be transmitted will be staged.</td>");
+      out.println("    <td class=\"boxed\">The root folder for the SMM data and configuration.</td>");
       out.println("  </tr>");
       out.println("  <tr class=\"boxed\">");
       out.println("    <th class=\"boxed\">Support Center</th>");
@@ -305,15 +305,12 @@ public class DownloadServlet extends ClientServlet
             + "<br/> located in your Tomcat installation directory.</td>");
       } else
       {
-        out.println("    <td class=\"boxed\">Download and save as <code>smm.war</code> in the <code>webapps</codes> folder"
+        out.println("    <td class=\"boxed\">Download and save as <code>smm.war</code> in the <code>webapps</code> folder"
             + "<br/> located in your Tomcat installation directory, <code>" + tomcatHome + "</code>.</td>");
       }
       out.println("  </tr>");
       out.println("</table>");
       out.println("</form>");
-      out.println("<h2>Comments</h2>");
-      out.println("<p>In this last step you will download the actual SMM application as a zip file. This file format is called"
-          + "a Web Application aRchive or WAR file. This needs to be saved to your Tomcat webapps directory. To find your </p>");
       printHtmlFoot(out);
     } catch (Exception e)
     {

@@ -42,7 +42,7 @@ public class InstallServlet extends ClientServlet
       out.println("    <tr>");
       out.println("      <td></td>");
       out.println("      <td></td>");
-      out.println("      <td>To confirm the version of Java installed on your system, follow these steps:<ul><li>Open a command window (in Windows click Start >> Run and type cmd, press enter) </li><li>Type <code>java -verion</code> on the command line</li><li>Verify the version number displayed</li></ul></td>");
+      out.println("      <td>To confirm the version of Java installed on your system, follow these steps:<ul><li>Open a command window (in Windows click Start >> Run and type cmd, press enter) </li><li>Type <code>java -version</code> on the command line</li><li>Verify the version number displayed</li></ul></td>");
       out.println("    </tr>");
       out.println("    <tr>");
       out.println("      <td></td>");
@@ -70,7 +70,6 @@ public class InstallServlet extends ClientServlet
       out.println("    </tr>");
       out.println("  </table>");
       out.println("</form>");
-      out.println("<h2>Comments</h2>");
 
       printHtmlFoot(out);
     } catch (Exception e)

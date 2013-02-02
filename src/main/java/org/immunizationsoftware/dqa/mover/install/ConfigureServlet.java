@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.immunizationsoftware.dqa.mover.install.configurations.ConnectionConfiguration;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.connectors.ConnectorFactory;
 
@@ -148,18 +147,9 @@ public class ConfigureServlet extends ClientServlet
 
       out.println("<h2>Step 2: Configure</h2>");
       cc.printForm(out);
-      out.println("<form method=\"InstallServlet\">");
+      out.println("<form method=\"GET\" action=\"InstallServlet\">");
       out.println("    <p>After you have saved <code>smm.config.txt</code> you are ready for <input type=\"submit\" value=\"Step 3: Install\" name=\"action\"></p>");
       out.println("</form>");
-      out.println("<h2>Comments</h2>");
-      out.println("<p>The information on the form above has been filled out as much as possible and has been simplified to match the requirements of "
-          + cc.getReceiverName() + ". To complete this step you will need to:</p>");
-      out.println("<ul>");
-      out.println("  <li>Contact " + cc.getReceiverName() + " and request access to the system. </li>");
-      out.println("  <li>You may be asked to provide your information, complete authorization paperwork, or complete other steps. </li>");
-      out.println("  <li>At the end of the process you should be supplied with credentials that you can use in this step.</li>");
-      out.println("  <li>Please direct questions about credentials and authentication requirements directly to " + cc.getReceiverName() + ".</li>");
-      out.println("</ul>");
 
       printHtmlFoot(out);
     } catch (Exception e)
