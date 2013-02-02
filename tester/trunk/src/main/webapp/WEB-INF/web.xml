@@ -21,7 +21,7 @@
     </init-param>
     <init-param>
       <param-name>software.dir</param-name>
-      <param-value>c:\data\work\product\smm\dist</param-value>
+      <param-value>/home/oisptorg/ois-pt.org/data/dist</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
