@@ -35,7 +35,7 @@ public class ManagerServlet extends ClientServlet
   public static final String STANDARD_DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
   public static final String STANDARD_TIME_FORMAT = "HH:mm:ss";
 
-  private static long checkInterval = 15;
+  private static long checkInterval = 5; // check every 5 seconds
   private static Set<File> registeredFolders = new HashSet<File>();
   private static Set<SendData> sendDataSet = new HashSet<SendData>();
   private static Map<Integer, SendData> sendDataMap = new HashMap<Integer, SendData>();

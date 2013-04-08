@@ -9,8 +9,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.immunizationsoftware.dqa.mover.AckAnalyzer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.connectors.ConnectorFactory;
+import org.immunizationsoftware.dqa.tester.connectors.HttpConnector;
 
 public class ConfigureServlet extends ClientServlet
 {
@@ -19,8 +21,10 @@ public class ConfigureServlet extends ClientServlet
   public static final String TEMPLATE_DEFAULT_POST = "Default POST";
   public static final String TEMPLATE_ASIIS_PROD = "ASIIS Production";
   public static final String TEMPLATE_ASIIS_TEST = "ASIIS Test";
+  public static final String TEMPLATE_NMSIIS_RAW_PROD = "NMSIIS Raw Production";
+  public static final String TEMPLATE_NMSIIS_RAW_UAT = "NMSIIS Raw UAT";
 
-  public static final String[] TEMPLATES = { TEMPLATE_DEFAULT_SOAP, TEMPLATE_DEFAULT_POST, TEMPLATE_ASIIS_PROD, TEMPLATE_ASIIS_TEST };
+  public static final String[] TEMPLATES = { TEMPLATE_DEFAULT_SOAP, TEMPLATE_DEFAULT_POST, TEMPLATE_ASIIS_PROD, TEMPLATE_ASIIS_TEST, TEMPLATE_NMSIIS_RAW_PROD, TEMPLATE_NMSIIS_RAW_UAT };
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
@@ -85,6 +89,7 @@ public class ConfigureServlet extends ClientServlet
           try
           {
             Connector connector = ConnectorFactory.getConnector(cc.getType(), cc.getLabel(), cc.getUrl());
+
             if (connector == null)
             {
               message = "Unrecognized connection type: " + cc.getType();
@@ -110,6 +115,7 @@ public class ConfigureServlet extends ClientServlet
 
               if (message == null)
               {
+                setupConnection(templateName, connector);
                 resp.setContentType("text/plain;charset=UTF-8");
                 resp.setHeader("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode("smm.config.txt", "UTF-8") + "\"");
                 PrintWriter out = new PrintWriter(resp.getOutputStream());
@@ -164,6 +170,22 @@ public class ConfigureServlet extends ClientServlet
     }
   }
 
+  private void setupConnection(String templateName, Connector connector)
+  {
+    if (templateName != null)
+    {
+      if (templateName.equals(TEMPLATE_NMSIIS_RAW_UAT) || templateName.equals(TEMPLATE_NMSIIS_RAW_PROD))
+      {
+        HttpConnector httpConnector = (HttpConnector) connector;
+        httpConnector.setAuthenticationMethod(HttpConnector.AuthenticationMethod.HEADER);
+        httpConnector.setAckType(AckAnalyzer.AckType.NMSIIS);
+        httpConnector.setCustomTransformations("MSH-3=RPMS\n" + "MSH-4=[USERID]\n" + "MSH-6=NMSIIS\n" + "insert segment BHS first\n"
+            + "insert segment BTS last\n" + "insert segment FHS first\n" + "insert segment FTS last\n" + "FHS-8=CR\n" + "BSH-8=CR\n"
+            + "FHS-9=[FILENAME]\n" + "FTS-1=1\n" + "BTS-1=1\n" + "FTS-2=CR\n" + "BTS-2=CR\n");
+      }
+    }
+  }
+
   private void setupConfiguration(String templateName, ConnectionConfiguration cc)
   {
     if (templateName != null)
@@ -195,6 +217,32 @@ public class ConfigureServlet extends ClientServlet
         cc.setReceiverName("ASIIS");
         cc.setUseridRequired(true);
         cc.setPasswordRequired(true);
+      } else if (templateName.equals(TEMPLATE_NMSIIS_RAW_UAT))
+      {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("https://www.nmhit.org/nmsiistest/rhapsody/receive");
+        cc.setTypeShow(false);
+        cc.setUseridLabel("Organization Code");
+        cc.setPasswordLabel("Pin Code");
+        cc.setFacilityidLabel("Service");
+        cc.setInstructions("Contact NMSIIS for connecting informatoin.");
+        cc.setReceiverName("NMSIIS");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setFacilityidRequired(true);
+      } else if (templateName.equals(TEMPLATE_NMSIIS_RAW_PROD))
+      {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("https://www.nmhit.org/nmsiis/rhapsody/receive");
+        cc.setTypeShow(false);
+        cc.setUseridLabel("Organization Code");
+        cc.setPasswordLabel("Pin Code");
+        cc.setFacilityidLabel("Service");
+        cc.setInstructions("Contact NMSIIS for connecting informatoin.");
+        cc.setReceiverName("NMSIIS");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setFacilityidRequired(true);
       }
     } else
     {
