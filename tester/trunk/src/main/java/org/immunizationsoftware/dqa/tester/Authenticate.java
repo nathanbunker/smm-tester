@@ -168,10 +168,10 @@ public class Authenticate {
             addUser("Gooseberry", "1i2E81q2Ff5K66v", "Joel Freborg", "Joel.Freborg@bcbsnd.com");
             addUser("Grape", "5w005eeg707388P");
             addUser("Guava", "72F3NJym543TL6r");
-            addUser("Jackfruit", "13vG71f41233S7q");
-            addUser("Jujube", "rqK275tcM2Cfi6w");
-            addUser("Kiwifruit", "d4UGV51c4POgt1l");
-            addUser("Longan", "26Cau26Rd7DcUSb");
+            addUser("Jackfruit", "13vG71f41233S7q", "Harshal Patel", "Harshal.Patel@odh.ohio.gov");
+            addUser("Jujube", "rqK275tcM2Cfi6w", "Raveendra Mudunri", "Raveendra.Mudunuri@odh.ohio.gov");
+            addUser("Kiwifruit", "d4UGV51c4POgt1l", "Mayara Joshi", "Mayura.Joshi@odh.ohio.gov");
+            addUser("Longan", "26Cau26Rd7DcUSb", "Shashi Kuppa", "Shashidhar.Kuppa@odh.ohio.gov");
             addUser("Lychee", "26Cau26Rd7DcUSb");
             addUser("Mafai", "LU0Z23LJlqW1bQR", "Nathan Bunker", "Nathan.Bunker@gmail.com", true);
             addUser("Mango", "6Y847F1EL2W55fr", "Tony Mack", "tmack1@health.nyc.gov");

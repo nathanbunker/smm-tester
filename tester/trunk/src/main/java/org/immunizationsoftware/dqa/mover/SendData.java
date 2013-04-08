@@ -13,10 +13,12 @@ import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.axis2.util.FileWriter;
 import org.immunizationsoftware.dqa.tester.Transformer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 
@@ -24,7 +26,7 @@ public class SendData extends Thread
 {
 
   public enum ScanStatus {
-    STARTING, LOOKING, PREPARING, SENDING, WAITING, PROBLEM, SENT, STOPPED;
+    STARTING, LOOKING, PREPARING, SENDING, WAITING, PROBLEM, SENT, STOPPED, DISABLED;
   };
 
   public static final String SMM_PREFIX = "smm.";
@@ -132,18 +134,27 @@ public class SendData extends Thread
             {
               createWorkingDirs();
               createTransformer();
-
-              if (workDirIsEmpty())
+              if (notDisabled())
               {
-                if (lookForFilesToProcess())
+                if (workDirIsEmpty())
                 {
-                  prepareDataToSend();
+                  if (lookForFilesToProcess())
+                  {
+                    prepareDataToSend();
+                  } else
+                  {
+                    setupReciprocalBatchRequest();
+                  }
+                }
+
+                sendData();
+                if (scanStatus != ScanStatus.PROBLEM)
+                {
+                  setScanStatus(ScanStatus.WAITING);
+                  resetProblemRetryCount();
+                  deleteWorkingDir();
                 }
               }
-              sendData();
-              setScanStatus(ScanStatus.WAITING);
-              resetProblemRetryCount();
-              deleteWorkingDir();
             }
           } catch (ApplicationShuttingDown asd)
           {
@@ -160,6 +171,93 @@ public class SendData extends Thread
       }
     }
     logShutdown();
+  }
+
+  private static final String HL7_RBU_QUERY = "MSH|^~\\&|DBO^QSInsight^L|QS4444|5.0^QSInsight^L||20030828104856+0000||VXQ^V01|QS444437861000000042|P|2.3.1|||NE|AL|\r"
+      + "QRD|20030828104856+0000|R|I|QueryID01|||200.000000|000000001^Bucket^Hyacinth^^^^^^^^^^MR|VXI|SIIS|\r"
+      + "QRF|QS4444|20030828104856+0000|20030828104856+0000||100000001~19460401~~~~~~~~~~111 East Lansing Bouldvard^Indianapolis^IN~10000|\r";
+
+  private void setupReciprocalBatchRequest()
+  {
+    if (connector.getTransferType() == Connector.TransferType.RECIPROCAL_BATCH_UPDATE)
+    {
+      Calendar yesterday = Calendar.getInstance();
+      yesterday.add(Calendar.DAY_OF_MONTH, -1);
+      if (lastSentRBURequestDate != null && yesterday.after(lastSentRBURequestDate))
+      {
+        Date today = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        File file = new File(requestDir, "rbu-query-" + sdf.format(today) + ".hl7");
+        try
+        {
+          PrintWriter out = new PrintWriter(new java.io.FileWriter(file));
+          out.print(HL7_RBU_QUERY);
+          out.close();
+          prepareDataToSend();
+        } catch (IOException ioe)
+        {
+          this.statusLogger.logError("Unable to create reciprocal batch update", ioe);
+        }
+      }
+    }
+  }
+
+  private boolean notDisabled()
+  {
+    statusLogger.logInfo("Checking to see if connection can be enabled for the current time of day");
+    if (connector.getEnableTimeEnd().indexOf(":") == -1 || connector.getEnableTimeStart().indexOf(":") == -1)
+    {
+      statusLogger.logInfo("No restrictions for enabling the connection, will send data any time of day");
+      return true;
+    }
+    Date startTime = makeDate(connector.getEnableTimeStart());
+    Date endTime = makeDate(connector.getEnableTimeEnd());
+    if (startTime != null && endTime != null)
+    {
+      if (startTime.after(endTime))
+      {
+        statusLogger.logWarn("Connector start enable time is after the end time so the connection is never enabled");
+        return false;
+      }
+      Date now = new Date();
+      if (now.after(startTime) && now.before(endTime))
+      {
+        return true;
+      } else
+      {
+        statusLogger.logInfo("Logger is currently configured to be disabled between " + connector.getEnableTimeStart() + " and "
+            + connector.getEnableTimeEnd());
+        return false;
+      }
+    } else
+    {
+      statusLogger.logWarn("Connection has not be configured properly to be disabled for certain hours of the day");
+      statusLogger.logInfo("To configure time of day restrictions, please use HH:MM format and a 24 hour clock");
+    }
+    return false;
+  }
+
+  private static Date makeDate(String time)
+  {
+    Calendar today = Calendar.getInstance();
+    int pos = time.indexOf(":");
+    if (pos != -1)
+    {
+      String hourString = time.substring(0, pos);
+      String minString = time.substring(pos + 1);
+      try
+      {
+        today.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hourString));
+        today.set(Calendar.MINUTE, Integer.parseInt(minString));
+        today.set(Calendar.SECOND, 0);
+        return today.getTime();
+      } catch (NumberFormatException nfe)
+      {
+        // ignore
+      }
+    }
+    return null;
+
   }
 
   private void setupStatusReporter()
@@ -236,6 +334,8 @@ public class SendData extends Thread
   private int attemptCount = 0;
   private int sentCount = 0;
   private int errorCount = 0;
+
+  private Date lastSentRBURequestDate = null;
 
   public StatusReporter getStatusReporter()
   {
@@ -438,6 +538,7 @@ public class SendData extends Thread
         if (workFile.isFile() && !requestFilename.equals(""))
         {
           fileSentCount++;
+          lastSentRBURequestDate = new Date();
           readFilename(requestFilename);
           openSendingMessageInputs();
           try
@@ -445,13 +546,19 @@ public class SendData extends Thread
             StringBuilder sb = new StringBuilder();
             String line = null;
             BufferedReader in = new BufferedReader(new FileReader(workFile));
+            connector.setCurrentControlId("" + System.currentTimeMillis() + attemptCount);
             while ((line = in.readLine()) != null)
             {
+              if (line.startsWith(HL7.MSH))
+              {
+                connector.setCurrentControlId(HL7.readField(line, 10));
+              }
               sb.append(line);
               sb.append("\r");
             }
             in.close();
             String messageText = sb.toString();
+
             incAttemptCount();
             String responseText = connector.submitMessage(messageText, false);
             verifyOkayToKeepRunning();
@@ -460,6 +567,10 @@ public class SendData extends Thread
           {
             closeSendingMethodInputs();
           }
+        }
+        if (scanStatus == ScanStatus.PROBLEM)
+        {
+          return;
         }
         workFile.delete();
         deleteRequestFile(lastRequestFilename, requestFilename);
@@ -498,6 +609,7 @@ public class SendData extends Thread
     String responseMessageType = "";
     String acknowledgmentCode = null;
     String errorDescription = "";
+    String ackMessage = null;
     BufferedReader responseIn = new BufferedReader(new StringReader(responseText));
     while ((line = responseIn.readLine()) != null)
     {
@@ -508,6 +620,10 @@ public class SendData extends Thread
       }
       if (line.startsWith(HL7.MSH))
       {
+        if (ackMessage != null && responseMessageType.equals(HL7.ACK))
+        {
+          ackMessage = responseMessage.toString();
+        }
         handleResponse(responseMessage, responseMessageType);
         responseMessage.setLength(0);
         responseMessageType = HL7.readField(line, 9);
@@ -529,15 +645,30 @@ public class SendData extends Thread
       responseMessage.append(line);
       responseMessage.append("\r");
     }
+    if (ackMessage == null && responseMessageType.equals(HL7.ACK))
+    {
+      ackMessage = responseMessage.toString();
+    }
     handleResponse(responseMessage, responseMessageType);
     incSentCount();
 
     sentFileOut.print(messageText);
-    if (acknowledgmentCode == null || acknowledgmentCode.equals(HL7.AE) || acknowledgmentCode.equals(HL7.AR))
+    if (ackMessage == null)
+    {
+      statusLogger.logWarn("No acknowledgement message returned");
+    }
+    AckAnalyzer ackAnalyzer = new AckAnalyzer(ackMessage, connector.getAckType());
+    if (!ackAnalyzer.isPositive())
     {
       incErrorCount();
       fileErrorCount++;
-      errorFileOut.printCommentLn("MESSAGE REJECTED");
+      if (ackAnalyzer.isAckMessage())
+      {
+        errorFileOut.printCommentLn("MESSAGE REJECTED");
+      } else
+      {
+        errorFileOut.printCommentLn("MESSAGE NOT ACCEPTED");
+      }
 
       errorFileOut.printCommentLn(errorDescription);
       errorFileOut.printCommentLn("");
@@ -548,6 +679,11 @@ public class SendData extends Thread
       errorFileOut.print(responseMessage.toString());
       errorFileOut.println();
       errorFileOut.println();
+
+      if (ackAnalyzer.hasSetupProblem())
+      {
+        setScanStatus(ScanStatus.PROBLEM);
+      }
     }
   }
 
@@ -600,7 +736,7 @@ public class SendData extends Thread
 
   private void prepareFile() throws FileNotFoundException, IOException, Exception, TransmissionException
   {
-    backupFileOut = new FileOut(new File(backupDir, filename), true);
+    backupFileOut = new FileOut(new File(backupDir, filename), false);
     messageNumber = 0;
     StringBuilder message = new StringBuilder();
     BufferedReader in = new BufferedReader(new FileReader(requestFile));
@@ -791,6 +927,7 @@ public class SendData extends Thread
   {
     if (transformer != null)
     {
+      connector.setCurrentFilename(requestFile.getName());
       messageText = transformer.transform(connector, messageText);
     }
     return messageText;
@@ -975,7 +1112,7 @@ public class SendData extends Thread
       public boolean accept(File file)
       {
         String name = file.getName();
-        if (file.isFile() && isNotGeneratedName(name))
+        if (file.isFile() && isNotGeneratedName(name) && file.length() > 0)
         {
           return true;
         }
@@ -1044,35 +1181,56 @@ public class SendData extends Thread
   private boolean fileContainsHL7(File inFile) throws IOException
   {
     BufferedReader in = new BufferedReader(new FileReader(inFile));
-    String line = readRealFirstLine(in);
     boolean okay;
-    if (line.startsWith(HL7.FHS))
+    try
     {
-      String lastLine = line;
-      while ((line = in.readLine()) != null)
+      String line = readRealFirstLine(in);
+      if (line == null)
       {
-        if (line.trim().length() > 0)
-        {
-          lastLine = line;
-        }
-      }
-      okay = lastLine.startsWith(HL7.FTS);
-      if (!okay)
-      {
+        okay = false;
         statusLogger.logFile(inFile.getName(), ScanStatus.PROBLEM, 0);
-        statusLogger.logWarn("File does not end with FTS segment as expected, not processing: " + inFile.getName());
+        statusLogger.logWarn("File is empty: " + inFile.getName());
+      } else if (line.startsWith(HL7.FHS))
+      {
+        boolean hasMsh = false;
+        String lastLine = line;
+        while ((line = in.readLine()) != null)
+        {
+          if (line.trim().length() > 0)
+          {
+            lastLine = line;
+          }
+          if (line.startsWith(HL7.MSH))
+          {
+            hasMsh = true;
+          }
+        }
+        okay = lastLine.startsWith(HL7.FTS);
+        if (!okay)
+        {
+          statusLogger.logFile(inFile.getName(), ScanStatus.PROBLEM, 0);
+          statusLogger.logWarn("File does not end with FTS segment as expected, not processing: " + inFile.getName());
+        }
+        if (!hasMsh)
+        {
+          okay = false;
+          statusLogger.logFile(inFile.getName(), ScanStatus.PROBLEM, 0);
+          statusLogger.logWarn("File is empty, not processing: " + inFile.getName());
+        }
+      } else if (line.startsWith(HL7.MSH))
+      {
+        statusLogger.logDebug("File does not start with FHS segment as expected: " + inFile.getName());
+        okay = true;
+      } else
+      {
+        okay = false;
+        statusLogger.logFile(inFile.getName(), ScanStatus.PROBLEM, 0);
+        statusLogger.logWarn("File does not appear to contain HL7 (Must start with FHS or MSH segment): " + inFile.getName());
       }
-    } else if (line.startsWith(HL7.MSH))
+    } finally
     {
-      statusLogger.logDebug("File does not start with FHS segment as expected: " + inFile.getName());
-      okay = true;
-    } else
-    {
-      okay = false;
-      statusLogger.logFile(inFile.getName(), ScanStatus.PROBLEM, 0);
-      statusLogger.logWarn("File does not appear to contain HL7 (Must start with FHS or MSH segment): " + inFile.getName());
+      in.close();
     }
-    in.close();
     return okay;
   }
 

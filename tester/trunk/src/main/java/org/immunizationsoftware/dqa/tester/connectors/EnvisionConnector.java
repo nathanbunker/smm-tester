@@ -4,7 +4,12 @@
  */
 package org.immunizationsoftware.dqa.tester.connectors;
 
+import java.io.StringReader;
 import java.util.List;
+
+import javax.activation.DataHandler;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.axis2.context.ConfigurationContext;
 import org.immunizationsoftware.dqa.tester.connectors.tlep.Client_Service;
@@ -15,47 +20,46 @@ import org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTestRespo
 import org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessage;
 import org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageRequestType;
 import org.immunizationsoftware.dqa.tester.connectors.tlep.SubmitSingleMessageResponse;
+import org.tempuri.HL7WSStub;
+import org.tempuri.IR_Request;
+import org.tempuri.IR_Response;
 
 
 /**
  * 
  * @author nathan
  */
-public class SoapConnector extends HttpConnector
+public class EnvisionConnector extends HttpConnector
 {
 
-  private Client_Service clientService = null;
+  private HL7WSStub hl7Ws = null;
 
-
-  public SoapConnector(String label, String url) throws Exception {
-    super(label, url, ConnectorFactory.TYPE_SOAP);
-    clientService = new Client_ServiceStub(this.url);
+  public EnvisionConnector(String label, String url) throws Exception {
+    super(label, url, ConnectorFactory.TYPE_ENVISION_SOAP);
+   
+    hl7Ws = new HL7WSStub(this.url);
   }
 
   @Override
   public String submitMessage(String message, boolean debug) throws Exception
   {
-    SubmitSingleMessage submitSingleMessage = new SubmitSingleMessage();
-    SubmitSingleMessageRequestType request = new SubmitSingleMessageRequestType();
-    request.setFacilityID(this.facilityid);
-    request.setHl7Message(message);
-    request.setPassword(this.password);
-    request.setUsername(this.userid);
-    submitSingleMessage.setSubmitSingleMessage(request);
-    SubmitSingleMessageResponse response = clientService.submitSingleMessage(submitSingleMessage);
-    return response.getSubmitSingleMessageResponse().get_return();
+
+    IR_Request ir = new IR_Request();
+    ir.setPASSWORD(this.password);
+    ir.setFACILITYID(this.facilityid);
+    
+    DataHandler dataHandler = new DataHandler(message, "text/plain");
+    ir.setMESSAGEDATA(dataHandler);
+    IR_Response respose = hl7Ws.processHL7Message(ir);
+    
+    return respose.getRequest_Result();
 
   }
 
   @Override
   public String connectivityTest(String message) throws Exception
   {
-    ConnectivityTestRequestType request = new ConnectivityTestRequestType();
-    request.setEchoBack(message);
-    ConnectivityTest connectivityTest = new ConnectivityTest();
-    connectivityTest.setConnectivityTest(request);
-    ConnectivityTestResponse response = clientService.connectivityTest(connectivityTest);
-    return response.getConnectivityTestResponse().get_return();
+    return "Connectivity test not supported by Envision SOAP protocol";
   }
 
   @Override

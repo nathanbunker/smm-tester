@@ -100,6 +100,7 @@ public class StatusLogger
     writeStatusOrDelete(new File(rootFolder, "smm-is-looking"), ScanStatus.LOOKING, scanStatus);
     writeStatusOrDelete(new File(rootFolder, "smm-is-sending"), ScanStatus.SENDING, scanStatus);
     writeStatusOrDelete(new File(rootFolder, "smm-is-waiting"), ScanStatus.WAITING, scanStatus);
+    writeStatusOrDelete(new File(rootFolder, "smm-is-disabled"), ScanStatus.DISABLED, scanStatus);
   }
 
   public void updateScanStatus(ScanStatus scanStatus)

@@ -30,8 +30,8 @@ import javax.net.ssl.X509TrustManager;
 public class HttpConnector extends Connector
 {
 
-  public enum AuthenticationMethod {
-    FORM, HEADER
+  public static enum AuthenticationMethod {
+    FORM, HEADER, BASIC
   };
 
   public static final String FIELD_USERID = "USERID";
@@ -45,6 +45,21 @@ public class HttpConnector extends Connector
   private boolean stripXML = false;
   private AuthenticationMethod authenticationMethod = AuthenticationMethod.FORM;
   private String[] fieldNames = { FIELD_USERID, FIELD_PASSWORD, FIELD_FACILITYID, FIELD_MESSAGEDATA };
+
+  public AuthenticationMethod getAuthenticationMethod()
+  {
+    return authenticationMethod;
+  }
+
+  public void setAuthenticationMethod(AuthenticationMethod authenticationMethod)
+  {
+    this.authenticationMethod = authenticationMethod;
+  }
+
+  protected HttpConnector(String label, String url, String type) {
+    super(label, type);
+    this.url = url;
+  }
 
   public HttpConnector(String label, String url) {
     super(label, "POST");
@@ -152,6 +167,16 @@ public class HttpConnector extends Connector
         urlConn.setRequestProperty(fieldNames[USERID], conn.userId);
         urlConn.setRequestProperty(fieldNames[PASSWORD], conn.password);
         urlConn.setRequestProperty(fieldNames[FACILITYID], conn.facilityId);
+      } else if (authenticationMethod == AuthenticationMethod.BASIC)
+      {
+        if (debug)
+        {
+          debugLog.append(">> Sending credentials using HTTP Basic Authentication to " + conn.url + "\r");
+          debugLog.append(">> Username = '" + conn.userId + "' \r");
+          debugLog.append(">> Password = '" + conn.password + "' \r");
+        }
+        urlConn.setRequestProperty("Authorization", "Basic " + URLEncoder.encode(conn.userId + ":" + conn.password, "UTF-8"));
+        content = request;
       } else
       {
         if (debug)
@@ -289,6 +314,9 @@ public class HttpConnector extends Connector
         if (s.equalsIgnoreCase(AuthenticationMethod.HEADER.toString()))
         {
           authenticationMethod = AuthenticationMethod.HEADER;
+        } else if (s.equalsIgnoreCase(AuthenticationMethod.BASIC.toString()))
+        {
+          authenticationMethod = AuthenticationMethod.BASIC;
         }
       }
     }

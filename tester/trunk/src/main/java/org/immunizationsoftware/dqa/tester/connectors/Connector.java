@@ -15,6 +15,7 @@ import java.util.List;
 
 import javax.net.ssl.X509TrustManager;
 
+import org.immunizationsoftware.dqa.mover.AckAnalyzer;
 import org.immunizationsoftware.dqa.tester.PasswordEncryptUtil;
 
 /**
@@ -27,17 +28,24 @@ public abstract class Connector
   protected abstract void setupFields(List<String> fields);
 
   protected static Connector addConnector(String label, String type, String url, String userid, String facilityid, String password,
-      String keyStorePassword, List<String> fields, String customTransformations, List<Connector> connectors) throws Exception
+      String keyStorePassword, String enableTimeStart, String enableTimeEnd, AckAnalyzer.AckType ackType, TransferType transferType,
+      List<String> fields, String customTransformations, List<Connector> connectors) throws Exception
   {
     if (!label.equals("") && !type.equals(""))
     {
       Connector connector = null;
-      if (type.equals("SOAP"))
+      if (type.equals(ConnectorFactory.TYPE_SOAP))
       {
         connector = new SoapConnector(label, url);
-      } else if (type.equals("POST"))
+      } else if (type.equals(ConnectorFactory.TYPE_POST))
       {
         connector = new HttpConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_HI_SOAP))
+      {
+        connector = new HISoapConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_ENVISION_SOAP))
+      {
+        connector = new EnvisionConnector(label, url);
       } else
       {
         connector = new HttpConnector(label, url);
@@ -48,11 +56,19 @@ public abstract class Connector
       connector.setupFields(fields);
       connector.setCustomTransformations(customTransformations);
       connector.setKeyStorePassword(keyStorePassword);
+      connector.setAckType(ackType);
+      connector.setTransferType(transferType);
+      connector.setEnableTimeStart(enableTimeStart);
+      connector.setEnableTimeEnd(enableTimeEnd);
       connectors.add(connector);
       return connector;
     }
     return null;
   }
+
+  public static enum TransferType {
+    NEAR_REAL_TIME_LINK, RECIPROCAL_BATCH_UPDATE
+  };
 
   protected String label = "";
   protected String type = "";
@@ -60,11 +76,78 @@ public abstract class Connector
   protected String password = "";
   protected String facilityid = "";
   protected String url = "";
+  protected String currentFilename = "";
+  protected String currentControlId = "";
+  protected String enableTimeStart = "";
+  protected String enableTimeEnd = "";
+  protected TransferType transferType = TransferType.NEAR_REAL_TIME_LINK;
   private String customTransformations = "";
   private String[] quickTransformations;
   private KeyStore keyStore = null;
   private String keyStorePassword = null;
+  private AckAnalyzer.AckType ackType = AckAnalyzer.AckType.DEFAULT;
+
+  public String getCurrentControlId()
+  {
+    return currentControlId;
+  }
+
+  public void setCurrentControlId(String currentControlId)
+  {
+    this.currentControlId = currentControlId;
+  }
+
+  public String getEnableTimeStart()
+  {
+    return enableTimeStart;
+  }
+
+  public void setEnableTimeStart(String enableTimeStart)
+  {
+    this.enableTimeStart = enableTimeStart;
+  }
+
+  public String getEnableTimeEnd()
+  {
+    return enableTimeEnd;
+  }
+
+  public void setEnableTimeEnd(String enableTimeEnd)
+  {
+    this.enableTimeEnd = enableTimeEnd;
+  }
+
+  public TransferType getTransferType()
+  {
+    return transferType;
+  }
+
+  public void setTransferType(TransferType transferType)
+  {
+    this.transferType = transferType;
+  }
+
   protected boolean throwExceptions = false;
+
+  public String getCurrentFilename()
+  {
+    return currentFilename;
+  }
+
+  public void setCurrentFilename(String currentFilename)
+  {
+    this.currentFilename = currentFilename;
+  }
+
+  public AckAnalyzer.AckType getAckType()
+  {
+    return ackType;
+  }
+
+  public void setAckType(AckAnalyzer.AckType ackType)
+  {
+    this.ackType = ackType;
+  }
 
   public boolean isThrowExceptions()
   {
@@ -223,9 +306,19 @@ public abstract class Connector
         e.printStackTrace();
       }
     }
+    sb.append("Ack Type: " + ackType + "\n");
+    sb.append("Transfer Type: " + transferType + "\n");
+    if (!enableTimeStart.equals(""))
+    {
+      sb.append("Enable Time Start: " + enableTimeStart);
+    }
+    if (!enableTimeEnd.equals(""))
+    {
+      sb.append("Enable Time End: " + enableTimeEnd);
+    }
     if (customTransformations != null && customTransformations.length() > 0)
     {
-      sb.append("Custom Transformations:");
+      sb.append("Custom Transformations: \n");
       try
       {
         BufferedReader inTransform = new BufferedReader(new StringReader(customTransformations));
@@ -258,6 +351,10 @@ public abstract class Connector
     String url = "";
     String customTransformations = "";
     String keyStorePassword = "";
+    String enableTimeStart = "";
+    String enableTimeEnd = "";
+    TransferType transferType = TransferType.NEAR_REAL_TIME_LINK;
+    AckAnalyzer.AckType ackType = AckAnalyzer.AckType.DEFAULT;
     List<String> fields = new ArrayList<String>();
     BufferedReader in = new BufferedReader(new StringReader(script));
     String line;
@@ -267,13 +364,18 @@ public abstract class Connector
       line = line.trim();
       if (line.startsWith("Connection"))
       {
-        addConnector(label, type, url, userid, facilityid, password, keyStorePassword, fields, customTransformations, connectors);
+        addConnector(label, type, url, userid, facilityid, password, keyStorePassword, enableTimeStart, enableTimeEnd, ackType, transferType, fields,
+            customTransformations, connectors);
         label = "";
         type = "";
         url = "";
         userid = "";
         facilityid = "";
         password = "";
+        enableTimeStart = "";
+        enableTimeEnd = "";
+        ackType = AckAnalyzer.AckType.DEFAULT;
+        transferType = TransferType.NEAR_REAL_TIME_LINK;
         customTransformations = "";
         keyStorePassword = "";
         fields = new ArrayList<String>();
@@ -289,6 +391,18 @@ public abstract class Connector
       } else if (line.startsWith("User Id:"))
       {
         userid = readValue(line);
+      } else if (line.startsWith("Ack Type:"))
+      {
+        ackType = AckAnalyzer.AckType.valueOf(readValue(line));
+      } else if (line.startsWith("Enable Time Start:"))
+      {
+        enableTimeStart = readValue(line);
+      } else if (line.startsWith("Enable Time End:"))
+      {
+        enableTimeEnd = readValue(line);
+      } else if (line.startsWith("Transfer Type:"))
+      {
+        transferType = TransferType.valueOf(readValue(line));
       } else if (line.startsWith("Password:"))
       {
         password = PasswordEncryptUtil.decrypt(readValue(line));
@@ -316,7 +430,8 @@ public abstract class Connector
       }
 
     }
-    addConnector(label, type, url, userid, facilityid, password, keyStorePassword, fields, customTransformations, connectors);
+    addConnector(label, type, url, userid, facilityid, password, keyStorePassword, enableTimeStart, enableTimeEnd, ackType, transferType, fields,
+        customTransformations, connectors);
     return connectors;
   }
 
