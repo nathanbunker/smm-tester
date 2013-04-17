@@ -19,12 +19,12 @@ public class TestTransformer
     messageText = "MSH|\r";
     connector.setCustomTransformations("insert segment FHS first\n");
     messageText = transformer.transform(connector, messageText);
-    assertEquals("FHS|\rMSH|\r", messageText);
+    assertEquals("FHS|^~\\&|\rMSH|\r", messageText);
 
     messageText = "MSH|";
     connector.setCustomTransformations("insert segment FHS first\n");
     messageText = transformer.transform(connector, messageText);
-    assertEquals("FHS|\rMSH|\r", messageText);
+    assertEquals("FHS|^~\\&|\rMSH|\r", messageText);
 
     messageText = "MSH|\r";
     connector.setCustomTransformations("insert segment FTS last\n");

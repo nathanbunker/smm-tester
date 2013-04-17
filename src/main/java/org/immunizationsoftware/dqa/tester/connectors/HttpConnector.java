@@ -354,5 +354,9 @@ public class HttpConnector extends Connector
     {
       sb.append("Strip XML: true\n");
     }
+    if (authenticationMethod != null && authenticationMethod != AuthenticationMethod.FORM)
+    {
+      sb.append("Authentication Method: " + authenticationMethod);
+    }
   }
 }

@@ -1,9 +1,11 @@
 package org.immunizationsoftware.dqa.mover;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 
 public class FileOut
 {
@@ -43,6 +45,22 @@ public class FileOut
     out.print("--- ");
     out.print(string);
     out.print('\r');
+  }
+  
+  public void printCommentLnMultiple(String s)
+  {
+    BufferedReader in = new BufferedReader(new StringReader(s));
+    String line;
+    try
+    {
+      while ((line = in.readLine()) != null)
+      {
+        printCommentLn(line);
+      }
+    } catch (IOException ioe)
+    {
+      ioe.printStackTrace();
+    }
   }
   
   public void println() throws IOException
