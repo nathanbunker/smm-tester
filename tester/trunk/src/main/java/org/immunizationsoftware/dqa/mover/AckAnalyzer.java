@@ -110,7 +110,7 @@ public class AckAnalyzer
       ackMessage = false;
       positive = false;
       setupProblem = true;
-      if (ackType == AckType.NMSIIS)
+      if (ack != null && ackType == AckType.NMSIIS)
       {
         if (ack.length() < 240)
         {

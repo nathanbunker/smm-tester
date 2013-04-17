@@ -570,6 +570,20 @@ public class SendData extends Thread
         }
         if (scanStatus == ScanStatus.PROBLEM)
         {
+          if (workFile.getName().indexOf("-m00001") == -1)
+          {
+            // problem did not occur on the first message, leaving work files
+            // alone
+            return;
+          }
+          // problem occurred from the start, probably a configuration issue,
+          // deleting work files
+          File[] filesToDelete = workDir.listFiles();
+          for (File fileToDelete : filesToDelete)
+          {
+            fileToDelete.delete();
+          }
+          workDir.delete();
           return;
         }
         workFile.delete();
@@ -676,7 +690,7 @@ public class SendData extends Thread
       errorFileOut.print(messageText);
       errorFileOut.printCommentLn("");
       errorFileOut.printCommentLn("RESPONSE");
-      errorFileOut.print(responseMessage.toString());
+      errorFileOut.printCommentLnMultiple(responseMessage.toString());
       errorFileOut.println();
       errorFileOut.println();
 
@@ -685,6 +699,7 @@ public class SendData extends Thread
         setScanStatus(ScanStatus.PROBLEM);
       }
     }
+
   }
 
   private void handleResponse(StringBuilder responseMessage, String responseMessageType) throws IOException

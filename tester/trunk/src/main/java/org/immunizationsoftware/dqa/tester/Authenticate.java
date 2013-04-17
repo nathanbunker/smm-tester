@@ -186,7 +186,7 @@ public class Authenticate {
             addUser("Plum", "2M7632L8Df011GQ", "Rob Savage", "hzv3@cdc.gov", true);
             addUser("Pomegranate", "aGWBac39r113uYB");
             addUser("Pomelo", "mR5nOH16HwQSW6e");
-            addUser("Rambutan", "m62w2K9D73w9g6z");
+            addUser("Rambutan", "m62w2K9D73w9g6z", "Chicago Training", ""); // http://ois-pt.org/tester/LoginServlet?username=Rambutan&password=m62w2K9D73w9g6z&action=Login
             addUser("Raspberry", "A432p3tPo17IcFr");
             addUser("Currant", "Rk1452294qXcv71");
             addUser("Rose", "CqOvK7VKxqHCM4n");

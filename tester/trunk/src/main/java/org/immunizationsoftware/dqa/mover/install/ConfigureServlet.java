@@ -177,8 +177,13 @@ public class ConfigureServlet extends ClientServlet
       if (templateName.equals(TEMPLATE_NMSIIS_RAW_UAT) || templateName.equals(TEMPLATE_NMSIIS_RAW_PROD))
       {
         HttpConnector httpConnector = (HttpConnector) connector;
+        httpConnector.setFacilityid("NMSIIS");
         httpConnector.setAuthenticationMethod(HttpConnector.AuthenticationMethod.HEADER);
         httpConnector.setAckType(AckAnalyzer.AckType.NMSIIS);
+        httpConnector.setFieldName(HttpConnector.USERID, "orgCode");
+        httpConnector.setFieldName(HttpConnector.PASSWORD, "pinCode");
+        httpConnector.setFieldName(HttpConnector.FACILITYID, "service");
+        httpConnector.setAuthenticationMethod(HttpConnector.AuthenticationMethod.HEADER);
         httpConnector.setCustomTransformations("MSH-3=RPMS\n" + "MSH-4=[USERID]\n" + "MSH-6=NMSIIS\n" + "insert segment BHS first\n"
             + "insert segment BTS last\n" + "insert segment FHS first\n" + "insert segment FTS last\n" + "FHS-8=CR\n" + "BSH-8=CR\n"
             + "FHS-9=[FILENAME]\n" + "FTS-1=1\n" + "BTS-1=1\n" + "FTS-2=CR\n" + "BTS-2=CR\n");
@@ -222,27 +227,25 @@ public class ConfigureServlet extends ClientServlet
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setUrl("https://www.nmhit.org/nmsiistest/rhapsody/receive");
         cc.setTypeShow(false);
-        cc.setUseridLabel("Organization Code");
+        cc.setUseridLabel("Org Code");
         cc.setPasswordLabel("Pin Code");
-        cc.setFacilityidLabel("Service");
-        cc.setInstructions("Contact NMSIIS for connecting informatoin.");
+        cc.setInstructions("Contact NMSIIS for connecting information.");
         cc.setReceiverName("NMSIIS");
         cc.setUseridRequired(true);
         cc.setPasswordRequired(true);
-        cc.setFacilityidRequired(true);
+        cc.setFacilityidShow(false);
       } else if (templateName.equals(TEMPLATE_NMSIIS_RAW_PROD))
       {
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setUrl("https://www.nmhit.org/nmsiis/rhapsody/receive");
         cc.setTypeShow(false);
-        cc.setUseridLabel("Organization Code");
+        cc.setUseridLabel("Org Code");
         cc.setPasswordLabel("Pin Code");
-        cc.setFacilityidLabel("Service");
-        cc.setInstructions("Contact NMSIIS for connecting informatoin.");
+        cc.setInstructions("Contact NMSIIS for connecting information.");
         cc.setReceiverName("NMSIIS");
         cc.setUseridRequired(true);
         cc.setPasswordRequired(true);
-        cc.setFacilityidRequired(true);
+        cc.setFacilityidShow(false);
       }
     } else
     {
