@@ -3,7 +3,7 @@
   <groupId>org.immunizationsoftware.dqa</groupId>
   <artifactId>tester</artifactId>
   <packaging>war</packaging>
-  <version>1.08</version>
+  <version>1.09</version>
   <!-- TODO project name -->
   <name>quickstart</name>
   <description></description>
