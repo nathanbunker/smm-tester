@@ -22,6 +22,7 @@
     <init-param>
       <param-name>software.dir</param-name>
       <param-value>/home/oisptorg/ois-pt.org/data/dist</param-value>
+      <!-- /home/oisptorg/ois-pt.org/data/dist C:\data\work\product\smm\dist -->
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
@@ -81,6 +82,10 @@
     <servlet-name>smm.install.InstallServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.mover.install.InstallServlet</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>dqa.install.DownloadServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.install.DownloadServlet</servlet-class>
+  </servlet>
   <servlet-mapping>
     <servlet-name>CreateTestCaseServlet</servlet-name>
     <url-pattern>/CreateTestCaseServlet</url-pattern>
@@ -128,6 +133,10 @@
   <servlet-mapping>
     <servlet-name>smm.install.DownloadServlet</servlet-name>
     <url-pattern>/install/DownloadServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>dqa.install.DownloadServlet</servlet-name>
+    <url-pattern>/installDQA/DownloadServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>smm.install.PrepareServlet</servlet-name>

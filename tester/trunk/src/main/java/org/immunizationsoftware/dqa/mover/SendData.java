@@ -1211,7 +1211,7 @@ public class SendData extends Thread
         String lastLine = line;
         while ((line = in.readLine()) != null)
         {
-          if (line.trim().length() > 0)
+          if (line.trim().length() > 0 && !line.startsWith("--- ") && !line.equals("---"))
           {
             lastLine = line;
           }

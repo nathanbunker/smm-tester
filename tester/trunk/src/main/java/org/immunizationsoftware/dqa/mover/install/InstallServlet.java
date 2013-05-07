@@ -66,7 +66,7 @@ public class InstallServlet extends ClientServlet
           + (tomcatHome == null ? "" : tomcatHome) + "\" size=\"40\"/></td>");
       out.println("    </tr>");
       out.println("    <tr>");
-      out.println("      <td colspan=\"3\">You should now be ready for the next step: <input type=\"submit\" value=\"Step 4: Download\"/></td>");
+      out.println("      <td colspan=\"3\">You should now be ready for the next step: <input type=\"submit\" value=\"Step 4: Download SMM\"/></td>");
       out.println("    </tr>");
       out.println("  </table>");
       out.println("</form>");

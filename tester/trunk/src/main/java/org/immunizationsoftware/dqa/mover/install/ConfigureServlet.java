@@ -205,7 +205,7 @@ public class ConfigureServlet extends ClientServlet
       } else if (templateName.equals(TEMPLATE_ASIIS_PROD))
       {
         cc.setType(ConnectorFactory.TYPE_POST);
-        cc.setUrl("https://test-asiis.azdhs.gov/HL7Server");
+        cc.setUrl("https://app.azdhs.gov/phs/asiis/hl7post/");
         cc.setFacilityidShow(false);
         cc.setTypeShow(false);
         cc.setInstructions("In order to connect to ASIIS Production you will need to request a Username and Password from the <a href=\"https://www.asiis.state.az.us/\" target=\"_blank\">ASIIS User Support help desk</a>. Please provide the User Id and Password before continuing. ");
@@ -215,7 +215,7 @@ public class ConfigureServlet extends ClientServlet
       } else if (templateName.equals(TEMPLATE_ASIIS_TEST))
       {
         cc.setType(ConnectorFactory.TYPE_POST);
-        cc.setUrl("https://test-asiis.azdhs.gov/HL7Server");
+        cc.setUrl("https://appqa.azdhs.gov/phs/asiis/hl7post/r");
         cc.setFacilityidShow(false);
         cc.setTypeShow(false);
         cc.setInstructions("In order to connect to ASIIS Test you will need to request a Username and Password from the <a href=\"https://test-asiis.azdhs.gov/\" target=\"_blank\">ASIIS User Support help desk</a>. Please provide the User Id and Password before continuing.");
