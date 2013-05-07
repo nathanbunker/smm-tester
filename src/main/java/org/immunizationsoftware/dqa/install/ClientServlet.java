@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.immunizationsoftware.dqa.mover.install;
+package org.immunizationsoftware.dqa.install;
 
 import java.io.PrintWriter;
 
@@ -56,8 +56,7 @@ public class ClientServlet extends HttpServlet
     return makeMenu(request, "&nbsp;");
   }
 
-  private static final String[][] MENU = { { "index.html", "Simple Message Mover" }, { "PrepareServlet", "1. Prepare" },
-      { "ConfigureServlet", "2. Configure" }, { "InstallServlet", "3. Install" }, { "DownloadServlet", "4. Download SMM" } };
+  private static final String[][] MENU = { { "index.html", "DQA" }, { "DownloadServlet", "4. Download" } };
 
   public static String makeMenu(HttpServletRequest request, String title)
   {
