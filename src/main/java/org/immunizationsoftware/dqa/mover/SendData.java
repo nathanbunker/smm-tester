@@ -237,7 +237,7 @@ public class SendData extends Thread
     return false;
   }
 
-  private static Date makeDate(String time)
+  public static Date makeDate(String time)
   {
     Calendar today = Calendar.getInstance();
     int pos = time.indexOf(":");
