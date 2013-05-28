@@ -12,6 +12,8 @@ public class ConnectionConfiguration
   public static final String FIELD_USERID = "userid";
   public static final String FIELD_PASSWORD = "password";
   public static final String FIELD_FACILITYID = "faclityid";
+  public static final String FIELD_ENABLE_TIME_START = "enableTimeStart";
+  public static final String FIELD_ENABLE_TIME_END = "enableTimeEnd";
 
   private String label = "";
   private String type = "";
@@ -23,6 +25,9 @@ public class ConnectionConfiguration
   private String folderName = "";
   private String instructions = "";
   private String receiverName = "the receiver";
+  private String enableTimeEnd = "";
+  private String enableTimeStart = "";
+  
 
   public String getReceiverName()
   {
@@ -64,16 +69,58 @@ public class ConnectionConfiguration
     this.folderName = folderName;
   }
 
+  public String getEnableTimeEnd()
+  {
+    return enableTimeEnd;
+  }
+
+  public void setEnableTimeEnd(String enableTimeEnd)
+  {
+    this.enableTimeEnd = enableTimeEnd;
+  }
+
+  public String getEnableTimeStart()
+  {
+    return enableTimeStart;
+  }
+
+  public void setEnableTimeStart(String enableTimeStart)
+  {
+    this.enableTimeStart = enableTimeStart;
+  }
+
   private boolean typeShow = true;
   private boolean urlShow = true;
   private boolean useridShow = true;
   private boolean passwordShow = true;
   private boolean facilityidShow = true;
   private boolean useridRequired = false;
+  private boolean enableTimeShow = false;
+  private boolean enableTimeRequired = false;
   private String urlLabel = "URL";
   private String useridLabel = "User Id";
   private String passwordLabel = "Password";
   private String facilityidLabel = "Facility Id";
+  
+  public boolean isEnableTimeShow()
+  {
+    return enableTimeShow;
+  }
+  
+  public void setEnableTimeShow(boolean enableTimeShow)
+  {
+    this.enableTimeShow = enableTimeShow;
+  }
+  
+  public boolean isEnableTimeRequired()
+  {
+    return enableTimeRequired;
+  }
+  
+  public void setEnableTimeRequired(boolean enableTimeRequired)
+  {
+    this.enableTimeRequired = enableTimeRequired;
+  }
   
   public String getUrlLabel()
   {
@@ -329,12 +376,23 @@ public class ConnectionConfiguration
       out.println("  <tr class=\"boxed\">");
       out.println("    <th class=\"boxed\">" + facilityidLabel + "</th>");
       out.println("    <td class=\"boxed\"><input type=\"text\" name=\"" + FIELD_FACILITYID + "\" size=\"10\" value=\"" + facilityid + "\"></td>");
-      out.println("    <td class=\"boxed\">The identifier for the facility assigned by the receiver. </td>");
+      out.println("    <td class=\"boxed\">The time that the SMM is allowed to submit data to " + receiverName + " (use 24 hour time, HH:MM)</td>");
       out.println("  </tr>");
     } else
     {
       out.println("<input type=\"hidden\" name=\"" + FIELD_FACILITYID + "\" value=\"" + facilityid + "\">");
     }
+    if (enableTimeShow)
+    {
+      out.println("  <tr class=\"boxed\">");
+      out.println("    <th class=\"boxed\">SMM Enable Time</th>");
+      out.println("    <td class=\"boxed\">");
+      out.println("      <input type=\"text\" name=\"" + FIELD_ENABLE_TIME_START + "\" size=\"5\" value=\"" + enableTimeStart + "\"> to ");
+      out.println("      <input type=\"text\" name=\"" + FIELD_ENABLE_TIME_END + "\" size=\"5\" value=\"" + enableTimeEnd + "\">");
+      out.println("    </td>");
+      out.println("    <td class=\"boxed\">The identifier for the facility assigned by the receiver. </td>");
+      out.println("  </tr>");
+    } 
     out.println("  <tr class=\"boxed\">");
     out.println("    <th class=\"boxed\">&nbsp;</th>");
     out.println("    <td class=\"boxed\"><input type=\"submit\" name=\"action\" value=\"Step 2: Download and Save\"></td>");

@@ -310,11 +310,11 @@ public abstract class Connector
     sb.append("Transfer Type: " + transferType + "\n");
     if (!enableTimeStart.equals(""))
     {
-      sb.append("Enable Time Start: " + enableTimeStart);
+      sb.append("Enable Time Start: " + enableTimeStart + "\n");
     }
     if (!enableTimeEnd.equals(""))
     {
-      sb.append("Enable Time End: " + enableTimeEnd);
+      sb.append("Enable Time End: " + enableTimeEnd + "\n");
     }
     if (customTransformations != null && customTransformations.length() > 0)
     {
@@ -514,4 +514,6 @@ public abstract class Connector
       tm.checkServerTrusted(chain, authType);
     }
   }
+  
+
 }

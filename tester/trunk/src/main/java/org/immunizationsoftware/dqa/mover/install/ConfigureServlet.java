@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.mover.AckAnalyzer;
+import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.connectors.ConnectorFactory;
 import org.immunizationsoftware.dqa.tester.connectors.HttpConnector;
@@ -102,6 +103,8 @@ public class ConfigureServlet extends ClientServlet
               connector.setUserid(cc.getUserid());
               connector.setPassword(cc.getPassword());
               connector.setFacilityid(cc.getFacilityid());
+              connector.setEnableTimeStart(safe(req.getParameter(ConnectionConfiguration.FIELD_ENABLE_TIME_START)));
+              connector.setEnableTimeEnd(safe(req.getParameter(ConnectionConfiguration.FIELD_ENABLE_TIME_END)));
               if (cc.isUseridRequired() && connector.getUserid().equals(""))
               {
                 message = "You must indicate a " + cc.getUseridLabel();
@@ -112,7 +115,32 @@ public class ConfigureServlet extends ClientServlet
               {
                 message = "You must indicate a " + cc.getFacilityidLabel();
               }
-
+              
+              if (cc.isEnableTimeRequired())
+              {
+                if (connector.getEnableTimeEnd().equals("")) {
+                message = "You must indicate a SMM enabled end time";
+                }
+                else
+                {
+                  if (SendData.makeDate(connector.getEnableTimeEnd()) == null) 
+                  {
+                    message = "The SMM enabled end time is invalid format, please use HH:MM with the HH indicating a value between 0 and 23";
+                  }
+                  
+                }
+                if (connector.getEnableTimeStart().equals("")) {
+                message = "You must indicate a SMM enabled start time";
+                }
+                else
+                {
+                  if (SendData.makeDate(connector.getEnableTimeStart()) == null) 
+                  {
+                    message = "The SMM enabled start time is invalid format, please use HH:MM with the HH indicating a value between 0 and 23";
+                  }
+                }
+              }
+              
               if (message == null)
               {
                 setupConnection(templateName, connector);
@@ -215,7 +243,7 @@ public class ConfigureServlet extends ClientServlet
       } else if (templateName.equals(TEMPLATE_ASIIS_TEST))
       {
         cc.setType(ConnectorFactory.TYPE_POST);
-        cc.setUrl("https://appqa.azdhs.gov/phs/asiis/hl7post/r");
+        cc.setUrl("https://appqa.azdhs.gov/phs/asiis/hl7post/");
         cc.setFacilityidShow(false);
         cc.setTypeShow(false);
         cc.setInstructions("In order to connect to ASIIS Test you will need to request a Username and Password from the <a href=\"https://test-asiis.azdhs.gov/\" target=\"_blank\">ASIIS User Support help desk</a>. Please provide the User Id and Password before continuing.");
@@ -246,10 +274,22 @@ public class ConfigureServlet extends ClientServlet
         cc.setUseridRequired(true);
         cc.setPasswordRequired(true);
         cc.setFacilityidShow(false);
+        cc.setEnableTimeShow(true);
+        cc.setEnableTimeEnd("18:00");
+        cc.setEnableTimeStart("06:00");
       }
     } else
     {
       cc.setInstructions("This is the default configuration with no preset values. If you would like specific instruction based on the system you are working to connect with, please return to Step 1: Prepare and follow the instructions. ");
     }
+  }
+  
+  private static String safe(String s)
+  {
+    if (s == null)
+    {
+      return "";
+    }
+    return s;
   }
 }
