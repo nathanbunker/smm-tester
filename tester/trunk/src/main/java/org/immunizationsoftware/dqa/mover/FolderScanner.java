@@ -70,6 +70,7 @@ public class FolderScanner extends Thread
   private void log(String status)
   {
     scanningStatus = status;
+    System.out.println("SMM Folder Scan: " + scanningStatus);
   }
 
   private void search(File folder, boolean starting)

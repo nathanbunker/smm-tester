@@ -6,6 +6,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -26,7 +27,7 @@ public class SendData extends Thread
 {
 
   public enum ScanStatus {
-    STARTING, LOOKING, PREPARING, SENDING, WAITING, PROBLEM, SENT, STOPPED, DISABLED;
+    STARTING, LOOKING, PREPARING, SENDING, WAITING, PROBLEM, SENT, STOPPED, DISABLED, SETUP_PROBLEM;
   };
 
   public static final String SMM_PREFIX = "smm.";
@@ -120,6 +121,8 @@ public class SendData extends Thread
   {
     while (okayToRun)
     {
+      configFileModified = configFileLastModified < configFile.lastModified();
+
       setupStatusReporter();
       waitAwhileMoreForProblem();
       if (okayToRun)
@@ -331,6 +334,8 @@ public class SendData extends Thread
   private int fileSentCount = 0;
   private int fileErrorCount = 0;
 
+  private long configFileLastModified = 0;
+  private boolean configFileModified = false;
   private int attemptCount = 0;
   private int sentCount = 0;
   private int errorCount = 0;
@@ -659,7 +664,7 @@ public class SendData extends Thread
       responseMessage.append(line);
       responseMessage.append("\r");
     }
-    if (ackMessage == null && responseMessageType.equals(HL7.ACK))
+    if (ackMessage == null && (responseMessageType.startsWith(HL7.ACK) || responseMessageType.equalsIgnoreCase(HL7.ACK)))
     {
       ackMessage = responseMessage.toString();
     }
@@ -671,7 +676,7 @@ public class SendData extends Thread
     {
       statusLogger.logWarn("No acknowledgement message returned");
     }
-    AckAnalyzer ackAnalyzer = new AckAnalyzer(ackMessage, connector.getAckType());
+    AckAnalyzer ackAnalyzer = new AckAnalyzer(ackMessage, connector.getAckType(), errorFileOut);
     if (!ackAnalyzer.isPositive())
     {
       incErrorCount();
@@ -696,7 +701,7 @@ public class SendData extends Thread
 
       if (ackAnalyzer.hasSetupProblem())
       {
-        setScanStatus(ScanStatus.PROBLEM);
+        setScanStatus(ScanStatus.SETUP_PROBLEM);
       }
     }
 
@@ -847,8 +852,13 @@ public class SendData extends Thread
 
   private void waitAwhileMoreForProblem()
   {
-    if (scanStatus == ScanStatus.PROBLEM)
+    if (scanStatus == ScanStatus.PROBLEM || scanStatus == ScanStatus.SETUP_PROBLEM)
     {
+      if (configFileModified)
+      {
+        statusLogger.logInfo("Config file modified, trying to send again. ");
+        return;
+      }
       retryCount++;
       if (retryCount > retryWait.length)
       {
@@ -872,6 +882,7 @@ public class SendData extends Thread
         }
       }
     }
+
   }
 
   private String addToErrorDescription(String currentDescription, String addition)
@@ -983,6 +994,32 @@ public class SendData extends Thread
     responseDir = createDir(rootDir, RESPONSE_FOLDER, RESPONSES_FOLDER);
     updateDir = createDir(rootDir, UPDATE_FOLDER, UPDATES_FOLDER);
     sentDir = createDir(rootDir, SENT_FOLDER);
+
+    if (configFileModified && workDir.exists())
+    {
+      statusLogger.logInfo("Config file has been modified since the last run (or this sender has just started) "
+          + "looking to delete working files that were generated under previous configurations");
+      File[] files = workDir.listFiles(new FilenameFilter() {
+
+        public boolean accept(File file, String arg1)
+        {
+          return file.lastModified() < configFile.lastModified();
+        }
+      });
+      if (files.length == 0)
+      {
+        statusLogger.logInfo("No working files found that need to be deleted");
+      } else
+      {
+        statusLogger.logInfo("Found " + files.length + " file(s) to delete ");
+        for (File file : files)
+        {
+          statusLogger.logInfo(" + deleting " + file.getName());
+          file.delete();
+        }
+      }
+    }
+
   }
 
   public File getGeneratedDir()
@@ -1317,6 +1354,7 @@ public class SendData extends Thread
       script.append("\n");
     }
     in.close();
+    configFileLastModified = configFile.lastModified();
     return script.toString();
   }
 

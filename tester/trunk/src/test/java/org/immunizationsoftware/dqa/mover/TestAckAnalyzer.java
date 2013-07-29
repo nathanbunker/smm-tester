@@ -93,12 +93,12 @@ public class TestAckAnalyzer
     assertTrue(ackAnalyzer.isPositive());
     assertEquals("AA", ackAnalyzer.getAckCode());
 
-    ackAnalyzer = new AckAnalyzer(NM_ACK_POS, AckAnalyzer.AckType.NMSIIS);
+    ackAnalyzer = new AckAnalyzer(NM_ACK_POS, AckAnalyzer.AckType.NMSIIS, null);
     assertTrue(ackAnalyzer.isAckMessage());
     assertTrue(ackAnalyzer.isPositive());
     assertEquals("AA", ackAnalyzer.getAckCode());
 
-    ackAnalyzer = new AckAnalyzer(NM_ACK_NEG, AckAnalyzer.AckType.NMSIIS);
+    ackAnalyzer = new AckAnalyzer(NM_ACK_NEG, AckAnalyzer.AckType.NMSIIS, null);
     assertTrue(ackAnalyzer.isAckMessage());
     assertFalse(ackAnalyzer.isPositive());
     assertEquals("AA", ackAnalyzer.getAckCode());
@@ -108,7 +108,7 @@ public class TestAckAnalyzer
     assertTrue(ackAnalyzer.isPositive());
     assertEquals("AA", ackAnalyzer.getAckCode());
 
-    ackAnalyzer = new AckAnalyzer(OR_ACK_POS, AckAnalyzer.AckType.ALERT);
+    ackAnalyzer = new AckAnalyzer(OR_ACK_POS, AckAnalyzer.AckType.ALERT, null);
     assertTrue(ackAnalyzer.isAckMessage());
     assertTrue(ackAnalyzer.isPositive());
     assertEquals("AR", ackAnalyzer.getAckCode());
