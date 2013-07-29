@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.immunizationsoftware.dqa.tester.Transformer.PatientType;
+import org.immunizationsoftware.dqa.tester.run.TestRunner;
 
 /**
  * 
@@ -254,6 +255,40 @@ public class TestCaseMessage
   private String actualResultAckMessage = "";
   private Transformer.PatientType patientType = Transformer.PatientType.ANY_CHILD;
   private boolean hasIssue = false;
+  private Throwable exception = null;
+  private String actualAck = "";
+  private List<TestRunner.Error> errorList = null;
+  
+  
+  public List<TestRunner.Error> getErrorList()
+  {
+    return errorList;
+  }
+
+  public void setErrorList(List<TestRunner.Error> errorList)
+  {
+    this.errorList = errorList;
+  }
+
+  public String getActualAck()
+  {
+    return actualAck;
+  }
+
+  public void setActualAck(String actualAck)
+  {
+    this.actualAck = actualAck;
+  }
+
+  public Throwable getException()
+  {
+    return exception;
+  }
+
+  public void setException(Throwable exception)
+  {
+    this.exception = exception;
+  }
 
   public Transformer.PatientType getPatientType()
   {

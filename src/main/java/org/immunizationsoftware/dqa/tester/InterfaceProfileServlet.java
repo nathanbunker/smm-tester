@@ -28,7 +28,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
-import org.immunizationsoftware.dqa.tester.transform.IssueCreatorItems;
+import org.immunizationsoftware.dqa.tester.run.TestRunner;
+import org.immunizationsoftware.dqa.tester.transform.Issue;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -144,7 +145,7 @@ public class InterfaceProfileServlet extends ClientServlet
           }
 
         }
-        
+
         int batchSize = 0;
         String batchSizeString = request.getParameter("batchSize");
         if (batchSizeString != null && !batchSizeString.equals(""))
@@ -152,10 +153,9 @@ public class InterfaceProfileServlet extends ClientServlet
           try
           {
             batchSize = Integer.parseInt(batchSizeString);
-          }
-          catch (NumberFormatException nfe)
+          } catch (NumberFormatException nfe)
           {
-batchSize = 0;
+            batchSize = 0;
           }
         }
 
@@ -180,7 +180,6 @@ batchSize = 0;
             {
               try
               {
-
                 testRunner.runTest(connector, testCaseMessageBase);
               } catch (Throwable t)
               {
@@ -233,7 +232,7 @@ batchSize = 0;
               PrintWriter fileOut = new PrintWriter(new FileWriter(file));
               file = new File(generatedDir, filenameBase + " Sample Messages.txt");
               sampleFileOut = new PrintWriter(new FileWriter(file));
-              for (int i = 0; i <  batchSize ; i++)
+              for (int i = 0; i < batchSize; i++)
               {
                 testCaseMessage = new TestCaseMessage(testCaseMessageBase);
                 testCaseMessage.setTestCaseNumber(mrnBase + (i < 10 ? "00" : (i < 100 ? "0" : "")) + i);
@@ -265,9 +264,9 @@ batchSize = 0;
           out.println("    <th>Status Not</th>");
           out.println("    <th>Text</th>");
           out.println("  </tr>");
-          List<String> issueList = IssueCreatorItems.getIssueList();
+          
           int count = 0;
-          for (String issueName : issueList)
+          for (Issue issue : Issue.values())
           {
             count++;
             if (count % 25 == 0)
@@ -275,20 +274,20 @@ batchSize = 0;
               out.flush();
             }
             TestCaseMessage testCaseMessage = new TestCaseMessage(testCaseMessageBase);
-            testCaseMessage.addCauseIssues(issueName);
+            testCaseMessage.addCauseIssues(issue.getName());
             testCaseMessage.setTestCaseNumber(mrnBase + (count < 10 ? "00" : (count < 100 ? "0" : "")) + count + "0");
             TestCaseMessage testCaseMessageNot = new TestCaseMessage(testCaseMessageBase);
-            testCaseMessageNot.addCauseIssues("NOT " + issueName);
+            testCaseMessageNot.addCauseIssues("NOT " + issue.getName());
             testCaseMessageNot.setTestCaseNumber(mrnBase + (count < 10 ? "00" : (count < 100 ? "0" : "")) + count + "1");
             transformer.transform(testCaseMessage);
             transformer.transform(testCaseMessageNot);
             out.println("  <tr>");
             out.println("    <td>" + count + "</td>");
-            out.println("    <td>" + issueName + "</td>");
+            out.println("    <td>" + issue.getName() + "</td>");
             String expectedStatus = "-";
             if (expectedStatusMap != null)
             {
-              expectedStatus = expectedStatusMap.get(issueName);
+              expectedStatus = expectedStatusMap.get(issue.getName());
               if (expectedStatus == null)
               {
                 expectedStatus = "-";
@@ -357,12 +356,12 @@ batchSize = 0;
                 }
                 try
                 {
-                  File file = new File(user.getSendData().getGeneratedDir(), filenameBase + "-" + countText + " " + issueName + ".txt");
+                  File file = new File(user.getSendData().getGeneratedDir(), filenameBase + "-" + countText + " " + issue.getName() + ".txt");
                   PrintWriter fileOut = new PrintWriter(new FileWriter(file));
                   for (int i = 0; i < batchSize; i++)
                   {
                     testCaseMessage = new TestCaseMessage(testCaseMessageBase);
-                    testCaseMessage.addCauseIssues(i < 20 ? issueName : "NOT " + issueName);
+                    testCaseMessage.addCauseIssues(i < 20 ? issue.getName() : "NOT " + issue.getName());
                     testCaseMessage.setTestCaseNumber(mrnBase + countText + (i < 10 ? "00" : (i < 100 ? "0" : "")) + i);
                     transformer.transform(testCaseMessage);
                     fileOut.print(testCaseMessage.getMessageText());
@@ -650,7 +649,8 @@ batchSize = 0;
         {
           out.println("        <tr>");
           out.println("          <td>Save Sample Count</td>");
-          out.println("          <td><input name=\"batchSize\" type=\"text\" size=\"2\" value=\"0\"/> (Samples saved to " + user.getSendData().getGeneratedDir() + ")</td>");
+          out.println("          <td><input name=\"batchSize\" type=\"text\" size=\"2\" value=\"0\"/> (Samples saved to "
+              + user.getSendData().getGeneratedDir() + ")</td>");
           out.println("        </tr>");
         }
         out.println("        <tr>");

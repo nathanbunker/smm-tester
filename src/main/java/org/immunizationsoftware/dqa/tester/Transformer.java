@@ -333,7 +333,7 @@ public class Transformer
   public void transform(TestCaseMessage testCaseMessage)
   {
     String actualTestCase = testCaseMessage.getTestCaseNumber();
-    if (actualTestCase.equals(""))
+    if (actualTestCase.equals("")) 
     {
       actualTestCase = REP_PAT_MRN;
     }

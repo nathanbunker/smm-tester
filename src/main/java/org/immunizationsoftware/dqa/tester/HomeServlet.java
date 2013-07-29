@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.immunizationsoftware.dqa.tester.manager.ScenarioManager;
+
 /**
  * 
  * @author nathan
@@ -56,7 +58,7 @@ public class HomeServlet extends ClientServlet
         out.println("    <td>Scenario</td>");
         out.println("    <td>");
         out.println("      <select name=\"scenario\">");
-        for (String scenario : CreateTestCaseServlet.SCENARIOS)
+        for (String scenario : ScenarioManager.SCENARIOS)
         {
           out.println("        <option value=\"" + scenario + "\">" + scenario + "</option>");
         }
@@ -77,6 +79,8 @@ public class HomeServlet extends ClientServlet
           out.println("<h2>Install Cert</h2>");
           out.println("<a href=\"InstallCertServlet\">Install Cert</a>");
         }
+        out.println("<h2>Certify</h2>");
+        out.println("<a href=\"CertifyServlet\">Certify DQA Interface</a>");
       }
       printHtmlFoot(out);
 

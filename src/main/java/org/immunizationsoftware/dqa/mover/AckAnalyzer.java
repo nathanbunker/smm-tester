@@ -2,7 +2,9 @@ package org.immunizationsoftware.dqa.mover;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +30,21 @@ public class AckAnalyzer
   private AckType ackType = null;
   private List<String> errorMessages = new ArrayList<String>();
   private List<String> segments;
+  private FileOut errorFileOut = null;
+
+  private void log(String s)
+  {
+    if (errorFileOut != null)
+    {
+      try
+      {
+        errorFileOut.printCommentLn(s);
+      } catch (IOException ioe)
+      {
+        ioe.printStackTrace();
+      }
+    }
+  }
 
   public String getSetupProblemDescription()
   {
@@ -96,16 +113,34 @@ public class AckAnalyzer
     this.ackCode = ackCode;
   }
 
-  public AckAnalyzer(String ack) {
-    this(ack, AckType.DEFAULT);
+  public AckAnalyzer(String ack)  {
+    this(ack, AckType.DEFAULT, null);
   }
 
   public AckAnalyzer(String ack, AckType ackType) {
+    this(ack, ackType, null);
+  }
+  public AckAnalyzer(String ack, AckType ackType, FileOut errorFileOut) {
     this.ackType = ackType;
+    this.errorFileOut = errorFileOut;
 
     convertToSegments(ack);
 
-    if (ack == null || !ack.startsWith("MSH|") || !getFieldValue("MSH", 9).equals("ACK"))
+    boolean isNotAck = false;
+    if (ack == null)
+    {
+      isNotAck = true;
+      log("Returned result is not an acknowledgement message: no acknowledgement message returned");
+    } else if (!ack.startsWith("MSH|"))
+    {
+      isNotAck = true;
+      log("Returned result is not an acknowledgement message: first line does not start with MSH|");
+    } else if (!getFieldValue("MSH", 9).equals("ACK"))
+    {
+      isNotAck = true;
+      log("Returned result is not an acknowledgement message: MSH-9 is not ACK, it is '" + getFieldValue("MSH", 9) + "'");
+    }
+    if (isNotAck)
     {
       ackMessage = false;
       positive = false;
@@ -115,13 +150,11 @@ public class AckAnalyzer
         if (ack.length() < 240)
         {
           setupProblemDescription = ack;
-        }
-        else
+        } else
         {
           setupProblemDescription = "Unexpected non-HL7 response, please verify connection URL";
         }
-      }
-      else
+      } else
       {
         setupProblemDescription = "Unexpected non-HL7 response, please verify connection URL";
       }
@@ -129,14 +162,20 @@ public class AckAnalyzer
     {
       ackMessage = true;
       ackCode = getFieldValue("MSA", 1);
-      
+
       if (ackType == AckType.DEFAULT)
       {
         positive = getFieldValue("MSA", 1).equals("AA");
       } else if (ackType.equals(AckType.NMSIIS))
       {
         setupProblem = ack.indexOf("|BAD MESSAGE|") != -1 || ack.indexOf("File Rejected.") != -1;
-        positive = !setupProblem && ack.indexOf("Record Rejected") == -1;
+        if (setupProblem)
+        {
+          log("Setup problem found, message contains phrase |BAD MESSAGE| or File Rejected.");
+        }
+        boolean recordNotRejected = ack.indexOf("Record Rejected") == -1;
+        log("Record was rejected, message contains phrase Record Rejected");
+        positive = !setupProblem && recordNotRejected;
       } else if (ackType.equals(AckType.ALERT))
       {
         positive = true;
@@ -153,6 +192,10 @@ public class AckAnalyzer
             }
           }
           pos++;
+        }
+        if (!positive)
+        {
+          log("At least one MSA-1 field was found with a value of AE so message was rejected");
         }
       }
     }

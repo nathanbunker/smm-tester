@@ -96,6 +96,7 @@ public class StatusLogger
   {
     writeStatusOrDelete(new File(rootFolder, "smm-is-starting"), ScanStatus.STARTING, scanStatus);
     writeStatusOrDelete(new File(rootFolder, "smm-has-problem"), ScanStatus.PROBLEM, scanStatus);
+    writeStatusOrDelete(new File(rootFolder, "smm-has-setup-problem"), ScanStatus.SETUP_PROBLEM, scanStatus);
     writeStatusOrDelete(new File(rootFolder, "smm-is-preparing"), ScanStatus.PREPARING, scanStatus);
     writeStatusOrDelete(new File(rootFolder, "smm-is-looking"), ScanStatus.LOOKING, scanStatus);
     writeStatusOrDelete(new File(rootFolder, "smm-is-sending"), ScanStatus.SENDING, scanStatus);

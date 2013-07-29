@@ -31,6 +31,10 @@
     <servlet-class>org.immunizationsoftware.dqa.tester.CreateTestCaseServlet</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>CertifyServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.tester.CertifyServlet</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>DownloadServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.tester.DownloadServlet</servlet-class>
   </servlet>
@@ -89,6 +93,10 @@
   <servlet-mapping>
     <servlet-name>CreateTestCaseServlet</servlet-name>
     <url-pattern>/CreateTestCaseServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>CertifyServlet</servlet-name>
+    <url-pattern>/CertifyServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>DownloadServlet</servlet-name>

@@ -12,9 +12,9 @@ import org.immunizationsoftware.dqa.tester.TestCaseMessage;
  */
 public class IssueCreatorPatient extends IssueCreator {
 
-    public static String createTransforms(TestCaseMessage testCaseMessage, String line, String transforms, boolean not) {
+    public static String createTransforms(TestCaseMessage testCaseMessage, Issue issue, String transforms, boolean not) {
         boolean is = !not;
-        if (line.equalsIgnoreCase(PATIENT_ADDRESS_IS_MISSING)) {
+        if (issue == Issue.PATIENT_ADDRESS_IS_MISSING) {
             if (is) {
                 transforms += "PID-11.1=\n";
                 transforms += "PID-11.2=\n";
@@ -32,42 +32,42 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PID-11.14=\n";
                 testCaseMessage.setHasIssue(true);
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ADDRESS_CITY_IS_INVALID)) {
+        } else if (issue == Issue.PATIENT_ADDRESS_CITY_IS_INVALID) {
             if (is) {
                 transforms += "PID-11.3=1\n";
                 testCaseMessage.setHasIssue(true);
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ADDRESS_CITY_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_ADDRESS_CITY_IS_MISSING) {
             if (is) {
                 transforms += "PID-11.3=\n";
                 testCaseMessage.setHasIssue(true);
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ADDRESS_COUNTRY_IS_DEPRECATED)) {
+        } else if (issue == Issue.PATIENT_ADDRESS_COUNTRY_IS_DEPRECATED) {
             if (is) {
                 transforms += "PID-11.6=US\n";
                 testCaseMessage.setHasIssue(true);
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ADDRESS_COUNTRY_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_ADDRESS_COUNTRY_IS_UNRECOGNIZED) {
             if (is) {
                 transforms += "PID-11.6=US of A\n";
                 testCaseMessage.setHasIssue(true);
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ADDRESS_COUNTRY_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_ADDRESS_COUNTRY_IS_MISSING) {
             if (is) {
                 transforms += "PID-11.6=\n";
                 testCaseMessage.setHasIssue(true);
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ADDRESS_COUNTRY_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_ADDRESS_COUNTRY_IS_UNRECOGNIZED) {
             if (is) {
                 transforms += "PID-11.6=ZZZ\n";
                 testCaseMessage.setHasIssue(true);
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ADDRESS_COUNTY_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_ADDRESS_COUNTY_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-11.9=Apartment #25\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ADDRESS_COUNTY_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_ADDRESS_COUNTY_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-11.9=\n";
@@ -76,22 +76,22 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-11.9=26039\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ADDRESS_STATE_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_ADDRESS_STATE_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-11.4=103\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ADDRESS_STATE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_ADDRESS_STATE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-11.4=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ADDRESS_STREET_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_ADDRESS_STREET_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-11.1=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ADDRESS_STREET2_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_ADDRESS_STREET2_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-11.2=\n";
@@ -100,7 +100,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-11.2=Apartment A\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ADDRESS_TYPE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_ADDRESS_TYPE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-11.7=\n";
@@ -109,44 +109,44 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-11.7=P\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ADDRESS_ZIP_IS_INVALID)) {
+        } else if (issue == Issue.PATIENT_ADDRESS_ZIP_IS_INVALID) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-11.5=50\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ADDRESS_ZIP_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_ADDRESS_ZIP_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-11.5=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ALIAS_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_ALIAS_IS_MISSING) {
             // TODO
-        } else if (line.equalsIgnoreCase(PATIENT_BIRTH_DATE_IS_AFTER_SUBMISSION)) {
+        } else if (issue == Issue.PATIENT_BIRTH_DATE_IS_AFTER_SUBMISSION) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-7=[FUTURE]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_BIRTH_DATE_IS_IN_FUTURE)) {
+        } else if (issue == Issue.PATIENT_BIRTH_DATE_IS_IN_FUTURE) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-7=[FUTURE]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_BIRTH_DATE_IS_INVALID)) {
+        } else if (issue == Issue.PATIENT_BIRTH_DATE_IS_INVALID) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-7=DOB\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_BIRTH_DATE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_BIRTH_DATE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-7=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_BIRTH_DATE_IS_VERY_LONG_AGO)) {
+        } else if (issue == Issue.PATIENT_BIRTH_DATE_IS_VERY_LONG_AGO) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-7=18950115\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_BIRTH_INDICATOR_IS_INVALID)) {
+        } else if (issue == Issue.PATIENT_BIRTH_INDICATOR_IS_INVALID) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-24=X\n";
@@ -156,7 +156,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PID-24=N\n";
                 transforms += "PID-25=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_BIRTH_INDICATOR_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_BIRTH_INDICATOR_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-24=\n";
@@ -167,25 +167,25 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PID-24=Y\n";
                 transforms += "PID-25=2\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_BIRTH_ORDER_IS_INVALID)) {
+        } else if (issue == Issue.PATIENT_BIRTH_ORDER_IS_INVALID) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-24=Y\n";
                 transforms += "PID-25=Twin\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_BIRTH_ORDER_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_BIRTH_ORDER_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-24=\n";
                 transforms += "PID-25=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_BIRTH_ORDER_IS_MISSING_AND_MULTIPLE_BIRTH_INDICATED)) {
+        } else if (issue == Issue.PATIENT_BIRTH_ORDER_IS_MISSING_AND_MULTIPLE_BIRTH_INDICATED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-24=Y\n";
                 transforms += "PID-25=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_BIRTH_PLACE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_BIRTH_PLACE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-23=\n";
@@ -194,12 +194,12 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-23=Mercy Hospital\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_CLASS_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_CLASS_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PV1-2=Recurring\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_CLASS_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_CLASS_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PV1-2=\n";
@@ -208,25 +208,25 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-2=R\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_DEATH_DATE_IS_BEFORE_BIRTH)) {
+        } else if (issue == Issue.PATIENT_DEATH_DATE_IS_BEFORE_BIRTH) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-29=19500101\n";
                 transforms += "PID-30=Y\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_DEATH_DATE_IS_IN_FUTURE)) {
+        } else if (issue == Issue.PATIENT_DEATH_DATE_IS_IN_FUTURE) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-29=[FUTURE]\n";
                 transforms += "PID-30=Y\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_DEATH_DATE_IS_INVALID)) {
+        } else if (issue == Issue.PATIENT_DEATH_DATE_IS_INVALID) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-29=Y\n";
                 transforms += "PID-30=Y\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_DEATH_DATE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_DEATH_DATE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-29=\n";
@@ -237,7 +237,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PID-29=[VAC3_DATE]\n";
                 transforms += "PID-30=Y\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_DEATH_INDICATOR_IS_INCONSISTENT)) {
+        } else if (issue == Issue.PATIENT_DEATH_INDICATOR_IS_INCONSISTENT) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-29=[VAC3_DATE]\n";
@@ -248,23 +248,23 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PID-29=[VAC3_DATE]\n";
                 transforms += "PID-30=Y\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_DEATH_INDICATOR_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_DEATH_INDICATOR_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-29=[VAC3_DATE]\n";
                 transforms += "PID-30=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ETHNICITY_IS_DEPRECATED)) {
+        } else if (issue == Issue.PATIENT_ETHNICITY_IS_DEPRECATED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-22=H\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ETHNICITY_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_ETHNICITY_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-22=105 E Market St\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ETHNICITY_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_ETHNICITY_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-22=\n";
@@ -273,7 +273,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-22=[ETHNICITY]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_ETHNICITY_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_ETHNICITY_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-22=Hispanic\n";
@@ -282,17 +282,17 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-22=[ETHNICITY]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_GENDER_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_GENDER_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-8=(404)555-3993\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_GENDER_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_GENDER_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-8=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_GENDER_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_GENDER_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-8=Female\n";
@@ -301,7 +301,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-8=[GENDER]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_GUARDIAN_ADDRESS_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_GUARDIAN_ADDRESS_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "NK1-4.1=\n";
@@ -327,7 +327,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "NK1-4.5=[ZIP]\n";
                 transforms += "NK1-4.6=USA\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_GUARDIAN_ADDRESS_CITY_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_GUARDIAN_ADDRESS_CITY_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "NK1-4.3=\n";
@@ -336,7 +336,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "NK1-4.3=[CITY]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_GUARDIAN_ADDRESS_STATE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_GUARDIAN_ADDRESS_STATE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "NK1-4.4=\n";
@@ -345,7 +345,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "NK1-4.4=[STATE]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_GUARDIAN_ADDRESS_STREET_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_GUARDIAN_ADDRESS_STREET_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "NK1-4.1=\n";
@@ -354,7 +354,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "NK1-4.1=[STREET]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_GUARDIAN_ADDRESS_ZIP_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_GUARDIAN_ADDRESS_ZIP_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "NK1-4.5=\n";
@@ -363,7 +363,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "NK1-4.5=[ZIP]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_GUARDIAN_NAME_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_GUARDIAN_NAME_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "NK1-2.1=\n";
@@ -374,7 +374,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "NK1-2.1=~60%[LAST]:[LAST_DIFFERENT]\n";
                 transforms += "NK1-2.2=[MOTHER]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_GUARDIAN_NAME_IS_SAME_AS_UNDERAGE_PATIENT)) {
+        } else if (issue == Issue.PATIENT_GUARDIAN_NAME_IS_SAME_AS_UNDERAGE_PATIENT) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "NK1-2.1=[LAST]\n";
@@ -389,22 +389,22 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PID-5.1=[LAST]\n";
                 transforms += "PID-5.2=[BOY]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_GUARDIAN_NAME_FIRST_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_GUARDIAN_NAME_FIRST_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "NK1-2.2=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_GUARDIAN_NAME_LAST_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_GUARDIAN_NAME_LAST_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "NK1-2.1=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_GUARDIAN_RESPONSIBLE_PARTY_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_GUARDIAN_RESPONSIBLE_PARTY_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 testCaseMessage.prepareMessageRemoveSegment("NK1");
             }
-        } else if (line.equalsIgnoreCase(PATIENT_GUARDIAN_PHONE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_GUARDIAN_PHONE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "NK1-5.1=\n";
@@ -417,19 +417,19 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "NK1-5.6=[PHONE_AREA]\n";
                 transforms += "NK1-5.7=[PHONE_LOCAL]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_GUARDIAN_RELATIONSHIP_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_GUARDIAN_RELATIONSHIP_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "NK1-3.1=\n";
                 transforms += "NK1-3.2=Mother\n";
                 transforms += "NK1-3.3=HL70063\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_IMMUNIZATION_REGISTRY_STATUS_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_IMMUNIZATION_REGISTRY_STATUS_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-16=MMR\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_IMMUNIZATION_REGISTRY_STATUS_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_IMMUNIZATION_REGISTRY_STATUS_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-16=\n";
@@ -438,62 +438,62 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-16=A\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_MEDICAID_NUMBER_IS_INVALID)) {
+        } else if (issue == Issue.PATIENT_MEDICAID_NUMBER_IS_INVALID) {
             // TODO
-        } else if (line.equalsIgnoreCase(PATIENT_MEDICAID_NUMBER_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_MEDICAID_NUMBER_IS_MISSING) {
             // TODO
-        } else if (line.equalsIgnoreCase(PATIENT_MIDDLE_NAME_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_MIDDLE_NAME_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-5.3=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_MIDDLE_NAME_MAY_BE_INITIAL)) {
+        } else if (issue == Issue.PATIENT_MIDDLE_NAME_MAY_BE_INITIAL) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-5.3=[BOY_MIDDLE_INITIAL]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_MOTHERS_MAIDEN_NAME_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_MOTHERS_MAIDEN_NAME_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-6=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_NAME_MAY_BE_TEMPORARY_NEWBORN_NAME)) {
+        } else if (issue == Issue.PATIENT_NAME_MAY_BE_TEMPORARY_NEWBORN_NAME) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-5.2=NEWBORN\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_NAME_MAY_BE_TEST_NAME)) {
+        } else if (issue == Issue.PATIENT_NAME_MAY_BE_TEST_NAME) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-5.1=TEST\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_NAME_FIRST_IS_INVALID)) {
+        } else if (issue == Issue.PATIENT_NAME_FIRST_IS_INVALID) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-5.2=Apt #5\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_NAME_FIRST_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_NAME_FIRST_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-5.2=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_NAME_FIRST_MAY_INCLUDE_MIDDLE_INITIAL)) {
+        } else if (issue == Issue.PATIENT_NAME_FIRST_MAY_INCLUDE_MIDDLE_INITIAL) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-5.2=John A\n";
                 transforms += "PID-5.3=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_NAME_LAST_IS_INVALID)) {
+        } else if (issue == Issue.PATIENT_NAME_LAST_IS_INVALID) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-5.1=Apt #5\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_NAME_LAST_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_NAME_LAST_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-5.1=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_NAME_TYPE_CODE_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_NAME_TYPE_CODE_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-5.7=Samuel\n";
@@ -502,7 +502,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-5.2=L\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_NAME_TYPE_CODE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_NAME_TYPE_CODE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-5.7=\n";
@@ -511,7 +511,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-5.2=L\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PHONE_IS_INCOMPLETE)) {
+        } else if (issue == Issue.PATIENT_PHONE_IS_INCOMPLETE) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-13.1=[PHONE_LOCAL]\n";
@@ -520,7 +520,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PID-13.6=\n";
                 transforms += "PID-13.7=[PHONE_LOCAL]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PHONE_IS_INVALID)) {
+        } else if (issue == Issue.PATIENT_PHONE_IS_INVALID) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-13.1=104 E Market St\n";
@@ -529,7 +529,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PID-13.6=MI\n";
                 transforms += "PID-13.7=04599\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PHONE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_PHONE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-13.1=\n";
@@ -546,7 +546,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PID-13.6=[PHONE_AREA]\n";
                 transforms += "PID-13.7=[PHONE_LOCAL]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PHONE_TEL_USE_CODE_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_PHONE_TEL_USE_CODE_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-13.1=[PHONE]\n";
@@ -555,7 +555,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PID-13.6=[PHONE_AREA]\n";
                 transforms += "PID-13.7=[PHONE_LOCAL]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PHONE_TEL_USE_CODE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_PHONE_TEL_USE_CODE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-13.1=[PHONE]\n";
@@ -564,7 +564,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PID-13.6=[PHONE_AREA]\n";
                 transforms += "PID-13.7=[PHONE_LOCAL]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PHONE_TEL_EQUIP_CODE_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_PHONE_TEL_EQUIP_CODE_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-13.1=[PHONE]\n";
@@ -573,7 +573,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PID-13.6=[PHONE_AREA]\n";
                 transforms += "PID-13.7=[PHONE_LOCAL]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PHONE_TEL_EQUIP_CODE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_PHONE_TEL_EQUIP_CODE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-13.1=[PHONE]\n";
@@ -582,7 +582,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PID-13.6=[PHONE_AREA]\n";
                 transforms += "PID-13.7=[PHONE_LOCAL]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PRIMARY_FACILITY_ID_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_PRIMARY_FACILITY_ID_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-3.1=\n";
@@ -596,7 +596,7 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PD1-3.9=\n";
                 transforms += "PD1-3.10=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PRIMARY_FACILITY_NAME_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_PRIMARY_FACILITY_NAME_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-3.1=\n";
@@ -610,17 +610,17 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PD1-3.9=\n";
                 transforms += "PD1-3.10=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PRIMARY_LANGUAGE_IS_DEPRECATED)) {
+        } else if (issue == Issue.PATIENT_PRIMARY_LANGUAGE_IS_DEPRECATED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-15=En\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PRIMARY_LANGUAGE_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_PRIMARY_LANGUAGE_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-15=(555)555-1123\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PRIMARY_LANGUAGE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_PRIMARY_LANGUAGE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-15=\n";
@@ -629,24 +629,24 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-15=eng\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PRIMARY_PHYSICIAN_ID_IS_DEPRECATED)) {
+        } else if (issue == Issue.PATIENT_PRIMARY_PHYSICIAN_ID_IS_DEPRECATED) {
             // TODO
-        } else if (line.equalsIgnoreCase(PATIENT_PRIMARY_PHYSICIAN_ID_IS_IGNORED)) {
+        } else if (issue == Issue.PATIENT_PRIMARY_PHYSICIAN_ID_IS_IGNORED) {
             // TODO
-        } else if (line.equalsIgnoreCase(PATIENT_PRIMARY_PHYSICIAN_ID_IS_INVALID)) {
+        } else if (issue == Issue.PATIENT_PRIMARY_PHYSICIAN_ID_IS_INVALID) {
             // TODO
-        } else if (line.equalsIgnoreCase(PATIENT_PRIMARY_PHYSICIAN_ID_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_PRIMARY_PHYSICIAN_ID_IS_MISSING) {
             // TODO
-        } else if (line.equalsIgnoreCase(PATIENT_PRIMARY_PHYSICIAN_ID_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_PRIMARY_PHYSICIAN_ID_IS_UNRECOGNIZED) {
             // TODO
-        } else if (line.equalsIgnoreCase(PATIENT_PRIMARY_PHYSICIAN_NAME_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_PRIMARY_PHYSICIAN_NAME_IS_MISSING) {
             // TODO
-        } else if (line.equalsIgnoreCase(PATIENT_PROTECTION_INDICATOR_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_PROTECTION_INDICATOR_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-12=(555)555-1234\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PROTECTION_INDICATOR_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_PROTECTION_INDICATOR_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-12=\n";
@@ -655,22 +655,22 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-12=N\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PROTECTION_INDICATOR_IS_VALUED_AS_NO)) {
+        } else if (issue == Issue.PATIENT_PROTECTION_INDICATOR_IS_VALUED_AS_NO) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-12=N\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PROTECTION_INDICATOR_IS_VALUED_AS_YES)) {
+        } else if (issue == Issue.PATIENT_PROTECTION_INDICATOR_IS_VALUED_AS_YES) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-12=Y\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PUBLICITY_CODE_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_PUBLICITY_CODE_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-11=(505)555-1234\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_PUBLICITY_CODE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_PUBLICITY_CODE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-11=\n";
@@ -679,17 +679,17 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-11=02\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_RACE_IS_DEPRECATED)) {
+        } else if (issue == Issue.PATIENT_RACE_IS_DEPRECATED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-10=I\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_RACE_IS_INVALID)) {
+        } else if (issue == Issue.PATIENT_RACE_IS_INVALID) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-10=108 N Main St\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_RACE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_RACE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-10=\n";
@@ -698,12 +698,12 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-10=1002-5\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_REGISTRY_STATUS_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_REGISTRY_STATUS_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-16=Immu-compromised\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_REGISTRY_STATUS_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_REGISTRY_STATUS_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-16=\n";
@@ -712,11 +712,11 @@ public class IssueCreatorPatient extends IssueCreator {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PD1-16=A\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_SSN_IS_INVALID)) {
+        } else if (issue == Issue.PATIENT_SSN_IS_INVALID) {
             // TODO
-        } else if (line.equalsIgnoreCase(PATIENT_SSN_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_SSN_IS_MISSING) {
             // TODO
-        } else if (line.equalsIgnoreCase(PATIENT_SUBMITTER_ID_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_SUBMITTER_ID_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-3=\n";
@@ -729,35 +729,35 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PID-3.8=\n";
                 transforms += "PID-3.9=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_SUBMITTER_ID_AUTHORITY_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_SUBMITTER_ID_AUTHORITY_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-3.4=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_SUBMITTER_ID_TYPE_CODE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_SUBMITTER_ID_TYPE_CODE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PID-3.5=\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_VFC_EFFECTIVE_DATE_IS_BEFORE_BIRTH)) {
+        } else if (issue == Issue.PATIENT_VFC_EFFECTIVE_DATE_IS_BEFORE_BIRTH) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PV1-20.1=V02\n";
                 transforms += "PV1-20.2=19700101\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_VFC_EFFECTIVE_DATE_IS_IN_FUTURE)) {
+        } else if (issue == Issue.PATIENT_VFC_EFFECTIVE_DATE_IS_IN_FUTURE) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PV1-20.1=V02\n";
                 transforms += "PV1-20.2=[FUTURE]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_VFC_EFFECTIVE_DATE_IS_INVALID)) {
+        } else if (issue == Issue.PATIENT_VFC_EFFECTIVE_DATE_IS_INVALID) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PV1-20.1=V02\n";
                 transforms += "PV1-20.2=Y\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_VFC_EFFECTIVE_DATE_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_VFC_EFFECTIVE_DATE_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PV1-20.1=V02\n";
@@ -767,13 +767,13 @@ public class IssueCreatorPatient extends IssueCreator {
                 transforms += "PV1-20.1=V02\n";
                 transforms += "PV1-20.2=[VAC3_DATE]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_VFC_STATUS_IS_UNRECOGNIZED)) {
+        } else if (issue == Issue.PATIENT_VFC_STATUS_IS_UNRECOGNIZED) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PV1-20.1=MMR\n";
                 transforms += "PV1-20.2=[VAC3_DATE]\n";
             }
-        } else if (line.equalsIgnoreCase(PATIENT_VFC_STATUS_IS_MISSING)) {
+        } else if (issue == Issue.PATIENT_VFC_STATUS_IS_MISSING) {
             if (is) {
                 testCaseMessage.setHasIssue(true);
                 transforms += "PV1-20.1=\n";
