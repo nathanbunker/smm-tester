@@ -270,11 +270,12 @@ public class SendData extends Thread
       try
       {
         statusReporter = new StatusReporter(this);
+        statusReporter.start();
       } catch (IOException ioe)
       {
+        ioe.printStackTrace();
         statusReporterException = ioe;
       }
-      statusReporter.start();
     }
     if (statusReporter != null)
     {
