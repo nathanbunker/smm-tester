@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -46,8 +47,7 @@ public class CertifyServlet extends ClientServlet
    * @throws IOException
    *           if an I/O error occurs
    */
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-  {
+  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
@@ -55,26 +55,20 @@ public class CertifyServlet extends ClientServlet
     String action = request.getParameter("action");
     String problem = null;
     CertifyRunner certifyRunner = (CertifyRunner) session.getAttribute("certifyRunner");
-    if (username == null)
-    {
+    if (username == null) {
       response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
-    } else if (action.equals("Start"))
-    {
-      if (certifyRunner != null && !certifyRunner.getStatus().equals(CertifyRunner.STATUS_COMPLETED))
-      {
+    } else if (action.equals("Start")) {
+      if (certifyRunner != null && !certifyRunner.getStatus().equals(CertifyRunner.STATUS_COMPLETED)) {
         problem = "Unable to start new certification as current certification is still running.";
-      } else
-      {
+      } else {
         List<Connector> connectors = SetupServlet.getConnectors(session);
         int id = Integer.parseInt(request.getParameter("id"));
-        certifyRunner = new CertifyRunner(connectors.get(id - 1));
+        certifyRunner = new CertifyRunner(connectors.get(id - 1), session);
         session.setAttribute("certifyRunner", certifyRunner);
         certifyRunner.start();
       }
-    } else if (action.equals("Stop"))
-    {
-      if (certifyRunner != null)
-      {
+    } else if (action.equals("Stop")) {
+      if (certifyRunner != null) {
         certifyRunner.stopRunning();
       }
     }
@@ -97,35 +91,29 @@ public class CertifyServlet extends ClientServlet
    *           if an I/O error occurs
    */
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-  {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
-    if (username == null)
-    {
+    if (username == null) {
       response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
-    } else
-    {
+    } else {
       doGet(request, response, session, null);
     }
   }
 
-  private void doGet(HttpServletRequest request, HttpServletResponse response, HttpSession session, String problem) throws IOException
-  {
+  private void doGet(HttpServletRequest request, HttpServletResponse response, HttpSession session, String problem)
+      throws IOException {
     PrintWriter out = response.getWriter();
-    try
-    {
+    try {
       printHtmlHead(out, "Certify", request);
 
-      if (problem != null)
-      {
+      if (problem != null) {
         out.println("<p>" + problem + "</p>");
       }
 
       CertifyRunner certifyRunner = (CertifyRunner) session.getAttribute("certifyRunner");
-      if (certifyRunner != null)
-      {
+      if (certifyRunner != null) {
         out.println("    <h3>Certification Results</h3>");
         certifyRunner.printResults(out);
         out.println("    <form action=\"CertifyServlet\" method=\"POST\">");
@@ -135,42 +123,35 @@ public class CertifyServlet extends ClientServlet
       }
 
       boolean canStart = certifyRunner == null || certifyRunner.getStatus().equals(CertifyRunner.STATUS_COMPLETED);
-      if (canStart)
-      {
+      if (canStart) {
 
         out.println("    <h3>Start Certification Evaluation</h3>");
         out.println("    <form action=\"CertifyServlet\" method=\"POST\">");
         out.println("      <table border=\"0\">");
         int id = 0;
-        if (request.getParameter("id") != null)
-        {
+        if (request.getParameter("id") != null) {
           id = Integer.parseInt(request.getParameter("id"));
         }
-        if (session.getAttribute("id") != null)
-        {
+        if (session.getAttribute("id") != null) {
           id = (Integer) session.getAttribute("id");
         }
         out.println("        <tr>");
         out.println("          <td>Service</td>");
         out.println("          <td>");
         List<Connector> connectors = SetupServlet.getConnectors(session);
-        if (connectors.size() == 1)
-        {
+        if (connectors.size() == 1) {
           out.println("            " + connectors.get(0).getLabelDisplay());
           out.println("            <input type=\"hidden\" name=\"id\" value=\"1\"/>");
-        } else
-        {
+        } else {
           out.println("            <select name=\"id\">");
           out.println("              <option value=\"\">select</option>");
           int i = 0;
-          for (Connector connector : connectors)
-          {
+          for (Connector connector : connectors) {
             i++;
-            if (id == i)
-            {
-              out.println("              <option value=\"" + i + "\" selected=\"true\">" + connector.getLabelDisplay() + "</option>");
-            } else
-            {
+            if (id == i) {
+              out.println("              <option value=\"" + i + "\" selected=\"true\">" + connector.getLabelDisplay()
+                  + "</option>");
+            } else {
               out.println("              <option value=\"" + i + "\">" + connector.getLabelDisplay() + "</option>");
             }
           }
@@ -184,14 +165,12 @@ public class CertifyServlet extends ClientServlet
         out.println("      </table>");
         out.println("    </form>");
       }
-      if (certifyRunner != null)
-      {
+      if (certifyRunner != null) {
         out.println("    <h3>Certification Details</h3>");
         certifyRunner.printProgressDetails(out);
       }
       printHtmlFoot(out);
-    } finally
-    {
+    } finally {
       out.close();
     }
   }
@@ -238,28 +217,37 @@ public class CertifyServlet extends ClientServlet
     private int areaDLevel2Progress = -1;
     private int areaDLevel3Progress = -1;
 
+    private String testCaseSet = "";
+    private HttpSession session = null;
+
     private List<TestCaseMessage> statusCheckTestCases = new ArrayList<TestCaseMessage>();
-    private String[] statusCheckScenarios = { ScenarioManager.SCENARIO_1_R_ADMIN_CHILD, ScenarioManager.SCENARIO_2_R_ADMIN_ADULT,
-        ScenarioManager.SCENARIO_3_R_HISTORICAL_CHILD, ScenarioManager.SCENARIO_4_R_CONSENTED_CHILD, ScenarioManager.SCENARIO_5_R_REFUSED_TODDLER,
+    private String[] statusCheckScenarios = { ScenarioManager.SCENARIO_1_R_ADMIN_CHILD,
+        ScenarioManager.SCENARIO_2_R_ADMIN_ADULT, ScenarioManager.SCENARIO_3_R_HISTORICAL_CHILD,
+        ScenarioManager.SCENARIO_4_R_CONSENTED_CHILD, ScenarioManager.SCENARIO_5_R_REFUSED_TODDLER,
         ScenarioManager.SCENARIO_6_R_VARICELLA_HISTORY_CHILD, ScenarioManager.SCENARIO_7_R_COMPLETE_RECORD };
 
     private List<TestCaseMessage> profileTestCases = new ArrayList<TestCaseMessage>();
 
     Connector connector;
 
-    public CertifyRunner(Connector connector) {
+    public CertifyRunner(Connector connector, HttpSession session) {
       this.connector = connector;
+      this.session = session;
       status = STATUS_INITIALIZED;
+      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-hh-mm");
+      testCaseSet = "Certification " + sdf.format(new Date());
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
       status = STATUS_STARTED;
       Transformer transformer = new Transformer();
-      for (String scenario : statusCheckScenarios)
-      {
+      int count = 0;
+      for (String scenario : statusCheckScenarios) {
+        count++;
         TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(scenario);
+        testCaseMessage.setTestCaseSet(testCaseSet);
+        testCaseMessage.setTestCaseNumber("A1." + count);
         statusCheckTestCases.add(testCaseMessage);
         transformer.transform(testCaseMessage);
         testCaseMessage.setAssertResult("Accept - *");
@@ -268,19 +256,15 @@ public class CertifyServlet extends ClientServlet
       int testPass = 0;
       int testNoWarningsOrErrors = 0;
       TestRunner testRunner = new TestRunner();
-      int count = 0;
-      for (TestCaseMessage testCaseMessage : statusCheckTestCases)
-      {
+      count = 0;
+      for (TestCaseMessage testCaseMessage : statusCheckTestCases) {
         count++;
-        try
-        {
+        try {
           boolean pass = testRunner.runTest(connector, testCaseMessage);
-          if (pass)
-          {
+          if (pass) {
             testPass++;
             testCaseMessageBase = testCaseMessage;
-          } else
-          {
+          } else {
             testCaseMessageBase = null;
           }
           boolean foundProblem = false;
@@ -290,52 +274,48 @@ public class CertifyServlet extends ClientServlet
           {
             if (error.getErrorType() == org.immunizationsoftware.dqa.tester.run.ErrorType.UNKNOWN
                 || error.getErrorType() == org.immunizationsoftware.dqa.tester.run.ErrorType.ERROR
-                || error.getErrorType() == org.immunizationsoftware.dqa.tester.run.ErrorType.WARNING)
-            {
+                || error.getErrorType() == org.immunizationsoftware.dqa.tester.run.ErrorType.WARNING) {
               foundProblem = true;
               break;
             }
           }
-          if (!foundProblem)
-          {
+          if (!foundProblem) {
             testNoWarningsOrErrors++;
           }
           areaALevel1Progress = makeScore(count, statusCheckTestCases.size());
           areaALevel2Progress = areaBLevel1Progress;
-        } catch (Throwable t)
-        {
+        } catch (Throwable t) {
           testCaseMessage.setException(t);
         }
+        CreateTestCaseServlet.saveTestCase(testCaseMessage, session);
       }
       areaALevel1Score = makeScore(testPass, statusCheckTestCases.size());
       areaALevel2Score = makeScore(testNoWarningsOrErrors, statusCheckTestCases.size());
 
-      if (testCaseMessageBase != null)
-      {
+      if (testCaseMessageBase != null) {
 
         int countPass = 0;
         count = 0;
-        for (Issue issue : Issue.values())
-        {
+        for (Issue issue : Issue.values()) {
           count++;
           TestCaseMessage testCaseMessage = new TestCaseMessage(testCaseMessageBase);
+          testCaseMessage.setTestCaseSet(testCaseSet);
+          testCaseMessage.setTestCaseNumber("C1." + paddWithZeros(count, 3));
           profileTestCases.add(testCaseMessage);
           testCaseMessage.setDescription(issue.getName());
           testCaseMessage.addCauseIssues(issue.getName());
           transformer.transform(testCaseMessage);
           String ack;
-          try
-          {
+          try {
             testRunner.runTest(connector, testCaseMessage);
             ack = testRunner.getAck();
-            if (issue.getDefaultErrorType() == testRunner.getErrorType())
-            {
+            if (issue.getDefaultErrorType() == testRunner.getErrorType()) {
               countPass++;
             }
-          } catch (Throwable t)
-          {
+          } catch (Throwable t) {
             testCaseMessage.setException(t);
           }
+          CreateTestCaseServlet.saveTestCase(testCaseMessage, session);
           areaCLevel1Progress = makeScore(count, Issue.values().length);
         }
         areaCLevel1Score = makeScore(countPass, Issue.values().length);
@@ -345,8 +325,7 @@ public class CertifyServlet extends ClientServlet
       status = STATUS_COMPLETED;
     }
 
-    public void printResults(PrintWriter out)
-    {
+    public void printResults(PrintWriter out) {
       out.println("<table border=\"1\" colspacing=\"0\">");
       out.println("  <tr>");
       out.println("    <th width=\"12%\"></th>");
@@ -357,203 +336,145 @@ public class CertifyServlet extends ClientServlet
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <th>Level 1</th>");
-      if (areaALevel1Score >= 100)
-      {
+      if (areaALevel1Score >= 100) {
         out.println("    <td class=\"pass\">All scenarios accepted<br/>Pass: Score = " + areaALevel1Score + "%</td>");
-      } else if (areaALevel1Score >= 0)
-      {
+      } else if (areaALevel1Score >= 0) {
         out.println("    <td class=\"fail\">All scenarios accepted<br/>Fail: Score = " + areaALevel1Score + "%</td>");
-      } else
-      {
-        if (areaALevel1Progress > -1)
-        {
+      } else {
+        if (areaALevel1Progress > -1) {
           out.println("    <td>Running, " + areaALevel1Progress + "% complete.</td>");
-        } else
-        {
+        } else {
           out.println("    <td>Not Run Yet</td>");
         }
       }
-      if (areaBLevel1Score >= 100)
-      {
+      if (areaBLevel1Score >= 100) {
         out.println("    <td class=\"pass\"><br/>Pass: Score = " + areaBLevel1Score + "%</td>");
-      } else if (areaBLevel1Score >= 0)
-      {
+      } else if (areaBLevel1Score >= 0) {
         out.println("    <td class=\"fail\"><br/>Fail: Score = " + areaBLevel1Score + "%</td>");
-      } else
-      {
-        if (areaBLevel1Progress > -1)
-        {
+      } else {
+        if (areaBLevel1Progress > -1) {
           out.println("    <td>Running, " + areaBLevel1Progress + "% complete.</td>");
-        } else
-        {
+        } else {
           out.println("    <td>Not Run Yet</td>");
         }
       }
-      if (areaCLevel1Score >= 100)
-      {
-        out.println("    <td class=\"pass\">Class I issues are noted and warnings or errors are generated corretly.<br/>Pass: Score = "
+      if (areaCLevel1Score >= 100) {
+        out.println("    <td class=\"pass\">Class I issues are noted and warnings or errors are generated correctly.<br/>Pass: Score = "
             + areaCLevel1Score + "%</td>");
-      } else if (areaCLevel1Score >= 0)
-      {
-        out.println("    <td class=\"fail\">Class I issues are noted and warnings or errors are generated corretly.<br/>Fail: Score = "
+      } else if (areaCLevel1Score >= 0) {
+        out.println("    <td class=\"fail\">Class I issues are noted and warnings or errors are generated correctly.<br/>Fail: Score = "
             + areaCLevel1Score + "%</td>");
-      } else
-      {
-        if (areaCLevel1Progress > -1)
-        {
+      } else {
+        if (areaCLevel1Progress > -1) {
           out.println("    <td>Running, " + areaCLevel1Progress + "% complete.</td>");
-        } else
-        {
+        } else {
           out.println("    <td>Not Run Yet</td>");
         }
       }
-      if (areaDLevel1Score >= 100)
-      {
+      if (areaDLevel1Score >= 100) {
         out.println("    <td class=\"pass\"><br/>Pass: Score = " + areaDLevel1Score + "%</td>");
-      } else if (areaDLevel1Score >= 0)
-      {
+      } else if (areaDLevel1Score >= 0) {
         out.println("    <td class=\"fail\"><br/>Fail: Score = " + areaDLevel1Score + "%</td>");
-      } else
-      {
-        if (areaDLevel1Progress > -1)
-        {
+      } else {
+        if (areaDLevel1Progress > -1) {
           out.println("    <td>Running, " + areaDLevel1Progress + "% complete.</td>");
-        } else
-        {
+        } else {
           out.println("    <td>Not Run Yet</td>");
         }
       }
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <th>Level 2</th>");
-      if (areaALevel2Score >= 100)
-      {
-        out.println("    <td class=\"pass\">All scenarios accepted without warnings<br/>Pass: Score = " + areaALevel2Score + "%</td>");
-      } else if (areaALevel2Score >= 0)
-      {
-        out.println("    <td class=\"fail\">All scenarios accepted without warnings<br/>Fail: Score = " + areaALevel2Score + "%</td>");
-      } else
-      {
-        if (areaALevel2Progress > -1)
-        {
+      if (areaALevel2Score >= 100) {
+        out.println("    <td class=\"pass\">All scenarios accepted without warnings<br/>Pass: Score = "
+            + areaALevel2Score + "%</td>");
+      } else if (areaALevel2Score >= 0) {
+        out.println("    <td class=\"fail\">All scenarios accepted without warnings<br/>Fail: Score = "
+            + areaALevel2Score + "%</td>");
+      } else {
+        if (areaALevel2Progress > -1) {
           out.println("    <td>Running, " + areaALevel2Progress + "% complete.</td>");
-        } else
-        {
+        } else {
           out.println("    <td>Not Run Yet</td>");
         }
       }
-      if (areaBLevel2Score >= 100)
-      {
+      if (areaBLevel2Score >= 100) {
         out.println("    <td class=\"pass\"><br/>Pass: Score = " + areaBLevel2Score + "%</td>");
-      } else if (areaBLevel2Score >= 0)
-      {
+      } else if (areaBLevel2Score >= 0) {
         out.println("    <td class=\"fail\"><br/>Fail: Score = " + areaBLevel2Score + "%</td>");
-      } else
-      {
-        if (areaBLevel2Progress > -1)
-        {
+      } else {
+        if (areaBLevel2Progress > -1) {
           out.println("    <td>Running, " + areaBLevel2Progress + "% complete.</td>");
-        } else
-        {
+        } else {
           out.println("    <td>Not Run Yet</td>");
         }
       }
-      if (areaCLevel2Score >= 100)
-      {
+      if (areaCLevel2Score >= 100) {
         out.println("    <td class=\"pass\"><br/>Pass: Score = " + areaCLevel2Score + "%</td>");
-      } else if (areaCLevel2Score >= 0)
-      {
+      } else if (areaCLevel2Score >= 0) {
         out.println("    <td class=\"fail\"><br/>Fail: Score = " + areaCLevel2Score + "%</td>");
-      } else
-      {
-        if (areaCLevel2Progress > -1)
-        {
+      } else {
+        if (areaCLevel2Progress > -1) {
           out.println("    <td>Running, " + areaCLevel2Progress + "% complete.</td>");
-        } else
-        {
+        } else {
           out.println("    <td>Not Run Yet</td>");
         }
       }
-      if (areaDLevel2Score >= 100)
-      {
+      if (areaDLevel2Score >= 100) {
         out.println("    <td class=\"pass\"><br/>Pass: Score = " + areaDLevel2Score + "%</td>");
-      } else if (areaDLevel2Score >= 0)
-      {
+      } else if (areaDLevel2Score >= 0) {
         out.println("    <td class=\"fail\"><br/>Fail: Score = " + areaDLevel2Score + "%</td>");
-      } else
-      {
-        if (areaDLevel2Progress > -1)
-        {
+      } else {
+        if (areaDLevel2Progress > -1) {
           out.println("    <td>Running, " + areaDLevel2Progress + "% complete.</td>");
-        } else
-        {
+        } else {
           out.println("    <td>Not Run Yet</td>");
         }
       }
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <th>Level 3</th>");
-      if (areaALevel3Score >= 100)
-      {
+      if (areaALevel3Score >= 100) {
         out.println("    <td class=\"pass\">All scenarios accepted<br/>Pass: Score = " + areaALevel3Score + "%</td>");
-      } else if (areaALevel3Score >= 0)
-      {
+      } else if (areaALevel3Score >= 0) {
         out.println("    <td class=\"fail\">All scenarios accepted<br/>Fail: Score = " + areaALevel3Score + "%</td>");
-      } else
-      {
-        if (areaALevel3Progress > -1)
-        {
+      } else {
+        if (areaALevel3Progress > -1) {
           out.println("    <td>Running, " + areaALevel3Progress + "% complete.</td>");
-        } else
-        {
+        } else {
           out.println("    <td>Not Run Yet</td>");
         }
       }
-      if (areaBLevel3Score >= 100)
-      {
+      if (areaBLevel3Score >= 100) {
         out.println("    <td class=\"pass\"><br/>Pass: Score = " + areaBLevel3Score + "%</td>");
-      } else if (areaBLevel3Score >= 0)
-      {
+      } else if (areaBLevel3Score >= 0) {
         out.println("    <td class=\"fail\"><br/>Fail: Score = " + areaBLevel3Score + "%</td>");
-      } else
-      {
-        if (areaBLevel3Progress > -1)
-        {
+      } else {
+        if (areaBLevel3Progress > -1) {
           out.println("    <td>Running, " + areaBLevel3Progress + "% complete.</td>");
-        } else
-        {
+        } else {
           out.println("    <td>Not Run Yet</td>");
         }
       }
-      if (areaCLevel3Score >= 100)
-      {
+      if (areaCLevel3Score >= 100) {
         out.println("    <td class=\"pass\"><br/>Pass: Score = " + areaCLevel3Score + "%</td>");
-      } else if (areaCLevel3Score >= 0)
-      {
+      } else if (areaCLevel3Score >= 0) {
         out.println("    <td class=\"fail\"><br/>Fail: Score = " + areaCLevel3Score + "%</td>");
-      } else
-      {
-        if (areaCLevel3Progress > -1)
-        {
+      } else {
+        if (areaCLevel3Progress > -1) {
           out.println("    <td>Running, " + areaCLevel3Progress + "% complete.</td>");
-        } else
-        {
+        } else {
           out.println("    <td>Not Run Yet</td>");
         }
       }
-      if (areaDLevel3Score >= 100)
-      {
+      if (areaDLevel3Score >= 100) {
         out.println("    <td class=\"pass\"><br/>Pass: Score = " + areaDLevel3Score + "%</td>");
-      } else if (areaDLevel3Score >= 0)
-      {
+      } else if (areaDLevel3Score >= 0) {
         out.println("    <td class=\"fail\"><br/>Fail: Score = " + areaDLevel3Score + "%</td>");
-      } else
-      {
-        if (areaDLevel3Progress > -1)
-        {
+      } else {
+        if (areaDLevel3Progress > -1) {
           out.println("    <td>Running, " + areaDLevel3Progress + "% complete.</td>");
-        } else
-        {
+        } else {
           out.println("    <td>Not Run Yet</td>");
         }
       }
@@ -561,24 +482,20 @@ public class CertifyServlet extends ClientServlet
       out.println("</table>");
     }
 
-    public void printProgressDetails(PrintWriter out)
-    {
-      for (TestCaseMessage testCaseMessage : statusCheckTestCases)
-      {
+    public void printProgressDetails(PrintWriter out) {
+      for (TestCaseMessage testCaseMessage : statusCheckTestCases) {
 
         printTestCaseMessage(out, testCaseMessage);
 
       }
-      for (TestCaseMessage testCaseMessage : profileTestCases)
-      {
+      for (TestCaseMessage testCaseMessage : profileTestCases) {
 
         printTestCaseMessage(out, testCaseMessage);
 
       }
     }
 
-    public void printTestCaseMessage(PrintWriter out, TestCaseMessage testCaseMessage)
-    {
+    public void printTestCaseMessage(PrintWriter out, TestCaseMessage testCaseMessage) {
       out.println("<p>" + testCaseMessage.getDescription() + "</p>");
       out.println("<pre>" + testCaseMessage.getMessageText() + "</pre>");
       out.println("<table>");
@@ -586,16 +503,14 @@ public class CertifyServlet extends ClientServlet
       out.println("    <td>Assert Result</td>");
       out.println("    <td>" + testCaseMessage.getAssertResult() + "</td>");
       out.println("  </tr>");
-      if (testCaseMessage.getCauseIssues() != null && testCaseMessage.getCauseIssues().equals(""))
-      {
+      if (testCaseMessage.getCauseIssues() != null && testCaseMessage.getCauseIssues().equals("")) {
         out.println("  <tr>");
         out.println("    <td>Cause Issues</td>");
         out.println("    <td>" + testCaseMessage.getCauseIssues() + "</td>");
         out.println("  </tr>");
       }
       out.println("</table>");
-      if (testCaseMessage.getException() != null)
-      {
+      if (testCaseMessage.getException() != null) {
         out.println("<p>Exception occurred: " + testCaseMessage.getException().getMessage() + "</p>");
         out.print("<pre>");
         testCaseMessage.getException().printStackTrace(out);
@@ -616,10 +531,8 @@ public class CertifyServlet extends ClientServlet
       out.println("    <td>" + testCaseMessage.getActualResultStatus() + "</td>");
       out.println("  </tr>");
       List<TestRunner.Error> errorList = testCaseMessage.getErrorList();
-      if (errorList != null)
-      {
-        for (TestRunner.Error error : errorList)
-        {
+      if (errorList != null) {
+        for (TestRunner.Error error : errorList) {
           out.println("  <tr>");
           out.println("    <td>" + error.getErrorType() + "</td>");
           out.println("    <td>" + error.getDescription() + "</td>");
@@ -629,19 +542,22 @@ public class CertifyServlet extends ClientServlet
       out.println("</table>");
     }
 
-    private int makeScore(int num, int denom)
-    {
+    private int makeScore(int num, int denom) {
       return (int) (100.0 * num / denom + 0.5);
     }
 
-    public String getStatus()
-    {
+    public String getStatus() {
       return status;
     }
 
-    public void stopRunning()
-    {
+    public void stopRunning() {
       keepRunning = false;
+    }
+    
+    private String paddWithZeros(int i, int zeros)
+    {
+      String s = "000000" + i;
+      return s.substring(s.length() - zeros);
     }
   }
 }

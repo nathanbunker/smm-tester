@@ -25,77 +25,60 @@ public class ConfigureServlet extends ClientServlet
   public static final String TEMPLATE_NMSIIS_RAW_PROD = "NMSIIS Raw Production";
   public static final String TEMPLATE_NMSIIS_RAW_UAT = "NMSIIS Raw UAT";
 
-  public static final String[] TEMPLATES = { TEMPLATE_DEFAULT_SOAP, TEMPLATE_DEFAULT_POST, TEMPLATE_ASIIS_PROD, TEMPLATE_ASIIS_TEST, TEMPLATE_NMSIIS_RAW_PROD, TEMPLATE_NMSIIS_RAW_UAT };
+  public static final String[] TEMPLATES = { TEMPLATE_DEFAULT_SOAP, TEMPLATE_DEFAULT_POST, TEMPLATE_ASIIS_PROD,
+      TEMPLATE_ASIIS_TEST, TEMPLATE_NMSIIS_RAW_PROD, TEMPLATE_NMSIIS_RAW_UAT };
 
   @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
-  {
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     HttpSession session = req.getSession(true);
     String folderName = req.getParameter(PrepareServlet.FOLDER_NAME);
-    if (folderName != null)
-    {
-      if (folderName.startsWith("\\") || folderName.startsWith("/"))
-      {
+    if (folderName != null) {
+      if (folderName.startsWith("\\") || folderName.startsWith("/")) {
         folderName = folderName.substring(1);
       }
       session.setAttribute(PrepareServlet.FOLDER_NAME, folderName);
     }
     String baseDir = req.getParameter(PrepareServlet.BASE_DIR);
-    if (baseDir != null)
-    {
-      if (!baseDir.endsWith("\\") && !baseDir.endsWith("/"))
-      {
-        if (baseDir.indexOf("/") == -1)
-        {
+    if (baseDir != null) {
+      if (!baseDir.endsWith("\\") && !baseDir.endsWith("/")) {
+        if (baseDir.indexOf("/") == -1) {
           baseDir = baseDir + "\\";
-        } else
-        {
+        } else {
           baseDir = baseDir + "/";
         }
       }
       session.setAttribute(PrepareServlet.BASE_DIR, baseDir);
     }
     String templateName = req.getParameter(PrepareServlet.TEMPLATE_NAME);
-    if (templateName != null)
-    {
+    if (templateName != null) {
       session.setAttribute(PrepareServlet.TEMPLATE_NAME, templateName);
-    } else
-    {
+    } else {
       templateName = (String) session.getAttribute(PrepareServlet.TEMPLATE_NAME);
     }
     ConnectionConfiguration cc = new ConnectionConfiguration();
     setupConfiguration(templateName, cc);
     String action = req.getParameter("action");
-    if (action != null)
-    {
-      if (action.equals("Step 2: Download and Save"))
-      {
+    if (action != null) {
+      if (action.equals("Step 2: Download and Save")) {
         cc.setType(req.getParameter(ConnectionConfiguration.FIELD_TYPE));
         cc.setLabel(req.getParameter(ConnectionConfiguration.FIELD_LABEL));
         cc.setUrl(req.getParameter(ConnectionConfiguration.FIELD_URL));
         String message = null;
-        if (cc.getType().equals(""))
-        {
+        if (cc.getType().equals("")) {
           message = "You must select a transport method type in order to create a connection";
-        } else if (cc.getLabel().equals(""))
-        {
+        } else if (cc.getLabel().equals("")) {
           message = "You must give a label for this connection";
-        } else if (cc.getUrl().equals(""))
-        {
+        } else if (cc.getUrl().equals("")) {
           message = "You must indicate a " + cc.getUrlLabel() + " for this connection";
         }
 
-        if (message == null)
-        {
-          try
-          {
+        if (message == null) {
+          try {
             Connector connector = ConnectorFactory.getConnector(cc.getType(), cc.getLabel(), cc.getUrl());
 
-            if (connector == null)
-            {
+            if (connector == null) {
               message = "Unrecognized connection type: " + cc.getType();
-            } else
-            {
+            } else {
               cc.setFacilityid(req.getParameter(ConnectionConfiguration.FIELD_FACILITYID));
               cc.setPassword(req.getParameter(ConnectionConfiguration.FIELD_PASSWORD));
               cc.setUserid(req.getParameter(ConnectionConfiguration.FIELD_USERID));
@@ -105,77 +88,62 @@ public class ConfigureServlet extends ClientServlet
               connector.setFacilityid(cc.getFacilityid());
               connector.setEnableTimeStart(safe(req.getParameter(ConnectionConfiguration.FIELD_ENABLE_TIME_START)));
               connector.setEnableTimeEnd(safe(req.getParameter(ConnectionConfiguration.FIELD_ENABLE_TIME_END)));
-              if (cc.isUseridRequired() && connector.getUserid().equals(""))
-              {
+              if (cc.isUseridRequired() && connector.getUserid().equals("")) {
                 message = "You must indicate a " + cc.getUseridLabel();
-              } else if (cc.isPasswordRequired() && connector.getPassword().equals(""))
-              {
+              } else if (cc.isPasswordRequired() && connector.getPassword().equals("")) {
                 message = "You must indicate a " + cc.getPasswordLabel();
-              } else if (cc.isFacilityidRequired() && connector.getFacilityid().equals(""))
-              {
+              } else if (cc.isFacilityidRequired() && connector.getFacilityid().equals("")) {
                 message = "You must indicate a " + cc.getFacilityidLabel();
               }
-              
-              if (cc.isEnableTimeRequired())
-              {
+
+              if (cc.isEnableTimeRequired()) {
                 if (connector.getEnableTimeEnd().equals("")) {
-                message = "You must indicate a SMM enabled end time";
-                }
-                else
-                {
-                  if (SendData.makeDate(connector.getEnableTimeEnd()) == null) 
-                  {
+                  message = "You must indicate a SMM enabled end time";
+                } else {
+                  if (SendData.makeDate(connector.getEnableTimeEnd()) == null) {
                     message = "The SMM enabled end time is invalid format, please use HH:MM with the HH indicating a value between 0 and 23";
                   }
-                  
+
                 }
                 if (connector.getEnableTimeStart().equals("")) {
-                message = "You must indicate a SMM enabled start time";
-                }
-                else
-                {
-                  if (SendData.makeDate(connector.getEnableTimeStart()) == null) 
-                  {
+                  message = "You must indicate a SMM enabled start time";
+                } else {
+                  if (SendData.makeDate(connector.getEnableTimeStart()) == null) {
                     message = "The SMM enabled start time is invalid format, please use HH:MM with the HH indicating a value between 0 and 23";
                   }
                 }
               }
-              
-              if (message == null)
-              {
+
+              if (message == null) {
                 setupConnection(templateName, connector);
                 resp.setContentType("text/plain;charset=UTF-8");
-                resp.setHeader("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode("smm.config.txt", "UTF-8") + "\"");
+                resp.setHeader("Content-Disposition",
+                    "attachment; filename=\"" + URLEncoder.encode("smm.config.txt", "UTF-8") + "\"");
                 PrintWriter out = new PrintWriter(resp.getOutputStream());
                 out.print(connector.getScript());
                 out.close();
                 return;
               }
             }
-          } catch (Exception e)
-          {
+          } catch (Exception e) {
             message = "Unable to configure connector: " + e.getMessage();
             e.printStackTrace();
           }
         }
-        if (message != null)
-        {
+        if (message != null) {
           req.setAttribute("message", message);
         }
       }
     }
     resp.setContentType("text/html;charset=UTF-8");
     PrintWriter out = new PrintWriter(resp.getOutputStream());
-    try
-    {
+    try {
       printHtmlHead(out, "2. Configure", req);
 
-      if (folderName != null)
-      {
+      if (folderName != null) {
         cc.setFolderName(folderName);
       }
-      if (baseDir != null)
-      {
+      if (baseDir != null) {
         cc.setBaseDir(baseDir);
       }
 
@@ -186,24 +154,19 @@ public class ConfigureServlet extends ClientServlet
       out.println("</form>");
 
       printHtmlFoot(out);
-    } catch (Exception e)
-    {
+    } catch (Exception e) {
       e.printStackTrace();
       out.println("<p>Problem encountered: </p><pre>");
       e.printStackTrace(out);
       out.println("</pre>");
-    } finally
-    {
+    } finally {
       out.close();
     }
   }
 
-  private void setupConnection(String templateName, Connector connector)
-  {
-    if (templateName != null)
-    {
-      if (templateName.equals(TEMPLATE_NMSIIS_RAW_UAT) || templateName.equals(TEMPLATE_NMSIIS_RAW_PROD))
-      {
+  private void setupConnection(String templateName, Connector connector) {
+    if (templateName != null) {
+      if (templateName.equals(TEMPLATE_NMSIIS_RAW_UAT) || templateName.equals(TEMPLATE_NMSIIS_RAW_PROD)) {
         HttpConnector httpConnector = (HttpConnector) connector;
         httpConnector.setFacilityid("NMSIIS");
         httpConnector.setAuthenticationMethod(HttpConnector.AuthenticationMethod.HEADER);
@@ -212,46 +175,47 @@ public class ConfigureServlet extends ClientServlet
         httpConnector.setFieldName(HttpConnector.PASSWORD, "pinCode");
         httpConnector.setFieldName(HttpConnector.FACILITYID, "service");
         httpConnector.setAuthenticationMethod(HttpConnector.AuthenticationMethod.HEADER);
-        httpConnector.setCustomTransformations("MSH-3=RPMS\n" + "MSH-4=[USERID]\n" + "MSH-6=NMSIIS\n" + "insert segment BHS first\n"
-            + "insert segment BTS last\n" + "insert segment FHS first\n" + "insert segment FTS last\n" + "FHS-8=CR\n" + "BSH-8=CR\n"
-            + "FHS-9=[FILENAME]\n" + "FTS-1=1\n" + "BTS-1=1\n" + "FTS-2=CR\n" + "BTS-2=CR\n");
+        httpConnector.setCustomTransformations("MSH-3=RPMS\n" + "MSH-4=[USERID]\n" + "MSH-6=NMSIIS\n"
+            + "insert segment BHS first\n" + "insert segment BTS last\n" + "insert segment FHS first\n"
+            + "insert segment FTS last\n" + "FHS-8=CR\n" + "BSH-8=CR\n" + "FHS-9=[FILENAME]\n" + "FTS-1=1\n"
+            + "BTS-1=1\n" + "FTS-2=CR\n" + "BTS-2=CR\n");
+      } else if (templateName.equals(TEMPLATE_ASIIS_PROD) || templateName.equals(TEMPLATE_ASIIS_TEST)) {
+        HttpConnector httpConnector = (HttpConnector) connector;
+        httpConnector.setCustomTransformations("MSH-3=RPMS\n" + "MSH-4=[FACILITYID]\n" + "PV1-10=\n");
       }
     }
   }
 
-  private void setupConfiguration(String templateName, ConnectionConfiguration cc)
-  {
-    if (templateName != null)
-    {
+  private void setupConfiguration(String templateName, ConnectionConfiguration cc) {
+    if (templateName != null) {
       cc.setLabel(templateName);
-      if (templateName.equals(TEMPLATE_DEFAULT_SOAP))
-      {
+      if (templateName.equals(TEMPLATE_DEFAULT_SOAP)) {
         cc.setType(ConnectorFactory.TYPE_SOAP);
-      } else if (templateName.equals(TEMPLATE_DEFAULT_POST))
-      {
+      } else if (templateName.equals(TEMPLATE_DEFAULT_POST)) {
         cc.setType(ConnectorFactory.TYPE_POST);
-      } else if (templateName.equals(TEMPLATE_ASIIS_PROD))
-      {
+      } else if (templateName.equals(TEMPLATE_ASIIS_PROD)) {
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setUrl("https://app.azdhs.gov/phs/asiis/hl7post/");
-        cc.setFacilityidShow(false);
+        cc.setFacilityidShow(true);
+        cc.setFacilityidLabel("IRMS ID");
         cc.setTypeShow(false);
-        cc.setInstructions("In order to connect to ASIIS Production you will need to request a Username and Password from the <a href=\"https://www.asiis.state.az.us/\" target=\"_blank\">ASIIS User Support help desk</a>. Please provide the User Id and Password before continuing. ");
+        cc.setInstructions("In order to connect to ASIIS Production you will need to request a Username, Password and IRMS ID from the <a href=\"https://www.asiis.state.az.us/\" target=\"_blank\">ASIIS User Support help desk</a>. Please provide the User Id, Password, and IRMS ID before continuing. ");
         cc.setReceiverName("ASIIS");
         cc.setUseridRequired(true);
         cc.setPasswordRequired(true);
-      } else if (templateName.equals(TEMPLATE_ASIIS_TEST))
-      {
+        cc.setFacilityidRequired(true);
+      } else if (templateName.equals(TEMPLATE_ASIIS_TEST)) {
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setUrl("https://appqa.azdhs.gov/phs/asiis/hl7post/");
-        cc.setFacilityidShow(false);
+        cc.setFacilityidShow(true);
+        cc.setFacilityidLabel("IRMS ID");
         cc.setTypeShow(false);
-        cc.setInstructions("In order to connect to ASIIS Test you will need to request a Username and Password from the <a href=\"https://test-asiis.azdhs.gov/\" target=\"_blank\">ASIIS User Support help desk</a>. Please provide the User Id and Password before continuing.");
+        cc.setInstructions("In order to connect to ASIIS Test you will need to request a Username, Password and IRMS ID from the <a href=\"https://test-asiis.azdhs.gov/\" target=\"_blank\">ASIIS User Support help desk</a>. Please provide the User Id, Password and IRMS ID before continuing.");
         cc.setReceiverName("ASIIS");
         cc.setUseridRequired(true);
         cc.setPasswordRequired(true);
-      } else if (templateName.equals(TEMPLATE_NMSIIS_RAW_UAT))
-      {
+        cc.setFacilityidRequired(true);
+      } else if (templateName.equals(TEMPLATE_NMSIIS_RAW_UAT)) {
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setUrl("https://www.nmhit.org/nmsiistest/rhapsody/receive");
         cc.setTypeShow(false);
@@ -262,8 +226,7 @@ public class ConfigureServlet extends ClientServlet
         cc.setUseridRequired(true);
         cc.setPasswordRequired(true);
         cc.setFacilityidShow(false);
-      } else if (templateName.equals(TEMPLATE_NMSIIS_RAW_PROD))
-      {
+      } else if (templateName.equals(TEMPLATE_NMSIIS_RAW_PROD)) {
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setUrl("https://www.nmhit.org/nmsiis/rhapsody/receive");
         cc.setTypeShow(false);
@@ -278,16 +241,13 @@ public class ConfigureServlet extends ClientServlet
         cc.setEnableTimeEnd("18:00");
         cc.setEnableTimeStart("06:00");
       }
-    } else
-    {
+    } else {
       cc.setInstructions("This is the default configuration with no preset values. If you would like specific instruction based on the system you are working to connect with, please return to Step 1: Prepare and follow the instructions. ");
     }
   }
-  
-  private static String safe(String s)
-  {
-    if (s == null)
-    {
+
+  private static String safe(String s) {
+    if (s == null) {
       return "";
     }
     return s;
