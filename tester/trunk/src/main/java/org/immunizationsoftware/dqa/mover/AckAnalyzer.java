@@ -32,94 +32,78 @@ public class AckAnalyzer
   private List<String> segments;
   private FileOut errorFileOut = null;
 
-  private void log(String s)
-  {
-    if (errorFileOut != null)
-    {
-      try
-      {
+  private void log(String s) {
+    if (errorFileOut != null) {
+      try {
         errorFileOut.printCommentLn(s);
-      } catch (IOException ioe)
-      {
+      } catch (IOException ioe) {
         ioe.printStackTrace();
       }
     }
   }
 
-  public String getSetupProblemDescription()
-  {
+  public String getSetupProblemDescription() {
     return setupProblemDescription;
   }
 
-  public void setSetupProblemDescription(String setupProblemDescription)
-  {
+  public void setSetupProblemDescription(String setupProblemDescription) {
     this.setupProblemDescription = setupProblemDescription;
   }
 
-  public boolean isTemporarilyUnavailable()
-  {
+  public boolean isTemporarilyUnavailable() {
     return temporarilyUnavailable;
   }
 
-  public void setTemporarilyUnavailable(boolean temporarilyUnavailable)
-  {
+  public void setTemporarilyUnavailable(boolean temporarilyUnavailable) {
     this.temporarilyUnavailable = temporarilyUnavailable;
   }
 
-  public boolean hasSetupProblem()
-  {
+  public boolean hasSetupProblem() {
     return setupProblem;
   }
 
-  public void setSetupProblem(boolean setupProblem)
-  {
+  public void setSetupProblem(boolean setupProblem) {
     this.setupProblem = setupProblem;
   }
 
-  public ErrorType getErrorType()
-  {
+  public ErrorType getErrorType() {
     return errorType;
   }
 
-  public void setErrorType(ErrorType errorType)
-  {
+  public void setErrorType(ErrorType errorType) {
     this.errorType = errorType;
   }
 
   private String ackCode = "";
 
-  public boolean isAckMessage()
-  {
+  public boolean isAckMessage() {
     return ackMessage;
   }
 
-  public boolean isPositive()
-  {
+  public boolean isPositive() {
     return positive;
   }
 
-  public void setPositive(boolean positive)
-  {
+  public void setPositive(boolean positive) {
     this.positive = positive;
   }
 
-  public String getAckCode()
-  {
+  public String getAckCode() {
     return ackCode;
   }
 
-  public void setAckCode(String ackCode)
-  {
+  public void setAckCode(String ackCode) {
     this.ackCode = ackCode;
   }
 
-  public AckAnalyzer(String ack)  {
+  public AckAnalyzer(String ack) {
     this(ack, AckType.DEFAULT, null);
   }
 
   public AckAnalyzer(String ack, AckType ackType) {
     this(ack, ackType, null);
   }
+
   public AckAnalyzer(String ack, AckType ackType, FileOut errorFileOut) {
     this.ackType = ackType;
     this.errorFileOut = errorFileOut;
@@ -127,154 +111,121 @@ public class AckAnalyzer
     convertToSegments(ack);
 
     boolean isNotAck = false;
-    if (ack == null)
-    {
+    if (ack == null) {
       isNotAck = true;
       log("Returned result is not an acknowledgement message: no acknowledgement message returned");
-    } else if (!ack.startsWith("MSH|"))
-    {
+    } else if (!ack.startsWith("MSH|")) {
       isNotAck = true;
       log("Returned result is not an acknowledgement message: first line does not start with MSH|");
-    } else if (!getFieldValue("MSH", 9).equals("ACK"))
-    {
+    } else if (!getFieldValue("MSH", 9).equals("ACK")) {
       isNotAck = true;
-      log("Returned result is not an acknowledgement message: MSH-9 is not ACK, it is '" + getFieldValue("MSH", 9) + "'");
+      log("Returned result is not an acknowledgement message: MSH-9 is not ACK, it is '" + getFieldValue("MSH", 9)
+          + "'");
     }
-    if (isNotAck)
-    {
+    if (isNotAck) {
       ackMessage = false;
       positive = false;
       setupProblem = true;
-      if (ack != null && ackType == AckType.NMSIIS)
-      {
-        if (ack.length() < 240)
-        {
+      if (ack != null && ackType == AckType.NMSIIS) {
+        if (ack.length() < 240) {
           setupProblemDescription = ack;
-        } else
-        {
+        } else {
           setupProblemDescription = "Unexpected non-HL7 response, please verify connection URL";
         }
-      } else
-      {
+      } else {
         setupProblemDescription = "Unexpected non-HL7 response, please verify connection URL";
       }
-    } else
-    {
+    } else {
       ackMessage = true;
       ackCode = getFieldValue("MSA", 1);
 
-      if (ackType == AckType.DEFAULT)
-      {
+      if (ackType == AckType.DEFAULT) {
         positive = getFieldValue("MSA", 1).equals("AA");
-      } else if (ackType.equals(AckType.NMSIIS))
-      {
+      } else if (ackType.equals(AckType.NMSIIS)) {
         setupProblem = ack.indexOf("|BAD MESSAGE|") != -1 || ack.indexOf("File Rejected.") != -1;
-        if (setupProblem)
-        {
+        if (setupProblem) {
           log("Setup problem found, message contains phrase |BAD MESSAGE| or File Rejected.");
         }
-        boolean recordNotRejected = ack.indexOf("Record Rejected") == -1;
-        log("Record was rejected, message contains phrase Record Rejected");
+        boolean recordNotRejected = ack.indexOf("Record Rejected") == -1 && ack.indexOf("Message Rejected") == -1;
+        if (!recordNotRejected) {
+          log("Record was rejected, message contains phrase Record Rejected");
+        }
         positive = !setupProblem && recordNotRejected;
-      } else if (ackType.equals(AckType.ALERT))
-      {
+      } else if (ackType.equals(AckType.ALERT)) {
         positive = true;
         int pos = 1;
         String[] values = null;
-        while ((values = getFieldValues("MSA", pos, 1)) != null)
-        {
-          if (values.length > 0)
-          {
-            if (values[0].equals("AE"))
-            {
+        while ((values = getFieldValues("MSA", pos, 1)) != null) {
+          if (values.length > 0) {
+            if (values[0].equals("AE")) {
               positive = false;
               break;
             }
           }
           pos++;
         }
-        if (!positive)
-        {
+        if (!positive) {
           log("At least one MSA-1 field was found with a value of AE so message was rejected");
         }
       }
     }
   }
 
-  private void convertToSegments(String ack)
-  {
+  private void convertToSegments(String ack) {
     segments = new ArrayList<String>();
-    if (ack != null)
-    {
+    if (ack != null) {
       BufferedReader in = new BufferedReader(new StringReader(ack));
       String line;
-      try
-      {
-        while ((line = in.readLine()) != null)
-        {
+      try {
+        while ((line = in.readLine()) != null) {
           segments.add(line);
         }
-      } catch (IOException ioe)
-      {
+      } catch (IOException ioe) {
         ioe.printStackTrace();
       }
     }
   }
 
-  private boolean hasSegment(String segmentName)
-  {
-    for (String segment : segments)
-    {
-      if (segment.startsWith(segmentName + "|"))
-      {
+  private boolean hasSegment(String segmentName) {
+    for (String segment : segments) {
+      if (segment.startsWith(segmentName + "|")) {
         return true;
       }
     }
     return false;
   }
 
-  private String getFieldValue(String segmentName, int pos)
-  {
+  private String getFieldValue(String segmentName, int pos) {
     String[] values = getFieldValues(segmentName, 1, pos);
-    if (values != null && values.length > 0 && values[0] != null)
-    {
+    if (values != null && values.length > 0 && values[0] != null) {
       return values[0];
     }
     return "";
   }
 
-  private String[] getFieldValues(String segmentName, int segmentCount, int pos)
-  {
-    if (!segmentName.equals("MSH"))
-    {
+  private String[] getFieldValues(String segmentName, int segmentCount, int pos) {
+    if (!segmentName.equals("MSH")) {
       pos++;
     }
-    for (String segment : segments)
-    {
-      if (segment.startsWith(segmentName + "|"))
-      {
+    for (String segment : segments) {
+      if (segment.startsWith(segmentName + "|")) {
         segmentCount--;
-        if (segmentCount == 0)
-        {
+        if (segmentCount == 0) {
           int startPos = -1;
           int endPos = -1;
-          while (pos > 0)
-          {
+          while (pos > 0) {
             pos--;
-            if (endPos < segment.length())
-            {
+            if (endPos < segment.length()) {
               startPos = endPos + 1;
               endPos = segment.indexOf("|", startPos);
-              if (endPos == -1)
-              {
+              if (endPos == -1) {
                 endPos = segment.length();
               }
             }
           }
           String value = segment.substring(startPos, endPos);
           int repeatPos = value.indexOf("~");
-          if (repeatPos != -1)
-          {
+          if (repeatPos != -1) {
             value = value.substring(0, repeatPos);
           }
           return value.split("\\^");

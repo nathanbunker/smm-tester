@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
 
 /**
  * 
@@ -26,12 +27,10 @@ import org.immunizationsoftware.dqa.tester.connectors.Connector;
 public class SubmitServlet extends ClientServlet
 {
 
-  protected static Connector getConnector(int id, HttpSession session) throws ServletException
-  {
+  protected static Connector getConnector(int id, HttpSession session) throws ServletException {
     List<Connector> connectors = SetupServlet.getConnectors(session);
     id--;
-    if (id < connectors.size())
-    {
+    if (id < connectors.size()) {
       return connectors.get(id);
     }
     throw new IllegalArgumentException("Unable to find connection " + id);
@@ -50,26 +49,21 @@ public class SubmitServlet extends ClientServlet
    * @throws IOException
    *           if an I/O error occurs
    */
-  protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws Exception
-  {
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
-    if (username == null)
-    {
+    if (username == null) {
       response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
-    } else
-    {
+    } else {
       // For example purposes, determine what method to perform based on
       // a "method" request parameter in the URL.
       int id = 0;
-      if (request.getParameter("id") != null)
-      {
+      if (request.getParameter("id") != null) {
         id = Integer.parseInt(request.getParameter("id"));
       }
       String str = request.getParameter("method");
-      if (str == null || !str.equalsIgnoreCase("Submit") || id == 0)
-      {
+      if (str == null || !str.equalsIgnoreCase("Submit") || id == 0) {
         return;
       }
       boolean debug = request.getParameter("debug") != null;
@@ -95,27 +89,20 @@ public class SubmitServlet extends ClientServlet
    *           if an I/O error occurs
    */
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-  {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
-    if (username == null)
-    {
+    if (username == null) {
       response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
-    } else
-    {
+    } else {
       int id = 0;
       List<Connector> connectors = SetupServlet.getConnectors(session);
-      if (connectors.size() == 1)
-      {
+      if (connectors.size() == 1) {
         id = 1;
-      } else
-      {
-        if (request.getParameter("id") != null && !request.getParameter("id").equals(""))
-        {
+      } else {
+        if (request.getParameter("id") != null && !request.getParameter("id").equals("")) {
           id = Integer.parseInt(request.getParameter("id"));
-        } else if (session.getAttribute("id") != null)
-        {
+        } else if (session.getAttribute("id") != null) {
           id = (Integer) session.getAttribute("id");
         }
       }
@@ -124,35 +111,27 @@ public class SubmitServlet extends ClientServlet
       String password = request.getParameter("password");
       String facilityId = request.getParameter("facilityid");
       String message = request.getParameter("message");
-      if (userId == null)
-      {
+      if (userId == null) {
         userId = (String) session.getAttribute("userId");
-        if (userId == null)
-        {
+        if (userId == null) {
           userId = "";
         }
       }
-      if (password == null)
-      {
+      if (password == null) {
         password = (String) session.getAttribute("password");
-        if (password == null)
-        {
+        if (password == null) {
           password = "";
         }
       }
-      if (facilityId == null)
-      {
+      if (facilityId == null) {
         facilityId = (String) session.getAttribute("facilityId");
-        if (facilityId == null)
-        {
+        if (facilityId == null) {
           facilityId = "";
         }
       }
-      if (message == null)
-      {
+      if (message == null) {
         message = (String) session.getAttribute("message");
-        if (message == null)
-        {
+        if (message == null) {
           message = "";
         }
       }
@@ -164,88 +143,41 @@ public class SubmitServlet extends ClientServlet
       PrintWriter out = new PrintWriter(response.getWriter());
       response.setContentType("text/html;charset=UTF-8");
       printHtmlHead(out, "Send Message", request);
-      out.println("    <form action=\"SubmitServlet\" method=\"POST\">");
-      out.println("      <table border=\"0\">");
-      out.println("        <tr>");
-      out.println("          <td>Connection</td>");
-      out.println("          <td>");
-      if (connectors.size() == 1)
-      {
-        out.println("            " + connectors.get(0).getLabelDisplay());
-        out.println("            <input type=\"hidden\" name=\"id\" value=\"1\"/>");
-      } else
-      {
-        out.println("            <select name=\"id\">");
-        out.println("              <option value=\"\">select</option>");
-        int i = 0;
-        for (Connector connector : connectors)
-        {
-          i++;
-          if (id == i)
-          {
-            out.println("              <option value=\"" + i + "\" selected=\"true\">" + connector.getLabelDisplay() + "</option>");
-          } else
-          {
-            out.println("              <option value=\"" + i + "\">" + connector.getLabelDisplay() + "</option>");
-          }
-        }
-        out.println("            </select>");
-      }
-      out.println("          </td>");
-      out.println("        </tr>");
-      out.println("        <tr>");
-      out.println("          <td valign=\"top\">Message</td>");
-      out.println("          <td><textarea name=\"message\" cols=\"70\" rows=\"10\" wrap=\"off\">" + message + "</textarea></td>");
-      out.println("        </tr>");
-      out.println("        <tr>");
-      out.println("          <td>Debug</td>");
-      out.println("          <td><input type=\"checkbox\" name=\"debug\" value=\"true\" /></td>");
-      out.println("        </tr>");
-      out.println("        <tr>");
-      out.println("          <td colspan=\"2\" align=\"right\">");
-      out.println("            <input type=\"submit\" name=\"method\" value=\"Refresh\"/>");
-      out.println("            <input type=\"submit\" name=\"method\" value=\"Submit\"/>");
-      out.println("          </td>");
-      out.println("        </tr>");
-      out.println("      </table>");
-      out.println("    </form>");
-      if (id != 0)
-      {
-        try
-        {
+      printForm(id, connectors, message, out);
+      if (id != 0) {
+        try {
           Connector connector = getConnector(id, session);
           String responseText = (String) request.getAttribute("responseText");
-          if (responseText != null)
-          {
+          if (responseText != null) {
             out.println("<p>Response from " + connector.getLabel() + ": ");
             out.print("<pre>");
             out.print(responseText);
             out.println("</pre>");
           }
           String host = "";
-          try
-          {
+          try {
             InetAddress addr = InetAddress.getLocalHost();
             host = addr.getHostName();
-          } catch (UnknownHostException e)
-          {
+          } catch (UnknownHostException e) {
             host = "[unknown]";
           }
-          try
-          {
+          try {
             out.println("<p>Status for " + connector.getLabel() + ": <br><font color=\"blue\">"
                 + connector.connectivityTest("Sent from client '" + host + "'") + "</font></p>");
-          } catch (Exception t)
-          {
+          } catch (Exception t) {
             out.println("<p>Unable to test against remote server: " + t.getMessage() + "</p>");
             out.println("<pre>");
             t.printStackTrace(out);
             out.println("</pre>");
           }
-        } catch (Throwable re)
-        {
+        } catch (Throwable re) {
           re.printStackTrace(out);
         }
+      }
+
+      if (message != null && message.indexOf("|VXU^") > 0) {
+        out.println("<p>Submit query message based from VXU displayed above</p>");
+        printForm(id, connectors, QueryConverter.convertVXUtoQBP(message), out);
       }
       out.println("  <div class=\"help\">");
       out.println("  <h2>How To Use This Page</h2>");
@@ -263,8 +195,52 @@ public class SubmitServlet extends ClientServlet
     }
   }
 
-  protected void testTestCaseMessage(PrintWriter out)
-  {
+  private void printForm(int id, List<Connector> connectors, String message, PrintWriter out) {
+    out.println("    <form action=\"SubmitServlet\" method=\"POST\">");
+    out.println("      <table border=\"0\">");
+    out.println("        <tr>");
+    out.println("          <td>Connection</td>");
+    out.println("          <td>");
+    if (connectors.size() == 1) {
+      out.println("            " + connectors.get(0).getLabelDisplay());
+      out.println("            <input type=\"hidden\" name=\"id\" value=\"1\"/>");
+    } else {
+      out.println("            <select name=\"id\">");
+      out.println("              <option value=\"\">select</option>");
+      int i = 0;
+      for (Connector connector : connectors) {
+        i++;
+        if (id == i) {
+          out.println("              <option value=\"" + i + "\" selected=\"true\">" + connector.getLabelDisplay()
+              + "</option>");
+        } else {
+          out.println("              <option value=\"" + i + "\">" + connector.getLabelDisplay() + "</option>");
+        }
+      }
+      out.println("            </select>");
+    }
+    out.println("          </td>");
+    out.println("        </tr>");
+    out.println("        <tr>");
+    out.println("          <td valign=\"top\">Message</td>");
+    out.println("          <td><textarea name=\"message\" cols=\"70\" rows=\"10\" wrap=\"off\">" + message
+        + "</textarea></td>");
+    out.println("        </tr>");
+    out.println("        <tr>");
+    out.println("          <td>Debug</td>");
+    out.println("          <td><input type=\"checkbox\" name=\"debug\" value=\"true\" /></td>");
+    out.println("        </tr>");
+    out.println("        <tr>");
+    out.println("          <td colspan=\"2\" align=\"right\">");
+    out.println("            <input type=\"submit\" name=\"method\" value=\"Refresh\"/>");
+    out.println("            <input type=\"submit\" name=\"method\" value=\"Submit\"/>");
+    out.println("          </td>");
+    out.println("        </tr>");
+    out.println("      </table>");
+    out.println("    </form>");
+  }
+
+  protected void testTestCaseMessage(PrintWriter out) {
     TestCaseMessage tcm = new TestCaseMessage();
     tcm.setAssertResultStatus("Accept");
     tcm.setAssertResultText("Way good!");
@@ -280,15 +256,12 @@ public class SubmitServlet extends ClientServlet
     out.print("<pre>");
     String text = tcm.createText();
     out.print(text);
-    try
-    {
+    try {
       List<TestCaseMessage> tcmList = TestCaseMessage.createTestCaseMessageList(text);
-      for (TestCaseMessage tcmIt : tcmList)
-      {
+      for (TestCaseMessage tcmIt : tcmList) {
         out.print(tcmIt.createText());
       }
-    } catch (Exception e)
-    {
+    } catch (Exception e) {
       e.printStackTrace(out);
     }
     out.println("</pre>");
@@ -307,13 +280,10 @@ public class SubmitServlet extends ClientServlet
    *           if an I/O error occurs
    */
   @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-  {
-    try
-    {
+  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    try {
       processRequest(request, response);
-    } catch (Exception e)
-    {
+    } catch (Exception e) {
       request.setAttribute("responseText", e.getMessage());
     }
     doGet(request, response);
@@ -325,27 +295,21 @@ public class SubmitServlet extends ClientServlet
    * @return a String containing servlet description
    */
   @Override
-  public String getServletInfo()
-  {
+  public String getServletInfo() {
     return "Short description";
   }// </editor-fold>
 
-  private static String cleanMessage(String message)
-  {
-    if (message != null)
-    {
+  private static String cleanMessage(String message) {
+    if (message != null) {
       StringBuilder sb = new StringBuilder();
       BufferedReader reader = new BufferedReader(new StringReader(message));
       String line;
-      try
-      {
-        while ((line = reader.readLine()) != null)
-        {
+      try {
+        while ((line = reader.readLine()) != null) {
           sb.append(line);
           sb.append("\r");
         }
-      } catch (IOException ioe)
-      {
+      } catch (IOException ioe) {
         sb.append(ioe.getMessage());
       }
       return sb.toString();
