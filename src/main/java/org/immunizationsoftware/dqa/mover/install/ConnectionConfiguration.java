@@ -10,6 +10,7 @@ public class ConnectionConfiguration
   public static final String FIELD_TYPE = "type";
   public static final String FIELD_URL = "url";
   public static final String FIELD_USERID = "userid";
+  public static final String FIELD_OTHERID = "otherid";
   public static final String FIELD_PASSWORD = "password";
   public static final String FIELD_FACILITYID = "faclityid";
   public static final String FIELD_ENABLE_TIME_START = "enableTimeStart";
@@ -19,6 +20,7 @@ public class ConnectionConfiguration
   private String type = "";
   private String url = "";
   private String userid = "";
+  private String otherid = "";
   private String password = "";
   private String facilityid = "";
   private String baseDir = "";
@@ -27,6 +29,14 @@ public class ConnectionConfiguration
   private String receiverName = "the receiver";
   private String enableTimeEnd = "";
   private String enableTimeStart = "";
+  
+  public String getOtherid() {
+    return otherid;
+  }
+  
+  public void setOtherid(String otherid) {
+    this.otherid = otherid;
+  }
   
 
   public String getReceiverName()
@@ -92,15 +102,42 @@ public class ConnectionConfiguration
   private boolean typeShow = true;
   private boolean urlShow = true;
   private boolean useridShow = true;
+  private boolean otheridShow = false;
   private boolean passwordShow = true;
   private boolean facilityidShow = true;
   private boolean useridRequired = false;
+  private boolean otheridRequired = false;
   private boolean enableTimeShow = false;
   private boolean enableTimeRequired = false;
   private String urlLabel = "URL";
   private String useridLabel = "User Id";
+  private String otheridLabel = "Other Id";
   private String passwordLabel = "Password";
   private String facilityidLabel = "Facility Id";
+  
+  public boolean isOtheridShow() {
+    return otheridShow;
+  }
+  
+  public void setOtheridShow(boolean otheridShow) {
+    this.otheridShow = otheridShow;
+  }
+  
+  public boolean isOtheridRequired() {
+    return otheridRequired;
+  }
+  
+  public void setOtheridRequired(boolean otheridRequired) {
+    this.otheridRequired = otheridRequired;
+  }
+  
+  public String getOtheridLabel() {
+    return otheridLabel;
+  }
+  
+  public void setOtheridLabel(String otheridLabel) {
+    this.otheridLabel = otheridLabel;
+  }
   
   public boolean isEnableTimeShow()
   {
@@ -359,6 +396,17 @@ public class ConnectionConfiguration
     } else
     {
       out.println("<input type=\"hidden\" name=\"" + FIELD_USERID + "\" value=\"" + userid + "\">");
+    }
+    if (otheridShow)
+    {
+      out.println("  <tr class=\"boxed\">");
+      out.println("    <th class=\"boxed\">" + otheridLabel + "</th>");
+      out.println("    <td class=\"boxed\"><input type=\"text\" name=\"" + FIELD_OTHERID + "\" size=\"10\" value=\"" + otherid + "\"></td>");
+      out.println("    <td class=\"boxed\">Another unique identifier supplied by " + receiverName + ".</td>");
+      out.println("  </tr>");
+    } else
+    {
+      out.println("<input type=\"hidden\" name=\"" + FIELD_OTHERID + "\" value=\"" + otherid + "\">");
     }
     if (passwordShow)
     {
