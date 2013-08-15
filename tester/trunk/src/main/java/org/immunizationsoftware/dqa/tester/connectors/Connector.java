@@ -27,7 +27,7 @@ public abstract class Connector
 
   protected abstract void setupFields(List<String> fields);
 
-  protected static Connector addConnector(String label, String type, String url, String userid, String facilityid, String password,
+  protected static Connector addConnector(String label, String type, String url, String userid, String otherid, String facilityid, String password,
       String keyStorePassword, String enableTimeStart, String enableTimeEnd, AckAnalyzer.AckType ackType, TransferType transferType,
       List<String> fields, String customTransformations, List<Connector> connectors) throws Exception
   {
@@ -51,6 +51,7 @@ public abstract class Connector
         connector = new HttpConnector(label, url);
       }
       connector.setUserid(userid);
+      connector.setOtherid(otherid);
       connector.setFacilityid(facilityid);
       connector.setPassword(password);
       connector.setupFields(fields);
@@ -73,6 +74,7 @@ public abstract class Connector
   protected String label = "";
   protected String type = "";
   protected String userid = "";
+  protected String otherid = "";
   protected String password = "";
   protected String facilityid = "";
   protected String url = "";
@@ -86,6 +88,14 @@ public abstract class Connector
   private KeyStore keyStore = null;
   private String keyStorePassword = null;
   private AckAnalyzer.AckType ackType = AckAnalyzer.AckType.DEFAULT;
+
+  public String getOtherid() {
+    return otherid;
+  }
+
+  public void setOtherid(String otherid) {
+    this.otherid = otherid;
+  }
 
   public String getCurrentControlId()
   {
@@ -286,6 +296,10 @@ public abstract class Connector
     sb.append("Type: " + type + "\n");
     sb.append("URL: " + url + "\n");
     sb.append("User Id: " + userid + "\n");
+    if (otherid != null && !otherid.equals(""))
+    {
+      sb.append("Other Id: "+ otherid + "\n");
+    }
     try
     {
       sb.append("Password: " + PasswordEncryptUtil.encrypt(password) + "\n");
@@ -346,6 +360,7 @@ public abstract class Connector
     String label = "";
     String type = "";
     String userid = "";
+    String otherid = "";
     String password = "";
     String facilityid = "";
     String url = "";
@@ -364,12 +379,13 @@ public abstract class Connector
       line = line.trim();
       if (line.startsWith("Connection"))
       {
-        addConnector(label, type, url, userid, facilityid, password, keyStorePassword, enableTimeStart, enableTimeEnd, ackType, transferType, fields,
+        addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart, enableTimeEnd, ackType, transferType, fields,
             customTransformations, connectors);
         label = "";
         type = "";
         url = "";
         userid = "";
+        otherid = "";
         facilityid = "";
         password = "";
         enableTimeStart = "";
@@ -391,6 +407,9 @@ public abstract class Connector
       } else if (line.startsWith("User Id:"))
       {
         userid = readValue(line);
+      } else if (line.startsWith("Other Id:"))
+      {
+        otherid = readValue(line);
       } else if (line.startsWith("Ack Type:"))
       {
         ackType = AckAnalyzer.AckType.valueOf(readValue(line));
@@ -430,7 +449,7 @@ public abstract class Connector
       }
 
     }
-    addConnector(label, type, url, userid, facilityid, password, keyStorePassword, enableTimeStart, enableTimeEnd, ackType, transferType, fields,
+    addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart, enableTimeEnd, ackType, transferType, fields,
         customTransformations, connectors);
     return connectors;
   }

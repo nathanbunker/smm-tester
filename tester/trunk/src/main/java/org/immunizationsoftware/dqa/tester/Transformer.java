@@ -57,6 +57,7 @@ public class Transformer
   private static final String REP_CON_PASSWORD = "[PASSWORD]";
   private static final String REP_CON_FACILITYID = "[FACILITYID]";
   private static final String REP_CON_FILENAME = "[FILENAME]";
+  private static final String REP_CON_OTHERID = "[OTHERID]";
 
   private static final String INSERT_SEGMENT = "insert segment ";
   private static final String REMOVE_SEGMENT = "remove segment ";
@@ -1230,6 +1231,9 @@ public class Transformer
     } else if (t.value.equals(REP_CON_FILENAME))
     {
       t.value = connector.getCurrentFilename();
+    } else if (t.value.equals(REP_CON_OTHERID))
+    {
+      t.value = connector.getOtherid();
     }
   }
 
