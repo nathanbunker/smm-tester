@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.immunizationsoftware.dqa.tester.CertifyServlet.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 
@@ -105,7 +106,7 @@ public class TestCaseServlet extends ClientServlet {
                         if (goodToQuery) {
                             try {
                                 pass = testRunner.runTest(connector, testCaseMessage);
-                                ack = testRunner.getAck();
+                                ack = testRunner.getAckMessageText();
                             } catch (Throwable t) {
                                 t.printStackTrace(out);
                             }
@@ -324,9 +325,18 @@ public class TestCaseServlet extends ClientServlet {
                     id = (Integer) session.getAttribute("id");
                 }
                 TestCaseMessage testCaseMessage = (TestCaseMessage) session.getAttribute("testCaseMessage");
-                if (testCaseMessage == null) {
-                    testCaseMessage = new TestCaseMessage();
+                String certifyServletBasicNum  = request.getParameter("certifyServletBasicNum");
+                if (certifyServletBasicNum != null)
+                {
+                  CertifyRunner certifyRunner = (CertifyRunner) session.getAttribute("certifyRunner");
+                  if (certifyRunner != null) {
+                    testCaseMessage = certifyRunner.getStatusCheckTestCaseList().get(Integer.parseInt(certifyServletBasicNum));
+                  }
                 }
+                if (testCaseMessage == null) {
+                  testCaseMessage = new TestCaseMessage();
+              }
+              
                 out.println("        <tr>");
                 out.println("          <td>Service</td>");
                 out.println("          <td>");

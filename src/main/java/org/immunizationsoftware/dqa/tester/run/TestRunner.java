@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.immunizationsoftware.dqa.tester.TestCaseMessage;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 
 /**
  * 
@@ -24,23 +25,19 @@ public class TestRunner
     private ErrorType errorType = ErrorType.UNKNOWN;
     private String description = "";
 
-    public ErrorType getErrorType()
-    {
+    public ErrorType getErrorType() {
       return errorType;
     }
 
-    public void setErrorType(ErrorType errorType)
-    {
+    public void setErrorType(ErrorType errorType) {
       this.errorType = errorType;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
       return description;
     }
 
-    public void setDescription(String description)
-    {
+    public void setDescription(String description) {
       this.description = description;
     }
 
@@ -48,213 +45,179 @@ public class TestRunner
 
   private static final String ACTUAL_RESULT_STATUS_FAIL = "FAIL";
   public static final String ACTUAL_RESULT_STATUS_PASS = "PASS";
-  private String ack = null;
-  private boolean pass = false;
+  private String ackMessageText = null;
+  private boolean passedTest = false;
   private String status = "";
   private List<Error> errorList = null;
   private ErrorType errorType = ErrorType.UNKNOWN;
-
-  public ErrorType getErrorType()
+  private HL7Reader ackMessageReader;
+  private long startTime = 0;
+  private long endTime = 0;
+  
+  public long getTotalRunTime()
   {
+    return endTime - startTime;
+  }
+
+  public HL7Reader getAckMessageReader() {
+    return ackMessageReader;
+  }
+
+  public ErrorType getErrorType() {
     return errorType;
   }
 
-  public List<Error> getErrorList()
-  {
+  public List<Error> getErrorList() {
     return errorList;
   }
 
-  public String getStatus()
-  {
+  public String getStatus() {
     return status;
   }
 
-  public void setStatus(String status)
-  {
+  public void setStatus(String status) {
     this.status = status;
   }
 
-  public String getAck()
-  {
-    return ack;
+  public String getAckMessageText() {
+    return ackMessageText;
   }
 
-  public void setAck(String ack)
-  {
-    this.ack = ack;
+  public void setAckMessageText(String ack) {
+    this.ackMessageText = ack;
   }
 
-  public boolean isPass()
-  {
-    return pass;
+  public boolean isPassedTest() {
+    return passedTest;
   }
 
-  public void setPass(boolean pass)
-  {
-    this.pass = pass;
+  public void setPassedTest(boolean pass) {
+    this.passedTest = pass;
   }
 
-  public boolean runTest(Connector connector, TestCaseMessage testCaseMessage) throws Exception
-  {
-    pass = false;
-    ack = null;
-    ack = connector.submitMessage(testCaseMessage.getMessageText(), false);
+  public boolean runTest(Connector connector, TestCaseMessage testCaseMessage) throws Exception {
+    testCaseMessage.setActualResponseMessage("");
+    testCaseMessage.setPassedTest(false);
+    testCaseMessage.setHasRun(false);
+    passedTest = false;
+    ackMessageText = null;
+    startTime = System.currentTimeMillis();
+    ackMessageText = connector.submitMessage(testCaseMessage.getMessageText(), false);
+    endTime = System.currentTimeMillis();
     errorList = new ArrayList<Error>();
-    if (!testCaseMessage.getAssertResult().equalsIgnoreCase(""))
-    {
-      String msa = "";
-      int startPos = ack.indexOf("MSA|");
-      pass = true;
-      if (startPos == -1)
-      {
-        pass = false;
-      } else
-      {
-        msa = ack.substring(startPos);
-        int endPos = msa.indexOf("\r");
-        if (endPos == -1)
-        {
-          endPos = ack.length();
-        }
-        msa = msa.substring(0, endPos);
-        startPos = msa.indexOf("|");
-        if (startPos != -1)
-        {
-          startPos++;
-          endPos = msa.indexOf("|", startPos);
-          if (endPos != -1)
-          {
-            testCaseMessage.setActualResultAckType(msa.substring(startPos, endPos));
-            endPos++;
-            startPos = msa.indexOf("|", endPos);
-            if (startPos != -1)
-            {
-              startPos++;
-              endPos = msa.indexOf("|", startPos);
-              if (endPos != -1)
-              {
-                testCaseMessage.setActualResultAckMessage(msa.substring(startPos, endPos));
+    if (!testCaseMessage.getAssertResult().equalsIgnoreCase("")) {
+      ackMessageReader = new HL7Reader(ackMessageText);
+      if (ackMessageReader.advanceToSegment("MSH")) {
+        if (ackMessageReader.getValue(9).equals("ACK")) {
+          if (ackMessageReader.advanceToSegment("MSA")) {
+            testCaseMessage.setActualResultAckType(ackMessageReader.getValue(1));
+            testCaseMessage.setActualResultAckMessage(ackMessageReader.getValue(2));
+            boolean accepted = false;
+            boolean rejected = false;
+            boolean issueFound = false;
+            errorType = ErrorType.UNKNOWN;
+
+            if (testCaseMessage.getActualResultAckType().equals("AA")) {
+              accepted = true;
+            } else if (testCaseMessage.getActualResultAckType().equals("AR")) {
+              rejected = true;
+            }
+
+            String assertResultText = testCaseMessage.getAssertResultText().toUpperCase();
+            if (assertResultText.equals("")) {
+              assertResultText = "*";
+            }
+            if (assertResultText.equals("*")) {
+              issueFound = true;
+            }
+            
+            while (ackMessageReader.advanceToSegment("ERR")) {
+              String severity = ackMessageReader.getValue(4);
+              String userMessage = ackMessageReader.getValue(8);
+              Error error = new Error();
+              errorList.add(error);
+
+              if (severity.equals("E")) {
+                rejected = true;
+                error.setErrorType(ErrorType.ERROR);
+              } else if (severity.equals("W")) {
+                error.setErrorType(ErrorType.WARNING);
+              } else if (severity.equals("I")) {
+                error.setErrorType(ErrorType.INFORMATION);
+              } else {
+                error.setErrorType(ErrorType.UNKNOWN);
+              }
+              error.setDescription(userMessage);
+
+              if (!assertResultText.equals("*") && !testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept")) {
+                if (userMessage.toUpperCase().startsWith(assertResultText)) {
+                  errorType = error.getErrorType();
+                  if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Warn")) {
+                    if (severity.equals("W")) {
+                      issueFound = true;
+                    }
+                  } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Skip")) {
+                    if (severity.equals("I")) {
+                      issueFound = true;
+                    }
+                  } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Error")) {
+                    if (severity.equals("E")) {
+                      issueFound = true;
+                    }
+                  }
+                  else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Reject")) {
+                    issueFound = true;
+                  }
+                }
               }
             }
-          }
-        }
-      }
+            if (testCaseMessage.getActualResultAckType().equals("AE") && !rejected) {
+              accepted = true;
+            } 
 
-      if (pass)
-      {
-        if (testCaseMessage.getAssertResultText().equals("*"))
-        {
-          if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept"))
-          {
-            pass = msa.startsWith("MSA|AA|");
-          } else
-          {
-            pass = !msa.startsWith("MSA|AA|");
-          }
-        } else
-        {
-          if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept"))
-          {
-            pass = msa.startsWith("MSA|AA|") && (msa.indexOf("|" + testCaseMessage.getAssertResultText() + "|") != -1);
-          } else if (testCaseMessage.getAssertResultStatus().startsWith("Accept and Skip"))
-          {
-            pass = msa.startsWith("MSA|AA|") && (ack.indexOf("|" + testCaseMessage.getAssertResultText() + "|") != -1);
-          } else if (testCaseMessage.getAssertResultStatus().startsWith("Accept and Warn"))
-          {
-            pass = msa.startsWith("MSA|AA|") && (ack.indexOf("|" + testCaseMessage.getAssertResultText() + "|") != -1);
-          } else
-          {
-            pass = !msa.startsWith("MSA|AA|") && (msa.indexOf("|" + testCaseMessage.getAssertResultText() + "|") != -1);
-          }
-        }
-      }
-
-      if (testCaseMessage.getActualResultAckType().equals("AA"))
-      {
-        errorType = ErrorType.ACCEPT;
-      } else if (testCaseMessage.getActualResultAckType().equals("AE") || testCaseMessage.getActualResultAckType().equals("AR"))
-      {
-        errorType = ErrorType.ERROR;
-      }
-
-      BufferedReader reader = new BufferedReader(new StringReader(ack));
-      String line;
-      while ((line = reader.readLine()) != null)
-      {
-        if (line.startsWith("ERR|"))
-        {
-          Error error = new Error();
-          errorList.add(error);
-          startPos = 0;
-          int endPos = line.indexOf("|", startPos);
-          for (int i = 0; i < 4; i++)
-          {
-            if (startPos == -1)
-            {
-              break;
+            passedTest = false;
+            if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept")) {
+              passedTest = accepted && !rejected;
+            } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Warn")) {
+              passedTest = issueFound && !rejected;
+            } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Skip")) {
+              passedTest = issueFound && !rejected;
+            } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Error")) {
+              passedTest = issueFound && rejected;
+            }else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Reject")) {
+              passedTest = issueFound;
             }
-            startPos = endPos + 1;
-            endPos = line.indexOf("|", startPos);
-          }
-          if (startPos != -1 && endPos != -1)
-          {
-            String code = line.substring(startPos, endPos);
-            if (code.equals("E"))
-            {
-              error.setErrorType(ErrorType.ERROR);
-              errorType = ErrorType.ERROR;
-            } else if (code.equals("W"))
-            {
-              error.setErrorType(ErrorType.WARNING);
-              if (error.getErrorType() == ErrorType.ACCEPT || error.getErrorType() == ErrorType.WARNING)
-              {
-                errorType = ErrorType.WARNING;
+            if (errorType == ErrorType.UNKNOWN) {
+              if (accepted) {
+                errorType = ErrorType.ACCEPT;
+              } else if (rejected) {
+                errorType = ErrorType.ERROR;
               }
-            } else if (code.equals("I"))
-            {
-              error.setErrorType(ErrorType.ACCEPT);
             }
-            endPos = line.indexOf("|", startPos);
-            for (int i = 0; i < 4; i++)
-            {
-              if (startPos == -1)
-              {
-                break;
-              }
-              startPos = endPos + 1;
-              endPos = line.indexOf("|", startPos);
-            }
-            if (startPos != -1 && endPos != -1)
-            {
-              String description = line.substring(startPos, endPos);
-              error.setDescription(description);
-            }
+
           }
         }
       }
 
-      if (pass)
-      {
+      if (passedTest) {
         status = "A";
         testCaseMessage.setActualResultStatus(ACTUAL_RESULT_STATUS_PASS);
-        for (Error error : errorList)
-        {
-          if (status.equals("A") && error.getErrorType() == ErrorType.WARNING)
-          {
+        for (Error error : errorList) {
+          if (status.equals("A") && error.getErrorType() == ErrorType.WARNING) {
             // ignore skip warnings
-            if (!error.getDescription().startsWith("Skipped: "))
-            {
+            if (error.getErrorType() != ErrorType.INFORMATION ) {
               status = "W";
             }
           }
         }
-      } else
-      {
+      } else {
         testCaseMessage.setActualResultStatus(ACTUAL_RESULT_STATUS_FAIL);
         status = "E";
       }
     }
-    testCaseMessage.setActualAck(ack);
-    return pass;
+    testCaseMessage.setActualResponseMessage(ackMessageText);
+    testCaseMessage.setPassedTest(passedTest);
+    testCaseMessage.setHasRun(true);
+    return passedTest;
   }
 }

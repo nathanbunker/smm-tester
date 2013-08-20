@@ -81,6 +81,8 @@ public class HomeServlet extends ClientServlet
         }
         out.println("<h2>Certify</h2>");
         out.println("<a href=\"CertifyServlet\">Certify DQA Interface</a>");
+        out.println("<h2>Compare VXU to RSP</h2>");
+        out.println("<a href=\"CompareServlet\">Compare</a>");
       }
       printHtmlFoot(out);
 

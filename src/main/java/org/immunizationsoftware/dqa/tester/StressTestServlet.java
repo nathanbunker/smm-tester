@@ -629,8 +629,8 @@ public class StressTestServlet extends ClientServlet
           transformer.transform(testCaseMessage);
           log("Submiting test message");
           testRunner.runTest(connector, testCaseMessage);
-          lastResult = testRunner.getAck();
-          if (testRunner.isPass())
+          lastResult = testRunner.getAckMessageText();
+          if (testRunner.isPassedTest())
           {
             log("Received positive acknowledgement");
             countAccepted++;

@@ -589,6 +589,28 @@ public class CreateTestCaseServlet extends ClientServlet
       }
     }
   }
+  
+  public static File getTestCaseDir(TestCaseMessage testCaseMessage, HttpSession session)
+  {
+    if (testCaseMessage.getTestCaseNumber() != null && !testCaseMessage.getTestCaseNumber().equals(""))
+    {
+      Authenticate.User user = (Authenticate.User) session.getAttribute("user");
+      if (user != null && user.hasSendData())
+      {
+        File testCaseDir = user.getSendData().getTestCaseDir();
+        if (!testCaseMessage.getTestCaseSet().equals(""))
+        {
+          testCaseDir = new File(testCaseDir, testCaseMessage.getTestCaseSet());
+          if (!testCaseDir.exists())
+          {
+            testCaseDir.mkdir();
+          }
+        }
+        return testCaseDir;
+      }
+    }
+    return null;
+  }
 
   protected static void loadTestCases(HttpSession session) throws ServletException, IOException
   {
@@ -600,7 +622,7 @@ public class CreateTestCaseServlet extends ClientServlet
       File[] dirs = testCaseDir.listFiles(new FileFilter() {
         public boolean accept(File arg0)
         {
-          return arg0.isDirectory();
+          return arg0.isDirectory() && !arg0.getName().startsWith("Certification ");
         }
       });
       if (dirs != null)

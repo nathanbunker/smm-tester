@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.immunizationsoftware.dqa.tester.Transformer.PatientType;
+import org.immunizationsoftware.dqa.tester.manager.CompareManager;
+import org.immunizationsoftware.dqa.tester.manager.HL7Analyzer;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 
 /**
@@ -28,6 +30,8 @@ public class TestCaseMessage
   private static final String EXPECTED_RESULT = "Expected Result:";
   private static final String ASSERT_RESULT = "Assert Result:";
   private static final String ORIGINAL_MESSAGE = "Original Message:";
+  private static final String ACTUAL_RESPONSE_MESSAGE = "Actual Response Message:";
+  private static final String DERIVED_FROM_VXU_MESSAGE = "Derived From VXU Message:";
   private static final String QUICK_TRANSFORMATIONS = "Quick Transformations:";
   private static final String CUSTOM_TRANSFORMATIONS = "Custom Transformations:";
   private static final String CAUSE_ISSUES = "Cause Issues:";
@@ -256,10 +260,64 @@ public class TestCaseMessage
   private Transformer.PatientType patientType = Transformer.PatientType.ANY_CHILD;
   private boolean hasIssue = false;
   private Throwable exception = null;
-  private String actualAck = "";
+  private String actualResponseMessage = "";
   private List<TestRunner.Error> errorList = null;
+  private String derivedFromVXUMessage = "";
+  private List<CompareManager.Comparison> comparisonList = null;
+  private boolean passedTest = false;
+  private boolean hasRun = false;
+  private int testCaseId = 0;
   
+  public HL7Analyzer ackAnalyzer = null;
   
+  public HL7Analyzer getAckAnalyzer() {
+    return ackAnalyzer;
+  }
+
+  public void setAckAnalyzer(HL7Analyzer ackAnalyzer) {
+    this.ackAnalyzer = ackAnalyzer;
+  }
+
+  public int getTestCaseId() {
+    return testCaseId;
+  }
+  
+  public void setTestCaseId(int testCaseId) {
+    this.testCaseId = testCaseId;
+  }
+  
+  public boolean isHasRun() {
+    return hasRun;
+  }
+
+  public void setHasRun(boolean hasRun) {
+    this.hasRun = hasRun;
+  }
+
+  public boolean isPassedTest() {
+    return passedTest;
+  }
+
+  public void setPassedTest(boolean pass) {
+    this.passedTest = pass;
+  }
+
+  public List<CompareManager.Comparison> getComparisonList() {
+    return comparisonList;
+  }
+
+  public void setComparisonList(List<CompareManager.Comparison> comparisonList) {
+    this.comparisonList = comparisonList;
+  }
+
+  public String getDerivedFromVXUMessage() {
+    return derivedFromVXUMessage;
+  }
+
+  public void setDerivedFromVXUMessage(String derivedFromVXUText) {
+    this.derivedFromVXUMessage = derivedFromVXUText;
+  }
+
   public List<TestRunner.Error> getErrorList()
   {
     return errorList;
@@ -270,14 +328,14 @@ public class TestCaseMessage
     this.errorList = errorList;
   }
 
-  public String getActualAck()
+  public String getActualResponseMessage()
   {
-    return actualAck;
+    return actualResponseMessage;
   }
 
-  public void setActualAck(String actualAck)
+  public void setActualResponseMessage(String actualAck)
   {
-    this.actualAck = actualAck;
+    this.actualResponseMessage = actualAck;
   }
 
   public Throwable getException()
@@ -334,6 +392,7 @@ public class TestCaseMessage
     this.actualResultAckType = copy.actualResultAckType;
     this.actualResultAckMessage = copy.actualResultAckMessage;
     this.patientType = copy.patientType;
+    this.actualResponseMessage = copy.actualResponseMessage;
   }
 
   public void merge(TestCaseMessage updated)
@@ -595,13 +654,22 @@ public class TestCaseMessage
     this.causeIssues += causeIssues + "\n";
   }
 
-  private void appendCustomTransformation(String customTransformation)
+  public void appendCustomTransformation(String customTransformation)
   {
     if (this.customTransformations == null)
     {
       this.customTransformations = "";
     }
     this.customTransformations += customTransformation + "\n";
+  }
+  
+  public void appendOriginalMessage(String append)
+  {
+    if (this.originalMessage == null)
+    {
+      this.originalMessage = "";
+    }
+    this.originalMessage += append;
   }
 
   private void appendCauseIssue(String causeIssue)
@@ -693,6 +761,12 @@ public class TestCaseMessage
           } else if (line.startsWith(ORIGINAL_MESSAGE))
           {
             testCaseMessage.setOriginalMessage(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
+          } else if (line.startsWith(ACTUAL_RESPONSE_MESSAGE))
+          {
+            testCaseMessage.setActualResponseMessage(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
+          } else if (line.startsWith(DERIVED_FROM_VXU_MESSAGE))
+          {
+            testCaseMessage.setDerivedFromVXUMessage(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
           } else if (line.startsWith(QUICK_TRANSFORMATIONS))
           {
             testCaseMessage.setQuickTransformations(readValues(line));
@@ -820,15 +894,15 @@ public class TestCaseMessage
       }
       if (!originalMessage.equals(messageText))
       {
-        stringOut.print(ORIGINAL_MESSAGE + " ");
-        BufferedReader inBase = new BufferedReader(new StringReader(originalMessage));
-        String line;
-        while ((line = inBase.readLine()) != null)
-        {
-          line = line.trim();
-          stringOut.print(line + (forHtml ? "&lt;CR&gt;" : "<CR>"));
-        }
-        stringOut.println();
+        printHL7(forHtml, stringOut, ORIGINAL_MESSAGE, originalMessage);
+      }
+      if (actualResponseMessage != null && !actualResponseMessage.equals(""))
+      {
+        printHL7(forHtml, stringOut, ACTUAL_RESPONSE_MESSAGE, actualResponseMessage);
+      }
+      if (derivedFromVXUMessage != null && !derivedFromVXUMessage.equals(""))
+      {
+        printHL7(forHtml, stringOut, DERIVED_FROM_VXU_MESSAGE, derivedFromVXUMessage);
       }
       if (quickTransformations != null && quickTransformations.length > 0 && quickTransformations[0].trim().length() > 0)
       {
@@ -881,6 +955,18 @@ public class TestCaseMessage
       stringOut.close();
     }
     return stringWriter.toString();
+  }
+
+  private void printHL7(boolean forHtml, PrintWriter stringOut, String fieldName, String message) throws IOException {
+    stringOut.print(fieldName + " ");
+    BufferedReader inBase = new BufferedReader(new StringReader(message));
+    String line;
+    while ((line = inBase.readLine()) != null)
+    {
+      line = line.trim();
+      stringOut.print(line + (forHtml ? "&lt;CR&gt;" : "<CR>"));
+    }
+    stringOut.println();
   }
 
   public String getQuickTransformationsConverted()

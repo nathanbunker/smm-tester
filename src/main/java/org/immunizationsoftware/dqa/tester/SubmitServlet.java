@@ -144,10 +144,11 @@ public class SubmitServlet extends ClientServlet
       response.setContentType("text/html;charset=UTF-8");
       printHtmlHead(out, "Send Message", request);
       printForm(id, connectors, message, out);
+      String responseText = null;
       if (id != 0) {
         try {
           Connector connector = getConnector(id, session);
-          String responseText = (String) request.getAttribute("responseText");
+          responseText = (String) request.getAttribute("responseText");
           if (responseText != null) {
             out.println("<p>Response from " + connector.getLabel() + ": ");
             out.print("<pre>");
@@ -175,9 +176,19 @@ public class SubmitServlet extends ClientServlet
         }
       }
 
-      if (message != null && message.indexOf("|VXU^") > 0) {
-        out.println("<p>Submit query message based from VXU displayed above</p>");
-        printForm(id, connectors, QueryConverter.convertVXUtoQBP(message), out);
+      if (message != null) {
+        if (message.indexOf("|VXU^") > 0) {
+          String qbpMessage = QueryConverter.convertVXUtoQBP(message);
+          session.setAttribute(CompareServlet.VXU_MESSAGE, message);
+          out.println("<p>Submit query message based from VXU displayed above</p>");
+          printForm(id, connectors, qbpMessage, out);
+        }
+      }
+      if (responseText != null && responseText.indexOf("|RSP^") > 0 ) {
+        session.setAttribute(CompareServlet.RSP_MESSAGE, responseText);
+        if (session.getAttribute(CompareServlet.VXU_MESSAGE) != null) {
+          out.println("<p><a href=\"CompareServlet\">Compare response with original VXU</a></p>");
+        }
       }
       out.println("  <div class=\"help\">");
       out.println("  <h2>How To Use This Page</h2>");

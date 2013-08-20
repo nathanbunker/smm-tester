@@ -1,5 +1,5 @@
 package org.immunizationsoftware.dqa.tester.run;
 
 public enum ErrorType {
-  ERROR, WARNING, ACCEPT, UNKNOWN
+  ERROR, WARNING, INFORMATION, ACCEPT, UNKNOWN
 }
