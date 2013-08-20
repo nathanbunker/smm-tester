@@ -200,7 +200,7 @@ public class InterfaceProfileServlet extends ClientServlet
             {
               goodToQuery = false;
               out.println("Unable to interface profile, base message failed: ");
-              out.print("<pre>" + testRunner.getAck() + "</pre>");
+              out.print("<pre>" + testRunner.getAckMessageText() + "</pre>");
             }
           }
 
@@ -311,7 +311,7 @@ public class InterfaceProfileServlet extends ClientServlet
                   try
                   {
                     testRunner.runTest(connector, testCaseMessage);
-                    ack = testRunner.getAck();
+                    ack = testRunner.getAckMessageText();
                   } catch (Throwable t)
                   {
                     t.printStackTrace(out);
@@ -402,7 +402,7 @@ public class InterfaceProfileServlet extends ClientServlet
                   try
                   {
                     testRunner.runTest(connector, testCaseMessageNot);
-                    ack = testRunner.getAck();
+                    ack = testRunner.getAckMessageText();
                   } catch (Throwable t)
                   {
                     t.printStackTrace(out);

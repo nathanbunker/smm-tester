@@ -39,6 +39,14 @@
     <servlet-class>org.immunizationsoftware.dqa.tester.DownloadServlet</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>TestCaseMessageViewerServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.tester.TestCaseMessageViewerServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>CompareServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.tester.CompareServlet</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>HomeServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.tester.HomeServlet</servlet-class>
   </servlet>
@@ -101,6 +109,14 @@
   <servlet-mapping>
     <servlet-name>DownloadServlet</servlet-name>
     <url-pattern>/DownloadServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>TestCaseMessageViewerServlet</servlet-name>
+    <url-pattern>/TestCaseMessageViewerServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>CompareServlet</servlet-name>
+    <url-pattern>/CompareServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>TestCaseServlet</servlet-name>

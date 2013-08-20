@@ -63,12 +63,13 @@ public class Transformer
   private static final String REMOVE_SEGMENT = "remove segment ";
   private static final String CLEAN = "clean";
 
+  
   private static final int VACCINE_CVX = 0;
   private static final int VACCINE_NAME = 1;
-  private static final int VACCINE_TRADE_NAME = 2;
-  private static final int VACCINE_LOT = 3;
-  private static final int VACCINE_MVX = 4;
-  private static final int VACCINE_MANUFACTURER = 5;
+  private static final int VACCINE_LOT = 2;
+  private static final int VACCINE_MVX = 3;
+  private static final int VACCINE_MANUFACTURER = 4;
+  private static final int VACCINE_TRADE_NAME = 5;
   private static final int VACCINE_AMOUNT = 6;
   private static final int VACCINE_ROUTE = 7;
   private static final int VACCINE_SITE = 8;
