@@ -10,6 +10,8 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -67,9 +69,20 @@ public class SubmitServlet extends ClientServlet
         return;
       }
       boolean debug = request.getParameter("debug") != null;
+      boolean transform = request.getParameter("transform") != null;
       Connector connector = getConnector(id, session);
       String message = request.getParameter("message");
-      String responseText = connector.submitMessage(cleanMessage(message), debug);
+      
+      if (transform && !connector.getCustomTransformations().equals(""))
+      {
+        Transformer transformer = new Transformer();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+        connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
+        message = transformer.transform(connector, message);
+      }
+      message = cleanMessage(message);
+      String responseText = connector.submitMessage(message, debug);
+      request.setAttribute("requestText", message);
       request.setAttribute("responseText", responseText);
     }
   }
@@ -155,6 +168,14 @@ public class SubmitServlet extends ClientServlet
             out.print(responseText);
             out.println("</pre>");
           }
+          String requestText = (String) request.getAttribute("requestText");
+          if (responseText != null) {
+            out.println("<p>What was actually sent to " + connector.getLabel() + ": ");
+            out.print("<pre>");
+            out.print(requestText);
+            out.println("</pre>");
+          }
+
           String host = "";
           try {
             InetAddress addr = InetAddress.getLocalHost();
@@ -180,8 +201,11 @@ public class SubmitServlet extends ClientServlet
         if (message.indexOf("|VXU^") > 0) {
           String qbpMessage = QueryConverter.convertVXUtoQBP(message);
           session.setAttribute(CompareServlet.VXU_MESSAGE, message);
-          out.println("<p>Submit query message based from VXU displayed above</p>");
+          out.println("<p>Submit QBP query message based from VXU displayed above</p>");
           printForm(id, connectors, qbpMessage, out);
+          String vxqMessage = QueryConverter.convertVXUtoVXQ(message);
+          out.println("<p>Submit VXQ query message based from VXU displayed above</p>");
+          printForm(id, connectors, vxqMessage, out);
         }
       }
       if (responseText != null && responseText.indexOf("|RSP^") > 0 ) {
@@ -236,6 +260,10 @@ public class SubmitServlet extends ClientServlet
     out.println("          <td valign=\"top\">Message</td>");
     out.println("          <td><textarea name=\"message\" cols=\"70\" rows=\"10\" wrap=\"off\">" + message
         + "</textarea></td>");
+    out.println("        </tr>");
+    out.println("        <tr>");
+    out.println("          <td>Transform</td>");
+    out.println("          <td><input type=\"checkbox\" name=\"transform\" value=\"true\" checked=\"true\"/> <em>Apply connection specific transforms to message before sending.</em></td>");
     out.println("        </tr>");
     out.println("        <tr>");
     out.println("          <td>Debug</td>");

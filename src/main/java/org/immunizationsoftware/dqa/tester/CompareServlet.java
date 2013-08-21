@@ -25,6 +25,7 @@ public class CompareServlet extends ClientServlet
 {
 
   public static final String VXU_MESSAGE = "vxuMessage";
+  public static final String VXU_MESSAGE_SUBMITTED = "vxuMessageSubmitted";
   public static final String RSP_MESSAGE = "rspMessage";
 
   // <editor-fold defaultstate="collapsed"
@@ -51,14 +52,20 @@ public class CompareServlet extends ClientServlet
 
       String vxuMessage = request.getParameter(VXU_MESSAGE);
       String rspMessage = request.getParameter(RSP_MESSAGE);
-      
+      String vxuMessageSubmitted = request.getParameter(VXU_MESSAGE_SUBMITTED);
+
+      boolean showSubmissionChange = request.getParameter("showSubmissionChange") != null;
       String certifyServletBasicNum = request.getParameter("certifyServletBasicNum");
-      if (certifyServletBasicNum != null)
-      {
+      if (certifyServletBasicNum != null) {
         CertifyRunner certifyRunner = (CertifyRunner) session.getAttribute("certifyRunner");
         TestCaseMessage tcm = certifyRunner.getStatusCheckTestCaseList().get(Integer.parseInt(certifyServletBasicNum));
-        vxuMessage = tcm.getDerivedFromVXUMessage();
-        rspMessage = tcm.getActualResponseMessage();
+        if (showSubmissionChange) {
+          vxuMessage = tcm.getMessageText();
+          vxuMessageSubmitted = tcm.getMessageTextSent();
+        } else {
+          vxuMessage = tcm.getDerivedFromVXUMessage();
+          rspMessage = tcm.getActualResponseMessage();
+        }
       }
 
       if (vxuMessage == null) {
@@ -73,8 +80,15 @@ public class CompareServlet extends ClientServlet
       }
 
       List<CompareManager.Comparison> comparisonList = null;
-      if (vxuMessage != null && rspMessage != null && !vxuMessage.equals("") && !rspMessage.equals("")) {
-        comparisonList = CompareManager.compareMessages(vxuMessage, rspMessage);
+      if (showSubmissionChange) {
+        if (vxuMessage != null && vxuMessageSubmitted != null && !vxuMessage.equals("")
+            && !vxuMessageSubmitted.equals("")) {
+          comparisonList = CompareManager.compareMessages(vxuMessage, vxuMessageSubmitted);
+        }
+      } else {
+        if (vxuMessage != null && rspMessage != null && !vxuMessage.equals("") && !rspMessage.equals("")) {
+          comparisonList = CompareManager.compareMessages(vxuMessage, rspMessage);
+        }
       }
 
       PrintWriter out = new PrintWriter(response.getWriter());
@@ -87,11 +101,19 @@ public class CompareServlet extends ClientServlet
       out.println("          <td><textarea name=\"" + VXU_MESSAGE + "\" cols=\"70\" rows=\"10\" wrap=\"off\">"
           + vxuMessage + "</textarea></td>");
       out.println("        </tr>");
-      out.println("        <tr>");
-      out.println("          <td valign=\"top\">RSP Returned</td>");
-      out.println("          <td><textarea name=\"" + RSP_MESSAGE + "\" cols=\"70\" rows=\"10\" wrap=\"off\">"
-          + rspMessage + "</textarea></td>");
-      out.println("        </tr>");
+      if (rspMessage != null) {
+        out.println("        <tr>");
+        out.println("          <td valign=\"top\">RSP Returned</td>");
+        out.println("          <td><textarea name=\"" + RSP_MESSAGE + "\" cols=\"70\" rows=\"10\" wrap=\"off\">"
+            + rspMessage + "</textarea></td>");
+        out.println("        </tr>");
+      } else if (vxuMessageSubmitted != null) {
+        out.println("        <tr>");
+        out.println("          <td valign=\"top\">VXU Submitted</td>");
+        out.println("          <td><textarea name=\"" + VXU_MESSAGE_SUBMITTED
+            + "\" cols=\"70\" rows=\"10\" wrap=\"off\">" + vxuMessageSubmitted + "</textarea></td>");
+        out.println("        </tr>");
+      }
       out.println("        <tr>");
       out.println("          <td colspan=\"2\" align=\"right\">");
       out.println("            <input type=\"submit\" name=\"method\" value=\"Submit\"/>");
@@ -104,8 +126,7 @@ public class CompareServlet extends ClientServlet
         out.println("      <table border=\"1\" cellspacing=\"0\">");
         String lastSegmentName = "XXX";
         for (CompareManager.Comparison comparison : comparisonList) {
-          if (!comparison.getHl7FieldName().startsWith(lastSegmentName))
-          {
+          if (!comparison.getHl7FieldName().startsWith(lastSegmentName)) {
             lastSegmentName = comparison.getHl7FieldName().substring(0, 3);
             out.println("        <tr>");
             out.println("          <th>" + lastSegmentName + "</th>");
@@ -123,7 +144,7 @@ public class CompareServlet extends ClientServlet
           out.println("        <tr>");
           out.println("          <td" + passClass + ">" + n(comparison.getHl7FieldName()) + "</td>");
           out.println("          <td" + passClass + ">" + n(comparison.getFieldLabel()) + "</td>");
-          out.println("          <td" + passClass + ">" + n(comparison.getPriorityLevelLabel() ) + "</td>");
+          out.println("          <td" + passClass + ">" + n(comparison.getPriorityLevelLabel()) + "</td>");
           out.println("          <td" + passClass + ">" + n(comparison.getOriginalValue()) + "</td>");
           out.println("          <td" + passClass + ">" + n(comparison.getReturnedValue()) + "</td>");
           if (comparison.isTested()) {
@@ -140,7 +161,8 @@ public class CompareServlet extends ClientServlet
         out.println("      </table>");
       }
 
-      out.println("<p><a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum=" + certifyServletBasicNum + "\">View Test Case</a></p>");
+      out.println("<p><a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum=" + certifyServletBasicNum
+          + "\">View Test Case</a></p>");
       out.println("  <div class=\"help\">");
       out.println("  <h2>How To Use This Page</h2>");
       out.println("  </div>");
@@ -148,11 +170,9 @@ public class CompareServlet extends ClientServlet
       out.close();
     }
   }
-  
-  private static String n(String s)
-  {
-    if (s == null || s.equals(""))
-    {
+
+  private static String n(String s) {
+    if (s == null || s.equals("")) {
       return "&nbsp;";
     }
     return s;

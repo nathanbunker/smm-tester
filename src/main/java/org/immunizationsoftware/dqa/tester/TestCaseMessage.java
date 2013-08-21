@@ -244,6 +244,7 @@ public class TestCaseMessage
   private String description = "";
   private String expectedResult = "";
   private String messageText = "";
+  private String messageTextSent = "";
   private String assertResult = "";
   private String assertResultStatus = "";
   private String assertResultText = "";
@@ -265,10 +266,28 @@ public class TestCaseMessage
   private String derivedFromVXUMessage = "";
   private List<CompareManager.Comparison> comparisonList = null;
   private boolean passedTest = false;
+  private boolean majorChangesMade = false;
   private boolean hasRun = false;
   private int testCaseId = 0;
   
+  public boolean isMajorChangesMade() {
+    return majorChangesMade;
+  }
+
+  public void setMajorChangesMade(boolean majorChangesMade) {
+    this.majorChangesMade = majorChangesMade;
+  }
+
+ 
   public HL7Analyzer ackAnalyzer = null;
+  
+  public String getMessageTextSent() {
+    return messageTextSent;
+  }
+  
+  public void setMessageTextSent(String messageTextSent) {
+    this.messageTextSent = messageTextSent;
+  }
   
   public HL7Analyzer getAckAnalyzer() {
     return ackAnalyzer;

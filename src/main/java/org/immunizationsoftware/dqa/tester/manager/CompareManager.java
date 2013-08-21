@@ -480,6 +480,13 @@ public class CompareManager
           comparisonList.add(comparison);
 
         } else if (cvxCode.equals("998") && obsId.equals("59784-9")) {
+          rspReader.gotoSegmentPosition(rspReaderSegmentPosition);
+          while (rspReader.advanceToSegment("OBX", new String[] { "RXA", "ORC" })) {
+            if (rspReader.getValue(3).equals(obsId)) {
+              break;
+            }
+          }
+
           comparison = new Comparison();
           comparison.setHl7FieldName("OBX-5 #" + count + "." + obxCount);
           comparison.setFieldLabel("History of disease");
