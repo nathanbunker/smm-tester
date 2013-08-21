@@ -36,6 +36,10 @@ import org.immunizationsoftware.dqa.tester.transform.Issue;
 public class CertifyServlet extends ClientServlet
 {
 
+  private static final String QUERY_TYPE_QBP = "Q";
+  private static final String QUERY_TYPE_VXQ = "V";
+  private static final String QUERY_TYPE_NONE = "N";
+
   /**
    * 
    */
@@ -71,7 +75,9 @@ public class CertifyServlet extends ClientServlet
       } else {
         List<Connector> connectors = SetupServlet.getConnectors(session);
         int id = Integer.parseInt(request.getParameter("id"));
+        String queryType = request.getParameter("queryType");
         certifyRunner = new CertifyRunner(connectors.get(id - 1), session);
+        certifyRunner.setQueryType(queryType);
         session.setAttribute("certifyRunner", certifyRunner);
         certifyRunner.start();
       }
@@ -168,7 +174,24 @@ public class CertifyServlet extends ClientServlet
           out.println("            </select>");
         }
         out.println("          </td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td>Query Type</td>");
         out.println("          <td>");
+        out.println("            <select name=\"queryType\">");
+        out.println("              <option value=\"\">select</option>");
+        out.println("              <option value=\"Q\">QBP</option>");
+        out.println("              <option value=\"V\">VXQ</option>");
+        out.println("              <option value=\"N\">None</option>");
+        out.println("            </select>");
+        out.println("          </td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td>Add SSN to records</td>");
+        out.println("          <td><checkbox name=\"addSSN\" value=\"true\"/></td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td colspan=\"2\" align=\"right\">");
         out.println("            <input type=\"submit\" name=\"action\" value=\"Start\"/>");
         out.println("          </td>");
         out.println("        </tr>");
@@ -243,6 +266,8 @@ public class CertifyServlet extends ClientServlet
     private String testCaseSet = "";
     private HttpSession session = null;
 
+    private String queryType = "";
+
     private List<TestCaseMessage> statusCheckTestCaseList = new ArrayList<TestCaseMessage>();
 
     private List<TestCaseMessage> statusCheckTestCaseBasicList = new ArrayList<TestCaseMessage>();
@@ -261,6 +286,14 @@ public class CertifyServlet extends ClientServlet
 
     public List<TestCaseMessage> getStatusCheckTestCaseList() {
       return statusCheckTestCaseList;
+    }
+
+    public String getQueryType() {
+      return queryType;
+    }
+
+    public void setQueryType(String queryType) {
+      this.queryType = queryType;
     }
 
     private String[] statusCheckScenarios = { ScenarioManager.SCENARIO_1_R_ADMIN_CHILD,
@@ -328,77 +361,90 @@ public class CertifyServlet extends ClientServlet
         return;
       }
 
-      queryBasic();
-      if (!keepRunning) {
-        status = STATUS_STOPPED;
-        return;
-      }
+      if (queryType.equals(QUERY_TYPE_QBP) || queryType.equals(QUERY_TYPE_VXQ)) {
 
-      queryIntermediate();
-      if (!keepRunning) {
-        status = STATUS_STOPPED;
-        return;
-      }
+        queryBasic();
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          return;
+        }
 
-      prepareExceptionalQueryAnalysis();
-      if (!keepRunning) {
-        status = STATUS_STOPPED;
-        return;
-      }
+        queryIntermediate();
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          return;
+        }
 
-      analyzeExceptionalQueries();
-      if (!keepRunning) {
-        status = STATUS_STOPPED;
-        return;
-      }
+        prepareExceptionalQueryAnalysis();
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          return;
+        }
 
-      if (totalQueryCount > 0 && totalUpdateCount > 0) {
-        areaDLevel3ScoreQ = (int) totalQueryTime / totalQueryCount;
-        areaDLevel3ScoreU = (int) totalUpdateTime / totalUpdateCount;
-        areaDLevel3Progress = 100;
-      }
-      
-      if (testCaseMessageBase != null) {
-      File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessageBase, session);
-      if (testCaseDir != null)
-      {
-        File certificationReportFile = new File(testCaseDir, "Certification Report.html");
-        try
-        {
-          PrintWriter out = new PrintWriter(new FileWriter(certificationReportFile));
-          out.println("<html>");
-          out.println("  <head>");
-          out.println("    <title>Certification Report</title>");
-          out.println("    <style>");
-          out.println("       body {font-family: Tahoma, Geneva, sans-serif; background:#D5E1DD}");
-          out.println("       .pass {background:#77BED2; padding-left:5px;}");
-          out.println("       .fail {background:#FF9999; padding-left:5px;}");
-          out.println("       .nottested { padding-left:5px;}");
-          out.println("       ");
-          out.println("    </style>");
-          out.println("  </head>");
-          out.println("  <body>");
-          out.println("    <h3>Certification Results</h3>");
-          printResults(out);
-          out.println("    <h3>Certification Details</h3>");
-          printProgressDetails(out);
-          out.println("  </body>");
-          out.println("</html>");
-          out.close();
-        } catch (IOException ioe)
-        {
-          ioe.printStackTrace();
-          // unable to save, continue as normal
+        analyzeExceptionalQueries();
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          return;
         }
       }
+
+      updatePerformance();
+
+      areaDLevel3Progress = 100;
+
+      if (testCaseMessageBase != null) {
+        File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessageBase, session);
+        if (testCaseDir != null) {
+          File certificationReportFile = new File(testCaseDir, "Certification Report.html");
+          try {
+            PrintWriter out = new PrintWriter(new FileWriter(certificationReportFile));
+            out.println("<html>");
+            out.println("  <head>");
+            out.println("    <title>Certification Report</title>");
+            out.println("    <style>");
+            out.println("       body {font-family: Tahoma, Geneva, sans-serif; background:#D5E1DD}");
+            out.println("       .pass {background:#77BED2; padding-left:5px;}");
+            out.println("       .fail {background:#FF9999; padding-left:5px;}");
+            out.println("       .nottested { padding-left:5px;}");
+            out.println("       ");
+            out.println("    </style>");
+            out.println("  </head>");
+            out.println("  <body>");
+            out.println("    <h3>Certification Results</h3>");
+            printResults(out);
+            out.println("    <h3>Certification Details</h3>");
+            printProgressDetails(out);
+            out.println("  </body>");
+            out.println("</html>");
+            out.close();
+          } catch (IOException ioe) {
+            ioe.printStackTrace();
+            // unable to save, continue as normal
+          }
+        }
       }
 
       status = STATUS_COMPLETED;
     }
 
+    private void updatePerformance() {
+      if (totalUpdateCount > 0) {
+        if (totalQueryCount > 0) {
+          areaDLevel3ScoreQ = (int) totalQueryTime / totalQueryCount;
+          areaDLevel3ScoreU = (int) totalUpdateTime / totalUpdateCount;
+
+        } else {
+          areaDLevel3ScoreQ = 0;
+          areaDLevel3ScoreU = (int) totalUpdateTime / totalUpdateCount;
+        }
+      }
+    }
+
     private void prepareExceptionalUpdateAnalysis() {
       for (TestCaseMessage testCaseMessage : statusCheckTestCaseList) {
-        ackAnalysisList.add(testCaseMessage);
+        if (testCaseMessage.isHasRun()) {
+          ackAnalysisList.add(testCaseMessage);
+        }
       }
     }
 
@@ -551,9 +597,10 @@ public class CertifyServlet extends ClientServlet
         count++;
         try {
           boolean pass = testRunner.runTest(connector, testCaseMessage);
+          testCaseMessage.setMajorChangesMade(!verifyNoMajorChangesMade(testCaseMessage));
           totalUpdateCount++;
           totalUpdateTime += testRunner.getTotalRunTime();
-          if (pass) {
+          if (pass && !testCaseMessage.isMajorChangesMade()) {
             testPass++;
             testCaseMessageBase = testCaseMessage;
           } else {
@@ -572,6 +619,22 @@ public class CertifyServlet extends ClientServlet
         }
       }
       areaALevel1Score = makeScore(testPass, statusCheckTestCaseBasicList.size());
+    }
+
+    private boolean verifyNoMajorChangesMade(TestCaseMessage testCaseMessage) {
+      boolean noMajorChangesMade = true;
+      List<CompareManager.Comparison> comparisonList = CompareManager.compareMessages(testCaseMessage.getMessageText(),
+          testCaseMessage.getMessageTextSent());
+      for (CompareManager.Comparison comparison : comparisonList) {
+        if (comparison.isTested() && comparison.getPriorityLevel() <= CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL) {
+
+          if (!comparison.isPass()) {
+            noMajorChangesMade = false;
+            break;
+          }
+        }
+      }
+      return noMajorChangesMade;
     }
 
     private void prepareIntermediate() {
@@ -841,7 +904,8 @@ public class CertifyServlet extends ClientServlet
         register(queryTestCaseMessage);
         try {
           long startTime = System.currentTimeMillis();
-          String rspMessage = connector.submitMessage(queryTestCaseMessage.getMessageText(), false);
+          String message = prepareSendMessage(testCaseMessage, queryTestCaseMessage);
+          String rspMessage = connector.submitMessage(message, false);
           totalQueryCount++;
           totalQueryTime += System.currentTimeMillis() - startTime;
           queryTestCaseMessage.setHasRun(true);
@@ -879,6 +943,18 @@ public class CertifyServlet extends ClientServlet
       areaALevel3Score = makeScore(testQueryPassOptional, testQueryCountOptional);
     }
 
+    private String prepareSendMessage(TestCaseMessage testCaseMessage, TestCaseMessage queryTestCaseMessage) {
+      String message = queryTestCaseMessage.getMessageText();
+      if (!connector.getCustomTransformations().equals("")) {
+        Transformer transformer = new Transformer();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+        connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
+        message = transformer.transform(connector, message);
+      }
+      testCaseMessage.setMessageTextSent(message);
+      return message;
+    }
+
     private void queryIntermediate() {
       int count;
       int testQueryPassRequired = 0;
@@ -900,7 +976,8 @@ public class CertifyServlet extends ClientServlet
         register(queryTestCaseMessage);
         try {
           long startTime = System.currentTimeMillis();
-          String rspMessage = connector.submitMessage(queryTestCaseMessage.getMessageText(), false);
+          String message = prepareSendMessage(testCaseMessage, queryTestCaseMessage);
+          String rspMessage = connector.submitMessage(message, false);
           totalQueryCount++;
           totalQueryTime += System.currentTimeMillis() - startTime;
           queryTestCaseMessage.setHasRun(true);
@@ -1128,12 +1205,25 @@ public class CertifyServlet extends ClientServlet
           out.println("  </tr>");
           out.println("  <tr>");
           out.println("    <th>Level 1</th>");
-          if (testCaseMessage.isPassedTest()) {
+          if (testCaseMessage.isMajorChangesMade()) {
+            out.println("    <td class=\"fail\">Message was significantly changed in the process of submitting it <a href=\"CompareServlet?certifyServletBasicNum="
+                + testCaseMessage.getTestCaseId() + "&showSubmissionChange=true\">details</a>");
+            out.println("<br/>");
+            if (testCaseMessage.isPassedTest()) {
+              out.println("Message was accepted.");
+            } else {
+              out.println(" Message was rejected.");
+            }
+            out.println("<a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
+                + testCaseMessage.getTestCaseId() + "\">details</a></td>");
+          } else if (testCaseMessage.isPassedTest()) {
             out.println("    <td class=\"pass\">Message was accepted. <a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
                 + testCaseMessage.getTestCaseId() + "\">details</a></td>");
           } else if (testCaseMessage.isHasRun()) {
-            out.println("    <td class=\"fail\">Message was not accepted. <a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
-                + testCaseMessage.getTestCaseId() + "\">details</a</td>");
+            out.println("    <td class=\"fail\">");
+            out.println("Message was not accepted. <a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
+                + testCaseMessage.getTestCaseId() + "\">details</a>");
+            out.println("</td>");
           } else {
             out.println("    <td class=\"nottested\">not run yet</td>");
           }

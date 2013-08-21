@@ -24,9 +24,12 @@ public class ConfigureServlet extends ClientServlet
   public static final String TEMPLATE_ASIIS_TEST = "ASIIS Test";
   public static final String TEMPLATE_NMSIIS_RAW_PROD = "NMSIIS Raw Production";
   public static final String TEMPLATE_NMSIIS_RAW_UAT = "NMSIIS Raw UAT";
+  public static final String TEMPLATE_NV_WEBIZ_PRODUCTION = "NV WebIZ Production";
+  public static final String TEMPLATE_NV_WEBIZ_TESTING = "NV WebIZ Testing";
 
   public static final String[] TEMPLATES = { TEMPLATE_DEFAULT_SOAP, TEMPLATE_DEFAULT_POST, TEMPLATE_ASIIS_PROD,
-      TEMPLATE_ASIIS_TEST, TEMPLATE_NMSIIS_RAW_PROD, TEMPLATE_NMSIIS_RAW_UAT };
+      TEMPLATE_ASIIS_TEST, TEMPLATE_NMSIIS_RAW_PROD, TEMPLATE_NMSIIS_RAW_UAT, TEMPLATE_NV_WEBIZ_TESTING,
+      TEMPLATE_NV_WEBIZ_PRODUCTION };
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -184,6 +187,14 @@ public class ConfigureServlet extends ClientServlet
       } else if (templateName.equals(TEMPLATE_ASIIS_PROD) || templateName.equals(TEMPLATE_ASIIS_TEST)) {
         HttpConnector httpConnector = (HttpConnector) connector;
         httpConnector.setCustomTransformations("MSH-3=RPMS\n" + "MSH-4=[FACILITYID]\n" + "PV1-10=\n");
+      } else if (templateName.equals(TEMPLATE_NV_WEBIZ_TESTING) || templateName.equals(TEMPLATE_NV_WEBIZ_PRODUCTION)) {
+        HttpConnector httpConnector = (HttpConnector) connector;
+        httpConnector.stripXML();
+        httpConnector.setFieldName(HttpConnector.USERID, "userName");
+        httpConnector.setFieldName(HttpConnector.PASSWORD, "password");
+        httpConnector.setFieldName(HttpConnector.MESSAGEDATA, "flatWire");
+        httpConnector.setCustomTransformations("MSH-4=[OTHERID]\n" + "MSH-6=NV0000\n" + "NK1-2.7=L\n" + "PID-11.7=P\n");
+
       }
     }
   }
@@ -248,6 +259,24 @@ public class ConfigureServlet extends ClientServlet
         cc.setEnableTimeShow(true);
         cc.setEnableTimeEnd("18:00");
         cc.setEnableTimeStart("06:00");
+      } else if (templateName.equals(TEMPLATE_NV_WEBIZ_TESTING) || templateName.equals(TEMPLATE_NV_WEBIZ_PRODUCTION)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setInstructions("Contact NV WebIZ for connecting information.");
+        if (templateName.equals(TEMPLATE_NV_WEBIZ_PRODUCTION)) {
+          cc.setUrl("https://webiz.nv.gov/HL7EngineAuthentication/Service.asmx/ExecuteHL7Message");
+        } else {
+          cc.setUrl("https://webiztest.nv.gov/HL7EngineAuthentication/Service.asmx/ExecuteHL7Message");
+        }
+        cc.setTypeShow(false);
+        cc.setUseridLabel("User Name");
+        cc.setUseridRequired(true);
+        cc.setFacilityidShow(false);
+        cc.setOtheridLabel("Facility Id");
+        cc.setPasswordLabel("Password");
+        cc.setPasswordRequired(true);
+        cc.setOtheridShow(true);
+        cc.setOtheridRequired(true);
+        cc.setReceiverName("NV WebIZ");
       }
     } else {
       cc.setInstructions("This is the default configuration with no preset values. If you would like specific instruction based on the system you are working to connect with, please return to Step 1: Prepare and follow the instructions. ");

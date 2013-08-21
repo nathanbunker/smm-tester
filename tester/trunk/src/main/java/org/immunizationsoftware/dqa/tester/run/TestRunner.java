@@ -6,10 +6,13 @@ package org.immunizationsoftware.dqa.tester.run;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.immunizationsoftware.dqa.tester.TestCaseMessage;
+import org.immunizationsoftware.dqa.tester.Transformer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 
@@ -102,7 +105,18 @@ public class TestRunner
     passedTest = false;
     ackMessageText = null;
     startTime = System.currentTimeMillis();
-    ackMessageText = connector.submitMessage(testCaseMessage.getMessageText(), false);
+    
+    String message = testCaseMessage.getMessageText();
+    if (!connector.getCustomTransformations().equals(""))
+    {
+      Transformer transformer = new Transformer();
+      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+      connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
+      message = transformer.transform(connector, message);
+    }
+    testCaseMessage.setMessageTextSent(message);
+    
+    ackMessageText = connector.submitMessage(message, false);
     endTime = System.currentTimeMillis();
     errorList = new ArrayList<Error>();
     if (!testCaseMessage.getAssertResult().equalsIgnoreCase("")) {

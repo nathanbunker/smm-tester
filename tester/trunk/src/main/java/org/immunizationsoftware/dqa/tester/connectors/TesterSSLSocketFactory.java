@@ -35,7 +35,6 @@ public class TesterSSLSocketFactory extends JSSESocketFactory  implements Secure
    */
   protected void initFactory() throws IOException
   {
-    System.out.println("--> Factory being initialized! ");
     if (getKeyStore() != null)
     {
       try
