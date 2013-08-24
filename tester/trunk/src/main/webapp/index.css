@@ -3,11 +3,11 @@ p {width:650px; color:#2B3E42;}
 ol {width:650px; color:#2B3E42;}
 li {width:650px; color:#2B3E42;}
 td {color:#2B3E42;}
-.menu {width:720px; padding:0px; background-color:#F7F3E8; margin: 0px; border-color: #2B3E42; border-width: 1px; border-style: solid}
-a:link {  text-decoration:none; }
-a:visited { text-decoration:none; }
-a:hover {  background: #FFFFFF; text-decoration:none; border-style: solid; border-color: #2B3E42; border-width: 1px;}
-a:active {text-decoration:none; }
+.menu {width:1080px; padding:0px; background-color:#F7F3E8; margin: 0px; border-color: #2B3E42; border-width: 1px; border-style: solid}
+a:link {  text-decoration:none; color: #2B3E42;}
+a:visited { text-decoration:none; color: #2B3E42;}
+a:hover {  background: #FFFFFF; text-decoration:none; border-style: solid; border-color: #2B3E42; border-width: 1px; color: #2B3E42;}
+a:active {text-decoration:none; color: #2B3E42; }
 
 a:link.menuLink {padding:5px; color:#2B3E42; text-decoration:none}
 a:visited.menuLink {padding:5px; color:#2B3E42; text-decoration:none}

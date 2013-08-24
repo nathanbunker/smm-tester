@@ -68,6 +68,11 @@ public class TestTransformer
     messageText = transformer.transform(connector, messageText);
     assertEquals("MSH|\rNK1|\r", messageText);
   }
+  
+  private static final String CLEAN_TEST_BEFORE = "MSH|^~\\&|||||20130823111809||VXU^V04^VXU_V04|X94P18|P|2.5.1|\r" + 
+"PID|1||X94P18^^^OIS-TEST^MR||Court^Nye^^^^^L|Brazos^Maia|20130224|M|||321 Dundy St^^Haslett^MI^48840^USA^P||^PRN^PH^^^517^5489090|\r" + 
+"NK1|1|Court^Maia|MTH^Mother^HL70063|\r";
+ 
 
   @Test
   public void testClean() throws Exception {
@@ -94,6 +99,31 @@ public class TestTransformer
     connector.setCustomTransformations("clean\n");
     messageText = transformer.transform(connector, messageText);
     assertEquals("MSH|\rPID|\rNK1||203999|\r", messageText);
+
+    messageText = "MSH|\rPID|\rNK1|^|203999~~9||\r";
+    connector.setCustomTransformations("clean\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|\rPID|\rNK1||203999~~9|\r", messageText);
+
+    messageText = "MSH|\rPID|\rNK1|^|203999^^9||\r";
+    connector.setCustomTransformations("clean\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|\rPID|\rNK1||203999^^9|\r", messageText);
+
+    messageText = "MSH|\rPID|\rNK1|^|203999^^9^||\r";
+    connector.setCustomTransformations("clean\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|\rPID|\rNK1||203999^^9|\r", messageText);
+
+    messageText = "MSH|\rPID|\rNK1|^|203999^^9~||\r";
+    connector.setCustomTransformations("clean\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|\rPID|\rNK1||203999^^9|\r", messageText);
+
+    connector.setCustomTransformations("clean\n");
+    messageText = transformer.transform(connector, CLEAN_TEST_BEFORE);
+    assertEquals(CLEAN_TEST_BEFORE, messageText);
+
   }
 
   @Test
@@ -112,6 +142,61 @@ public class TestTransformer
     messageText = transformer.transform(connector, messageText);
     assertEquals("MSH|\rPID|\rNK1|Howdy|||\r", messageText);
 
+  }
+  
+  @Test
+  public void testSetRepeats() throws Exception
+  {
+    Transformer transformer = new Transformer();
+    Connector connector = ConnectorFactory.getConnector(ConnectorFactory.TYPE_POST, "Test", "");
+    String messageText = "";
+
+    messageText = "MSH|\rPID|\rNK1|Hi|||\r";
+    connector.setCustomTransformations("NK1-1#2=Bye\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|\rPID|\rNK1|Hi~Bye|||\r", messageText);
+
+    messageText = "MSH|\rPID|\rNK1|Hi~|||\r";
+    connector.setCustomTransformations("NK1-1#2=Bye\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|\rPID|\rNK1|Hi~Bye|||\r", messageText);
+
+    messageText = "MSH|\rPID|\rNK1|Hi~~Welcome|||\r";
+    connector.setCustomTransformations("NK1-1#2=Bye\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|\rPID|\rNK1|Hi~Bye~Welcome|||\r", messageText);
+
+    
+    messageText = "MSH|\rPID|\rNK1|~~Welcome|||\r";
+    connector.setCustomTransformations("NK1-1#2=Bye\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|\rPID|\rNK1|~Bye~Welcome|||\r", messageText);
+
+    messageText = "MSH|\rPID|\rNK1|~~Welcome|||\r";
+    connector.setCustomTransformations("NK1-1#1=Bye\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|\rPID|\rNK1|Bye~~Welcome|||\r", messageText);
+
+    messageText = "MSH|\rPID|\rNK1||||\r";
+    connector.setCustomTransformations("NK1-1#1=Bye\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|\rPID|\rNK1|Bye|||\r", messageText);
+
+    messageText = "MSH|\rPID|\rNK1|Hi~Hi|||\r";
+    connector.setCustomTransformations("NK1-1#2=Bye\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|\rPID|\rNK1|Hi~Bye|||\r", messageText);
+
+    messageText = "MSH|\rPID|\rNK1|Hi~Hi~|||\r";
+    connector.setCustomTransformations("NK1-1#2=Bye\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|\rPID|\rNK1|Hi~Bye~|||\r", messageText);
+    
+    messageText = "MSH|\rPID|\rNK1|Hi~Hi~Welcome~|||\r";
+    connector.setCustomTransformations("NK1-1#2=Bye\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|\rPID|\rNK1|Hi~Bye~Welcome~|||\r", messageText);
+    
   }
 
   private static final String TEST_NMSIIS_1 = "MSH|^~\\&||718||NMSIIS|20120731085717||VXU^V04^VXU_V04|CI809903|P|2.5.1|||AL|AL|\r"
