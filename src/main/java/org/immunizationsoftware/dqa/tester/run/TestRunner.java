@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.immunizationsoftware.dqa.mover.AckAnalyzer;
 import org.immunizationsoftware.dqa.tester.TestCaseMessage;
 import org.immunizationsoftware.dqa.tester.Transformer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
@@ -104,7 +105,6 @@ public class TestRunner
     testCaseMessage.setHasRun(false);
     passedTest = false;
     ackMessageText = null;
-    startTime = System.currentTimeMillis();
     
     String message = testCaseMessage.getMessageText();
     if (!connector.getCustomTransformations().equals(""))
@@ -116,13 +116,19 @@ public class TestRunner
     }
     testCaseMessage.setMessageTextSent(message);
     
+    startTime = System.currentTimeMillis();
     ackMessageText = connector.submitMessage(message, false);
     endTime = System.currentTimeMillis();
+    
     errorList = new ArrayList<Error>();
     if (!testCaseMessage.getAssertResult().equalsIgnoreCase("")) {
       ackMessageReader = new HL7Reader(ackMessageText);
       if (ackMessageReader.advanceToSegment("MSH")) {
-        if (ackMessageReader.getValue(9).equals("ACK")) {
+        testCaseMessage.setActualMessageResponseType(ackMessageReader.getValue(9));
+        if (testCaseMessage.getActualMessageResponseType().equals("ACK")) {
+          AckAnalyzer ackAnalyzer = new AckAnalyzer(ackMessageText, connector.getAckType());
+          testCaseMessage.setAccepted(ackAnalyzer.isPositive());
+
           if (ackMessageReader.advanceToSegment("MSA")) {
             testCaseMessage.setActualResultAckType(ackMessageReader.getValue(1));
             testCaseMessage.setActualResultAckMessage(ackMessageReader.getValue(2));

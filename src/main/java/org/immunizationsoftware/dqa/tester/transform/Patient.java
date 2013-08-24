@@ -13,6 +13,7 @@ import org.immunizationsoftware.dqa.tester.Transformer.PatientType;
 public class Patient {
 
     private String medicalRecordNumber = "";
+    private String medicaidNumber = "";
     private String ssn = "";
     private String boyName = "";
     private String girlName = "";
@@ -86,6 +87,14 @@ public class Patient {
 
     public void setBoyName(String boyName) {
         this.boyName = boyName;
+    }
+
+    public String getMedicaidNumber() {
+      return medicaidNumber;
+    }
+
+    public void setMedicaidNumber(String medicaidNumber) {
+      this.medicaidNumber = medicaidNumber;
     }
 
     public String getCity() {
