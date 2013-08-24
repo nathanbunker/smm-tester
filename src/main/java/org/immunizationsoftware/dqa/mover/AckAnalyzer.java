@@ -2,13 +2,9 @@ package org.immunizationsoftware.dqa.mover;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.axiom.ext.io.ReadFromSupport;
 
 public class AckAnalyzer
 {
@@ -18,7 +14,7 @@ public class AckAnalyzer
   };
 
   public static enum AckType {
-    DEFAULT, NMSIIS, ALERT
+    DEFAULT, NMSIIS, ALERT, WEBIZ
   };
 
   private ErrorType errorType = null;
@@ -105,6 +101,10 @@ public class AckAnalyzer
   }
 
   public AckAnalyzer(String ack, AckType ackType, FileOut errorFileOut) {
+    while (ack != null && ack.length() > 0 && ack.charAt(0) <= ' ')
+    {
+      ack = ack.substring(1);
+    }
     this.ackType = ackType;
     this.errorFileOut = errorFileOut;
 
@@ -139,9 +139,7 @@ public class AckAnalyzer
       ackMessage = true;
       ackCode = getFieldValue("MSA", 1);
 
-      if (ackType == AckType.DEFAULT) {
-        positive = getFieldValue("MSA", 1).equals("AA");
-      } else if (ackType.equals(AckType.NMSIIS)) {
+      if (ackType.equals(AckType.NMSIIS)) {
         setupProblem = ack.indexOf("|BAD MESSAGE|") != -1 || ack.indexOf("File Rejected.") != -1;
         if (setupProblem) {
           log("Setup problem found, message contains phrase |BAD MESSAGE| or File Rejected.");
@@ -167,6 +165,35 @@ public class AckAnalyzer
         if (!positive) {
           log("At least one MSA-1 field was found with a value of AE so message was rejected");
         }
+      } else if (ackType.equals(AckType.WEBIZ))
+      {
+        positive = ackCode.equals("AA") || ackCode.equals("AE");
+      }
+      else 
+      {
+        if (ackCode.equals("AA"))
+        {
+          positive = true;
+        }
+        else if (ackCode.equals("AR"))
+        {
+          positive = false;
+        }
+        else {
+          positive = true;
+          int pos = 1;
+          String[] values = null;
+          while ((values = getFieldValues("ERR", pos, 4)) != null) {
+            if (values.length > 4) {
+              if (values[4].equals("E")) {
+                positive = false;
+                break;
+              }
+            }
+            pos++;
+          }
+        }
+        
       }
     }
   }
