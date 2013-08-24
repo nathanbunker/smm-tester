@@ -193,8 +193,9 @@ public class ConfigureServlet extends ClientServlet
         httpConnector.setFieldName(HttpConnector.USERID, "userName");
         httpConnector.setFieldName(HttpConnector.PASSWORD, "password");
         httpConnector.setFieldName(HttpConnector.MESSAGEDATA, "flatWire");
-        httpConnector.setCustomTransformations("MSH-4=[OTHERID]\n" + "MSH-6=NV0000\n" + "NK1-2.7=L\n" + "PID-11.7=P\n");
-
+        httpConnector.setCustomTransformations("MSH-4=[OTHERID]\n" + "MSH-12=2.3.1" + "MSH-6=NV0000\n" + "NK1-2.7=L\n"
+            + "PID-11.7=P\n");
+        httpConnector.setAckType(AckAnalyzer.AckType.WEBIZ);
       }
     }
   }
