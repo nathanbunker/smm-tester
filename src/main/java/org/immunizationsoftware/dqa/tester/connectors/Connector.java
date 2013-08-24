@@ -11,7 +11,9 @@ import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.X509TrustManager;
 
@@ -24,33 +26,32 @@ import org.immunizationsoftware.dqa.tester.PasswordEncryptUtil;
  */
 public abstract class Connector
 {
+  
+  public static final String PURPOSE_GENERAL = "General";
+  public static final String PURPOSE_UPDATE = "Update";
+  public static final String PURPOSE_QUERY = "Query";
 
   protected abstract void setupFields(List<String> fields);
 
-  protected static Connector addConnector(String label, String type, String url, String userid, String otherid, String facilityid, String password,
-      String keyStorePassword, String enableTimeStart, String enableTimeEnd, AckAnalyzer.AckType ackType, TransferType transferType,
-      List<String> fields, String customTransformations, List<Connector> connectors) throws Exception
-  {
-    if (!label.equals("") && !type.equals(""))
-    {
+  protected static Connector addConnector(String label, String type, String url, String userid, String otherid,
+      String facilityid, String password, String keyStorePassword, String enableTimeStart, String enableTimeEnd,
+      AckAnalyzer.AckType ackType, TransferType transferType, List<String> fields, String customTransformations,
+      List<Connector> connectors, String purpose) throws Exception {
+    if (!label.equals("") && !type.equals("")) {
       Connector connector = null;
-      if (type.equals(ConnectorFactory.TYPE_SOAP))
-      {
+      if (type.equals(ConnectorFactory.TYPE_SOAP)) {
         connector = new SoapConnector(label, url);
-      } else if (type.equals(ConnectorFactory.TYPE_POST))
-      {
+      } else if (type.equals(ConnectorFactory.TYPE_POST)) {
         connector = new HttpConnector(label, url);
-      } else if (type.equals(ConnectorFactory.TYPE_HI_SOAP))
-      {
+      } else if (type.equals(ConnectorFactory.TYPE_HI_SOAP)) {
         connector = new HISoapConnector(label, url);
-      } else if (type.equals(ConnectorFactory.TYPE_ENVISION_SOAP))
-      {
+      } else if (type.equals(ConnectorFactory.TYPE_ENVISION_SOAP)) {
         connector = new EnvisionConnector(label, url);
-      } else
-      {
+      } else {
         connector = new HttpConnector(label, url);
       }
       connector.setUserid(userid);
+      connector.setPurpose(purpose);
       connector.setOtherid(otherid);
       connector.setFacilityid(facilityid);
       connector.setPassword(password);
@@ -88,6 +89,20 @@ public abstract class Connector
   private KeyStore keyStore = null;
   private String keyStorePassword = null;
   private AckAnalyzer.AckType ackType = AckAnalyzer.AckType.DEFAULT;
+  private Map<String, Connector> otherConnectorMap = new HashMap<String, Connector>();
+  private String purpose = "";
+  public Map<String, Connector> getOtherConnectorMap() {
+    return otherConnectorMap;
+  }
+
+  
+  public String getPurpose() {
+    return purpose;
+  }
+
+  public void setPurpose(String purpose) {
+    this.purpose = purpose;
+  }
 
   public String getOtherid() {
     return otherid;
@@ -97,184 +112,148 @@ public abstract class Connector
     this.otherid = otherid;
   }
 
-  public String getCurrentControlId()
-  {
+  public String getCurrentControlId() {
     return currentControlId;
   }
 
-  public void setCurrentControlId(String currentControlId)
-  {
+  public void setCurrentControlId(String currentControlId) {
     this.currentControlId = currentControlId;
   }
 
-  public String getEnableTimeStart()
-  {
+  public String getEnableTimeStart() {
     return enableTimeStart;
   }
 
-  public void setEnableTimeStart(String enableTimeStart)
-  {
+  public void setEnableTimeStart(String enableTimeStart) {
     this.enableTimeStart = enableTimeStart;
   }
 
-  public String getEnableTimeEnd()
-  {
+  public String getEnableTimeEnd() {
     return enableTimeEnd;
   }
 
-  public void setEnableTimeEnd(String enableTimeEnd)
-  {
+  public void setEnableTimeEnd(String enableTimeEnd) {
     this.enableTimeEnd = enableTimeEnd;
   }
 
-  public TransferType getTransferType()
-  {
+  public TransferType getTransferType() {
     return transferType;
   }
 
-  public void setTransferType(TransferType transferType)
-  {
+  public void setTransferType(TransferType transferType) {
     this.transferType = transferType;
   }
 
   protected boolean throwExceptions = false;
 
-  public String getCurrentFilename()
-  {
+  public String getCurrentFilename() {
     return currentFilename;
   }
 
-  public void setCurrentFilename(String currentFilename)
-  {
+  public void setCurrentFilename(String currentFilename) {
     this.currentFilename = currentFilename;
   }
 
-  public AckAnalyzer.AckType getAckType()
-  {
+  public AckAnalyzer.AckType getAckType() {
     return ackType;
   }
 
-  public void setAckType(AckAnalyzer.AckType ackType)
-  {
+  public void setAckType(AckAnalyzer.AckType ackType) {
     this.ackType = ackType;
   }
 
-  public boolean isThrowExceptions()
-  {
+  public boolean isThrowExceptions() {
     return throwExceptions;
   }
 
-  public void setThrowExceptions(boolean throwExceptions)
-  {
+  public void setThrowExceptions(boolean throwExceptions) {
     this.throwExceptions = throwExceptions;
   }
 
-  public String getKeyStorePassword()
-  {
+  public String getKeyStorePassword() {
     return keyStorePassword;
   }
 
-  public void setKeyStorePassword(String keyStorePassword)
-  {
+  public void setKeyStorePassword(String keyStorePassword) {
     this.keyStorePassword = keyStorePassword;
   }
 
-  public KeyStore getKeyStore()
-  {
+  public KeyStore getKeyStore() {
     return keyStore;
   }
 
-  public void setKeyStore(KeyStore keyStore)
-  {
+  public void setKeyStore(KeyStore keyStore) {
     this.keyStore = keyStore;
   }
 
-  public String[] getQuickTransformations()
-  {
+  public String[] getQuickTransformations() {
     return quickTransformations;
   }
 
-  public void setQuickTransformations(String[] quickTransformations)
-  {
+  public void setQuickTransformations(String[] quickTransformations) {
     this.quickTransformations = quickTransformations;
   }
 
-  public String getCustomTransformations()
-  {
+  public String getCustomTransformations() {
     return customTransformations;
   }
 
-  public void setCustomTransformations(String customTransformations)
-  {
+  public void setCustomTransformations(String customTransformations) {
     this.customTransformations = customTransformations;
   }
 
-  public String getUrl()
-  {
+  public String getUrl() {
     return url;
   }
 
-  public String getUrlShort()
-  {
-    if (url != null && url.length() > 28)
-    {
+  public String getUrlShort() {
+    if (url != null && url.length() > 28) {
       return url.substring(0, 28) + "..";
     }
     return url;
   }
 
-  public String getLabelDisplay()
-  {
+  public String getLabelDisplay() {
     return label + " (" + type + ")";
   }
 
-  public void setUrl(String url)
-  {
+  public void setUrl(String url) {
     this.url = url;
   }
 
-  public String getType()
-  {
+  public String getType() {
     return type;
   }
 
-  public void setType(String type)
-  {
+  public void setType(String type) {
     this.type = type;
   }
 
-  public String getFacilityid()
-  {
+  public String getFacilityid() {
     return facilityid;
   }
 
-  public void setFacilityid(String facilityid)
-  {
+  public void setFacilityid(String facilityid) {
     this.facilityid = facilityid;
   }
 
-  public String getPassword()
-  {
+  public String getPassword() {
     return password;
   }
 
-  public void setPassword(String password)
-  {
+  public void setPassword(String password) {
     this.password = password;
   }
 
-  public String getUserid()
-  {
+  public String getUserid() {
     return userid;
   }
 
-  public void setUserid(String userid)
-  {
+  public void setUserid(String userid) {
     this.userid = userid;
   }
 
-  public String getLabel()
-  {
+  public String getLabel() {
     return label;
   }
 
@@ -287,63 +266,53 @@ public abstract class Connector
 
   public abstract String connectivityTest(String message) throws Exception;
 
-  public String getScript()
-  {
+  public String getScript() {
     StringBuilder sb = new StringBuilder();
     sb.append("-----------------------------------------\n");
     sb.append("Connection\n");
     sb.append("Label: " + label + "\n");
+    if (!purpose.equals("")){
+      sb.append("Purpose: " + purpose);
+    }
     sb.append("Type: " + type + "\n");
     sb.append("URL: " + url + "\n");
     sb.append("User Id: " + userid + "\n");
-    if (otherid != null && !otherid.equals(""))
-    {
-      sb.append("Other Id: "+ otherid + "\n");
+    if (otherid != null && !otherid.equals("")) {
+      sb.append("Other Id: " + otherid + "\n");
     }
-    try
-    {
+    try {
       sb.append("Password: " + PasswordEncryptUtil.encrypt(password) + "\n");
-    } catch (Exception e)
-    {
+    } catch (Exception e) {
       sb.append("Password: \n");
       e.printStackTrace();
     }
     sb.append("Facility Id: " + facilityid + "\n");
-    if (keyStorePassword != null && keyStorePassword.length() > 0)
-    {
-      try
-      {
+    if (keyStorePassword != null && keyStorePassword.length() > 0) {
+      try {
         sb.append("Key Store Password: " + PasswordEncryptUtil.encrypt(keyStorePassword) + "\n");
-      } catch (Exception e)
-      {
+      } catch (Exception e) {
         sb.append("Key Store Password: \n");
         e.printStackTrace();
       }
     }
     sb.append("Ack Type: " + ackType + "\n");
     sb.append("Transfer Type: " + transferType + "\n");
-    if (!enableTimeStart.equals(""))
-    {
+    if (!enableTimeStart.equals("")) {
       sb.append("Enable Time Start: " + enableTimeStart + "\n");
     }
-    if (!enableTimeEnd.equals(""))
-    {
+    if (!enableTimeEnd.equals("")) {
       sb.append("Enable Time End: " + enableTimeEnd + "\n");
     }
-    if (customTransformations != null && customTransformations.length() > 0)
-    {
+    if (customTransformations != null && customTransformations.length() > 0) {
       sb.append("Custom Transformations: \n");
-      try
-      {
+      try {
         BufferedReader inTransform = new BufferedReader(new StringReader(customTransformations));
         String line;
-        while ((line = inTransform.readLine()) != null)
-        {
+        while ((line = inTransform.readLine()) != null) {
           line = line.trim();
           sb.append(" + " + line + "\n");
         }
-      } catch (IOException ioe)
-      {
+      } catch (IOException ioe) {
         // IOException not expected when reading a string
         throw new RuntimeException("Exception while reading string", ioe);
       }
@@ -354,10 +323,10 @@ public abstract class Connector
 
   protected abstract void makeScriptAdditions(StringBuilder sb);
 
-  public static List<Connector> makeConnectors(String script) throws Exception
-  {
+  public static List<Connector> makeConnectors(String script) throws Exception {
     List<Connector> connectors = new ArrayList<Connector>();
     String label = "";
+    String purpose = "";
     String type = "";
     String userid = "";
     String otherid = "";
@@ -374,14 +343,13 @@ public abstract class Connector
     BufferedReader in = new BufferedReader(new StringReader(script));
     String line;
     String lastList = "";
-    while ((line = in.readLine()) != null)
-    {
+    while ((line = in.readLine()) != null) {
       line = line.trim();
-      if (line.startsWith("Connection"))
-      {
-        addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart, enableTimeEnd, ackType, transferType, fields,
-            customTransformations, connectors);
+      if (line.startsWith("Connection")) {
+        addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
+            enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose);
         label = "";
+        purpose = "";
         type = "";
         url = "";
         userid = "";
@@ -395,70 +363,53 @@ public abstract class Connector
         customTransformations = "";
         keyStorePassword = "";
         fields = new ArrayList<String>();
-      } else if (line.startsWith("Label:"))
-      {
+      } else if (line.startsWith("Label:")) {
         label = readValue(line);
-      } else if (line.startsWith("Type:"))
-      {
+      } else if (line.startsWith("Type:")) {
         type = readValue(line);
-      } else if (line.startsWith("URL:"))
-      {
+      } else if (line.startsWith("URL:")) {
         url = readValue(line);
-      } else if (line.startsWith("User Id:"))
-      {
+      } else if (line.startsWith("Purpose:")) {
+        purpose = readValue(line);
+      } else if (line.startsWith("User Id:")) {
         userid = readValue(line);
-      } else if (line.startsWith("Other Id:"))
-      {
+      } else if (line.startsWith("Other Id:")) {
         otherid = readValue(line);
-      } else if (line.startsWith("Ack Type:"))
-      {
+      } else if (line.startsWith("Ack Type:")) {
         ackType = AckAnalyzer.AckType.valueOf(readValue(line));
-      } else if (line.startsWith("Enable Time Start:"))
-      {
+      } else if (line.startsWith("Enable Time Start:")) {
         enableTimeStart = readValue(line);
-      } else if (line.startsWith("Enable Time End:"))
-      {
+      } else if (line.startsWith("Enable Time End:")) {
         enableTimeEnd = readValue(line);
-      } else if (line.startsWith("Transfer Type:"))
-      {
+      } else if (line.startsWith("Transfer Type:")) {
         transferType = TransferType.valueOf(readValue(line));
-      } else if (line.startsWith("Password:"))
-      {
+      } else if (line.startsWith("Password:")) {
         password = PasswordEncryptUtil.decrypt(readValue(line));
-      } else if (line.startsWith("Facility Id:"))
-      {
+      } else if (line.startsWith("Facility Id:")) {
         facilityid = readValue(line);
-      } else if (line.startsWith("Key Store Password:"))
-      {
+      } else if (line.startsWith("Key Store Password:")) {
         keyStorePassword = PasswordEncryptUtil.decrypt(readValue(line));
-      } else if (line.startsWith("Cause Issues:"))
-      {
+      } else if (line.startsWith("Cause Issues:")) {
         lastList = "CI";
-      } else if (line.startsWith("Custom Transformations:"))
-      {
+      } else if (line.startsWith("Custom Transformations:")) {
         lastList = "CT";
-      } else if (line.startsWith("+"))
-      {
-        if (lastList.equals("CT"))
-        {
+      } else if (line.startsWith("+")) {
+        if (lastList.equals("CT")) {
           customTransformations += line.substring(1).trim() + "\n";
         }
-      } else
-      {
+      } else {
         fields.add(line);
       }
 
     }
-    addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart, enableTimeEnd, ackType, transferType, fields,
-        customTransformations, connectors);
+    addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
+        enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose);
     return connectors;
   }
 
-  protected static String readValue(String line)
-  {
+  protected static String readValue(String line) {
     int pos = line.indexOf(":");
-    if (pos == -1)
-    {
+    if (pos == -1) {
       return "";
     }
     return line.substring(pos + 1).trim();
@@ -517,22 +468,18 @@ public abstract class Connector
       this.tm = tm;
     }
 
-    public X509Certificate[] getAcceptedIssuers()
-    {
+    public X509Certificate[] getAcceptedIssuers() {
       throw new UnsupportedOperationException();
     }
 
-    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException
-    {
+    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
       throw new UnsupportedOperationException();
     }
 
-    public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException
-    {
+    public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
       this.chain = chain;
       tm.checkServerTrusted(chain, authType);
     }
   }
-  
 
 }
