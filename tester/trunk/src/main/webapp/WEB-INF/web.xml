@@ -79,6 +79,10 @@
     <servlet-class>org.immunizationsoftware.dqa.tester.SetupServlet</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>ConnectServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.tester.ConnectServlet</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>smm.install.ConfigureServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.mover.install.ConfigureServlet</servlet-class>
   </servlet>
@@ -145,6 +149,10 @@
   <servlet-mapping>
     <servlet-name>SetupServlet</servlet-name>
     <url-pattern>/SetupServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>ConnectServlet</servlet-name>
+    <url-pattern>/ConnectServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>HomeServlet</servlet-name>
