@@ -4,12 +4,16 @@
  */
 package org.immunizationsoftware.dqa.tester;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -73,11 +77,15 @@ public class CertifyServlet extends ClientServlet
           && !certifyRunner.getStatus().equals(CertifyRunner.STATUS_STOPPED)) {
         problem = "Unable to start new certification as current certification is still running.";
       } else {
-        List<Connector> connectors = SetupServlet.getConnectors(session);
+        List<Connector> connectors = ConnectServlet.getConnectors(session);
         int id = Integer.parseInt(request.getParameter("id"));
         String queryType = request.getParameter("queryType");
         certifyRunner = new CertifyRunner(connectors.get(id - 1), session);
         certifyRunner.setQueryType(queryType);
+        certifyRunner.setRunB(request.getParameter("runB") != null);
+        certifyRunner.setRunC(request.getParameter("runC") != null);
+        certifyRunner.setRunD(request.getParameter("runD") != null);
+        certifyRunner.setRunF(request.getParameter("runF") != null);
         session.setAttribute("certifyRunner", certifyRunner);
         certifyRunner.start();
       }
@@ -120,7 +128,7 @@ public class CertifyServlet extends ClientServlet
       throws IOException {
     PrintWriter out = response.getWriter();
     try {
-      printHtmlHead(out, "Certify", request);
+      printHtmlHead(out, MENU_HEADER_TEST, request);
 
       if (problem != null) {
         out.println("<p>" + problem + "</p>");
@@ -130,7 +138,7 @@ public class CertifyServlet extends ClientServlet
           || certifyRunner.getStatus().equals(CertifyRunner.STATUS_STOPPED);
 
       if (certifyRunner != null) {
-        out.println("    <h3>Certification Results</h3>");
+        out.println("    <h2>Test Results</h2>");
         certifyRunner.printResults(out);
         out.println("    <form action=\"CertifyServlet\" method=\"POST\">");
         out.println("      <input type=\"submit\" name=\"action\" value=\"Refresh\"/>");
@@ -141,7 +149,7 @@ public class CertifyServlet extends ClientServlet
       }
 
       if (canStart) {
-        out.println("    <h3>Start Certification Evaluation</h3>");
+        out.println("    <h2>Start Test</h2>");
         out.println("    <form action=\"CertifyServlet\" method=\"POST\">");
         out.println("      <table border=\"0\">");
         int id = 0;
@@ -154,7 +162,7 @@ public class CertifyServlet extends ClientServlet
         out.println("        <tr>");
         out.println("          <td>Service</td>");
         out.println("          <td>");
-        List<Connector> connectors = SetupServlet.getConnectors(session);
+        List<Connector> connectors = ConnectServlet.getConnectors(session);
         if (connectors.size() == 1) {
           out.println("            " + connectors.get(0).getLabelDisplay());
           out.println("            <input type=\"hidden\" name=\"id\" value=\"1\"/>");
@@ -178,19 +186,49 @@ public class CertifyServlet extends ClientServlet
         out.println("        <tr>");
         out.println("          <td>Query Type</td>");
         out.println("          <td>");
-        out.println("            <select name=\"queryType\">");
-        out.println("              <option value=\"\">select</option>");
-        out.println("              <option value=\"Q\">QBP</option>");
-        out.println("              <option value=\"V\">VXQ</option>");
-        out.println("              <option value=\"N\">None</option>");
-        out.println("            </select>");
+        out.println("            <input type=\"radio\" name=\"queryType\" value=\"Q\"> QBP");
+        out.println("            <input type=\"radio\" name=\"queryType\" value=\"V\"> VXQ");
+        out.println("            <input type=\"radio\" name=\"queryType\" value=\"N\"> None");
         out.println("          </td>");
         out.println("        </tr>");
         out.println("        <tr>");
-        out.println("          <td>Add SSN to records</td>");
-        out.println("          <td><checkbox name=\"addSSN\" value=\"true\"/></td>");
+        out.println("          <td>Tests to Run</td>");
+        out.println("          <td>");
+        out.println("            <input type=\"checkbox\" name=\"runA\" value=\"true\" checked=\"true\" disabled=\"disabled\"/> Basic");
+        out.println("          </td>");
         out.println("        </tr>");
         out.println("        <tr>");
+        out.println("          <td></td>");
+        out.println("          <td>");
+        out.println("            <input type=\"checkbox\" name=\"runB\" value=\"true\" checked=\"true\"/> Intermediate");
+        out.println("          </td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td></td>");
+        out.println("          <td>");
+        out.println("            <input type=\"checkbox\" name=\"runC\" value=\"true\" checked=\"true\"/> Advanced");
+        out.println("          </td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td></td>");
+        out.println("          <td>");
+        out.println("            <input type=\"checkbox\" name=\"runD\" value=\"true\" checked=\"true\"/> Exceptional");
+        out.println("          </td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td></td>");
+        out.println("          <td>");
+        out.println("            <input type=\"checkbox\" name=\"runE\" value=\"true\" checked=\"true\" disabled=\"disabled\"/> Performance");
+        out.println("          </td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td></td>");
+        out.println("          <td>");
+        out.println("            <input type=\"checkbox\" name=\"runF\" value=\"true\" checked=\"true\"/> Conformance");
+        out.println("          </td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td></td>");
         out.println("          <td colspan=\"2\" align=\"right\">");
         out.println("            <input type=\"submit\" name=\"action\" value=\"Start\"/>");
         out.println("          </td>");
@@ -199,8 +237,8 @@ public class CertifyServlet extends ClientServlet
         out.println("    </form>");
       }
       if (certifyRunner != null) {
-        out.println("    <h3>Certification Details</h3>");
-        certifyRunner.printProgressDetails(out);
+        out.println("    <h2>Test Details</h2>");
+        certifyRunner.printProgressDetails(out, false);
       }
       printHtmlFoot(out);
     } finally {
@@ -219,6 +257,43 @@ public class CertifyServlet extends ClientServlet
     private boolean keepRunning = true;
     private TestCaseMessage testCaseMessageBase = null;
 
+    private boolean runB = false;
+    private boolean runC = false;
+    private boolean runD = false;
+    private boolean runF = false;
+
+    public boolean isRunB() {
+      return runB;
+    }
+
+    public void setRunB(boolean runB) {
+      this.runB = runB;
+    }
+
+    public boolean isRunC() {
+      return runC;
+    }
+
+    public void setRunC(boolean runC) {
+      this.runC = runC;
+    }
+
+    public boolean isRunD() {
+      return runD;
+    }
+
+    public void setRunD(boolean runD) {
+      this.runD = runD;
+    }
+
+    public boolean isRunF() {
+      return runF;
+    }
+
+    public void setRunF(boolean runF) {
+      this.runF = runF;
+    }
+
     private int areaALevel1Score = -1;
     private int areaALevel2Score = -1;
     private int areaALevel3Score = -1;
@@ -236,8 +311,15 @@ public class CertifyServlet extends ClientServlet
 
     private int areaDLevel1Score = -1;
     private int areaDLevel2Score = -1;
-    private int areaDLevel3ScoreU = -1;
-    private int areaDLevel3ScoreQ = -1;
+    private int areaDLevel3Score = -1;
+
+    private int areaELevel1Score = -1;
+    private int areaELevel2Score = -1;
+    private int areaELevel3Score = -1;
+
+    private int areaFLevel1Score = -1;
+    private int areaFLevel2Score = -1;
+    private int areaFLevel3Score = -1;
 
     private int areaALevel1Progress = -1;
     private int areaALevel2Progress = -1;
@@ -258,6 +340,14 @@ public class CertifyServlet extends ClientServlet
     private int areaDLevel2Progress = -1;
     private int areaDLevel3Progress = -1;
 
+    private int areaELevel1Progress = -1;
+    private int areaELevel2Progress = -1;
+    private int areaELevel3Progress = -1;
+
+    private int areaFLevel1Progress = -1;
+    private int areaFLevel2Progress = -1;
+    private int areaFLevel3Progress = -1;
+
     private long totalQueryTime = 0;
     private long totalUpdateTime = 0;
     private int totalQueryCount = 0;
@@ -266,15 +356,21 @@ public class CertifyServlet extends ClientServlet
     private String testCaseSet = "";
     private HttpSession session = null;
 
+    private Date testStarted = null;
+    private Date testFinished = null;
+
     private String queryType = "";
+    private boolean willQuery = false;
 
     private List<TestCaseMessage> statusCheckTestCaseList = new ArrayList<TestCaseMessage>();
 
     private List<TestCaseMessage> statusCheckTestCaseBasicList = new ArrayList<TestCaseMessage>();
     private List<TestCaseMessage> statusCheckTestCaseIntermediateList = new ArrayList<TestCaseMessage>();
+    private List<TestCaseMessage> statusCheckTestCaseExceptionalList = new ArrayList<TestCaseMessage>();
 
     private List<TestCaseMessage> statusCheckQueryTestCaseBasicList = new ArrayList<TestCaseMessage>();
     private List<TestCaseMessage> statusCheckQueryTestCaseIntermediateList = new ArrayList<TestCaseMessage>();
+    private List<TestCaseMessage> statusCheckQueryTestCaseTolerantList = new ArrayList<TestCaseMessage>();
 
     private List<TestCaseMessage> ackAnalysisList = new ArrayList<TestCaseMessage>();
     private List<TestCaseMessage> rspAnalysisList = new ArrayList<TestCaseMessage>();
@@ -304,18 +400,27 @@ public class CertifyServlet extends ClientServlet
     private List<TestCaseMessage>[] profileTestCaseLists = new ArrayList[3];
 
     Connector connector;
+    Connector queryConnector;
 
     public CertifyRunner(Connector connector, HttpSession session) {
       this.connector = connector;
+      this.queryConnector = connector.getOtherConnectorMap().get(Connector.PURPOSE_QUERY);
+      if (this.queryConnector == null) {
+        queryConnector = connector;
+      }
       this.session = session;
       status = STATUS_INITIALIZED;
       SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-hh-mm");
-      testCaseSet = "Certification " + sdf.format(new Date());
+      testCaseSet = CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX + " " + sdf.format(new Date());
+
     }
 
     @Override
     public void run() {
       status = STATUS_STARTED;
+      willQuery = queryType.equals(QUERY_TYPE_QBP) || queryType.equals(QUERY_TYPE_VXQ);
+
+      testStarted = new Date();
 
       prepareBasic();
 
@@ -329,39 +434,64 @@ public class CertifyServlet extends ClientServlet
         status = STATUS_STOPPED;
         return;
       }
+      if (runB) {
 
-      prepareIntermediate();
+        prepareIntermediate();
 
-      updateIntermediate();
-      if (!keepRunning) {
-        status = STATUS_STOPPED;
-        return;
+        updateIntermediate();
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          return;
+        }
+
+        if (runC) {
+          if (testCaseMessageBase != null) {
+            Map<Integer, List<Issue>> issueMap = new HashMap<Integer, List<Issue>>();
+            
+            prepareAdvanced(issueMap);
+            if (!keepRunning) {
+              status = STATUS_STOPPED;
+              return;
+            }
+            
+            updateAdvanced(issueMap);
+            if (!keepRunning) {
+              status = STATUS_STOPPED;
+              return;
+            }
+          }
+        }
       }
+      if (runD) {
+        prepareExceptional();
 
-      if (testCaseMessageBase != null) {
-        Map<Integer, List<Issue>> issueMap = new HashMap<Integer, List<Issue>>();
-        prepareAdvanced(issueMap);
-        updateAdvanced(issueMap);
-
+        updateExceptional();
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
         }
       }
 
-      prepareExceptionalUpdateAnalysis();
-      if (!keepRunning) {
-        status = STATUS_STOPPED;
-        return;
+      if (totalUpdateCount > 0) {
+        areaELevel1Score = (int) totalUpdateTime / totalUpdateCount;
+        areaELevel1Progress = 100;
+      }
+      if (runF) {
+
+        prepareFormatUpdateAnalysis();
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          return;
+        }
+
+        analyzeFormatUpdates();
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          return;
+        }
       }
 
-      analyzeExceptionalUpdates();
-      if (!keepRunning) {
-        status = STATUS_STOPPED;
-        return;
-      }
-
-      if (queryType.equals(QUERY_TYPE_QBP) || queryType.equals(QUERY_TYPE_VXQ)) {
+      if (willQuery) {
 
         queryBasic();
         if (!keepRunning) {
@@ -369,53 +499,65 @@ public class CertifyServlet extends ClientServlet
           return;
         }
 
-        queryIntermediate();
-        if (!keepRunning) {
-          status = STATUS_STOPPED;
-          return;
+        if (runB) {
+          
+          prepareQueryIntermediate();
+          if (!keepRunning) {
+            status = STATUS_STOPPED;
+            return;
+          }
+
+          queryIntermediate();
+          if (!keepRunning) {
+            status = STATUS_STOPPED;
+            return;
+          }
         }
 
-        prepareExceptionalQueryAnalysis();
-        if (!keepRunning) {
-          status = STATUS_STOPPED;
-          return;
+        if (runD) {
+          queryExceptional();
+          if (!keepRunning) {
+            status = STATUS_STOPPED;
+            return;
+          }
         }
 
-        analyzeExceptionalQueries();
+        if (totalQueryCount > 0) {
+          areaELevel2Score = (int) totalQueryTime / totalQueryCount;
+          areaELevel2Progress = 100;
+        }
+
+        if (runF) {
+          prepareFormatQueryAnalysis();
+          if (!keepRunning) {
+            status = STATUS_STOPPED;
+            return;
+          }
+
+          analyzeFormatQueries();
+        }
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
         }
       }
 
-      updatePerformance();
-
-      areaDLevel3Progress = 100;
+      areaFLevel3Progress = 100;
+      testFinished = new Date();
 
       if (testCaseMessageBase != null) {
         File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessageBase, session);
         if (testCaseDir != null) {
-          File certificationReportFile = new File(testCaseDir, "Certification Report.html");
+          File certificationReportFile = new File(testCaseDir, "IIS Testing Report.html");
           try {
             PrintWriter out = new PrintWriter(new FileWriter(certificationReportFile));
-            out.println("<html>");
-            out.println("  <head>");
-            out.println("    <title>Certification Report</title>");
-            out.println("    <style>");
-            out.println("       body {font-family: Tahoma, Geneva, sans-serif; background:#D5E1DD}");
-            out.println("       .pass {background:#77BED2; padding-left:5px;}");
-            out.println("       .fail {background:#FF9999; padding-left:5px;}");
-            out.println("       .nottested { padding-left:5px;}");
-            out.println("       ");
-            out.println("    </style>");
-            out.println("  </head>");
-            out.println("  <body>");
-            out.println("    <h3>Certification Results</h3>");
+            String title = "IIS Testing Report";
+            ClientServlet.printHtmlHeadForFile(out, title);
+            out.println("    <h3>IIS Testing Results for " + connector.getLabel() + "</h3>");
             printResults(out);
-            out.println("    <h3>Certification Details</h3>");
-            printProgressDetails(out);
-            out.println("  </body>");
-            out.println("</html>");
+            out.println("    <h3>IIS Testing Details</h3>");
+            printProgressDetails(out, true);
+            ClientServlet.printHtmlFootForFile(out);
             out.close();
           } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -427,20 +569,7 @@ public class CertifyServlet extends ClientServlet
       status = STATUS_COMPLETED;
     }
 
-    private void updatePerformance() {
-      if (totalUpdateCount > 0) {
-        if (totalQueryCount > 0) {
-          areaDLevel3ScoreQ = (int) totalQueryTime / totalQueryCount;
-          areaDLevel3ScoreU = (int) totalUpdateTime / totalUpdateCount;
-
-        } else {
-          areaDLevel3ScoreQ = 0;
-          areaDLevel3ScoreU = (int) totalUpdateTime / totalUpdateCount;
-        }
-      }
-    }
-
-    private void prepareExceptionalUpdateAnalysis() {
+    private void prepareFormatUpdateAnalysis() {
       for (TestCaseMessage testCaseMessage : statusCheckTestCaseList) {
         if (testCaseMessage.isHasRun()) {
           ackAnalysisList.add(testCaseMessage);
@@ -448,7 +577,7 @@ public class CertifyServlet extends ClientServlet
       }
     }
 
-    private void prepareExceptionalQueryAnalysis() {
+    private void prepareFormatQueryAnalysis() {
       for (TestCaseMessage testCaseMessage : statusCheckTestCaseList) {
         if (testCaseMessage.getDerivedFromVXUMessage() != null) {
           rspAnalysisList.add(testCaseMessage);
@@ -456,7 +585,7 @@ public class CertifyServlet extends ClientServlet
       }
     }
 
-    private void analyzeExceptionalUpdates() {
+    private void analyzeFormatUpdates() {
       int count = 0;
       int pass = 0;
       for (TestCaseMessage testCaseMessage : ackAnalysisList) {
@@ -469,19 +598,19 @@ public class CertifyServlet extends ClientServlet
           if (analyzer.analyzeAck()) {
             pass++;
           }
-          testCaseMessage.setAckAnalyzer(analyzer);
-          areaDLevel1Progress = makeScore(count, ackAnalysisList.size());
+          testCaseMessage.setHl7Analyzer(analyzer);
+          areaFLevel1Progress = makeScore(count, ackAnalysisList.size());
         }
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
         }
       }
-      areaDLevel1Progress = makeScore(count, ackAnalysisList.size());
-      areaDLevel1Score = makeScore(pass, ackAnalysisList.size());
+      areaFLevel1Progress = makeScore(count, ackAnalysisList.size());
+      areaFLevel1Score = makeScore(pass, ackAnalysisList.size());
     }
 
-    private void analyzeExceptionalQueries() {
+    private void analyzeFormatQueries() {
       int count = 0;
       int pass = 0;
       for (TestCaseMessage testCaseMessage : rspAnalysisList) {
@@ -494,16 +623,16 @@ public class CertifyServlet extends ClientServlet
           if (analyzer.analyzeRsp()) {
             pass++;
           }
-          testCaseMessage.setAckAnalyzer(analyzer);
-          areaDLevel2Progress = makeScore(count, rspAnalysisList.size());
+          testCaseMessage.setHl7Analyzer(analyzer);
+          areaFLevel2Progress = makeScore(count, rspAnalysisList.size());
         }
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
         }
       }
-      areaDLevel2Progress = makeScore(count, rspAnalysisList.size());
-      areaDLevel2Score = makeScore(pass, rspAnalysisList.size());
+      areaFLevel2Progress = makeScore(count, rspAnalysisList.size());
+      areaFLevel2Score = makeScore(pass, rspAnalysisList.size());
     }
 
     private void updateAdvanced(Map<Integer, List<Issue>> issueMap) {
@@ -596,7 +725,8 @@ public class CertifyServlet extends ClientServlet
       for (TestCaseMessage testCaseMessage : statusCheckTestCaseBasicList) {
         count++;
         try {
-          boolean pass = testRunner.runTest(connector, testCaseMessage);
+          testRunner.runTest(connector, testCaseMessage);
+          boolean pass = testCaseMessage.isAccepted();
           testCaseMessage.setMajorChangesMade(!verifyNoMajorChangesMade(testCaseMessage));
           totalUpdateCount++;
           totalUpdateTime += testRunner.getTotalRunTime();
@@ -784,8 +914,12 @@ public class CertifyServlet extends ClientServlet
         testCaseMessage.setAssertResult("Accept - *");
         register(testCaseMessage);
       }
+    }
 
-      // Compatibility tests
+    private void prepareExceptional() {
+
+      Transformer transformer = new Transformer();
+      int count = 0;
 
       {
         count++;
@@ -794,8 +928,8 @@ public class CertifyServlet extends ClientServlet
         testCaseMessage.appendOriginalMessage("OBX|5|NM|6287-7^Baker's yeast IgE Ab in Serum^LN||1945||||||F\n");
         testCaseMessage.setDescription("Tolerance Check: Message includes observation not typically sent to IIS");
         testCaseMessage.setTestCaseSet(testCaseSet);
-        testCaseMessage.setTestCaseNumber("B1." + count);
-        statusCheckTestCaseIntermediateList.add(testCaseMessage);
+        testCaseMessage.setTestCaseNumber("E1." + count);
+        statusCheckTestCaseExceptionalList.add(testCaseMessage);
         transformer.transform(testCaseMessage);
         testCaseMessage.setAssertResult("Accept - *");
         register(testCaseMessage);
@@ -808,8 +942,8 @@ public class CertifyServlet extends ClientServlet
         testCaseMessage.appendOriginalMessage("YES|This|is|a|segment^you^should^never^see|in|production\n");
         testCaseMessage.setDescription("Tolerance Check: Message includes segment not defined by HL7");
         testCaseMessage.setTestCaseSet(testCaseSet);
-        testCaseMessage.setTestCaseNumber("B1." + count);
-        statusCheckTestCaseIntermediateList.add(testCaseMessage);
+        testCaseMessage.setTestCaseNumber("E1." + count);
+        statusCheckTestCaseExceptionalList.add(testCaseMessage);
         transformer.transform(testCaseMessage);
         testCaseMessage.setAssertResult("Accept - *");
         register(testCaseMessage);
@@ -821,9 +955,9 @@ public class CertifyServlet extends ClientServlet
             .createTestCaseMessage(ScenarioManager.SCENARIO_1_R_ADMIN_CHILD);
         testCaseMessage.setDescription("Tolerance Check: Hospital service code is set to a non-standard value");
         testCaseMessage.setTestCaseSet(testCaseSet);
-        testCaseMessage.setTestCaseNumber("B1." + count);
+        testCaseMessage.setTestCaseNumber("E1." + count);
         testCaseMessage.appendCustomTransformation("PV1-10=AMB");
-        statusCheckTestCaseIntermediateList.add(testCaseMessage);
+        statusCheckTestCaseExceptionalList.add(testCaseMessage);
         transformer.transform(testCaseMessage);
         testCaseMessage.setAssertResult("Accept - *");
         register(testCaseMessage);
@@ -835,7 +969,7 @@ public class CertifyServlet extends ClientServlet
             .createTestCaseMessage(ScenarioManager.SCENARIO_1_R_ADMIN_CHILD);
         testCaseMessage.setDescription("Tolerance Check: Observation at patient level (HL7 2.8 capability)");
         testCaseMessage.setTestCaseSet(testCaseSet);
-        testCaseMessage.setTestCaseNumber("B1." + count);
+        testCaseMessage.setTestCaseNumber("E1." + count);
         testCaseMessage.appendCustomTransformation("insert segment OBX after NK1");
         testCaseMessage.appendCustomTransformation("OBX-1=1");
         testCaseMessage.appendCustomTransformation("OBX-2=59784-9");
@@ -846,12 +980,158 @@ public class CertifyServlet extends ClientServlet
         testCaseMessage.appendCustomTransformation("OBX-5.2=Varicella infection");
         testCaseMessage.appendCustomTransformation("OBX-5.3=SCT");
         testCaseMessage.appendCustomTransformation("OBX-11=F");
-        statusCheckTestCaseIntermediateList.add(testCaseMessage);
+        statusCheckTestCaseExceptionalList.add(testCaseMessage);
         transformer.transform(testCaseMessage);
         testCaseMessage.setAssertResult("Accept - *");
         register(testCaseMessage);
       }
 
+      try {
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(
+            "exampleCertifiedMessages.txt")));
+        String line;
+        StringBuilder sb = new StringBuilder();
+        String previousDescription = null;
+        String description = null;
+        while ((line = in.readLine()) != null) {
+          line = line.trim();
+          if (line.startsWith("--")) {
+            description = line.substring(2).trim();
+          } else if (line.length() > 3) {
+            if (line.startsWith("MSH|^~\\&|")) {
+              if (sb != null && sb.length() > 0) {
+                count = createCertfiedMessageTestCaseMessage(transformer, count, sb, previousDescription);
+              }
+              sb = new StringBuilder();
+              previousDescription = description;
+              description = null;
+            }
+            if (sb != null) {
+              sb.append(line);
+              sb.append("\r");
+            }
+          }
+        }
+        if (sb != null && sb.length() > 0) {
+          count = createCertfiedMessageTestCaseMessage(transformer, count, sb, previousDescription);
+        }
+
+      } catch (IOException ioe) {
+        ioe.printStackTrace();
+      }
+    }
+
+    private int createCertfiedMessageTestCaseMessage(Transformer transformer, int count, StringBuilder sb,
+        String previousDescription) {
+      count++;
+
+      String messageText = sb.toString();
+
+      TestCaseMessage testCaseMessage = new TestCaseMessage();
+      testCaseMessage.setOriginalMessage(messageText);
+
+      changePatientIdentifyingInformation(messageText, testCaseMessage);
+
+      testCaseMessage.setDescription("Certified Message: "
+          + (previousDescription == null ? "Unidentified EHR" : previousDescription));
+      testCaseMessage.setTestCaseSet(testCaseSet);
+      testCaseMessage.setTestCaseNumber("E1." + count);
+      statusCheckTestCaseExceptionalList.add(testCaseMessage);
+      transformer.transform(testCaseMessage);
+      testCaseMessage.setAssertResult("Accept - *");
+      register(testCaseMessage);
+      return count;
+    }
+
+    private void changePatientIdentifyingInformation(String messageText, TestCaseMessage testCaseMessage) {
+      HL7Reader hl7Reader = new HL7Reader(messageText);
+      testCaseMessage.appendCustomTransformation("MSH-10=" + messageText.hashCode() + "." + System.currentTimeMillis());
+      if (hl7Reader.advanceToSegment("PID")) {
+        String dob = hl7Reader.getValue(7);
+        if (dob.length() >= 8) {
+          SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+          try {
+            Date d = sdf.parse(dob.substring(0, 8));
+            Calendar c = Calendar.getInstance();
+            c.setTime(d);
+            int dateOffset = (int) System.currentTimeMillis() % 100;
+            c.add(Calendar.DAY_OF_MONTH, -dateOffset);
+            dob = sdf.format(c.getTime());
+            testCaseMessage.appendCustomTransformation("PID-7=" + dob);
+          } catch (ParseException pe) {
+            // ignore
+          }
+        }
+        String sex = hl7Reader.getValue(8);
+        testCaseMessage.appendCustomTransformation("PID-5.1=~90%[LAST]:[MOTHER_MAIDEN]");
+        if (sex.equals("M")) {
+          testCaseMessage.appendCustomTransformation("PID-5.2=[BOY]");
+        } else {
+          testCaseMessage.appendCustomTransformation("PID-5.2=[GIRL]");
+        }
+        String middleName = hl7Reader.getValue(5, 3);
+        if (!middleName.equals("")) {
+          if (middleName.length() > 1) {
+            if (sex.equals("M")) {
+              testCaseMessage.appendCustomTransformation("PID-5.3=[BOY_MIDDLE]");
+            } else {
+              testCaseMessage.appendCustomTransformation("PID-5.3=[GIRL_MIDDLE]");
+            }
+          } else {
+            testCaseMessage.appendCustomTransformation("PID-5.3=[BOY_MIDDLE_INITIAL]");
+          }
+        }
+        testCaseMessage.appendCustomTransformation("PID-5.3");
+        String streetAdd = hl7Reader.getValue(11);
+        if (!streetAdd.equals("")) {
+          testCaseMessage.appendCustomTransformation("PID-11.1=[STREET]");
+        }
+        String motherMaiden = hl7Reader.getValue(6);
+        if (!motherMaiden.equals("")) {
+          testCaseMessage.appendCustomTransformation("PID-6=~50%[MOTHER_MAIDEN]:[LAST_DIFFERENT]");
+        }
+        if (!hl7Reader.getValue(6, 2).equals("")) {
+          testCaseMessage.appendCustomTransformation("PID-6.2=[MOTHER]");
+        }
+        String phone = hl7Reader.getValue(13, 7);
+        if (!phone.equals("")) {
+          if (!hl7Reader.getValue(13, 6).equals("")) {
+            testCaseMessage.appendCustomTransformation("PID-13.6=[PHONE_AREA]");
+          }
+          testCaseMessage.appendCustomTransformation("PID-13.7=[PHONE_LOCAL]");
+        }
+        String mrnType;
+        int i = 1;
+        while (!(mrnType = hl7Reader.getValueRepeat(3, 5, i)).equals("")) {
+          if (mrnType.equals("SS")) {
+            testCaseMessage.appendCustomTransformation("PID-3#" + i + "=[SSN]");
+          } else if (mrnType.equals("MA")) {
+            testCaseMessage.appendCustomTransformation("PID-3#" + i + "=[MEDICAID]");
+          } else {
+            testCaseMessage.appendCustomTransformation("PID-3#" + i + "=[MRN]");
+          }
+          i++;
+        }
+        while (hl7Reader.advanceToSegment("NK1")) {
+          String type = hl7Reader.getValue(3);
+          if (type.equals("") || type.equals("MTH") || type.equals("GRD")) {
+            if (!hl7Reader.getValue(2).equals("")) {
+              testCaseMessage.appendCustomTransformation("NK1-2.1=~60%[LAST]:[LAST_DIFFERENT]");
+            }
+            if (!hl7Reader.getValue(2, 1).equals("")) {
+              testCaseMessage.appendCustomTransformation("NK1-2.2=[MOTHER]");
+            }
+          } else {
+            if (!hl7Reader.getValue(2).equals("")) {
+              testCaseMessage.appendCustomTransformation("NK1-2.1=~60%[LAST]:[LAST_DIFFERENT]");
+            }
+            if (!hl7Reader.getValue(2, 1).equals("")) {
+              testCaseMessage.appendCustomTransformation("NK1-2.2=[FATHER]");
+            }
+          }
+        }
+      }
     }
 
     private void updateIntermediate() {
@@ -862,7 +1142,8 @@ public class CertifyServlet extends ClientServlet
       for (TestCaseMessage testCaseMessage : statusCheckTestCaseIntermediateList) {
         count++;
         try {
-          boolean pass = testRunner.runTest(connector, testCaseMessage);
+          testRunner.runTest(connector, testCaseMessage);
+          boolean pass = testCaseMessage.isAccepted();
           totalUpdateCount++;
           totalUpdateTime += testRunner.getTotalRunTime();
           testCaseMessage.setHasRun(true);
@@ -881,6 +1162,36 @@ public class CertifyServlet extends ClientServlet
         }
       }
       areaBLevel1Score = makeScore(testPass, statusCheckTestCaseIntermediateList.size());
+    }
+
+    private void updateExceptional() {
+      int count;
+      int testPass = 0;
+      TestRunner testRunner = new TestRunner();
+      count = 0;
+      for (TestCaseMessage testCaseMessage : statusCheckTestCaseExceptionalList) {
+        count++;
+        try {
+          testRunner.runTest(connector, testCaseMessage);
+          boolean pass = testCaseMessage.isAccepted();
+          totalUpdateCount++;
+          totalUpdateTime += testRunner.getTotalRunTime();
+          testCaseMessage.setHasRun(true);
+          if (pass) {
+            testPass++;
+          }
+          testCaseMessage.setErrorList(testRunner.getErrorList());
+        } catch (Throwable t) {
+          testCaseMessage.setException(t);
+        }
+        areaDLevel1Progress = makeScore(count, statusCheckTestCaseExceptionalList.size());
+        CreateTestCaseServlet.saveTestCase(testCaseMessage, session);
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          return;
+        }
+      }
+      areaDLevel1Score = makeScore(testPass, statusCheckTestCaseExceptionalList.size());
     }
 
     private void queryBasic() {
@@ -904,8 +1215,8 @@ public class CertifyServlet extends ClientServlet
         register(queryTestCaseMessage);
         try {
           long startTime = System.currentTimeMillis();
-          String message = prepareSendMessage(testCaseMessage, queryTestCaseMessage);
-          String rspMessage = connector.submitMessage(message, false);
+          String message = prepareSendQueryMessage(queryTestCaseMessage);
+          String rspMessage = queryConnector.submitMessage(message, false);
           totalQueryCount++;
           totalQueryTime += System.currentTimeMillis() - startTime;
           queryTestCaseMessage.setHasRun(true);
@@ -943,16 +1254,31 @@ public class CertifyServlet extends ClientServlet
       areaALevel3Score = makeScore(testQueryPassOptional, testQueryCountOptional);
     }
 
-    private String prepareSendMessage(TestCaseMessage testCaseMessage, TestCaseMessage queryTestCaseMessage) {
+    private String prepareSendQueryMessage(TestCaseMessage queryTestCaseMessage) {
       String message = queryTestCaseMessage.getMessageText();
-      if (!connector.getCustomTransformations().equals("")) {
+      if (!queryConnector.getCustomTransformations().equals("")) {
         Transformer transformer = new Transformer();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-        connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
-        message = transformer.transform(connector, message);
+        queryConnector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
+        message = transformer.transform(queryConnector, message);
       }
-      testCaseMessage.setMessageTextSent(message);
+      queryTestCaseMessage.setMessageTextSent(message);
       return message;
+    }
+
+    private void prepareQueryIntermediate() {
+      int count = 0;
+      for (TestCaseMessage testCaseMessage : statusCheckTestCaseIntermediateList) {
+        count++;
+        TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
+        queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
+        queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
+        queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText()));
+        queryTestCaseMessage.setTestCaseSet(testCaseSet);
+        queryTestCaseMessage.setTestCaseNumber("B3." + count);
+        statusCheckQueryTestCaseIntermediateList.add(queryTestCaseMessage);
+        register(queryTestCaseMessage);
+      }
     }
 
     private void queryIntermediate() {
@@ -962,7 +1288,62 @@ public class CertifyServlet extends ClientServlet
       int testQueryCountRequired = 0;
       int testQueryCountOptional = 0;
       count = 0;
-      for (TestCaseMessage testCaseMessage : statusCheckTestCaseIntermediateList) {
+      for (TestCaseMessage queryTestCaseMessage : statusCheckQueryTestCaseIntermediateList) {
+        count++;
+
+        try {
+          long startTime = System.currentTimeMillis();
+          String message = prepareSendQueryMessage(queryTestCaseMessage);
+          String rspMessage = queryConnector.submitMessage(message, false);
+          totalQueryCount++;
+          totalQueryTime += System.currentTimeMillis() - startTime;
+          queryTestCaseMessage.setHasRun(true);
+          queryTestCaseMessage.setActualResponseMessage(rspMessage);
+          List<CompareManager.Comparison> comparisonList = CompareManager.compareMessages(
+              queryTestCaseMessage.getDerivedFromVXUMessage(), rspMessage);
+          queryTestCaseMessage.setComparisonList(comparisonList);
+          queryTestCaseMessage.setPassedTest(true);
+          for (CompareManager.Comparison comparison : comparisonList) {
+            if (comparison.isTested()
+                && comparison.getPriorityLevel() <= CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL) {
+              testQueryCountOptional++;
+              if (comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED) {
+                testQueryCountRequired++;
+              }
+
+              if (comparison.isPass()) {
+                testQueryPassOptional++;
+                if (comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED) {
+                  testQueryPassRequired++;
+                }
+              } else if (comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED) {
+                queryTestCaseMessage.setPassedTest(false);
+              }
+            }
+          }
+        } catch (Throwable t) {
+          queryTestCaseMessage.setException(t);
+        }
+        areaBLevel3Progress = makeScore(count, statusCheckQueryTestCaseIntermediateList.size());
+        areaBLevel2Progress = areaBLevel3Progress;
+        CreateTestCaseServlet.saveTestCase(queryTestCaseMessage, session);
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          return;
+        }
+      }
+      areaBLevel2Score = makeScore(testQueryPassRequired, testQueryCountRequired);
+      areaBLevel3Score = makeScore(testQueryPassOptional, testQueryCountOptional);
+    }
+
+    private void queryExceptional() {
+      int count;
+      int testQueryPassRequired = 0;
+      int testQueryPassOptional = 0;
+      int testQueryCountRequired = 0;
+      int testQueryCountOptional = 0;
+      count = 0;
+      for (TestCaseMessage testCaseMessage : statusCheckTestCaseExceptionalList) {
         count++;
         String vxuMessage = testCaseMessage.getMessageText();
 
@@ -972,12 +1353,12 @@ public class CertifyServlet extends ClientServlet
         queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText()));
         queryTestCaseMessage.setTestCaseSet(testCaseSet);
         queryTestCaseMessage.setTestCaseNumber("B3." + count);
-        statusCheckQueryTestCaseIntermediateList.add(queryTestCaseMessage);
+        statusCheckQueryTestCaseTolerantList.add(queryTestCaseMessage);
         register(queryTestCaseMessage);
         try {
           long startTime = System.currentTimeMillis();
-          String message = prepareSendMessage(testCaseMessage, queryTestCaseMessage);
-          String rspMessage = connector.submitMessage(message, false);
+          String message = prepareSendQueryMessage(queryTestCaseMessage);
+          String rspMessage = queryConnector.submitMessage(message, false);
           totalQueryCount++;
           totalQueryTime += System.currentTimeMillis() - startTime;
           queryTestCaseMessage.setHasRun(true);
@@ -1006,198 +1387,390 @@ public class CertifyServlet extends ClientServlet
         } catch (Throwable t) {
           queryTestCaseMessage.setException(t);
         }
-        areaBLevel3Progress = makeScore(count, statusCheckTestCaseIntermediateList.size());
-        areaBLevel2Progress = areaBLevel3Progress;
+        areaDLevel3Progress = makeScore(count, statusCheckTestCaseExceptionalList.size());
+        areaDLevel2Progress = areaDLevel3Progress;
         CreateTestCaseServlet.saveTestCase(queryTestCaseMessage, session);
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
         }
       }
-      areaBLevel2Score = makeScore(testQueryPassRequired, testQueryCountRequired);
-      areaBLevel3Score = makeScore(testQueryPassOptional, testQueryCountOptional);
+      areaDLevel2Score = makeScore(testQueryPassRequired, testQueryCountRequired);
+      areaDLevel3Score = makeScore(testQueryPassOptional, testQueryCountOptional);
     }
 
     public void printResults(PrintWriter out) {
-      out.println("<table border=\"1\" cellspacing=\"0\">");
+      out.println("<table border=\"1\" cellspacing=\"0\" width=\"720\">");
       out.println("  <tr>");
-      out.println("    <th width=\"12%\"></th>");
-      out.println("    <th width=\"22%\"><font size=\"+1\">Basic</font></th>");
-      out.println("    <th width=\"22%\"><font size=\"+1\">Intermediate</font></th>");
-      out.println("    <th width=\"22%\"><font size=\"+1\">Advanced</font></th>");
-      out.println("    <th width=\"22%\"><font size=\"+1\">Exceptional</font></th>");
-      out.println("  </tr>");
-      out.println("  <tr>");
-      out.println("    <td><em>The IIS can...</em></td>");
-      out.println("    <td><em>accept updates from EHR</em></td>");
-      out.println("    <td><em>recognize valid codes</em></td>");
-      out.println("    <td><em>identify quality issues</em></td>");
-      out.println("    <td><em>respond correctly to requests</em></td>");
-      out.println("  </tr>");
-      out.println("  <tr>");
+      out.println("    <th></th>");
       out.println("    <th>Level 1</th>");
+      out.println("    <th>Level 2</th>");
+      out.println("    <th>Level 3</th>");
+      out.println("  </tr>");
+      out.println("  <tr>");
+      out.println("    <th><font size=\"+1\">Basic</font><br/><font size=\"-2\">IIS can accept updates from EHR</font></th>");
       if (areaALevel1Score >= 100) {
-        out.println("    <td class=\"pass\">All NIST 2014 scenarios are accepted.</td>");
+        out.println("    <td class=\"pass\">All NIST 2014 scenarios are accepted. <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
       } else if (areaALevel1Score >= 0) {
         out.println("    <td class=\"fail\">Not all NIST 2014 scenarios are accepted. (" + areaALevel1Score
-            + "% accepted)</td>");
+            + "% accepted) <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
       } else {
         if (areaALevel1Progress > -1) {
-          out.println("    <td>running now ... " + areaALevel1Progress + "% complete</td>");
+          out.println("    <td>running now ... <br/>" + areaALevel1Progress + "% complete</td>");
         } else {
-          out.println("    <td>not run yet</td>");
+          out.println("    <td>updates not sent yet</td>");
         }
       }
-      if (areaBLevel1Score >= 100) {
-        out.println("    <td class=\"pass\">All messages with core coded data elements were accepted.</td>");
-      } else if (areaBLevel1Score >= 0) {
-        out.println("    <td class=\"fail\">Some messages with core coded data elements were NOT accepted. ("
-            + areaBLevel1Score + "% messages accepted)</td>");
-      } else {
-        if (areaBLevel1Progress > -1) {
-          out.println("    <td>running now ... " + areaBLevel1Progress + "% complete</td>");
-        } else {
-          out.println("    <td>not run yet</td>");
-        }
-      }
-      if (areaCLevelScore[0] >= 100) {
-        out.println("    <td class=\"pass\">All high priority issues were identified. </td>");
-      } else if (areaCLevelScore[0] >= 0) {
-        out.println("    <td class=\"fail\">Not all high priority issues were identified. (" + areaCLevelScore[0]
-            + "% of issues identified)</td>");
-      } else {
-        if (areaCLevelProgress[0] > -1) {
-          out.println("    <td>running now ... " + areaCLevelProgress[0] + "% complete</td>");
-        } else {
-          out.println("    <td>not run yet</td>");
-        }
-      }
-      if (areaDLevel1Score >= 100) {
-        out.println("    <td class=\"pass\">All acknowledgement (ACK) responses meet HL7 and CDC standards.</td>");
-      } else if (areaDLevel1Score >= 0) {
-        out.println("    <td class=\"fail\">Not all acknowledgement (ACK) responses meet HL7 and CDC standards. ("
-            + areaDLevel1Score + "% of messages met standard)</td>");
-      } else {
-        if (areaDLevel1Progress > -1) {
-          out.println("    <td>running now ... " + areaDLevel1Progress + "% complete</td>");
-        } else {
-          out.println("    <td>not run yet</td>");
-        }
-      }
-      out.println("  </tr>");
-      out.println("  <tr>");
-      out.println("    <th>Level 2</th>");
       if (areaALevel2Score >= 100) {
-        out.println("    <td class=\"pass\">All required IIS core fields are supported. </td>");
+        out.println("    <td class=\"pass\">All required IIS core fields are supported.  <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
       } else if (areaALevel2Score >= 0) {
         out.println("    <td class=\"fail\">Not all required IIS core fields are supported. (" + areaALevel2Score
-            + "% of tests passed)</td>");
+            + "% of tests passed) <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
       } else {
         if (areaALevel2Progress > -1) {
-          out.println("    <td>running now ... " + areaALevel2Progress + "% complete</td>");
+          out.println("    <td>running now ... <br/>" + areaALevel2Progress + "% complete</td>");
         } else {
-          out.println("    <td>not run yet</td>");
+          if (willQuery) {
+            out.println("    <td>queries not sent yet</td>");
+          } else {
+            out.println("    <td>query tests not enabled</td>");
+          }
         }
       }
-      if (areaBLevel2Score >= 100) {
-        out.println("    <td class=\"pass\">All required IIS core fields were returned.</td>");
-      } else if (areaBLevel2Score >= 0) {
-        out.println("    <td class=\"fail\">Not all required IIS core fields were returned. (" + areaBLevel2Score
-            + "% core fields returned)</td>");
-      } else {
-        if (areaBLevel2Progress > -1) {
-          out.println("    <td>running now ... " + areaBLevel2Progress + "% complete</td>");
-        } else {
-          out.println("    <td>not run yet</td>");
-        }
-      }
-      if (areaCLevelScore[1] >= 100) {
-        out.println("    <td class=\"pass\">All medium priority issues were identified.</td>");
-      } else if (areaCLevelScore[1] >= 0) {
-        out.println("    <td class=\"fail\">Not all medium priority issues were identified. (" + areaCLevelScore[1]
-            + "% issues identified)</td>");
-      } else {
-        if (areaCLevelProgress[1] > -1) {
-          out.println("    <td>running now ... " + areaCLevelProgress[1] + "% complete</td>");
-        } else {
-          out.println("    <td>not run yet</td>");
-        }
-      }
-      if (areaDLevel2Score >= 100) {
-        out.println("    <td class=\"pass\">All query response (RSP) messages met HL7 and CDC standards. </td>");
-      } else if (areaDLevel2Score >= 0) {
-        out.println("    <td class=\"fail\">Not all query response (RSP) messages met HL7 and CDC standards. ("
-            + areaDLevel2Score + "% of fields returned)</td>");
-      } else {
-        if (areaDLevel2Progress > -1) {
-          out.println("    <td>running now ... " + areaDLevel2Progress + "% complete</td>");
-        } else {
-          out.println("    <td>not run yet</td>");
-        }
-      }
-      out.println("  </tr>");
-      out.println("  <tr>");
-      out.println("    <th>Level 3</th>");
       if (areaALevel3Score >= 100) {
-        out.println("    <td class=\"pass\">All required and optional IIS core data were returned when queried.</td>");
+        out.println("    <td class=\"pass\">All required and optional IIS core data were returned when queried. "
+            + "<font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
       } else if (areaALevel3Score >= 0) {
         out.println("    <td class=\"fail\">Not all required or optional IIS core data were returned when queried ("
-            + areaALevel3Score + "% of fields returned)</td>");
+            + areaALevel3Score
+            + "% of fields returned) <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
       } else {
         if (areaALevel3Progress > -1) {
-          out.println("    <td>running now ... " + areaALevel3Progress + "% complete</td>");
+          out.println("    <td>running now ... <br/>" + areaALevel3Progress + "% complete</td>");
         } else {
-          out.println("    <td>not run yet</td>");
+          if (willQuery) {
+            out.println("    <td>queries not sent yet</td>");
+          } else {
+            out.println("    <td>query tests not enabled</td>");
+          }
         }
-      }
-      if (areaBLevel3Score >= 100) {
-        out.println("    <td class=\"pass\">All required and optional IIS core fields were returned.</td>");
-      } else if (areaBLevel3Score >= 0) {
-        out.println("    <td class=\"fail\">Not all required IIS core fields were returned. (" + areaBLevel3Score
-            + "% required and optional were returned)</td>");
-      } else {
-        if (areaBLevel3Progress > -1) {
-          out.println("    <td>running now ... " + areaBLevel3Progress + "% complete</td>");
-        } else {
-          out.println("    <td>not run yet</td>");
-        }
-      }
-      if (areaCLevelScore[2] >= 100) {
-        out.println("    <td class=\"pass\">All low priority issues were identified.</td>");
-      } else if (areaCLevelScore[2] >= 0) {
-        out.println("    <td class=\"fail\">Not all low priority issues were identified. (" + areaCLevelScore[2]
-            + "% issues were identified)</td>");
-      } else {
-        if (areaCLevelProgress[2] > -1) {
-          out.println("    <td>running now ... " + areaCLevelProgress[2] + "% complete</td>");
-        } else {
-          out.println("    <td>not run yet</td>");
-        }
-      }
-      if (areaDLevel3Progress == -1) {
-        if (areaDLevel3Progress == -1) {
-          out.println("    <td>not run yet</td>");
-        }
-      } else {
-        if (areaDLevel3ScoreU < 3000 && areaDLevel3ScoreQ < 5000) {
-          out.println("    <td class=\"pass\">Performance was acceptable: " + areaDLevel3ScoreU + "ms for updates and "
-              + areaDLevel3ScoreQ + "ms for queries.</td>");
-        } else {
-          out.println("    <td class=\"fail\">Performance was below acceptable levels: " + areaDLevel3ScoreU
-              + "ms for updates and " + areaDLevel3ScoreQ + "ms for queries.</td>");
-        }
-
       }
       out.println("  </tr>");
+      if (runB) {
+        out.println("  <tr>");
+        out.println("    <th><font size=\"+1\">Intermediate</font><br/><font size=\"-2\">IIS can recognize valid codes</font></th>");
+        if (areaBLevel1Score >= 100) {
+          out.println("    <td class=\"pass\">All messages with core coded data elements were accepted. "
+              + "<font size=\"-1\"><a href=\"#areaBLevel1\">(details)</a></font></td>");
+        } else if (areaBLevel1Score >= 0) {
+          out.println("    <td class=\"fail\">Some messages with core coded data elements were NOT accepted. ("
+              + areaBLevel1Score + "% messages accepted) "
+              + "<font size=\"-1\"><a href=\"#areaBLevel1\">(details)</a></font></td>");
+        } else {
+          if (areaBLevel1Progress > -1) {
+            out.println("    <td>running now ... <br/>" + areaBLevel1Progress + "% complete</td>");
+          } else {
+            out.println("    <td>updates not sent yet</td>");
+          }
+        }
+        if (areaBLevel2Score >= 100) {
+          out.println("    <td class=\"pass\">All required IIS core fields were returned. "
+              + "<font size=\"-1\"><a href=\"#areaBLevel2\">(details)</a></font></td>");
+        } else if (areaBLevel2Score >= 0) {
+          out.println("    <td class=\"fail\">Not all required IIS core fields were returned. (" + areaBLevel2Score
+              + "% core fields returned) " + "<font size=\"-1\"><a href=\"#areaBLevel2\">(details)</a></font></td>");
+        } else {
+          if (areaBLevel2Progress > -1) {
+            out.println("    <td>running now ... <br/>" + areaBLevel2Progress + "% complete</td>");
+          } else {
+            if (willQuery) {
+              out.println("    <td>queries not sent yet</td>");
+            } else {
+              out.println("    <td>query tests not enabled</td>");
+            }
+          }
+        }
+        if (areaBLevel3Score >= 100) {
+          out.println("    <td class=\"pass\">All required and optional IIS core fields were returned. "
+              + "<font size=\"-1\"><a href=\"#areaBLevel3\">(details)</a></font></td>");
+        } else if (areaBLevel3Score >= 0) {
+          out.println("    <td class=\"fail\">Not all required or optional IIS core fields were returned. ("
+              + areaBLevel3Score + "% required and optional were returned) "
+              + "<font size=\"-1\"><a href=\"#areaBLevel3\">(details)</a></font></td>");
+        } else {
+          if (areaBLevel3Progress > -1) {
+            out.println("    <td>running now ... <br/>" + areaBLevel3Progress + "% complete</td>");
+          } else {
+            if (willQuery) {
+              out.println("    <td>queries not sent yet</td>");
+            } else {
+              out.println("    <td>query tests not enabled</td>");
+            }
+          }
+        }
+        out.println("  </tr>");
+      }
+      if (runC) {
+        out.println("  <tr>");
+        out.println("    <th><font size=\"+1\">Advanced</font><br/><font size=\"-2\">IIS can identify quality issues</font></th>");
+        if (areaCLevelScore[0] >= 100) {
+          out.println("    <td class=\"pass\">All high priority issues were identified. "
+              + "<font size=\"-1\"><a href=\"#areaCLevel1\">(details)</a></font></td>");
+        } else if (areaCLevelScore[0] >= 0) {
+          out.println("    <td class=\"fail\">Not all high priority issues were identified. (" + areaCLevelScore[0]
+              + "% of issues identified) " + "<font size=\"-1\"><a href=\"#areaCLevel1\">(details)</a></font></td>");
+        } else {
+          if (areaCLevelProgress[0] > -1) {
+            out.println("    <td>running now ... <br/>" + areaCLevelProgress[0] + "% complete</td>");
+          } else {
+            out.println("    <td>updates not sent yet</td>");
+          }
+        }
+        if (areaCLevelScore[1] >= 100) {
+          out.println("    <td class=\"pass\">All medium priority issues were identified. "
+              + "<font size=\"-1\"><a href=\"#areaCLevel2\">(details)</a></font></td>");
+        } else if (areaCLevelScore[1] >= 0) {
+          out.println("    <td class=\"fail\">Not all medium priority issues were identified. (" + areaCLevelScore[1]
+              + "% issues identified) " + "<font size=\"-1\"><a href=\"#areaCLevel2\">(details)</a></font></td>");
+        } else {
+          if (areaCLevelProgress[1] > -1) {
+            out.println("    <td>running now ... <br/>" + areaCLevelProgress[1] + "% complete</td>");
+          } else {
+            out.println("    <td>updates not sent yet</td>");
+          }
+        }
+        if (areaCLevelScore[2] >= 100) {
+          out.println("    <td class=\"pass\">All low priority issues were identified. "
+              + "<font size=\"-1\"><a href=\"#areaCLevel3\">(details)</a></font></td>");
+        } else if (areaCLevelScore[2] >= 0) {
+          out.println("    <td class=\"fail\">Not all low priority issues were identified. (" + areaCLevelScore[2]
+              + "% issues were identified) " + "<font size=\"-1\"><a href=\"#areaCLevel3\">(details)</a></font></td>");
+        } else {
+          if (areaCLevelProgress[2] > -1) {
+            out.println("    <td>running now ... <br/>" + areaCLevelProgress[2] + "% complete</td>");
+          } else {
+            out.println("    <td>updates not sent yet</td>");
+          }
+        }
+        out.println("  </tr>");
+      }
+      if (runD) {
+        out.println("  <tr>");
+        out.println("    <th><font size=\"+1\">Exceptional</font><br/><font size=\"-2\">IIS can allow for minor differences</font></th>");
+        if (areaDLevel1Score >= 100) {
+          out.println("    <td class=\"pass\">All messages accepted as-is. "
+              + "<font size=\"-1\"><a href=\"#areaDLevel1\">(details)</a></font></td>");
+        } else if (areaDLevel1Score >= 0) {
+          out.println("    <td class=\"fail\">Some messages were not accepted as-is. (" + areaDLevel1Score
+              + "% messages accepted) " + "<font size=\"-1\"><a href=\"#areaDLevel1\">(details)</a></font></td>");
+        } else {
+          if (areaDLevel1Progress > -1) {
+            out.println("    <td>running now ... <br/>" + areaDLevel1Progress + "% complete</td>");
+          } else {
+            out.println("    <td>updates not sent yet</td>");
+          }
+        }
+        if (areaDLevel2Score >= 100) {
+          out.println("    <td class=\"pass\">All required IIS core fields were returned. "
+              + "<font size=\"-1\"><a href=\"#areaDLevel2\">(details)</a></font></td>");
+        } else if (areaDLevel2Score >= 0) {
+          out.println("    <td class=\"fail\">Not all required IIS core fields were returned. (" + areaDLevel2Score
+              + "% core fields returned) " + "<font size=\"-1\"><a href=\"#areaDLevel2\">(details)</a></font></td>");
+        } else {
+          if (areaDLevel2Progress > -1) {
+            out.println("    <td>running now ... <br/>" + areaDLevel2Progress + "% complete</td>");
+          } else {
+            if (willQuery) {
+              out.println("    <td>queries not sent yet</td>");
+            } else {
+              out.println("    <td>query tests not enabled</td>");
+            }
+          }
+        }
+        if (areaDLevel3Score >= 100) {
+          out.println("    <td class=\"pass\">All required and optional IIS core fields were returned. "
+              + "<font size=\"-1\"><a href=\"#areaDLevel3\">(details)</a></font></td>");
+        } else if (areaDLevel3Score >= 0) {
+          out.println("    <td class=\"fail\">Not all required or optional IIS core fields were returned. ("
+              + areaDLevel3Score + "% required and optional were returned) "
+              + "<font size=\"-1\"><a href=\"#areaDLevel3\">(details)</a></font></td>");
+        } else {
+          if (areaDLevel3Progress > -1) {
+            out.println("    <td>running now ... <br/>" + areaDLevel3Progress + "% complete</td>");
+          } else {
+            if (willQuery) {
+              out.println("    <td>queries not sent yet</td>");
+            } else {
+              out.println("    <td>query tests not enabled</td>");
+            }
+          }
+        }
+        out.println("  </tr>");
+      }
+      out.println("  <tr>");
+      out.println("    <th><font size=\"+1\">Performance</font><br/><font size=\"-2\">IIS can reply quickly</font></th>");
+      if (areaELevel1Progress == -1) {
+        out.println("    <td>not calculated yet</td>");
+      } else {
+        if (areaELevel1Score < 3000) {
+          out.println("    <td class=\"pass\">Performance was acceptable: " + areaELevel1Score + "ms for updates.</td>");
+        } else {
+          out.println("    <td class=\"fail\">Performance was below acceptable levels: " + areaELevel1Score
+              + "ms for updates.</td>");
+        }
+      }
+      if (areaELevel2Progress == -1) {
+        out.println("    <td>not calculated yet</td>");
+      } else {
+        if (areaELevel2Score < 5000) {
+          out.println("    <td class=\"pass\">Performance was acceptable: " + areaELevel2Score + "ms for queries.</td>");
+        } else {
+          out.println("    <td class=\"fail\">Performance was below acceptable levels: " + areaELevel2Score
+              + "ms for queries.</td>");
+        }
+      }
+      out.println("    <td>not defined</td>");
+      out.println("  </tr>");
+      if (runF) {
+        out.println("  <tr>");
+        out.println("    <th><font size=\"+1\">Conformance</font><br/><font size=\"-2\">IIS can respond correctly to requests</font></th>");
+        if (areaFLevel1Score >= 100) {
+          out.println("    <td class=\"pass\">All acknowledgement (ACK) responses meet HL7 and CDC standards. "
+              + "<font size=\"-1\"><a href=\"#areaFLevel1\">(details)</a></font></td>");
+        } else if (areaFLevel1Score >= 0) {
+          out.println("    <td class=\"fail\">Not all acknowledgement (ACK) responses meet HL7 and CDC standards. ("
+              + areaFLevel1Score + "% of messages met standard) "
+              + "<font size=\"-1\"><a href=\"#areaFLevel1\">(details)</a></font></td>");
+        } else {
+          if (areaFLevel1Progress > -1) {
+            out.println("    <td>running now ... <br/>" + areaFLevel1Progress + "% complete</td>");
+          } else {
+            out.println("    <td>not analyzed yet</td>");
+          }
+        }
+        if (areaFLevel2Score >= 100) {
+          out.println("    <td class=\"pass\">All query response (RSP) messages met HL7 and CDC standards.  "
+              + "<font size=\"-1\"><a href=\"#areaFLevel2\">(details)</a></font></td>");
+        } else if (areaFLevel2Score >= 0) {
+          out.println("    <td class=\"fail\">Not all query response (RSP) messages met HL7 and CDC standards. ("
+              + areaFLevel2Score + "% of fields returned) "
+              + "<font size=\"-1\"><a href=\"#areaFLevel2\">(details)</a></font></td>");
+        } else {
+          if (areaFLevel2Progress > -1) {
+            out.println("    <td>running now ... <br/>" + areaFLevel2Progress + "% complete</td>");
+          } else {
+            out.println("    <td>not analyzed yet</td>");
+          }
+        }
+        out.println("    <td>not defined</td>");
+        out.println("  </tr>");
+      }
       out.println("</table>");
+      out.println("<br/>");
     }
 
-    public void printProgressDetails(PrintWriter out) {
+    public void printProgressDetails(PrintWriter out, boolean toFile) {
+
+      SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm a");
+      out.println("<table border=\"1\" cellspacing=\"0\">");
+      if (testStarted != null) {
+        out.println("  <tr>");
+        out.println("    <th>Test Started</th>");
+        out.println("    <td>" + sdf.format(testStarted) + "</td>");
+        out.println("  </tr>");
+      }
+      if (testFinished != null) {
+        out.println("  <tr>");
+        out.println("    <th>Test Finished</th>");
+        out.println("    <td>" + sdf.format(testFinished) + "</td>");
+        out.println("  </tr>");
+      }
+      out.println("  <tr>");
+      out.println("    <th>Basic Tests</th>");
+      out.println("    <td>Yes</td>");
+      out.println("  </tr>");
+      out.println("  <tr>");
+      out.println("    <th>Intermediate Tests</th>");
+      out.println("    <td>" + (runB ? "Yes" : "No") + "</td>");
+      out.println("  </tr>");
+      out.println("  <tr>");
+      out.println("    <th>Advanced Tests</th>");
+      out.println("    <td>" + (runC ? "Yes" : "No") + "</td>");
+      out.println("  </tr>");
+      out.println("  <tr>");
+      out.println("    <th>Exceptional Tests</th>");
+      out.println("    <td>" + (runD ? "Yes" : "No") + "</td>");
+      out.println("  </tr>");
+      out.println("  <tr>");
+      out.println("    <th>Performance Tests</th>");
+      out.println("    <td>Yes</td>");
+      out.println("  </tr>");
+      out.println("  <tr>");
+      out.println("    <th>Conformance Tests</th>");
+      out.println("    <td>" + (runF ? "Yes" : "No") + "</td>");
+      out.println("  </tr>");
+      out.println("  <tr>");
+      out.println("    <th>Update Test Count</th>");
+      out.println("    <td>" + totalUpdateCount + "</td>");
+      out.println("  </tr>");
+      out.println("  <tr>");
+      out.println("    <th>Query Test Count</th>");
+      out.println("    <td>" + totalQueryCount + "</td>");
+      out.println("  </tr>");
+      out.println("</table>");
+      out.println("</br>");
+
+      out.println("<table border=\"1\" cellspacing=\"0\">");
+      out.println("  <tr>");
+      out.println("    <th>Connection</th>");
+      out.println("    <td>" + connector.getLabel() + "</td>");
+      out.println("  </tr>");
+      out.println("  <tr>");
+      out.println("    <th>Type</th>");
+      out.println("    <td>" + connector.getType() + "</td>");
+      out.println("  </tr>");
+      out.println("  <tr>");
+      out.println("    <th>Ack Type</th>");
+      out.println("    <td>" + connector.getAckType() + "</td>");
+      out.println("  </tr>");
+      if (!connector.getCustomTransformations().equals("")) {
+        out.println("  <tr>");
+        out.println("    <th>Transformations</th>");
+        out.println("    <td><pre>" + connector.getCustomTransformations() + "</pre></td>");
+        out.println("  </tr>");
+      }
+      out.println("</table>");
+      out.println("</br>");
+
+      if (queryConnector != connector) {
+        out.println("<table border=\"1\" cellspacing=\"0\">");
+        out.println("  <tr>");
+        out.println("    <th>Query Connection</th>");
+        out.println("    <td>" + queryConnector.getLabel() + "</td>");
+        out.println("  </tr>");
+        out.println("  <tr>");
+        out.println("    <th>Type</th>");
+        out.println("    <td>" + queryConnector.getType() + "</td>");
+        out.println("  </tr>");
+        out.println("  <tr>");
+        out.println("    <th>Ack Type</th>");
+        out.println("    <td>" + queryConnector.getAckType() + "</td>");
+        out.println("  </tr>");
+        if (!queryConnector.getCustomTransformations().equals("")) {
+          out.println("  <tr>");
+          out.println("    <th>Transformations</th>");
+          out.println("    <td><pre>" + queryConnector.getCustomTransformations() + "</pre></td>");
+          out.println("  </tr>");
+        }
+        out.println("</table>");
+        out.println("</br>");
+      }
 
       int testNum = 0;
       if (areaALevel1Progress > 0) {
         for (TestCaseMessage testCaseMessage : statusCheckTestCaseBasicList) {
           testNum++;
+          out.println("<div id=\"areaALevel1\"/>");
           out.println("<table border=\"1\" cellspacing=\"0\">");
           out.println("  <tr>");
           out.println("    <th>Basic Test #" + testNum + "</th>");
@@ -1206,23 +1779,22 @@ public class CertifyServlet extends ClientServlet
           out.println("  <tr>");
           out.println("    <th>Level 1</th>");
           if (testCaseMessage.isMajorChangesMade()) {
-            out.println("    <td class=\"fail\">Message was significantly changed in the process of submitting it <a href=\"CompareServlet?certifyServletBasicNum="
-                + testCaseMessage.getTestCaseId() + "&showSubmissionChange=true\">details</a>");
+            out.println("    <td class=\"fail\">Message was significantly changed in the process of submitting it "
+                + makeCompareDetailsLink(testCaseMessage, toFile, true));
             out.println("<br/>");
-            if (testCaseMessage.isPassedTest()) {
+            if (testCaseMessage.isAccepted()) {
               out.println("Message was accepted.");
             } else {
               out.println(" Message was rejected.");
             }
-            out.println("<a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
-                + testCaseMessage.getTestCaseId() + "\">details</a></td>");
-          } else if (testCaseMessage.isPassedTest()) {
-            out.println("    <td class=\"pass\">Message was accepted. <a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
-                + testCaseMessage.getTestCaseId() + "\">details</a></td>");
+
+            out.println(makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+          } else if (testCaseMessage.isAccepted()) {
+            out.println("    <td class=\"pass\">Message was accepted. "
+                + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
           } else if (testCaseMessage.isHasRun()) {
             out.println("    <td class=\"fail\">");
-            out.println("Message was not accepted. <a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
-                + testCaseMessage.getTestCaseId() + "\">details</a>");
+            out.println("Message was not accepted. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
             out.println("</td>");
           } else {
             out.println("    <td class=\"nottested\">not run yet</td>");
@@ -1248,8 +1820,8 @@ public class CertifyServlet extends ClientServlet
                 }
               }
               if (hasPassed) {
-                out.println("    <td class=\"pass\">All required fields returned. <a href=\"CompareServlet?certifyServletBasicNum="
-                    + testCaseMessage.getTestCaseId() + "\">details</a></td>");
+                out.println("    <td class=\"pass\">All required fields returned. "
+                    + makeCompareDetailsLink(testCaseMessage, toFile, false));
               } else if (hasRun) {
                 out.println("    <td class=\"fail\">Required fields not returned:");
                 out.println("      <ul>");
@@ -1263,8 +1835,7 @@ public class CertifyServlet extends ClientServlet
                   }
                 }
                 out.println("      </ul>");
-                out.println("      <a href=\"CompareServlet?certifyServletBasicNum=" + testCaseMessage.getTestCaseId()
-                    + "\">details</a>");
+                out.println("      " + makeCompareDetailsLink(testCaseMessage, toFile, false));
                 out.println("    </td>");
               } else {
                 out.println("    <td class=\"nottested\">not run yet</td>");
@@ -1290,8 +1861,8 @@ public class CertifyServlet extends ClientServlet
                 }
               }
               if (hasPassed) {
-                out.println("    <td class=\"pass\">All required and optional fields returned. <a href=\"CompareServlet?certifyServletBasicNum="
-                    + testCaseMessage.getTestCaseId() + "\">details</a></td>");
+                out.println("    <td class=\"pass\">All required and optional fields returned. "
+                    + makeCompareDetailsLink(testCaseMessage, toFile, false));
               } else if (hasRun) {
                 boolean hasOptionalFields = false;
                 for (CompareManager.Comparison comparison : testCaseMessage.getComparisonList()) {
@@ -1317,8 +1888,7 @@ public class CertifyServlet extends ClientServlet
                 } else {
                   out.println("    <td class=\"fail\">Level 2 not passed. ");
                 }
-                out.println("      <a href=\"CompareServlet?certifyServletBasicNum=" + testCaseMessage.getTestCaseId()
-                    + "\">details</a>");
+                out.println("      " + makeCompareDetailsLink(testCaseMessage, toFile, false));
                 out.println("    </td>");
               } else {
                 out.println("    <td class=\"nottested\">not run yet</td>");
@@ -1332,113 +1902,37 @@ public class CertifyServlet extends ClientServlet
       }
 
       if (areaBLevel1Progress > 0) {
+        out.println("<div id=\"areaBLevel1\"/>");
         out.println("<table border=\"1\" cellspacing=\"0\">");
         out.println("  <tr>");
         out.println("    <th colspan=\"2\">Intermediate Tests - Level 1 - Accepting Core Data</th>");
         out.println("  </tr>");
         for (TestCaseMessage testCaseMessage : statusCheckTestCaseIntermediateList) {
-          String classText = "nottested";
-          if (testCaseMessage.isHasRun()) {
-            classText = testCaseMessage.isPassedTest() ? "pass" : "fail";
-          }
-          out.println("  <tr>");
-          out.println("    <td class=\"" + classText + "\"><em>" + testCaseMessage.getDescription() + "</em></td>");
-          if (testCaseMessage.isHasRun()) {
-            if (testCaseMessage.isPassedTest()) {
-              out.println("    <td class=\"" + classText
-                  + "\">Code accepted. <a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
-                  + testCaseMessage.getTestCaseId() + "\">details</a></a></td>");
-            } else {
-              out.println("    <td class=\"" + classText
-                  + "\">Code was NOT accepted. <a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
-                  + testCaseMessage.getTestCaseId() + "\">details</a></a></td>");
-            }
-          } else {
-            out.println("    <td class=\"" + classText + "\">not run yet</td>");
-          }
-          out.println("  </tr>");
+          printTestCaseMessageDetailsUpdate(out, toFile, testCaseMessage);
         }
         out.println("</table>");
         out.println("</br>");
       }
       if (areaBLevel2Progress > 0) {
+        out.println("<div id=\"areaBLevel2\"/>");
         out.println("<table border=\"1\" cellspacing=\"0\">");
         out.println("  <tr>");
         out.println("    <th colspan=\"2\">Intermediate Tests - Level 2 - Supports Required</th>");
         out.println("  </tr>");
         for (TestCaseMessage testCaseMessage : statusCheckQueryTestCaseIntermediateList) {
-          String classText = "nottested";
-          if (testCaseMessage.isHasRun()) {
-            classText = testCaseMessage.isPassedTest() ? "pass" : "fail";
-          }
-          out.println("  <tr>");
-          out.println("    <td class=\"" + classText + "\"><em>" + testCaseMessage.getDescription() + "</em></td>");
-          if (testCaseMessage.isHasRun()) {
-            if (testCaseMessage.isPassedTest()) {
-              out.println("    <td class=\"" + classText
-                  + "\">All required fields were returned. <a href=\"CompareServlet?certifyServletBasicNum="
-                  + testCaseMessage.getTestCaseId() + "\">details</a></a></td>");
-            } else {
-              out.println("    <td class=\"" + classText
-                  + "\">Not all  required fields were returned. <a href=\"CompareServlet?certifyServletBasicNum="
-                  + testCaseMessage.getTestCaseId() + "\">details</a></a></td>");
-            }
-          } else {
-            out.println("    <td class=\"" + classText + "\">not run yet</td>");
-          }
-          out.println("  </tr>");
+          printTestCaseMessageDetailsQueryRequired(out, toFile, testCaseMessage);
         }
         out.println("</table>");
         out.println("</br>");
       }
       if (areaBLevel3Progress > 0) {
-
+        out.println("<div id=\"areaBLevel3\"/>");
         out.println("<table border=\"1\" cellspacing=\"0\">");
         out.println("  <tr>");
         out.println("    <th colspan=\"2\">Intermediate Tests - Level 3 - Supports Optional</th>");
         out.println("  </tr>");
         for (TestCaseMessage testCaseMessage : statusCheckQueryTestCaseIntermediateList) {
-          String classText = "nottested";
-          boolean passedAllOptional = false;
-          if (testCaseMessage.isHasRun() && testCaseMessage.getComparisonList() != null) {
-            passedAllOptional = true;
-            for (CompareManager.Comparison comparison : testCaseMessage.getComparisonList()) {
-              if (comparison.isTested()
-                  && comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL
-                  && !comparison.isPass()) {
-                passedAllOptional = false;
-                break;
-              }
-            }
-          }
-          if (testCaseMessage.isHasRun()) {
-            classText = testCaseMessage.isPassedTest() && passedAllOptional ? "pass" : "fail";
-          }
-          out.println("  <tr>");
-          out.println("    <td class=\"" + classText + "\"><em>" + testCaseMessage.getDescription() + "</em></td>");
-          if (testCaseMessage.isHasRun()) {
-            if (testCaseMessage.isPassedTest()) {
-
-              if (passedAllOptional) {
-                out.println("    <td class=\"" + classText
-                    + "\">All required and optional fields returned. <a href=\"CompareServlet?certifyServletBasicNum="
-                    + testCaseMessage.getTestCaseId() + "\">details</a></a></td>");
-              } else {
-
-                out.println("    <td class=\"" + classText
-                    + "\">Required fields were not returned. <a href=\"CompareServlet?certifyServletBasicNum="
-                    + testCaseMessage.getTestCaseId() + "\">details</a></a></td>");
-              }
-            } else {
-              out.println("    <td class=\""
-                  + classText
-                  + "\">Not all optional and/or required fields were returned. <a href=\"CompareServlet?certifyServletBasicNum="
-                  + testCaseMessage.getTestCaseId() + "\">details</a></a></td>");
-            }
-          } else {
-            out.println("    <td class=\"" + classText + "\">not run yet</td>");
-          }
-          out.println("  </tr>");
+          printTestCaseMessageDetailsQueryOptional(out, toFile, testCaseMessage);
         }
         out.println("</table>");
         out.println("</br>");
@@ -1450,6 +1944,7 @@ public class CertifyServlet extends ClientServlet
         }
 
         int priority = i + 1;
+        out.println("<div id=\"areaCLevel" + priority + "\"/>");
         out.println("<table border=\"1\" cellspacing=\"0\">");
         out.println("  <tr>");
         if (i == 0) {
@@ -1474,13 +1969,11 @@ public class CertifyServlet extends ClientServlet
           } else {
             if (testCaseMessage.isHasRun()) {
               if (testCaseMessage.isPassedTest()) {
-                out.println("    <td class=\"" + classText
-                    + "\">Issue was identified. <a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
-                    + testCaseMessage.getTestCaseId() + "\">details</a></a></td>");
+                out.println("    <td class=\"" + classText + "\">Issue was identified. "
+                    + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
               } else {
-                out.println("    <td class=\"" + classText
-                    + "\">Issue was NOT identified. <a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
-                    + testCaseMessage.getTestCaseId() + "\">details</a></a></td>");
+                out.println("    <td class=\"" + classText + "\">Issue was NOT identified. "
+                    + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
               }
             } else {
               out.println("    <td class=\"" + classText + "\">not run yet</td>");
@@ -1491,14 +1984,53 @@ public class CertifyServlet extends ClientServlet
         out.println("</table>");
         out.println("</br>");
       }
+
       if (areaDLevel1Progress > 0) {
+        out.println("<div id=\"areaDLevel1\"/>");
+        out.println("<table border=\"1\" cellspacing=\"0\">");
+        out.println("  <tr>");
+        out.println("    <th colspan=\"2\">Tolerance Tests - Level 1 - Allows minor differences</th>");
+        out.println("  </tr>");
+        for (TestCaseMessage testCaseMessage : statusCheckTestCaseExceptionalList) {
+          printTestCaseMessageDetailsUpdate(out, toFile, testCaseMessage);
+        }
+        out.println("</table>");
+        out.println("</br>");
+      }
+      if (areaDLevel2Progress > 0) {
+        out.println("<div id=\"areaDLevel2\"/>");
+        out.println("<table border=\"1\" cellspacing=\"0\">");
+        out.println("  <tr>");
+        out.println("    <th colspan=\"2\">Exceptional Tests - Level 2 - Supports Required</th>");
+        out.println("  </tr>");
+        for (TestCaseMessage testCaseMessage : statusCheckQueryTestCaseTolerantList) {
+          printTestCaseMessageDetailsQueryRequired(out, toFile, testCaseMessage);
+        }
+        out.println("</table>");
+        out.println("</br>");
+      }
+      if (areaDLevel3Progress > 0) {
+        out.println("<div id=\"areaDLevel3\"/>");
+        out.println("<table border=\"1\" cellspacing=\"0\">");
+        out.println("  <tr>");
+        out.println("    <th colspan=\"2\">Exceptional Tests - Level 3 - Supports Optional</th>");
+        out.println("  </tr>");
+        for (TestCaseMessage testCaseMessage : statusCheckQueryTestCaseTolerantList) {
+          printTestCaseMessageDetailsQueryOptional(out, toFile, testCaseMessage);
+        }
+        out.println("</table>");
+        out.println("</br>");
+      }
+
+      if (areaFLevel1Progress > 0) {
+        out.println("<div id=\"areaFLevel1\"/>");
         out.println("<table border=\"1\" cellspacing=\"0\">");
         out.println("  <tr>");
         out.println("    <th colspan=\"2\">Exceptional Tests - Level 1 - ACK Correctly Formatted</th>");
         out.println("  </tr>");
         for (TestCaseMessage testCaseMessage : ackAnalysisList) {
           String classText = "nottested";
-          HL7Analyzer ackAnalyzer = testCaseMessage.getAckAnalyzer();
+          HL7Analyzer ackAnalyzer = testCaseMessage.getHL7Analyzer();
           if (ackAnalyzer != null) {
             classText = ackAnalyzer.isPassedTest() ? "pass" : "fail";
           }
@@ -1506,15 +2038,11 @@ public class CertifyServlet extends ClientServlet
           out.println("    <td class=\"" + classText + "\"><em>" + testCaseMessage.getDescription() + "</em></td>");
           if (ackAnalyzer != null) {
             if (ackAnalyzer.isPassedTest()) {
-              out.println("    <td class=\""
-                  + classText
-                  + "\">Ack meets HL7 and CDC standards.  <a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
-                  + testCaseMessage.getTestCaseId() + "\">details</a></a></td>");
+              out.println("    <td class=\"" + classText + "\">Ack meets HL7 and CDC standards.  "
+                  + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
             } else {
-              out.println("    <td class=\""
-                  + classText
-                  + "\">Ack did not meet HL7 or CDC standards. <a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
-                  + testCaseMessage.getTestCaseId() + "\">details</a></a></td>");
+              out.println("    <td class=\"" + classText + "\">Ack did not meet HL7 or CDC standards. "
+                  + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
             }
           } else {
             out.println("    <td class=\"" + classText + "\">not run yet</td>");
@@ -1525,14 +2053,15 @@ public class CertifyServlet extends ClientServlet
         out.println("</br>");
       }
 
-      if (areaDLevel2Progress > 0) {
+      if (areaFLevel2Progress > 0) {
+        out.println("<div id=\"areaFLevel2\"/>");
         out.println("<table border=\"1\" cellspacing=\"0\">");
         out.println("  <tr>");
         out.println("    <th colspan=\"2\">Exceptional Tests - Level 2 - RSP Correctly Formatted</th>");
         out.println("  </tr>");
         for (TestCaseMessage testCaseMessage : rspAnalysisList) {
           String classText = "nottested";
-          HL7Analyzer ackAnalyzer = testCaseMessage.getAckAnalyzer();
+          HL7Analyzer ackAnalyzer = testCaseMessage.getHL7Analyzer();
           if (ackAnalyzer != null) {
             classText = ackAnalyzer.isPassedTest() ? "pass" : "fail";
           }
@@ -1540,15 +2069,11 @@ public class CertifyServlet extends ClientServlet
           out.println("    <td class=\"" + classText + "\"><em>" + testCaseMessage.getDescription() + "</em></td>");
           if (ackAnalyzer != null) {
             if (ackAnalyzer.isPassedTest()) {
-              out.println("    <td class=\""
-                  + classText
-                  + "\">RSP meets HL7 and CDC standards.  <a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
-                  + testCaseMessage.getTestCaseId() + "\">details</a></a></td>");
+              out.println("    <td class=\"" + classText + "\">RSP meets HL7 and CDC standards.  "
+                  + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
             } else {
-              out.println("    <td class=\""
-                  + classText
-                  + "\">RSP did not meet HL7 or CDC standards. <a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
-                  + testCaseMessage.getTestCaseId() + "\">details</a></a></td>");
+              out.println("    <td class=\"" + classText + "\">RSP did not meet HL7 or CDC standards. "
+                  + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
             }
           } else {
             out.println("    <td class=\"" + classText + "\">not run yet</td>");
@@ -1559,6 +2084,90 @@ public class CertifyServlet extends ClientServlet
         out.println("</br>");
       }
 
+    }
+
+    public void printTestCaseMessageDetailsQueryOptional(PrintWriter out, boolean toFile,
+        TestCaseMessage testCaseMessage) {
+      String classText = "nottested";
+      boolean passedAllOptional = false;
+      if (testCaseMessage.isHasRun() && testCaseMessage.getComparisonList() != null) {
+        passedAllOptional = true;
+        for (CompareManager.Comparison comparison : testCaseMessage.getComparisonList()) {
+          if (comparison.isTested()
+              && comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL
+              && !comparison.isPass()) {
+            passedAllOptional = false;
+            break;
+          }
+        }
+      }
+      if (testCaseMessage.isHasRun()) {
+        classText = testCaseMessage.isPassedTest() && passedAllOptional ? "pass" : "fail";
+      }
+      out.println("  <tr>");
+      out.println("    <td class=\"" + classText + "\"><em>" + testCaseMessage.getDescription() + "</em></td>");
+      if (testCaseMessage.isHasRun()) {
+        if (testCaseMessage.isPassedTest()) {
+
+          if (passedAllOptional) {
+            out.println("    <td class=\"" + classText + "\">All required and optional fields returned. "
+                + makeCompareDetailsLink(testCaseMessage, toFile, false) + "</td>");
+          } else {
+
+            out.println("    <td class=\"" + classText + "\">Required fields were not returned. "
+                + makeCompareDetailsLink(testCaseMessage, toFile, false) + "</td>");
+          }
+        } else {
+          out.println("    <td class=\"" + classText + "\">Not all optional and/or required fields were returned. "
+              + makeCompareDetailsLink(testCaseMessage, toFile, false) + "</td>");
+        }
+      } else {
+        out.println("    <td class=\"" + classText + "\">not run yet</td>");
+      }
+      out.println("  </tr>");
+    }
+
+    public void printTestCaseMessageDetailsQueryRequired(PrintWriter out, boolean toFile,
+        TestCaseMessage testCaseMessage) {
+      String classText = "nottested";
+      if (testCaseMessage.isHasRun()) {
+        classText = testCaseMessage.isPassedTest() ? "pass" : "fail";
+      }
+      out.println("  <tr>");
+      out.println("    <td class=\"" + classText + "\"><em>" + testCaseMessage.getDescription() + "</em></td>");
+      if (testCaseMessage.isHasRun()) {
+        if (testCaseMessage.isPassedTest()) {
+          out.println("    <td class=\"" + classText + "\">All required fields were returned. "
+              + makeCompareDetailsLink(testCaseMessage, toFile, false));
+        } else {
+          out.println("    <td class=\"" + classText + "\">Not all  required fields were returned. "
+              + makeCompareDetailsLink(testCaseMessage, toFile, false));
+        }
+      } else {
+        out.println("    <td class=\"" + classText + "\">not run yet</td>");
+      }
+      out.println("  </tr>");
+    }
+
+    public void printTestCaseMessageDetailsUpdate(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage) {
+      String classText = "nottested";
+      if (testCaseMessage.isHasRun()) {
+        classText = testCaseMessage.isAccepted() ? "pass" : "fail";
+      }
+      out.println("  <tr>");
+      out.println("    <td class=\"" + classText + "\"><em>" + testCaseMessage.getDescription() + "</em></td>");
+      if (testCaseMessage.isHasRun()) {
+        if (testCaseMessage.isAccepted()) {
+          out.println("    <td class=\"" + classText + "\">Message accepted. "
+              + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+        } else {
+          out.println("    <td class=\"" + classText + "\">Message was NOT accepted. "
+              + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+        }
+      } else {
+        out.println("    <td class=\"" + classText + "\">not run yet</td>");
+      }
+      out.println("  </tr>");
     }
 
     private int makeScore(int num, int denom) {
@@ -1576,6 +2185,36 @@ public class CertifyServlet extends ClientServlet
     private String paddWithZeros(int i, int zeros) {
       String s = "000000" + i;
       return s.substring(s.length() - zeros);
+    }
+
+    private String makeTestCaseMessageDetailsLink(TestCaseMessage testCaseMessage, boolean toFile) {
+      if (toFile) {
+        return "<font size=\"-1\"><a href=\"TC-" + testCaseMessage.getTestCaseNumber() + ".html\">details</a></font>";
+      } else {
+        return "<font size=\"-1\"><a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
+            + testCaseMessage.getTestCaseId() + "\">details</a></font>";
+      }
+    }
+
+    private String makeCompareDetailsLink(TestCaseMessage testCaseMessage, boolean toFile, boolean substantialChanges) {
+      if (toFile) {
+        if (substantialChanges) {
+          return "<font size=\"-1\"><a href=\"TC-" + testCaseMessage.getTestCaseNumber()
+              + ".html#changesMade\">(details)</a></font>";
+        } else {
+          return "<font size=\"-1\"><a href=\"TC-" + testCaseMessage.getTestCaseNumber()
+              + ".html#compareDetails\">(details)</a></font>";
+        }
+      } else {
+        if (substantialChanges) {
+          return "<font size=\"-1\"><a href=\"CompareServlet?certifyServletBasicNum=" + testCaseMessage.getTestCaseId()
+              + "&showSubmissionChange=true\">(details)</a></font>";
+        } else {
+          return "<font size=\"-1\"><a href=\"CompareServlet?certifyServletBasicNum=" + testCaseMessage.getTestCaseId()
+              + "\">(details)</a></font>";
+
+        }
+      }
     }
   }
 }

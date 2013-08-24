@@ -93,7 +93,7 @@ public class CompareServlet extends ClientServlet
 
       PrintWriter out = new PrintWriter(response.getWriter());
       response.setContentType("text/html;charset=UTF-8");
-      printHtmlHead(out, "Compare Message", request);
+      printHtmlHead(out, MENU_HEADER_HOME, request);
       out.println("    <form action=\"CompareServlet\" method=\"POST\">");
       out.println("      <table border=\"0\">");
       out.println("        <tr>");
@@ -123,42 +123,7 @@ public class CompareServlet extends ClientServlet
       out.println("    </form>");
       if (comparisonList != null) {
         out.println("    <h2>Comparison Results</h2>");
-        out.println("      <table border=\"1\" cellspacing=\"0\">");
-        String lastSegmentName = "XXX";
-        for (CompareManager.Comparison comparison : comparisonList) {
-          if (!comparison.getHl7FieldName().startsWith(lastSegmentName)) {
-            lastSegmentName = comparison.getHl7FieldName().substring(0, 3);
-            out.println("        <tr>");
-            out.println("          <th>" + lastSegmentName + "</th>");
-            out.println("          <th>Field</th>");
-            out.println("          <th>Core Data</th>");
-            out.println("          <th>Original Value</th>");
-            out.println("          <th>Returned Value</th>");
-            out.println("          <th>Status</th>");
-            out.println("        </tr>");
-          }
-          String passClass = " class=\"nottested\"";
-          if (comparison.isTested()) {
-            passClass = comparison.isPass() ? " class=\"pass\"" : " class=\"fail\"";
-          }
-          out.println("        <tr>");
-          out.println("          <td" + passClass + ">" + n(comparison.getHl7FieldName()) + "</td>");
-          out.println("          <td" + passClass + ">" + n(comparison.getFieldLabel()) + "</td>");
-          out.println("          <td" + passClass + ">" + n(comparison.getPriorityLevelLabel()) + "</td>");
-          out.println("          <td" + passClass + ">" + n(comparison.getOriginalValue()) + "</td>");
-          out.println("          <td" + passClass + ">" + n(comparison.getReturnedValue()) + "</td>");
-          if (comparison.isTested()) {
-            if (comparison.isPass()) {
-              out.println("          <td" + passClass + ">Pass</td>");
-            } else {
-              out.println("          <td" + passClass + ">Fail</td>");
-            }
-          } else {
-            out.println("          <td" + passClass + ">Not Tested</td>");
-          }
-          out.println("        </tr>");
-        }
-        out.println("      </table>");
+        printComparison(comparisonList, out);
       }
 
       out.println("<p><a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum=" + certifyServletBasicNum
@@ -169,6 +134,45 @@ public class CompareServlet extends ClientServlet
       printHtmlFoot(out);
       out.close();
     }
+  }
+
+  public static void printComparison(List<CompareManager.Comparison> comparisonList, PrintWriter out) {
+    out.println("      <table border=\"1\" cellspacing=\"0\">");
+    String lastSegmentName = "XXX";
+    for (CompareManager.Comparison comparison : comparisonList) {
+      if (!comparison.getHl7FieldName().startsWith(lastSegmentName)) {
+        lastSegmentName = comparison.getHl7FieldName().substring(0, 3);
+        out.println("        <tr>");
+        out.println("          <th>" + lastSegmentName + "</th>");
+        out.println("          <th>Field</th>");
+        out.println("          <th>Core Data</th>");
+        out.println("          <th>Original Value</th>");
+        out.println("          <th>Returned Value</th>");
+        out.println("          <th>Status</th>");
+        out.println("        </tr>");
+      }
+      String passClass = " class=\"nottested\"";
+      if (comparison.isTested()) {
+        passClass = comparison.isPass() ? " class=\"pass\"" : " class=\"fail\"";
+      }
+      out.println("        <tr>");
+      out.println("          <td" + passClass + ">" + n(comparison.getHl7FieldName()) + "</td>");
+      out.println("          <td" + passClass + ">" + n(comparison.getFieldLabel()) + "</td>");
+      out.println("          <td" + passClass + ">" + n(comparison.getPriorityLevelLabel()) + "</td>");
+      out.println("          <td" + passClass + ">" + n(comparison.getOriginalValue()) + "</td>");
+      out.println("          <td" + passClass + ">" + n(comparison.getReturnedValue()) + "</td>");
+      if (comparison.isTested()) {
+        if (comparison.isPass()) {
+          out.println("          <td" + passClass + ">Pass</td>");
+        } else {
+          out.println("          <td" + passClass + ">Fail</td>");
+        }
+      } else {
+        out.println("          <td" + passClass + ">Not Tested</td>");
+      }
+      out.println("        </tr>");
+    }
+    out.println("      </table>");
   }
 
   private static String n(String s) {

@@ -258,6 +258,7 @@ public class TestCaseMessage
   private String actualResultStatus = "";
   private String actualResultAckType = "";
   private String actualResultAckMessage = "";
+  private String actualMessageResponseType = "";
   private Transformer.PatientType patientType = Transformer.PatientType.ANY_CHILD;
   private boolean hasIssue = false;
   private Throwable exception = null;
@@ -266,10 +267,19 @@ public class TestCaseMessage
   private String derivedFromVXUMessage = "";
   private List<CompareManager.Comparison> comparisonList = null;
   private boolean passedTest = false;
+  private boolean accepted = false;
   private boolean majorChangesMade = false;
   private boolean hasRun = false;
   private int testCaseId = 0;
   
+  public boolean isAccepted() {
+    return accepted;
+  }
+
+  public void setAccepted(boolean accepted) {
+    this.accepted = accepted;
+  }
+
   public boolean isMajorChangesMade() {
     return majorChangesMade;
   }
@@ -279,7 +289,7 @@ public class TestCaseMessage
   }
 
  
-  public HL7Analyzer ackAnalyzer = null;
+  public HL7Analyzer hl7Analyzer = null;
   
   public String getMessageTextSent() {
     return messageTextSent;
@@ -289,12 +299,20 @@ public class TestCaseMessage
     this.messageTextSent = messageTextSent;
   }
   
-  public HL7Analyzer getAckAnalyzer() {
-    return ackAnalyzer;
+  public String getActualMessageResponseType() {
+    return actualMessageResponseType;
   }
 
-  public void setAckAnalyzer(HL7Analyzer ackAnalyzer) {
-    this.ackAnalyzer = ackAnalyzer;
+  public void setActualMessageResponseType(String actualMessageResponseType) {
+    this.actualMessageResponseType = actualMessageResponseType;
+  }
+
+  public HL7Analyzer getHL7Analyzer() {
+    return hl7Analyzer;
+  }
+
+  public void setHl7Analyzer(HL7Analyzer hl7Analyzer) {
+    this.hl7Analyzer = hl7Analyzer;
   }
 
   public int getTestCaseId() {

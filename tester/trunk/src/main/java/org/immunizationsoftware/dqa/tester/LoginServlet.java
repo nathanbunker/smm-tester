@@ -78,7 +78,7 @@ public class LoginServlet extends ClientServlet
                 sb.append(line);
                 sb.append("\n");
               }
-              SetupServlet.addConnectors(sb.toString(), session);
+              ConnectServlet.addConnectors(sb.toString(), session);
             } catch (Exception e)
             {
               message = "Unable to create default connections: " + e.getMessage();
@@ -87,7 +87,7 @@ public class LoginServlet extends ClientServlet
             {
               if (user.getSendData().getConnector() != null)
               {
-                SetupServlet.addConnector(user.getSendData().getConnector(), session);
+                ConnectServlet.addConnector(user.getSendData().getConnector(), session);
               }
               try
               {

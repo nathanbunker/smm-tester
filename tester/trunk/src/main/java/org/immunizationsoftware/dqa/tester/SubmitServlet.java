@@ -19,7 +19,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.immunizationsoftware.dqa.mover.AckAnalyzer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
 
 /**
@@ -30,7 +32,7 @@ public class SubmitServlet extends ClientServlet
 {
 
   protected static Connector getConnector(int id, HttpSession session) throws ServletException {
-    List<Connector> connectors = SetupServlet.getConnectors(session);
+    List<Connector> connectors = ConnectServlet.getConnectors(session);
     id--;
     if (id < connectors.size()) {
       return connectors.get(id);
@@ -72,9 +74,8 @@ public class SubmitServlet extends ClientServlet
       boolean transform = request.getParameter("transform") != null;
       Connector connector = getConnector(id, session);
       String message = request.getParameter("message");
-      
-      if (transform && !connector.getCustomTransformations().equals(""))
-      {
+
+      if (transform && !connector.getCustomTransformations().equals("")) {
         Transformer transformer = new Transformer();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
         connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
@@ -109,7 +110,7 @@ public class SubmitServlet extends ClientServlet
       response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
     } else {
       int id = 0;
-      List<Connector> connectors = SetupServlet.getConnectors(session);
+      List<Connector> connectors = ConnectServlet.getConnectors(session);
       if (connectors.size() == 1) {
         id = 1;
       } else {
@@ -155,7 +156,7 @@ public class SubmitServlet extends ClientServlet
       session.setAttribute("message", message);
       PrintWriter out = new PrintWriter(response.getWriter());
       response.setContentType("text/html;charset=UTF-8");
-      printHtmlHead(out, "Send Message", request);
+      printHtmlHead(out, MENU_HEADER_SEND, request);
       printForm(id, connectors, message, out);
       String responseText = null;
       if (id != 0) {
@@ -163,7 +164,23 @@ public class SubmitServlet extends ClientServlet
           Connector connector = getConnector(id, session);
           responseText = (String) request.getAttribute("responseText");
           if (responseText != null) {
-            out.println("<p>Response from " + connector.getLabel() + ": ");
+            String title = "Response Received";
+            HL7Reader ackMessageReader = new HL7Reader(responseText);
+            if (ackMessageReader.advanceToSegment("MSH")) {
+              String messageType = ackMessageReader.getValue(9);
+              if (messageType.equals("ACK")) {
+                AckAnalyzer ackAnalyzer = new AckAnalyzer(responseText, connector.getAckType());
+                if (ackAnalyzer.isPositive()) {
+                  title = "Message Accepted";
+                } else {
+                  title = "Message Rejected";
+                }
+              } else if (messageType.equals("RSP"))
+              {
+                title = "Query Response Received";
+              }
+            }
+            out.println("<h3>" + title + "</h3>");
             out.print("<pre>");
             out.print(responseText);
             out.println("</pre>");
@@ -208,7 +225,7 @@ public class SubmitServlet extends ClientServlet
           printForm(id, connectors, vxqMessage, out);
         }
       }
-      if (responseText != null && responseText.indexOf("|RSP^") > 0 ) {
+      if (responseText != null && responseText.indexOf("|RSP^") > 0) {
         session.setAttribute(CompareServlet.RSP_MESSAGE, responseText);
         if (session.getAttribute(CompareServlet.VXU_MESSAGE) != null) {
           out.println("<p><a href=\"CompareServlet\">Compare response with original VXU</a></p>");
