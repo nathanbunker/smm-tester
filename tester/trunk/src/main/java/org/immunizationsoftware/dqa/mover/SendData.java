@@ -826,6 +826,14 @@ public class SendData extends Thread
       throw new Exception("Script does not define connection");
     }
     connector = connectors.get(0);
+    for (int i = 1; i < connectors.size(); i++)
+    {
+      Connector c = connectors.get(i);
+      if (!c.getPurpose().equals("") && !connector.getOtherConnectorMap().containsKey(c.getPurpose()))
+      {
+        connector.getOtherConnectorMap().put(c.getPurpose(), c);
+      }
+    }
     connector.setThrowExceptions(true);
     if (statusLogger != null)
     {
