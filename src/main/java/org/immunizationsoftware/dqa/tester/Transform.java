@@ -12,7 +12,8 @@ public class Transform {
 
     protected String segment;
     protected int field;
-    protected int repeat = 1;
+    protected int segmentRepeat = 1;
+    protected int fieldRepeat = 1;
     protected String value;
     protected int subfield;
     protected String boundSegment = null;

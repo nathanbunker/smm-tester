@@ -81,9 +81,9 @@ public class InterfaceProfileServlet extends ClientServlet
       PrintWriter out = response.getWriter();
       try
       {
-        printHtmlHead(out, "Interface Profile", request);
+        printHtmlHead(out, MENU_HEADER_HOME, request);
         int id = 0;
-        List<Connector> connectors = SetupServlet.getConnectors(session);
+        List<Connector> connectors = ConnectServlet.getConnectors(session);
         if (connectors.size() == 1)
         {
           id = 1;
@@ -591,7 +591,7 @@ public class InterfaceProfileServlet extends ClientServlet
       PrintWriter out = response.getWriter();
       try
       {
-        printHtmlHead(out, "Profile Interface", request);
+        printHtmlHead(out, MENU_HEADER_HOME, request);
         out.println("    <form action=\"interfaceProfile\" method=\"POST\">");
         out.println("      <table border=\"0\">");
         int id = 0;
@@ -611,7 +611,7 @@ public class InterfaceProfileServlet extends ClientServlet
         out.println("        <tr>");
         out.println("          <td>Service</td>");
         out.println("          <td>");
-        List<Connector> connectors = SetupServlet.getConnectors(session);
+        List<Connector> connectors = ConnectServlet.getConnectors(session);
         if (connectors.size() == 1)
         {
           out.println("            " + connectors.get(0).getLabelDisplay());

@@ -72,7 +72,7 @@ public class InstallCertServlet extends ClientServlet
         session.setAttribute("installCert", installCert);
       }
       int id = 0;
-      List<Connector> connectors = SetupServlet.getConnectors(session);
+      List<Connector> connectors = ConnectServlet.getConnectors(session);
       if (connectors.size() == 1)
       {
         id = 1;
@@ -92,7 +92,7 @@ public class InstallCertServlet extends ClientServlet
       PrintWriter out = response.getWriter();
       try
       {
-        printHtmlHead(out, "Setup", request);
+        printHtmlHead(out, MENU_HEADER_SETUP, request);
         out.println("    <form action=\"InstallCertServlet\" method=\"POST\">");
         out.println("      <table border=\"0\">");
         out.println("        <tr>");

@@ -33,6 +33,8 @@ import org.immunizationsoftware.dqa.tester.manager.ScenarioManager;
 public class CreateTestCaseServlet extends ClientServlet
 {
 
+  public static final String IIS_TEST_REPORT_FILENAME_PREFIX = "IIS Test Report";
+
   /**
    * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
    * methods.
@@ -243,7 +245,7 @@ public class CreateTestCaseServlet extends ClientServlet
       session.setAttribute("message", testCaseMessage.getMessageText());
       try
       {
-        printHtmlHead(out, "Edit", request);
+        printHtmlHead(out, MENU_HEADER_EDIT, request);
         out.println("    <form action=\"CreateTestCaseServlet\" method=\"POST\">");
         out.println("      <table>");
         out.println("        <tr>");
@@ -586,6 +588,21 @@ public class CreateTestCaseServlet extends ClientServlet
           // unable to save, continue as normal
         }
 
+        testCaseFile = new File(testCaseDir, "TC-" + testCaseMessage.getTestCaseNumber() + ".html");
+        try
+        {
+          PrintWriter out = new PrintWriter(new FileWriter(testCaseFile));
+          String title = "Test Case Message " + testCaseMessage.getTestCaseNumber() + ": " + testCaseMessage.getDescription();
+          ClientServlet.printHtmlHeadForFile(out, title);
+          out.println("<p>[Return to <a href=\"TC-" + testCaseMessage.getTestCaseNumber() + ".txt\"/>IIS Test Report</a>]</p>");
+          TestCaseMessageViewerServlet.printTestCaseMessage(out, testCaseMessage);
+          ClientServlet.printHtmlFootForFile(out);
+          out.close();
+        } catch (IOException ioe)
+        {
+          ioe.printStackTrace();
+          // unable to save, continue as normal
+        }
       }
     }
   }
@@ -622,7 +639,7 @@ public class CreateTestCaseServlet extends ClientServlet
       File[] dirs = testCaseDir.listFiles(new FileFilter() {
         public boolean accept(File arg0)
         {
-          return arg0.isDirectory() && !arg0.getName().startsWith("Certification ");
+          return arg0.isDirectory() && !arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
         }
       });
       if (dirs != null)

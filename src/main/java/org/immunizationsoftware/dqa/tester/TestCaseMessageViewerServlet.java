@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.tester.CertifyServlet.CertifyRunner;
+import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.HL7Analyzer;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 
@@ -69,7 +70,7 @@ public class TestCaseMessageViewerServlet extends ClientServlet
       throws IOException {
     PrintWriter out = response.getWriter();
     try {
-      printHtmlHead(out, "Test Case Message Viewer", request);
+      printHtmlHead(out, MENU_HEADER_HOME, request);
 
       if (problem != null) {
         out.println("<p>" + problem + "</p>");
@@ -96,39 +97,107 @@ public class TestCaseMessageViewerServlet extends ClientServlet
     }
   }
 
-  public void printTestCaseMessage(PrintWriter out, TestCaseMessage testCaseMessage) {
+  public static void printTestCaseMessage(PrintWriter out, TestCaseMessage testCaseMessage) {
     out.println("<h2>" + testCaseMessage.getDescription() + "</h2>");
-    out.println("<pre>" + testCaseMessage.getMessageText() + "</pre>");
-    out.println("<table>");
-    out.println("  <tr>");
-    out.println("    <td>Assert Result</td>");
-    out.println("    <td>" + testCaseMessage.getAssertResult() + "</td>");
-    out.println("  </tr>");
-    if (testCaseMessage.getCauseIssues() != null && testCaseMessage.getCauseIssues().equals("")) {
-      out.println("  <tr>");
-      out.println("    <td>Cause Issues</td>");
-      out.println("    <td>" + testCaseMessage.getCauseIssues() + "</td>");
-      out.println("  </tr>");
+
+    if (testCaseMessage.getOriginalMessage() != null && !testCaseMessage.getOriginalMessage().equals("") && !testCaseMessage.getOriginalMessage().equals(testCaseMessage.getMessageText())) {
+      out.println("<h3>Original Message</h3>");
+      out.println("<p>The starting point for the message, before transformations applied. </p>");
+      out.println("<pre>" + testCaseMessage.getOriginalMessage() + "</pre>");
     }
-    out.println("</table>");
+    if (testCaseMessage.getQuickTransformations() != null && testCaseMessage.getQuickTransformations().length > 0) {
+      out.println("<p>The following quick transformations applied to original message:</p>");
+      out.println("<pre>");
+      for (String s : testCaseMessage.getQuickTransformations()) {
+        out.println("" + s + "");
+      }
+      out.println("</pre>");
+    }
+    if (testCaseMessage.getCustomTransformations() != null && !testCaseMessage.getCustomTransformations().equals("")) {
+      out.println("<p>The following custom transformations applied to original message:</p>");
+      out.println("<pre>" + testCaseMessage.getCustomTransformations() + "</pre>");
+    }
+    out.println("<h3>Request</h3>");
+    out.println("<p>This is the base text for the request. No local transformations have been applied.</p>");
+    out.println("<pre>" + testCaseMessage.getMessageText() + "</pre>");
+
+    if (testCaseMessage.getMessageTextSent() != null && !testCaseMessage.getMessageTextSent().equals("")
+        && !testCaseMessage.getMessageTextSent().equals(testCaseMessage.getMessageText())) {
+      out.println("<h3>Message Actually Sent</h3>");
+      out.println("<p>The final message message sent was different than the request, local transformations were applied. "
+          + "These are specified in the connection settings of the connector that was used to run this test. </p>");
+      out.println("<pre>" + testCaseMessage.getMessageTextSent() + "</pre>");
+
+      List<CompareManager.Comparison> comparisonList = CompareManager.compareMessages(testCaseMessage.getMessageText(),
+          testCaseMessage.getMessageTextSent());
+      if (comparisonList.size() > 0) {
+        boolean foundImportantChanges = false;
+        for (CompareManager.Comparison comparison : comparisonList) {
+          if (comparison.isTested() && !comparison.isPass() && comparison.getPriorityLevel() <= CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL) {
+            foundImportantChanges = true;
+            break;
+          }
+        }
+        if (foundImportantChanges) {
+          out.println("<div id=\"changesMade\"/>");
+          out.println("<h3>Substantial Changes Made To Message Actually Sent</h3>");
+          CompareServlet.printComparison(comparisonList, out);
+        }
+      }
+    }
+
+    if (testCaseMessage.isHasRun()) {
+      if (testCaseMessage.getActualMessageResponseType().equals("ACK")) {
+        if (testCaseMessage.isAccepted()) {
+          out.println("<h3>Message Accepted</h3>");
+        } else {
+          out.println("<h3>Message Rejected</h3>");
+        }
+      } else {
+        out.println("<h3>Response Received</h3>");
+      }
+      out.println("<pre>" + testCaseMessage.getActualResponseMessage() + "</pre>");
+    }
     if (testCaseMessage.getException() != null) {
+      out.println("<h3>Unexpected Problem Occurred</h3>");
       out.println("<p>Exception occurred: " + testCaseMessage.getException().getMessage() + "</p>");
       out.print("<pre>");
       testCaseMessage.getException().printStackTrace(out);
       out.print("</pre>");
     }
-    out.println("<pre>" + testCaseMessage.getActualResponseMessage() + "</pre>");
+    if (testCaseMessage.getDerivedFromVXUMessage() != null && !testCaseMessage.getDerivedFromVXUMessage().equals("")) {
+      out.println("<h3>Request Derived From This VXU Message</h3>");
+      out.println("<pre>" + testCaseMessage.getDerivedFromVXUMessage() + "</pre>");
+    }
+    if (testCaseMessage.getCustomTransformations() != null && !testCaseMessage.getCustomTransformations().equals("")) {
+      out.println("<h3>Custom Transformations Applied</h3>");
+      out.println("<pre>" + testCaseMessage.getCustomTransformations() + "</pre>");
+    }
+    testCaseMessage.getErrorList();
+    testCaseMessage.getTestCaseNumber();
+
     out.println("<table>");
     out.println("  <tr>");
-    out.println("    <td>Ack Message</td>");
-    out.println("    <td>" + testCaseMessage.getActualResultAckMessage() + "</td>");
+    out.println("    <th>Assert Result</th>");
+    out.println("    <td>" + testCaseMessage.getAssertResult() + "</td>");
     out.println("  </tr>");
+    if (testCaseMessage.getCauseIssues() != null && !testCaseMessage.getCauseIssues().equals("")) {
+      out.println("  <tr>");
+      out.println("    <th>Cause Issues</th>");
+      out.println("    <td>" + testCaseMessage.getCauseIssues() + "</td>");
+      out.println("  </tr>");
+    }
+
     out.println("  <tr>");
-    out.println("    <td>Ack Type</td>");
+    out.println("    <th>Ack Type</th>");
     out.println("    <td>" + testCaseMessage.getActualResultAckType() + "</td>");
     out.println("  </tr>");
     out.println("  <tr>");
-    out.println("    <td>Result Status</td>");
+    out.println("    <th>Accepted</th>");
+    out.println("    <td>" + (testCaseMessage.isAccepted() ? "Yes" : "No") + "</td>");
+    out.println("  </tr>");
+    out.println("  <tr>");
+    out.println("    <th>Test Result Status</th>");
     out.println("    <td>" + testCaseMessage.getActualResultStatus() + "</td>");
     out.println("  </tr>");
     List<TestRunner.Error> errorList = testCaseMessage.getErrorList();
@@ -142,7 +211,14 @@ public class TestCaseMessageViewerServlet extends ClientServlet
     }
     out.println("</table>");
     out.println("<br/>");
-    HL7Analyzer ackAnalyser = testCaseMessage.getAckAnalyzer();
+
+    if (testCaseMessage.getComparisonList() != null) {
+      out.println("    <div id=\"compareDetails\"/>");
+      out.println("    <h3>Comparison Results</h3>");
+      CompareServlet.printComparison(testCaseMessage.getComparisonList(), out);
+    }
+
+    HL7Analyzer ackAnalyser = testCaseMessage.getHL7Analyzer();
     if (ackAnalyser == null) {
       ackAnalyser = new HL7Analyzer(testCaseMessage);
     }
@@ -151,12 +227,13 @@ public class TestCaseMessageViewerServlet extends ClientServlet
     if (ackAnalyser.isPassedTest()) {
       out.println("<p>No problems found</p>");
     } else {
-      out.println("<p>The following issues were found</p>");
+      out.println("<p>The following issues were found: </p>");
       out.println("<ul>");
       for (String issue : ackAnalyser.getIssueList()) {
         out.println("  <li>" + issue + "</li>");
       }
       out.println("</ul>");
+      out.println("issue count = " + ackAnalyser.getIssueList().size());
     }
 
   }

@@ -70,7 +70,7 @@ public class StressTestServlet extends ClientServlet
     {
 
       int id = 0;
-      List<Connector> connectors = SetupServlet.getConnectors(session);
+      List<Connector> connectors = ConnectServlet.getConnectors(session);
       if (connectors.size() == 1)
       {
         id = 1;
@@ -290,7 +290,7 @@ public class StressTestServlet extends ClientServlet
     PrintWriter out = response.getWriter();
     try
     {
-      printHtmlHead(out, "Stress Test", request);
+      printHtmlHead(out, MENU_HEADER_HOME, request);
 
       if (problem != null)
       {
@@ -353,7 +353,7 @@ public class StressTestServlet extends ClientServlet
       out.println("        <tr>");
       out.println("          <td>Service</td>");
       out.println("          <td>");
-      List<Connector> connectors = SetupServlet.getConnectors(session);
+      List<Connector> connectors = ConnectServlet.getConnectors(session);
       if (connectors.size() == 1)
       {
         out.println("            " + connectors.get(0).getLabelDisplay());

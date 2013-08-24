@@ -43,46 +43,66 @@ public class HomeServlet extends ClientServlet
     PrintWriter out = response.getWriter();
     try
     {
-      printHtmlHead(out, "Home", request);
+      printHtmlHead(out, MENU_HEADER_HOME, request);
       if (username == null)
       {
         out.println("<h1>Immunization Registry Tester &amp; Simple Message Mover</h1>");
       } else
       {
-        out.println("<h1>What would you like to do?</h1>");
-        out.println("<h2>Create an example message</h2>");
-        out.println("<p>Create a sample message based on a specific NIST certification test story. </p>");
-        out.println("<form action=\"CreateTestCaseServlet\">");
-        out.println("<table>");
+        out.println("<h2>Primary Test Functions</h2>");
+        out.println("<table border=\"1\" cellspacing=\"0\">");
         out.println("  <tr>");
-        out.println("    <td>Scenario</td>");
-        out.println("    <td>");
-        out.println("      <select name=\"scenario\">");
-        for (String scenario : ScenarioManager.SCENARIOS)
-        {
-          out.println("        <option value=\"" + scenario + "\">" + scenario + "</option>");
-        }
-        out.println("      </select>");
-        out.println("      <input type=\"submit\" name=\"Start\" value=\"Create\"/>");
-        out.println("    </td>");
+        out.println("    <th>Function</th>");
+        out.println("    <th>Details</th>");
+        out.println("  </tr>");
+        out.println("  <tr>");
+        out.println("    <td><a href=\"SetupServlet\">" + MENU_HEADER_CONNECT + "</a></td>");
+        out.println("    <td>Setup connection to an IIS. </td>");
+        out.println("  </tr>");
+        out.println("  <tr>");
+        out.println("    <td><a href=\"SetupServlet\">" + MENU_HEADER_SETUP + "</a></td>");
+        out.println("    <td>Load, select, and download test case scripts.</td>");
+        out.println("  </tr>");
+        out.println("  <tr>");
+        out.println("    <td><a href=\"CreateTestCaseServlet\">" + MENU_HEADER_EDIT + "</a></td>");
+        out.println("    <td>Edit a selected test case or create a new test case. </td>");
+        out.println("  </tr>");
+        out.println("  <tr>");
+        out.println("    <td><a href=\"SubmitServlet\">" + MENU_HEADER_SEND + "</a></td>");
+        out.println("    <td>Submit a message or a test case to an IIS for processing.</td>");
+        out.println("  </tr>");
+        out.println("  <tr>");
+        out.println("    <td><a href=\"CertifyServlet\">" + MENU_HEADER_TEST + "</a></td>");
+        out.println("    <td>Start automated process to create report on how well IIS meets national standards.</td>");
         out.println("  </tr>");
         out.println("</table>");
-        out.println("</form>");
-        out.println("<h2>Send a Message</h2>");
-        out.println("<h2>Run Test</h2>");
-        out.println("<h2>Profile Interface</h2>");
-        out.println("<h2>Stress Test</h2>");
-        out.println("<a href=\"StressTestServlet\">Stress Test</a>");
+        out.println("<h2>Other Functions</h2>");
+        out.println("<table border=\"1\" cellspacing=\"0\">");
+        out.println("  <tr>");
+        out.println("    <td><a href=\"StressTestServlet\">Stress Test</a></td>");
+        out.println("    <td>Send multiple messages to an IIS to verify it's ability to handle many different requests at the same time. </td>");
+        out.println("  </tr>");
         Authenticate.User user = (Authenticate.User) session.getAttribute("user");
         if (user.hasSendData())
         {
-          out.println("<h2>Install Cert</h2>");
-          out.println("<a href=\"InstallCertServlet\">Install Cert</a>");
+          out.println("  <tr>");
+          out.println("    <td><a href=\"InstallCertServlet\">Install Cert</a></td>");
+          out.println("    <td>Install certificate for use on a particular connection.</td>");
+          out.println("  </tr>");
         }
-        out.println("<h2>Certify</h2>");
-        out.println("<a href=\"CertifyServlet\">Certify DQA Interface</a>");
-        out.println("<h2>Compare VXU to RSP</h2>");
-        out.println("<a href=\"CompareServlet\">Compare</a>");
+        out.println("  <tr>");
+        out.println("    <td><a href=\"CompareServlet\">Compare</a></td>");
+        out.println("    <td>Compare VXU and RSP messages to determine if important information matches between the messages. </td>");
+        out.println("  </tr>");
+        out.println("  <tr>");
+        out.println("    <td><a href=\"testCase\">Run Tests</a></td>");
+        out.println("    <td>This is a deprecated function that is now covered by the Test IIS. </td>");
+        out.println("  </tr>");
+        out.println("  <tr>");
+        out.println("    <td><a href=\"interfaceProfile\">Profile Interface</a></td>");
+        out.println("    <td>This is a deprecated function that is now covered by the Test IIS. </td>");
+        out.println("  </tr>");
+        out.println("</table>");
       }
       printHtmlFoot(out);
 
