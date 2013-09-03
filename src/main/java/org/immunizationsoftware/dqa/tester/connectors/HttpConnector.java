@@ -45,6 +45,7 @@ public class HttpConnector extends Connector
   public static int MESSAGEDATA = 3;
   public static int OTHERID = 4;
   private boolean stripXML = false;
+  private boolean deduplicate = false;
   private AuthenticationMethod authenticationMethod = AuthenticationMethod.FORM;
   private String[] fieldNames = { FIELD_USERID, FIELD_PASSWORD, FIELD_FACILITYID, FIELD_MESSAGEDATA, FIELD_OTHERID};
 
@@ -73,6 +74,12 @@ public class HttpConnector extends Connector
 
   public HttpConnector stripXML() {
     stripXML = true;
+    return this;
+  }
+  
+  public HttpConnector deduplicate()
+  {
+    deduplicate = true;
     return this;
   }
 
@@ -173,6 +180,11 @@ public class HttpConnector extends Connector
         }
         StringBuilder sb = new StringBuilder();
 
+        if (deduplicate)
+        {
+          sb.append("deduplicate=deduplicate&");
+        }
+
         sb.append(fieldNames[USERID]);
         sb.append("=");
         sb.append(URLEncoder.encode(conn.userId, "UTF-8"));
@@ -193,7 +205,7 @@ public class HttpConnector extends Connector
           sb.append("=");
           sb.append(URLEncoder.encode(conn.otherId, "UTF-8"));
         }
-
+        
         sb.append("&");
         sb.append(fieldNames[MESSAGEDATA]);
         sb.append("=");
@@ -299,6 +311,8 @@ public class HttpConnector extends Connector
         setFieldName(HttpConnector.OTHERID, readValue(field));
       } else if (field.startsWith("Strip XML:")) {
         stripXML = true;
+      } else if (field.startsWith("Deduplicate:")) {
+        deduplicate = true;
       } else if (field.startsWith("Authentication Method:")) {
         String s = readValue(field);
         if (s.equalsIgnoreCase(AuthenticationMethod.HEADER.toString())) {
@@ -340,6 +354,9 @@ public class HttpConnector extends Connector
     }
     if (stripXML) {
       sb.append("Strip XML: true\n");
+    }
+    if (deduplicate) {
+      sb.append("Deduplicate: true\n");
     }
     if (authenticationMethod != null && authenticationMethod != AuthenticationMethod.FORM) {
       sb.append("Authentication Method: " + authenticationMethod);

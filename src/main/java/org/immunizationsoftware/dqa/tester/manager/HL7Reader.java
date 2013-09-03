@@ -198,6 +198,10 @@ public class HL7Reader
 
   public String getValue(int fieldNum, int componentNum) {
     String field = getOriginalField(fieldNum);
+    return getValueInternal(componentNum, field);
+  }
+
+  private String getValueInternal(int componentNum, String field) {
     int i = 1;
     while (i < componentNum) {
       int pos = field.indexOf("^");
@@ -222,6 +226,38 @@ public class HL7Reader
       }
     }
     return count;
+  }
+
+  public String getValueBySearchingRepeats(int fieldNum, int componentNum, String searchValue, int searchComponentNum) {
+    String field = getOriginalField(fieldNum);
+    int pos = 0;
+    while (pos < field.length()) {
+      int endPos = field.indexOf("~");
+      if (endPos == -1) {
+        endPos = field.length();
+      }
+      String fieldRep = field.substring(pos, endPos);
+
+      boolean found = getValueInternal(searchComponentNum, fieldRep).equals(searchValue);
+
+      if (found) {
+        return getValueInternal(componentNum, fieldRep);
+      }
+      
+      pos = endPos + 1;
+
+      if (pos < field.length())
+      {
+        field = field.substring(pos);
+        pos = 0;
+      }
+      else
+      {
+        return "";
+      }
+    }
+
+    return "";
   }
 
   public String getValueRepeat(int fieldNum, int componentNum, int repeatNum) {

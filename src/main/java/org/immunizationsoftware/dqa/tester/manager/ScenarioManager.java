@@ -20,11 +20,12 @@ public class ScenarioManager
   public static final String SCENARIO_6_R_VARICELLA_HISTORY_CHILD = "NIST MU2.6.r - Varicella History Child (replica)";
   public static final String SCENARIO_7_1_COMPLETE_RECORD = "NIST MU2.7.1 - Complete Record";
   public static final String SCENARIO_7_R_COMPLETE_RECORD = "NIST MU2.7.r - Complete Record (replica)";
+  public static final String SCENARIO_ADD_DELETE = "Add and then Delete - Admin Child";
 
   public static final String[] SCENARIOS = { SCENARIO_BLANK, SCENARIO_1_1_ADMIN_CHILD, SCENARIO_1_R_ADMIN_CHILD, SCENARIO_2_1_ADMIN_ADULT,
       SCENARIO_2_R_ADMIN_ADULT, SCENARIO_3_1_HISTORICAL_CHILD, SCENARIO_3_R_HISTORICAL_CHILD, SCENARIO_4_1_CONSENTED_CHILD,
       SCENARIO_4_R_CONSENTED_CHILD, SCENARIO_5_1_REFUSED_TODDLER, SCENARIO_5_R_REFUSED_TODDLER, SCENARIO_6_1_VARICELLA_HISTORY_CHILD,
-      SCENARIO_6_R_VARICELLA_HISTORY_CHILD, SCENARIO_7_1_COMPLETE_RECORD, SCENARIO_7_R_COMPLETE_RECORD };
+      SCENARIO_6_R_VARICELLA_HISTORY_CHILD, SCENARIO_7_1_COMPLETE_RECORD, SCENARIO_7_R_COMPLETE_RECORD, SCENARIO_ADD_DELETE };
 
   public static TestCaseMessage createTestCaseMessage( String scenario)
   {
@@ -42,15 +43,21 @@ public class ScenarioManager
 
     if (scenario.equals(SCENARIO_BLANK))
     {
-      description = "Admininistered for Child";
+      description = "Administered for Child";
       originalMessage = "MSH|\nPID|\nPD1|\nNK1|\nORC|\nRXA|\nRXR|\nOBX|\nOBX|\nOBX|\nOBX|\n";
       quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "MOTHER", "RACE", "ETHNICITY", "VAC1_ADMIN" };
       patientType = PatientType.TODDLER;
     } else if (scenario.equals(SCENARIO_1_R_ADMIN_CHILD))
     {
-      description = "NIST IZ #1: Admininistered for Child (replica)";
+      description = "NIST IZ #1: Administered for Child (replica)";
       originalMessage = "MSH|\nPID|\nPD1|\nNK1|\nORC|\nRXA|\nRXR|\nOBX|\nOBX|\nOBX|\nOBX|\n";
       quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "MOTHER", "RACE", "ETHNICITY", "VAC1_ADMIN" };
+      patientType = PatientType.TODDLER;
+    } else if (scenario.equals(SCENARIO_ADD_DELETE))
+    {
+      description = "Add and then Delete: Administered for Child";
+      originalMessage = "MSH|\nPID|\nPD1|\nNK1|\nORC|\nRXA|\nRXR|\nOBX|\nOBX|\nOBX|\nOBX|\nORC|\nRXA|\n";
+      quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "MOTHER", "RACE", "ETHNICITY", "VAC1_ADMIN", "VAC1_DELETE" };
       patientType = PatientType.TODDLER;
     } else if (scenario.equals(SCENARIO_2_R_ADMIN_ADULT))
     {
@@ -96,7 +103,7 @@ public class ScenarioManager
       patientType = PatientType.TODDLER;
     } else if (scenario.equals(SCENARIO_1_1_ADMIN_CHILD))
     {
-      description = "NIST IZ #1.1: Admininistered for Child";
+      description = "NIST IZ #1.1: Administered for Child";
       originalMessage = "MSH|^~\\&|Test EHR Application|X68||NIST Test Iz Reg|201207010822||VXU^V04^VXU_V04|NIST-IZ-001.00|P|2.5.1|||AL|ER\n"
           + "PID|1||D26376273^^^NIST MPI^MR||Snow^Madelynn^Ainsley^^^^L|Lam^Morgan|20100706|F||2076-8^Native Hawaiian or Other Pacific Islander^HL70005|32 Prescott Street Ave^^Warwick^MA^02452^USA^L||^PRN^PH^^^657^5558563|||||||||2186-5^non Hispanic or Latino^CDCREC\n"
           + "PD1|||||||||||02^Reminder/Recall - any method^HL70215|||||A|20120701|20120701\n"

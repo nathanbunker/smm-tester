@@ -4,10 +4,21 @@ import junit.framework.TestCase;
 
 public class TestHL7Reader extends TestCase
 {
+  
+  public void testRandom()
+  {
+    long t = System.currentTimeMillis();
+    int rand = (int) (t % 10);
+    System.out.println("--> t    = " + t);
+    System.out.println("--> rand = " + rand);
+    assertTrue(rand >= 0 && rand < 10);
+  }
+
+
   public void testReader() {
     HL7Reader hl7Reader = new HL7Reader(
         "MSH|^~\\&||TEST|||20111220043944||VXU^V04^VXU_V04|MCIR3943959000|P|2.5.1|\r"
-            + "PID|1||MCIR3943959000^^^OIS-TEST^MR~^^^^MA||Dundy^Bennett^A^^^^L|Comanche|20110614|M||2106-3^White^HL7005|177 Schoolcraft Ave^^Flint^MI^48556^USA||(810)509-9542^PRN^PH^^^810^509-9542|||||||||2186-5^not Hispanic or Latino^HL70189|\r"
+            + "PID|1||MCIR3943959000^^^OIS-TEST^MR~Hi^^^^MA||Dundy^Bennett^A^^^^L|Comanche|20110614|M||2106-3^White^HL7005|177 Schoolcraft Ave^^Flint^MI^48556^USA||(810)509-9542^PRN^PH^^^810^509-9542|||||||||2186-5^not Hispanic or Latino^HL70189|\r"
             + "PD1|\r"
             + "NK1|1|Dundy^Aldora|MTH^Mother^HL70063|\r"
             + "PV1|1|R|\r"
@@ -23,6 +34,7 @@ public class TestHL7Reader extends TestCase
     assertEquals("Dundy", hl7Reader.getValue(5));
     assertEquals("Bennett", hl7Reader.getValue(5, 2));
     assertEquals("MA", hl7Reader.getValueRepeat(3, 5, 2));
+    assertEquals("Hi", hl7Reader.getValueBySearchingRepeats(3, 1, "MA", 5));
     assertEquals(1, hl7Reader.getRepeatCount(5));
     assertEquals(2, hl7Reader.getRepeatCount(3));
     assertTrue(hl7Reader.advanceToSegment("RXA"));
