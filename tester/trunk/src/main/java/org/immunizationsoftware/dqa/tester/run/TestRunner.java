@@ -98,7 +98,7 @@ public class TestRunner
   public void setPassedTest(boolean pass) {
     this.passedTest = pass;
   }
-
+  
   public boolean runTest(Connector connector, TestCaseMessage testCaseMessage) throws Exception {
     testCaseMessage.setActualResponseMessage("");
     testCaseMessage.setPassedTest(false);

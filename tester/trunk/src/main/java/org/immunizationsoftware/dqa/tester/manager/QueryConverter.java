@@ -32,7 +32,7 @@ public class QueryConverter
       String messageId = "." + count;
       String queryDateTime = "";
       if (mshFields.size() > MAX_FIELDS_IN_SEGMENT) {
-        messageId = mshFields.get(10) + "." + count;
+        messageId = System.currentTimeMillis() + "." + count;
         sb.append("MSH|^~\\&|");
         sb.append(mshFields.get(3) + "|");
         sb.append(mshFields.get(4) + "|");
@@ -159,7 +159,7 @@ public class QueryConverter
       incCount();
       String messageId = "." + count;
       if (mshFields.size() > MAX_FIELDS_IN_SEGMENT) {
-        messageId = mshFields.get(10) + "." + count;
+        messageId = System.currentTimeMillis() + "." + count;
         sb.append("MSH|^~\\&|");
         sb.append(mshFields.get(3) + "|");
         sb.append(mshFields.get(4) + "|");
@@ -210,7 +210,7 @@ public class QueryConverter
 
   private static void incCount() {
     count++;
-    if (count == Integer.MAX_VALUE) {
+    if (count > 99999) {
       count = 0;
     }
   }

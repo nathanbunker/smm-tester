@@ -7,6 +7,11 @@ import org.immunizationsoftware.dqa.tester.TestCaseMessage;
 
 public class HL7Analyzer
 {
+  private static final String VIOLATION_MSH_02_IZ_12 = "Violation of IZ-12: The MSH-1 (Field Separator) field SHALL be valued \"|\"";
+  private static final String VIOLATION_MSH_01 = "ACK does not start with MSH segment";
+  
+
+  
   private List<String> il;
   private HL7Reader reader;
   private HL7Reader originalRequestReader;
@@ -86,10 +91,10 @@ public class HL7Analyzer
 
   private void analyzeMSH() {
     if (!reader.advanceToSegment("MSH")) {
-      il.add("ACK does not start with MSH segment");
+      il.add(VIOLATION_MSH_01);
       passedTest = false;
     } else if (!reader.getFieldSeparator().equals("|")) {
-      il.add("Violation of IZ-12: The MSH-1 (Field Separator) field SHALL be valued \"|\"");
+      il.add(VIOLATION_MSH_02_IZ_12);
       passedTest = false;
     } else if (validateRequired(2, "Encoding Characters")) {
       if (!reader.getValue(2).equals("^~\\&")) {

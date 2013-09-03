@@ -19,6 +19,26 @@ public class Certify
   public static final String FIELD_HOD = "HOD";
   public static final String FIELD_REGISTRY_STATUS = "REGISTRY STATUS";
   public static final String FIELD_REFUSAL_REASON = "REFUSAL REASON";
+  public static final String FIELD_RELATIONSHIP = "RELATIONSHIP";
+  public static final String FIELD_BODY_ROUTE = "BODY ROUTE";
+  public static final String FIELD_BODY_SITE = "BODY SITE";
+  public static final String FIELD_VAC_HISTORICAL = "VAC HISTORICAL";
+  public static final String FIELD_VAC_ADMIN= "VAC ADMIN";
+  public static final String FIELD_MVX = "MVX";
+  public static final String FIELD_ADDRESS_TYPE = "ADDRESS TYPE";
+  public static final String FIELD_NAME_TYPE = "NAME TYPE";
+  public static final String FIELD_TEL_USE_CODE = "TEL USE CODE";
+  public static final String FIELD_TEL_EQUIPMENT_TYPE = "TEL EQUIPMENT TYPE";
+  public static final String FIELD_ID_TYPE = "ID TYPE";
+  public static final String FIELD_PUBLICITY_CODE = "PUBLICITY CODE";
+  public static final String FIELD_COUNTY_CODE = "COUNTY CODE";
+  public static final String FIELD_LANGUAGE = "LANGUAGE";
+  public static final String FIELD_LANGUAGE_FULL = "LANGUAGE FULL";
+  public static final String FIELD_RACE_FULL = "RACE FULL";
+  public static final String FIELD_COMPLETION = "COMPLETION";
+  public static final String FIELD_ACTION = "ACTION";
+  public static final String FIELD_DEGREE = "DEGREE";
+  public static final String FIELD_ = "";
 
   private static Map<String, List<String[]>> conceptMap = null;
 
@@ -96,7 +116,7 @@ public class Certify
 
     return certifyItemList;
   }
-
+  
   private String readValue(String[] values, int pos) {
     if (pos < values.length) {
       return values[pos];

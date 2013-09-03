@@ -64,6 +64,7 @@ public class Transformer
   private static final String REMOVE_SEGMENT = "remove segment ";
 
   private static final String CLEAN = "clean";
+  private static final String CLEAN_NO_LAST_SLASH = "no last slash";
 
   private static final int VACCINE_CVX = 0;
   private static final int VACCINE_NAME = 1;
@@ -361,6 +362,11 @@ public class Transformer
           count = count - (alsoHas(testCaseMessage, "VAC2_ADMIN") || alsoHas(testCaseMessage, "VAC2_HIST") ? 1 : 0);
           count = count - (alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1 : 0);
           quickTransforms = addAdmin(quickTransforms, "1", count);
+        } else if (extra.equals("VAC1_DELETE")) {
+          int count = 3;
+          count = count - (alsoHas(testCaseMessage, "VAC2_ADMIN") || alsoHas(testCaseMessage, "VAC2_HIST") ? 1 : 0);
+          count = count - (alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1 : 0);
+          quickTransforms = addDelete(quickTransforms, "2", count);
         } else if (extra.equals("VAC2_ADMIN")) {
           int count = 3;
           count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1 : 0;
@@ -528,6 +534,28 @@ public class Transformer
     String result = transform(testCaseMessage.getPreparedMessage(), transforms, testCaseMessage.getPatientType(), null);
     testCaseMessage.setMessageText(result);
     testCaseMessage.setQuickTransformationsConverted(quickTransforms);
+  }
+
+  private String addDelete(String quickTransforms, String vaccineNumber, int count) {
+    quickTransforms += "ORC#" + vaccineNumber + "-3=[VAC" + count + "_ID]\n";
+    String front = "RXA#" + vaccineNumber;
+    quickTransforms += front + "-3=[VAC" + count + "_DATE]\n";
+    quickTransforms += front + "-9.1=00\n";
+    quickTransforms += front + "-9.2=Administered\n";
+    quickTransforms += front + "-9.3=NIP001\n";
+    quickTransforms += front + "-5.1=[VAC" + count + "_CVX]\n";
+    quickTransforms += front + "-5.2=[VAC" + count + "_CVX_LABEL]\n";
+    quickTransforms += front + "-5.3=CVX\n";
+    quickTransforms += front + "-6=[VAC2_AMOUNT]\n";
+    quickTransforms += front + "-7.1=mL\n";
+    quickTransforms += front + "-7.2=milliliters\n";
+    quickTransforms += front + "-7.3=UCUM\n";
+    quickTransforms += front + "-15=[VAC" + count + "_LOT]\n";
+    quickTransforms += front + "-17.1=[VAC" + count + "_MVX]\n";
+    quickTransforms += front + "-17.2=[VAC" + count + "_MVX_LABEL]\n";
+    quickTransforms += front + "-17.3=MVX\n";
+    quickTransforms += front + "-21=D\n";
+    return quickTransforms;
   }
 
   private String addAdmin(String quickTransforms, String vaccineNumber, int count) {
@@ -768,7 +796,8 @@ public class Transformer
                 }
               }
             }
-          } else if (line.toLowerCase().trim().equals(CLEAN)) {
+          } else if (line.toLowerCase().trim().startsWith(CLEAN)) {
+            boolean noLastSlash = line.toLowerCase().indexOf(CLEAN_NO_LAST_SLASH) != -1;
             BufferedReader inResult = new BufferedReader(new StringReader(resultText));
             resultText = "";
             String lineResult;
@@ -829,7 +858,14 @@ public class Transformer
                     }
                   }
                 }
-                resultText += finalLine + "|\r";
+                if (noLastSlash) {
+                resultText += finalLine + "\r";
+                }
+                else 
+                {
+                  resultText += finalLine + "|\r";
+                }
+              
                 if (headerStart != null) {
                   resultText = headerStart + resultText;
                 }
