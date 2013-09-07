@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 
 public class ST extends HL7Component
@@ -9,27 +10,27 @@ public class ST extends HL7Component
 
   public ST()
   {
-    super("ST", "String", "", 0);
+    super(ItemType.DATATYPE, "ST", "String", "", 0);
   }
 
   public ST(String componentNameSpecific) {
-    super("ST", "String", componentNameSpecific, 0);
+    super(ItemType.DATATYPE, "ST", "String", componentNameSpecific, 0);
   }
 
   public ST(String componentNameSpecific, UsageType usageType, int lengthMax) {
-    super("ST", "String", componentNameSpecific, 0, usageType, lengthMax);
+    super(ItemType.DATATYPE, "ST", "String", componentNameSpecific, 0, usageType, lengthMax);
   }
 
   public ST(String componentNameSpecific, UsageType usageType) {
-    super("ST", "String", componentNameSpecific, 0, usageType, Integer.MAX_VALUE);
+    super(ItemType.DATATYPE, "ST", "String", componentNameSpecific, 0, usageType, Integer.MAX_VALUE);
   }
 
   public ST(String componentNameSpecific, UsageType usageType, Cardinality cardinality, int lengthMax) {
-    super("ST", "String", componentNameSpecific, 0, usageType, cardinality, lengthMax);
+    super(ItemType.DATATYPE, "ST", "String", componentNameSpecific, 0, usageType, cardinality, lengthMax);
   }
 
   public ST(String componentNameSpecific, UsageType usageType, Cardinality cardinality) {
-    super("ST", "String", componentNameSpecific, 0, usageType, Integer.MAX_VALUE);
+    super(ItemType.DATATYPE, "ST", "String", componentNameSpecific, 0, usageType, Integer.MAX_VALUE);
   }
 
   @Override

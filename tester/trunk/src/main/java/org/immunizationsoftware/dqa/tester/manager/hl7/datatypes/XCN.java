@@ -1,6 +1,8 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
+import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
 import org.immunizationsoftware.dqa.tester.manager.hl7.predicates.AllEmpty;
@@ -233,8 +235,12 @@ public class XCN extends HL7Component
   }
 
   public XCN(String componentName, UsageType usageType, int lengthMax) {
-    super("XCN", "Extended Composite ID Number and Name for Persons", componentName, 23, usageType, lengthMax);
+    super(ItemType.DATATYPE, "XCN", "Extended Composite ID Number and Name for Persons", componentName, 23, usageType, lengthMax);
+    init();
+  }
 
+  public XCN(String componentName, UsageType usageType, Cardinality cardinality) {
+    super(ItemType.DATATYPE, "XCN", "Extended Composite ID Number and Name for Persons", componentName, 23, usageType, cardinality);
     init();
   }
 
@@ -251,11 +257,11 @@ public class XCN extends HL7Component
     setChild(7, degree = new IS("Degree", UsageType.X));
     setChild(8, sourceTable = new IS("Source Table", UsageType.O));
     setChild(9, assigningAuthority = new HD("Assigning Authority", UsageType.C, ValueSet.HL70363));
-    idNumber.setConditionalPredicate(new IsValued(idNumber, UsageType.R, UsageType.X));
+    assigningAuthority.setConditionalPredicate(new IsValued(idNumber, UsageType.R, UsageType.X));
     setChild(10, nameTypeCode = new ID("Name Type Code", UsageType.RE, 1, ValueSet.HL70200));
     setChild(11, identifierCheckDigit = new ST("Identifier Check Digit", UsageType.O));
     setChild(12, checkDigitScheme = new ID("Check Digit Scheme", UsageType.C));
-    idNumber.setConditionalPredicate(new IsValued(identifierCheckDigit, UsageType.O, UsageType.X));
+    checkDigitScheme.setConditionalPredicate(new IsValued(identifierCheckDigit, UsageType.O, UsageType.X));
     setChild(13, identifierTypeCode = new ID("Identifier Type Code", UsageType.O));
     setChild(14, assigningFacility = new HD("Assigning Facility", UsageType.O));
     setChild(15, nameRepresentationCode = new ID("Name Representation Code", UsageType.O));

@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
 
@@ -38,8 +39,13 @@ public class PT extends HL7Component
     init();
   }
 
+  public PT(String componentName, UsageType usageType) {
+    super(ItemType.DATATYPE, "PT", "Processing Type", componentName, 2, usageType);
+    init();
+  }
+
   public PT(String componentName, UsageType usageType, Cardinality cardinality) {
-    super("PT", "Processing Type", componentName, 2, usageType, cardinality);
+    super(ItemType.DATATYPE, "PT", "Processing Type", componentName, 2, usageType, cardinality);
     init();
   }
 

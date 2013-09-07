@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
 import org.immunizationsoftware.dqa.tester.manager.hl7.predicates.IsValued;
@@ -110,8 +111,13 @@ public class CX extends HL7Component
     init();
   }
 
+  public CX(String componentName, UsageType usageType) {
+    super(ItemType.DATATYPE, "CX", "Extended Composit ID With Check Digit", componentName, 10, usageType);
+    init();
+  }
+
   public CX(String componentName, UsageType usageType, Cardinality cardinality) {
-    super("CX", "Extended Composit ID With Check Digit", componentName, 10, usageType, cardinality);
+    super(ItemType.DATATYPE, "CX", "Extended Composit ID With Check Digit", componentName, 10, usageType, cardinality);
     init();
   }
 

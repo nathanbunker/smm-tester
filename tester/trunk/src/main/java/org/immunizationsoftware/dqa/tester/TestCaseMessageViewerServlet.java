@@ -9,9 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.immunizationsoftware.dqa.tester.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
-import org.immunizationsoftware.dqa.tester.manager.HL7Analyzer;
+import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 
 public class TestCaseMessageViewerServlet extends ClientServlet
@@ -100,7 +99,8 @@ public class TestCaseMessageViewerServlet extends ClientServlet
   public static void printTestCaseMessage(PrintWriter out, TestCaseMessage testCaseMessage) {
     out.println("<h2>" + testCaseMessage.getDescription() + "</h2>");
 
-    if (testCaseMessage.getOriginalMessage() != null && !testCaseMessage.getOriginalMessage().equals("") && !testCaseMessage.getOriginalMessage().equals(testCaseMessage.getMessageText())) {
+    if (testCaseMessage.getOriginalMessage() != null && !testCaseMessage.getOriginalMessage().equals("")
+        && !testCaseMessage.getOriginalMessage().equals(testCaseMessage.getMessageText())) {
       out.println("<h3>Original Message</h3>");
       out.println("<p>The starting point for the message, before transformations applied. </p>");
       out.println("<pre>" + testCaseMessage.getOriginalMessage() + "</pre>");
@@ -133,7 +133,8 @@ public class TestCaseMessageViewerServlet extends ClientServlet
       if (comparisonList.size() > 0) {
         boolean foundImportantChanges = false;
         for (CompareManager.Comparison comparison : comparisonList) {
-          if (comparison.isTested() && !comparison.isPass() && comparison.getPriorityLevel() <= CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL) {
+          if (comparison.isTested() && !comparison.isPass()
+              && comparison.getPriorityLevel() <= CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL) {
             foundImportantChanges = true;
             break;
           }
@@ -218,23 +219,20 @@ public class TestCaseMessageViewerServlet extends ClientServlet
       CompareServlet.printComparison(testCaseMessage.getComparisonList(), out);
     }
 
-    HL7Analyzer ackAnalyser = testCaseMessage.getHL7Analyzer();
-    if (ackAnalyser == null) {
-      ackAnalyser = new HL7Analyzer(testCaseMessage);
-    }
+    HL7Component actualResponseMessageComponent = testCaseMessage.getActualResponseMessageComponent();
 
     out.println("<h3>HL7 Analysis of Message</h3>");
-    if (ackAnalyser.isPassedTest()) {
-      out.println("<p>No problems found</p>");
-    } else {
-      out.println("<p>The following issues were found: </p>");
-      out.println("<ul>");
-      for (String issue : ackAnalyser.getIssueList()) {
-        out.println("  <li>" + issue + "</li>");
+    if (actualResponseMessageComponent != null) {
+      if (actualResponseMessageComponent.hasNoErrors()) {
+        out.println("<p>Message conforms</p>");
+      } else {
+        out.println("<p>Message does not conform</p>");
       }
-      out.println("</ul>");
-      out.println("issue count = " + ackAnalyser.getIssueList().size());
+      ConformanceServlet.printConformanceIssues(out, actualResponseMessageComponent.getConformanceIssueList());
     }
-
+    else
+    {
+      out.println("<p>No analysis performed</p>");
+    }
   }
 }

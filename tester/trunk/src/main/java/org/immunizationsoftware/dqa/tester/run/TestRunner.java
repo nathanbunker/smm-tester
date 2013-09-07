@@ -4,8 +4,6 @@
  */
 package org.immunizationsoftware.dqa.tester.run;
 
-import java.io.BufferedReader;
-import java.io.StringReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,6 +14,9 @@ import org.immunizationsoftware.dqa.tester.TestCaseMessage;
 import org.immunizationsoftware.dqa.tester.Transformer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
+import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.messages.ACK;
+import org.immunizationsoftware.dqa.tester.manager.hl7.messages.RSP;
 
 /**
  * 
@@ -57,9 +58,8 @@ public class TestRunner
   private HL7Reader ackMessageReader;
   private long startTime = 0;
   private long endTime = 0;
-  
-  public long getTotalRunTime()
-  {
+
+  public long getTotalRunTime() {
     return endTime - startTime;
   }
 
@@ -98,28 +98,27 @@ public class TestRunner
   public void setPassedTest(boolean pass) {
     this.passedTest = pass;
   }
-  
+
   public boolean runTest(Connector connector, TestCaseMessage testCaseMessage) throws Exception {
     testCaseMessage.setActualResponseMessage("");
     testCaseMessage.setPassedTest(false);
     testCaseMessage.setHasRun(false);
     passedTest = false;
     ackMessageText = null;
-    
+
     String message = testCaseMessage.getMessageText();
-    if (!connector.getCustomTransformations().equals(""))
-    {
+    if (!connector.getCustomTransformations().equals("")) {
       Transformer transformer = new Transformer();
       SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
       connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
       message = transformer.transform(connector, message);
     }
     testCaseMessage.setMessageTextSent(message);
-    
+
     startTime = System.currentTimeMillis();
     ackMessageText = connector.submitMessage(message, false);
     endTime = System.currentTimeMillis();
-    
+
     errorList = new ArrayList<Error>();
     if (!testCaseMessage.getAssertResult().equalsIgnoreCase("")) {
       ackMessageReader = new HL7Reader(ackMessageText);
@@ -150,7 +149,7 @@ public class TestRunner
             if (assertResultText.equals("*")) {
               issueFound = true;
             }
-            
+
             while (ackMessageReader.advanceToSegment("ERR")) {
               String severity = ackMessageReader.getValue(4);
               String userMessage = ackMessageReader.getValue(8);
@@ -184,8 +183,7 @@ public class TestRunner
                     if (severity.equals("E")) {
                       issueFound = true;
                     }
-                  }
-                  else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Reject")) {
+                  } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Reject")) {
                     issueFound = true;
                   }
                 }
@@ -193,7 +191,7 @@ public class TestRunner
             }
             if (testCaseMessage.getActualResultAckType().equals("AE") && !rejected) {
               accepted = true;
-            } 
+            }
 
             passedTest = false;
             if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept")) {
@@ -204,7 +202,7 @@ public class TestRunner
               passedTest = issueFound && !rejected;
             } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Error")) {
               passedTest = issueFound && rejected;
-            }else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Reject")) {
+            } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Reject")) {
               passedTest = issueFound;
             }
             if (errorType == ErrorType.UNKNOWN) {
@@ -225,7 +223,7 @@ public class TestRunner
         for (Error error : errorList) {
           if (status.equals("A") && error.getErrorType() == ErrorType.WARNING) {
             // ignore skip warnings
-            if (error.getErrorType() != ErrorType.INFORMATION ) {
+            if (error.getErrorType() != ErrorType.INFORMATION) {
               status = "W";
             }
           }
@@ -238,6 +236,34 @@ public class TestRunner
     testCaseMessage.setActualResponseMessage(ackMessageText);
     testCaseMessage.setPassedTest(passedTest);
     testCaseMessage.setHasRun(true);
+
+    analyze(testCaseMessage);
     return passedTest;
+  }
+
+  public static void analyze(TestCaseMessage testCaseMessage) {
+    try {
+      HL7Component comp = null;
+      if (testCaseMessage.getActualMessageResponseType().equals("")) {
+        if (!testCaseMessage.getActualResponseMessage().equalsIgnoreCase("")) {
+          HL7Reader ackMessageReader = new HL7Reader(testCaseMessage.getActualResponseMessage());
+          if (ackMessageReader.advanceToSegment("MSH")) {
+            testCaseMessage.setActualMessageResponseType(ackMessageReader.getValue(9));
+          }
+        }
+      }
+      if (testCaseMessage.getActualMessageResponseType().equals("ACK")) {
+        comp = new ACK();
+      } else if (testCaseMessage.getActualMessageResponseType().equals("RSP")) {
+        comp = new RSP();
+      }
+      if (comp != null) {
+        testCaseMessage.setActualResponseMessageComponent(comp);
+        comp.parseTextFromMessage(testCaseMessage.getActualResponseMessage());
+        comp.checkConformance();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 }

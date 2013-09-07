@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.segments;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 
 public class SFT extends HL7Component
@@ -24,6 +25,6 @@ public class SFT extends HL7Component
 
   public SFT(UsageType usageType, Cardinality cardinality)
   {
-    super("SFT", "Software Segment", "Software Segment", 0, usageType, cardinality);
+    super(ItemType.SEGMENT, "SFT", "Software Segment", "Software Segment", 0, usageType, cardinality);
   }
 }

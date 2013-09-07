@@ -1,6 +1,8 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
+import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
 import org.immunizationsoftware.dqa.tester.manager.hl7.conformance.ExactValue;
@@ -39,7 +41,12 @@ public class EI extends HL7Component
   }
 
   public EI(String componentNameSpecific, UsageType usageType) {
-    super("EI", "Entity Identifier", componentNameSpecific, 4, usageType);
+    super(ItemType.DATATYPE, "EI", "Entity Identifier", componentNameSpecific, 4, usageType);
+    init();
+  }
+
+  public EI(String componentNameSpecific, UsageType usageType, Cardinality cardinality) {
+    super(ItemType.DATATYPE, "EI", "Entity Identifier", componentNameSpecific, 4, usageType, cardinality);
     init();
   }
 

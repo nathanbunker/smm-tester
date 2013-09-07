@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.segments;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.CWE;
@@ -19,7 +20,8 @@ public class ERR extends HL7Component
   public static String SEVERITY_WARNING = "W";
   public static String SEVERITY_INFORMATION = "I";
   public static String SEVERITY_NONE = "N";
-  
+  public static String SEVERITY_NOT_SUPPORTED = "X";
+
   private ELD errorCodeAndLocation = null;
   private ERL errorLocation = null;
   private CWE hl7ErrorCode = null;
@@ -133,22 +135,20 @@ public class ERR extends HL7Component
   public HL7Component makeAnother() {
     return new ERR(this);
   }
-  
-  public ERR(ERR copy)
-  {
+
+  public ERR(ERR copy) {
     super(copy);
     init();
   }
 
   public ERR(UsageType usageType, Cardinality cardinality) {
-    super("ERR", "Error Segment", "Error Segment", 12, usageType, cardinality);
+    super(ItemType.SEGMENT, "ERR", "Error Segment", "Error Segment", 12, usageType, cardinality);
 
     init();
   }
-  
-  public ERR()
-  {
-    super("ERR", "Error Segment", "Error Segment", 12);
+
+  public ERR() {
+    super(ItemType.SEGMENT, "ERR", "Error Segment", "Error Segment", 12);
     init();
   }
 

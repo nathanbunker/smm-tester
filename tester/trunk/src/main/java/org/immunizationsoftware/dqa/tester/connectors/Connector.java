@@ -7,6 +7,9 @@ package org.immunizationsoftware.dqa.tester.connectors;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -15,6 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.immunizationsoftware.dqa.mover.AckAnalyzer;
@@ -26,7 +32,7 @@ import org.immunizationsoftware.dqa.tester.PasswordEncryptUtil;
  */
 public abstract class Connector
 {
-  
+
   public static final String PURPOSE_GENERAL = "General";
   public static final String PURPOSE_UPDATE = "Update";
   public static final String PURPOSE_QUERY = "Query";
@@ -47,6 +53,8 @@ public abstract class Connector
         connector = new HISoapConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_ENVISION_SOAP)) {
         connector = new EnvisionConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_OR_SOAP)) {
+        connector = new ORConnector(label, url);
       } else {
         connector = new HttpConnector(label, url);
       }
@@ -91,11 +99,11 @@ public abstract class Connector
   private AckAnalyzer.AckType ackType = AckAnalyzer.AckType.DEFAULT;
   private Map<String, Connector> otherConnectorMap = new HashMap<String, Connector>();
   private String purpose = "";
+
   public Map<String, Connector> getOtherConnectorMap() {
     return otherConnectorMap;
   }
 
-  
   public String getPurpose() {
     return purpose;
   }
@@ -271,7 +279,7 @@ public abstract class Connector
     sb.append("-----------------------------------------\n");
     sb.append("Connection\n");
     sb.append("Label: " + label + "\n");
-    if (!purpose.equals("")){
+    if (!purpose.equals("")) {
       sb.append("Purpose: " + purpose);
     }
     sb.append("Type: " + type + "\n");
@@ -480,6 +488,35 @@ public abstract class Connector
       this.chain = chain;
       tm.checkServerTrusted(chain, authType);
     }
+
+  }
+
+  protected static TrustManager[] trustAllCerts;
+
+  private static void installTrustAllCerts() {
+    if (trustAllCerts != null) {
+      trustAllCerts = new TrustManager[] { new X509TrustManager() {
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+          return null;
+        }
+
+        public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+        }
+
+        public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+        }
+      } };
+    }
+
+    // Install the all-trusting trust manager
+    try {
+      SSLContext sc = SSLContext.getInstance("SSL");
+      sc.init(null, trustAllCerts, new java.security.SecureRandom());
+      HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+    } catch (GeneralSecurityException e) {
+      // ignore
+    }
+
   }
 
 }

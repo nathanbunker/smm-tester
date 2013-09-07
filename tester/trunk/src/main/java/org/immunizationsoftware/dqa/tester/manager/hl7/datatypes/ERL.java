@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.predicates.IsValued;
 
@@ -68,7 +69,7 @@ public class ERL extends HL7Component
   }
 
   public ERL(String componentNameSpecific, UsageType usageType, Cardinality cardinality) {
-    super("ERL", "Error Location", componentNameSpecific, 6, usageType, cardinality);
+    super(ItemType.DATATYPE, "ERL", "Error Location", componentNameSpecific, 6, usageType, cardinality);
     init();
   }
 
@@ -84,7 +85,7 @@ public class ERL extends HL7Component
   
   public ERL()
   {
-    super("ERL", "Error Location", 6);
+    super(ItemType.DATATYPE, "ERL", "Error Location", 6);
     init();
   }
 

@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.segments;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.HD;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.ST;
@@ -130,7 +131,7 @@ public class FHS extends HL7Component
   }
 
   public FHS(UsageType usageType, Cardinality cardinality) {
-    super("FHS", "File Header Segment", "File Header Segment", 12, usageType, cardinality);
+    super(ItemType.SEGMENT, "FHS", "File Header Segment", "File Header Segment", 12, usageType, cardinality);
 
     init();
   }

@@ -14,6 +14,14 @@ public class IsValued extends ConditionalPredicate
     }
   }
 
+  public IsValued(HL7Component component) {
+    super(component, UsageType.O, UsageType.O);
+    if (component == null)
+    {
+      throw new IllegalArgumentException("HL7 Component must not be null");
+    }
+  }
+
   @Override
   public boolean isMet() {
     return component.getValue() != null && !component.getValue().equals("");

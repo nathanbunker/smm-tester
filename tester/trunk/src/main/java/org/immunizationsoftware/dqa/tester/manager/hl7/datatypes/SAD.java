@@ -1,6 +1,7 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 
 public class SAD extends HL7Component
@@ -50,7 +51,7 @@ public class SAD extends HL7Component
   }
 
   public SAD(String componentName, UsageType usageType, int lengthMax) {
-    super("SAD", "Street Address", componentName, 3, usageType, lengthMax);
+    super(ItemType.DATATYPE, "SAD", "Street Address", componentName, 3, usageType, lengthMax);
     init();
   }
 

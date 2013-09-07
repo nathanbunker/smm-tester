@@ -1,6 +1,7 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 
 public class TX extends HL7Component
@@ -18,7 +19,7 @@ public class TX extends HL7Component
 
   public TX(String componentName, UsageType usageType)
   {
-    super("TX", "text data", componentName, 0, usageType);
+    super(ItemType.DATATYPE, "TX", "text data", componentName, 0, usageType);
   }
   
   @Override

@@ -1,6 +1,7 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
 import org.immunizationsoftware.dqa.tester.manager.hl7.predicates.IsValued;
@@ -51,8 +52,13 @@ public class CE_TX extends HL7Component
 
   public CE_TX(String componentName)
   {
-    super("CE_TX", "Coded element (text only in RXA-9)", componentName, 6);
-    
+    super(ItemType.DATATYPE, "CE_TX", "Coded element (text only in RXA-9)", componentName, 6);
+    init();
+  }
+
+  public CE_TX(String componentName, UsageType usageType)
+  {
+    super(ItemType.DATATYPE, "CE_TX", "Coded element (text only in RXA-9)", componentName, 6, usageType);
     init();
   }
 

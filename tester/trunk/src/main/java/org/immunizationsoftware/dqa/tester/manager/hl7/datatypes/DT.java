@@ -1,6 +1,8 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
+import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 
 public class DT extends HL7Component
@@ -19,7 +21,13 @@ public class DT extends HL7Component
 
   public DT(String componentNameSpecific, UsageType usageType)
   {
-    super("DT", "Date", componentNameSpecific, 0, usageType);
+    super(ItemType.DATATYPE, "DT", "Date", componentNameSpecific, 0, usageType);
+    setLength(4, 8);
+  }
+  
+  public DT(String componentNameSpecific, UsageType usageType, Cardinality cardinality)
+  {
+    super(ItemType.DATATYPE, "DT", "Date", componentNameSpecific, 0, usageType, cardinality);
     setLength(4, 8);
   }
   

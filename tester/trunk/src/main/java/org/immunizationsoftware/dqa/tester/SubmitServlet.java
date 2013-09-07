@@ -23,6 +23,8 @@ import org.immunizationsoftware.dqa.mover.AckAnalyzer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
+import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.HL7ComponentManager;
 
 /**
  * 
@@ -175,8 +177,7 @@ public class SubmitServlet extends ClientServlet
                 } else {
                   title = "Message Rejected";
                 }
-              } else if (messageType.equals("RSP"))
-              {
+              } else if (messageType.equals("RSP")) {
                 title = "Query Response Received";
               }
             }

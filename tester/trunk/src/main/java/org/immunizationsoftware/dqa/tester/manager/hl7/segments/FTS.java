@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.segments;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.NM;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.ST;
@@ -38,7 +39,7 @@ public class FTS extends HL7Component
   }
 
   public FTS(UsageType usageType, Cardinality cardinality) {
-    super("FTS", "File Trailer Segment", "File Trailer Segment", 2, usageType, cardinality);
+    super(ItemType.SEGMENT, "FTS", "File Trailer Segment", "File Trailer Segment", 2, usageType, cardinality);
 
     init();
   }

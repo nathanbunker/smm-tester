@@ -1,6 +1,8 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
+import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
 
@@ -145,9 +147,18 @@ public class XPN extends HL7Component
     init();
   }
 
+  public XPN(String componentName, UsageType usageType) {
+    super(ItemType.DATATYPE, "XPN", "Extended Person Name", componentName, 14, usageType);
+    init();
+  }
+
+  public XPN(String componentName, UsageType usageType, Cardinality cardinality) {
+    super(ItemType.DATATYPE, "XPN", "Extended Person Name", componentName, 14, usageType, cardinality);
+    init();
+  }
+
   public XPN(String componentName, UsageType usageType, int lengthMax) {
-    super("XPN", "Extended Person Name", componentName, 14, usageType, lengthMax);
-    
+    super(ItemType.DATATYPE, "XPN", "Extended Person Name", componentName, 14, usageType, lengthMax);
     init();
   }
 

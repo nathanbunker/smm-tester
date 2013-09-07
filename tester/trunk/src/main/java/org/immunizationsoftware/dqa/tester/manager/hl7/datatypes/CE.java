@@ -1,6 +1,8 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
+import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
 import org.immunizationsoftware.dqa.tester.manager.hl7.predicates.IsValued;
@@ -77,9 +79,15 @@ public class CE extends HL7Component
 
   public CE(String componentName, UsageType usageType, ValueSet valueSet)
   {
-    super("CE", "Coded element", componentName, 6);
+    super(ItemType.DATATYPE, "CE", "Coded element", componentName, 6, usageType);
     this.valueSet = valueSet;
+    init();
+  }
 
+  public CE(String componentName, UsageType usageType, Cardinality cardinality, ValueSet valueSet)
+  {
+    super(ItemType.DATATYPE, "CE", "Coded element", componentName, 6, usageType, cardinality);
+    this.valueSet = valueSet;
     init();
   }
 
