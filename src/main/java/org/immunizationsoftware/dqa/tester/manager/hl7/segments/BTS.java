@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.segments;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.NM;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.ST;
@@ -48,7 +49,7 @@ public class BTS extends HL7Component
   }
 
   public BTS(UsageType usageType, Cardinality cardinality) {
-    super("BTS", "Batch Trailer Segment", "Batch Trailer Segment", 3, usageType, cardinality);
+    super(ItemType.SEGMENT, "BTS", "Batch Trailer Segment", "Batch Trailer Segment", 3, usageType, cardinality);
 
     init();
   }

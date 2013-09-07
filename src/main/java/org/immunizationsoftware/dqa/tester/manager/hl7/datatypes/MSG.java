@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
 
@@ -47,9 +48,15 @@ public class MSG extends HL7Component
     init();
   }
 
+  public MSG(String componentNameSpecific, UsageType usageType)
+  {
+    super(ItemType.DATATYPE, "MSG", "Message Type", componentNameSpecific, 3, usageType);
+    init();
+  }
+
   public MSG(String componentNameSpecific, UsageType usageType, Cardinality cardinality)
   {
-    super("MSG", "Message Type", componentNameSpecific, 3, usageType, cardinality);
+    super(ItemType.DATATYPE, "MSG", "Message Type", componentNameSpecific, 3, usageType, cardinality);
     init();
   }
 

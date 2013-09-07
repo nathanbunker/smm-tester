@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.segments;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 
 public class TQ2 extends HL7Component
@@ -23,7 +24,7 @@ public class TQ2 extends HL7Component
   }
 
  public TQ2(UsageType usageType, Cardinality cardinality) {
-    super("TQ2", "Timing/Quantity Relationship Segment", 0, usageType, cardinality);
+    super(ItemType.SEGMENT, "TQ2", "Timing/Quantity Relationship Segment", 0, usageType, cardinality);
   }
 
 }

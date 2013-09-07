@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.segments;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 
 public class PV1 extends HL7Component
@@ -17,13 +18,12 @@ public class PV1 extends HL7Component
     init();
   }
 
+  public PV1(UsageType usageType, Cardinality cardinality) {
+    super(ItemType.SEGMENT, "PV1", "Patient Visit Segment", 0, usageType, cardinality);
+  }
+
   @Override
   public void init() {
     // Nothing to init  
   }
-
-  public PV1(UsageType usageType, Cardinality cardinality) {
-    super("PV1", "Patient Visit Segment", 0, usageType, cardinality);
-  }
-
 }

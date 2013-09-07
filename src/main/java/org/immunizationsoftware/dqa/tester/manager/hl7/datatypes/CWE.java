@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
 import org.immunizationsoftware.dqa.tester.manager.hl7.predicates.IsValued;
@@ -112,7 +113,7 @@ public class CWE extends HL7Component
 
 
   public CWE(String componentName, UsageType usageType, Cardinality cardinality, ValueSet valueSet) {
-    super("CWE", "Coded With Exceptions", componentName, 9, usageType, cardinality);
+    super(ItemType.DATATYPE, "CWE", "Coded With Exceptions", componentName, 9, usageType, cardinality);
     this.valueSet = valueSet;
 
     init();

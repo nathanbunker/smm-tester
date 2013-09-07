@@ -1,6 +1,7 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 
 public class FN extends HL7Component
@@ -52,7 +53,7 @@ public class FN extends HL7Component
   }
 
   public FN(String componentNameSpecific, UsageType usageType) {
-    super("FN", "Family Name", componentNameSpecific, 5, usageType);
+    super(ItemType.DATATYPE, "FN", "Family Name", componentNameSpecific, 5, usageType);
 
     init();
   }

@@ -8,6 +8,7 @@ public class ConnectorFactory
   public static final String TYPE_NM_SOAP = "NM SOAP";
   public static final String TYPE_HI_SOAP = "HI SOAP";
   public static final String TYPE_ENVISION_SOAP = "Envision SOAP";
+  public static final String TYPE_OR_SOAP = "OR ALERT SOAP";
 
   public static final String[][] TYPES = { { TYPE_SOAP, "SOAP" }, { TYPE_POST, "POST" }, { TYPE_NM_SOAP, "NM SOAP" },
       { TYPE_ENVISION_SOAP, "Envision SOAP" }, { TYPE_HI_SOAP, "HI SOAP (same standard as SOAP)" } };
@@ -30,6 +31,9 @@ public class ConnectorFactory
     } else if (type.equals(TYPE_ENVISION_SOAP))
     {
       connector = new EnvisionConnector(label, url);
+    }else if (type.equals(TYPE_OR_SOAP))
+    {
+      connector = new ORConnector(label, url);
     }
     return connector;
   }

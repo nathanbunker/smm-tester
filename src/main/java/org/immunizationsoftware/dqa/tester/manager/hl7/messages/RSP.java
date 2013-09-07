@@ -1,26 +1,318 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.messages;
 
+import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
-import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.MSG;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
+import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.ERR;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.IN1;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.MSA;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.MSH;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.NK1;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.NTE;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.OBX;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.ORC;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.PD1;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.PID;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.PV1;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.QAK;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.QPD;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.RXA;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.RXR;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.TQ1;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.TQ2;
 
 public class RSP extends HL7Component
 {
+  private MSH msh = null;
+  private MSA msa = null;
+  private ERR err = null;
+  private QAK qak = null;
+  private QPD qpd = null;
+  private PatientGroup patientGroup = null;
+
+  public MSH getMsh() {
+    return msh;
+  }
+
+  public void setMsh(MSH msh) {
+    this.msh = msh;
+  }
+
+  public MSA getMsa() {
+    return msa;
+  }
+
+  public void setMsa(MSA msa) {
+    this.msa = msa;
+  }
+
+  public ERR getErr() {
+    return err;
+  }
+
+  public void setErr(ERR err) {
+    this.err = err;
+  }
+
+  public QAK getQak() {
+    return qak;
+  }
+
+  public void setQak(QAK qak) {
+    this.qak = qak;
+  }
+
+  public QPD getQpd() {
+    return qpd;
+  }
+
+  public void setQpd(QPD qpd) {
+    this.qpd = qpd;
+  }
+
+  public PatientGroup getPatientGroup() {
+    return patientGroup;
+  }
+
+  public void setPatientGroup(PatientGroup patientGroup) {
+    this.patientGroup = patientGroup;
+  }
+
   @Override
   public HL7Component makeAnother() {
     return new RSP(this);
   }
-  
-  public RSP(RSP copy)
-  {
+
+  public RSP(RSP copy) {
     super(copy);
     init();
   }
-  
-  @Override
-  public void init() {
-    // TODO Auto-generated method stub
-    
+
+  public RSP() {
+    super(ItemType.MESSAGE, "RSP", "Response", 6, UsageType.R, Cardinality.ONE_TIME_ONLY);
+    init();
   }
 
+  @Override
+  public void init() {
+    setChild(1, msh = new MSH(UsageType.R, Cardinality.ONE_TIME_ONLY));
+    setChild(2, msa = new MSA(UsageType.R, Cardinality.ONE_TIME_ONLY));
+    setChild(3, err = new ERR(UsageType.O, Cardinality.ZERO_OR_MORE));
+    setChild(4, qak = new QAK(UsageType.R, Cardinality.ONE_TIME_ONLY));
+    setChild(5, qpd = new QPD(UsageType.R, Cardinality.ONE_TIME_ONLY));
+    setChild(6, patientGroup = new PatientGroup(UsageType.R, Cardinality.ZERO_OR_MORE));
+  }
+
+  public class PatientGroup extends HL7Component
+  {
+
+    private PID pid = null;
+    private PD1 pd1 = null;
+    private NK1 nk1 = null;
+    private PV1 pv1 = null;
+    private IN1 in1 = null;
+    private OrderGroup orderGroup = null;
+
+    public PID getPid() {
+      return pid;
+    }
+
+    public void setPid(PID pid) {
+      this.pid = pid;
+    }
+
+    public PD1 getPd1() {
+      return pd1;
+    }
+
+    public void setPd1(PD1 pd1) {
+      this.pd1 = pd1;
+    }
+
+    public NK1 getNk1() {
+      return nk1;
+    }
+
+    public void setNk1(NK1 nk1) {
+      this.nk1 = nk1;
+    }
+
+    public PV1 getPv1() {
+      return pv1;
+    }
+
+    public void setPv1(PV1 pv1) {
+      this.pv1 = pv1;
+    }
+
+    public IN1 getIn1() {
+      return in1;
+    }
+
+    public void setIn1(IN1 in1) {
+      this.in1 = in1;
+    }
+
+    public OrderGroup getOrderGroup() {
+      return orderGroup;
+    }
+
+    public void setOrderGroup(OrderGroup orderGroup) {
+      this.orderGroup = orderGroup;
+    }
+
+    @Override
+    public HL7Component makeAnother() {
+      return new PatientGroup(this);
+    }
+
+    public PatientGroup(PatientGroup copy) {
+      super(copy);
+      init();
+    }
+
+    public PatientGroup(UsageType usageType, Cardinality cardinality) {
+      super(ItemType.MESSAGE_PART, "PID", "RSP - Patient Group", 6, usageType, cardinality);
+      init();
+    }
+
+    @Override
+    public void init() {
+      setChild(1, pid = new PID(UsageType.R, Cardinality.ONE_TIME_ONLY));
+      setChild(2, pd1 = new PD1(UsageType.RE, Cardinality.ZERO_OR_ONE));
+      setChild(3, nk1 = new NK1(UsageType.RE, Cardinality.ZERO_OR_MORE));
+      setChild(4, pv1 = new PV1(UsageType.O, Cardinality.ZERO_OR_ONE));
+      setChild(5, in1 = new IN1(UsageType.O, Cardinality.ZERO_OR_ONE));
+      setChild(6, orderGroup = new OrderGroup(UsageType.O, Cardinality.ZERO_OR_MORE));
+    }
+
+    public class OrderGroup extends HL7Component
+    {
+      private ORC orc = null;
+      private TQ1 tq1 = null;
+      private TQ2 tq2 = null;
+      private RXA rxa = null;
+      private RXR rxr = null;
+      private ObservationGroup observationGroup = null;
+
+      public ORC getOrc() {
+        return orc;
+      }
+
+      public void setOrc(ORC orc) {
+        this.orc = orc;
+      }
+
+      public TQ1 getTq1() {
+        return tq1;
+      }
+
+      public void setTq1(TQ1 tq1) {
+        this.tq1 = tq1;
+      }
+
+      public TQ2 getTq2() {
+        return tq2;
+      }
+
+      public void setTq2(TQ2 tq2) {
+        this.tq2 = tq2;
+      }
+
+      public RXA getRxa() {
+        return rxa;
+      }
+
+      public void setRxa(RXA rxa) {
+        this.rxa = rxa;
+      }
+
+      public RXR getRxr() {
+        return rxr;
+      }
+
+      public void setRxr(RXR rxr) {
+        this.rxr = rxr;
+      }
+
+      public ObservationGroup getObservationGroup() {
+        return observationGroup;
+      }
+
+      public void setObservationGroup(ObservationGroup observationGroup) {
+        this.observationGroup = observationGroup;
+      }
+
+      @Override
+      public HL7Component makeAnother() {
+        return new OrderGroup(this);
+      }
+
+      public OrderGroup(OrderGroup copy) {
+        super(copy);
+        init();
+      }
+
+      public OrderGroup(UsageType usageType, Cardinality cardinality) {
+        super(ItemType.MESSAGE_PART, "ORC", "RSP - Patient Group - Order Group", 6, usageType, cardinality);
+        init();
+      }
+
+      public void init() {
+        setChild(1, orc = new ORC(UsageType.R, Cardinality.ONE_OR_MORE_TIMES));
+        setChild(2, tq1 = new TQ1(UsageType.O, Cardinality.ZERO_OR_ONE));
+        setChild(3, tq2 = new TQ2(UsageType.O, Cardinality.ZERO_OR_ONE));
+        setChild(4, rxa = new RXA(UsageType.R, Cardinality.ONE_TIME_ONLY));
+        setChild(5, rxr = new RXR(UsageType.RE, Cardinality.ZERO_OR_ONE));
+        setChild(6, observationGroup = new ObservationGroup(UsageType.RE, Cardinality.ZERO_OR_MORE));
+      }
+
+      public class ObservationGroup extends HL7Component
+      {
+        private OBX obx = null;
+        private NTE nte = null;
+
+        public OBX getObx() {
+          return obx;
+        }
+
+        public void setObx(OBX obx) {
+          this.obx = obx;
+        }
+
+        public NTE getNte() {
+          return nte;
+        }
+
+        public void setNte(NTE nte) {
+          this.nte = nte;
+        }
+
+        @Override
+        public HL7Component makeAnother() {
+          return new ObservationGroup(this);
+        }
+
+        public ObservationGroup(ObservationGroup copy) {
+          super(copy);
+          init();
+        }
+
+        public ObservationGroup(UsageType usageType, Cardinality cardinality) {
+          super(ItemType.MESSAGE_PART, "OBX", "RSP - Patient Group - Order Group - Observation Group", 2, usageType,
+              cardinality);
+          init();
+        }
+
+        public void init() {
+          setChild(1, obx = new OBX(UsageType.R, Cardinality.ONE_TIME_ONLY));
+          setChild(2, nte = new NTE(UsageType.RE, Cardinality.ZERO_OR_MORE));
+        }
+      }
+
+    }
+
+  }
 
 }

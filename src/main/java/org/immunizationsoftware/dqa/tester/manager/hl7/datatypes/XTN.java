@@ -1,6 +1,8 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
+import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
 import org.immunizationsoftware.dqa.tester.manager.hl7.predicates.IsNotValuedAs;
@@ -129,8 +131,12 @@ public class XTN extends HL7Component
   }
 
   public XTN(String componentName, UsageType usageType) {
-    super("XTN", "Extended Telecommunication Number", componentName, 12, usageType);
-    
+    super(ItemType.DATATYPE, "XTN", "Extended Telecommunication Number", componentName, 12, usageType);
+    init();
+  }
+
+  public XTN(String componentName, UsageType usageType, Cardinality cardinality) {
+    super(ItemType.DATATYPE, "XTN", "Extended Telecommunication Number", componentName, 12, usageType, cardinality);
     init();
   }
 

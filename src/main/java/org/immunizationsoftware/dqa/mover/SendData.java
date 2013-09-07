@@ -38,6 +38,7 @@ public class SendData extends Thread
   public static final String LOCK_FILE_NAME = "smm.lock";
   public static final String LOGIN_FILE_NAME = "smm.login.html";
   public static final String KEYSTORE_FILE_NAME = "smm.jks";
+  public static final String KEYSTORE_FILE_NAME_NEW = "smm.p12";
 
   public static final String REQUEST_FOLDER = "request";
   public static final String RESPONSE_FOLDER = "response";
@@ -59,30 +60,24 @@ public class SendData extends Thread
   private Date upSinceDate = new Date();
   private int internalId = 0;
 
-  public int getInternalId()
-  {
+  public int getInternalId() {
     return internalId;
   }
 
-  public void setInternalId(int internalId)
-  {
+  public void setInternalId(int internalId) {
     this.internalId = internalId;
   }
 
-  public Date getUpSinceDate()
-  {
+  public Date getUpSinceDate() {
     return upSinceDate;
   }
 
-  public void setUpSinceDate(Date upSinceDate)
-  {
+  public void setUpSinceDate(Date upSinceDate) {
     this.upSinceDate = upSinceDate;
   }
 
-  public String getStableSystemId()
-  {
-    if (stableSystemId == null)
-    {
+  public String getStableSystemId() {
+    if (stableSystemId == null) {
       String baseValue = ManagerServlet.doHash(rootDir.getAbsolutePath());
       stableSystemId = ManagerServlet.getStableSystemId() + ":" + baseValue;
     }
@@ -91,82 +86,63 @@ public class SendData extends Thread
 
   private boolean okayToRun = true;
 
-  public boolean isOkayToRun()
-  {
+  public boolean isOkayToRun() {
     return okayToRun;
   }
 
-  public void shutdown()
-  {
+  public void shutdown() {
     this.scanStatus = ScanStatus.STOPPED;
     okayToRun = false;
-    synchronized (this)
-    {
+    synchronized (this) {
       this.interrupt();
     }
-    if (statusReporter != null)
-    {
+    if (statusReporter != null) {
       statusReporter.shutdown();
       statusReporter = null;
     }
-    if (statusLogger != null)
-    {
+    if (statusLogger != null) {
       statusLogger.close();
       statusLogger = null;
     }
   }
 
   @Override
-  public void run()
-  {
-    while (okayToRun)
-    {
+  public void run() {
+    while (okayToRun) {
       configFileModified = configFileLastModified < configFile.lastModified();
 
       setupStatusReporter();
       waitAwhileMoreForProblem();
-      if (okayToRun)
-      {
+      if (okayToRun) {
         scanStatus = ScanStatus.LOOKING;
-        if (configFile.exists() && configFile.isFile() && configFile.canRead())
-        {
-          try
-          {
+        if (configFile.exists() && configFile.isFile() && configFile.canRead()) {
+          try {
             setupConnector();
-            if (obtainLock() && okayToRun)
-            {
+            if (obtainLock() && okayToRun) {
               createWorkingDirs();
               createTransformer();
-              if (notDisabled())
-              {
-                if (workDirIsEmpty())
-                {
-                  if (lookForFilesToProcess())
-                  {
+              if (notDisabled()) {
+                if (workDirIsEmpty()) {
+                  if (lookForFilesToProcess()) {
                     prepareDataToSend();
-                  } else
-                  {
+                  } else {
                     setupReciprocalBatchRequest();
                   }
                 }
 
                 sendData();
-                if (scanStatus != ScanStatus.PROBLEM)
-                {
+                if (scanStatus != ScanStatus.PROBLEM) {
                   setScanStatus(ScanStatus.WAITING);
                   resetProblemRetryCount();
                   deleteWorkingDir();
                 }
               }
             }
-          } catch (ApplicationShuttingDown asd)
-          {
+          } catch (ApplicationShuttingDown asd) {
             // Application is shutting down, continue on out
-          } catch (Throwable e)
-          {
+          } catch (Throwable e) {
             handleException("Problem encountered while trying to send data", e);
-          } finally
-          {
+          } finally {
             closeLoggerAndUnlock();
           }
         }
@@ -180,82 +156,66 @@ public class SendData extends Thread
       + "QRD|20030828104856+0000|R|I|QueryID01|||200.000000|000000001^Bucket^Hyacinth^^^^^^^^^^MR|VXI|SIIS|\r"
       + "QRF|QS4444|20030828104856+0000|20030828104856+0000||100000001~19460401~~~~~~~~~~111 East Lansing Bouldvard^Indianapolis^IN~10000|\r";
 
-  private void setupReciprocalBatchRequest()
-  {
-    if (connector.getTransferType() == Connector.TransferType.RECIPROCAL_BATCH_UPDATE)
-    {
+  private void setupReciprocalBatchRequest() {
+    if (connector.getTransferType() == Connector.TransferType.RECIPROCAL_BATCH_UPDATE) {
       Calendar yesterday = Calendar.getInstance();
       yesterday.add(Calendar.DAY_OF_MONTH, -1);
-      if (lastSentRBURequestDate != null && yesterday.after(lastSentRBURequestDate))
-      {
+      if (lastSentRBURequestDate != null && yesterday.after(lastSentRBURequestDate)) {
         Date today = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         File file = new File(requestDir, "rbu-query-" + sdf.format(today) + ".hl7");
-        try
-        {
+        try {
           PrintWriter out = new PrintWriter(new java.io.FileWriter(file));
           out.print(HL7_RBU_QUERY);
           out.close();
           prepareDataToSend();
-        } catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
           this.statusLogger.logError("Unable to create reciprocal batch update", ioe);
         }
       }
     }
   }
 
-  private boolean notDisabled()
-  {
+  private boolean notDisabled() {
     statusLogger.logInfo("Checking to see if connection can be enabled for the current time of day");
-    if (connector.getEnableTimeEnd().indexOf(":") == -1 || connector.getEnableTimeStart().indexOf(":") == -1)
-    {
+    if (connector.getEnableTimeEnd().indexOf(":") == -1 || connector.getEnableTimeStart().indexOf(":") == -1) {
       statusLogger.logInfo("No restrictions for enabling the connection, will send data any time of day");
       return true;
     }
     Date startTime = makeDate(connector.getEnableTimeStart());
     Date endTime = makeDate(connector.getEnableTimeEnd());
-    if (startTime != null && endTime != null)
-    {
-      if (startTime.after(endTime))
-      {
+    if (startTime != null && endTime != null) {
+      if (startTime.after(endTime)) {
         statusLogger.logWarn("Connector start enable time is after the end time so the connection is never enabled");
         return false;
       }
       Date now = new Date();
-      if (now.after(startTime) && now.before(endTime))
-      {
+      if (now.after(startTime) && now.before(endTime)) {
         return true;
-      } else
-      {
-        statusLogger.logInfo("Logger is currently configured to be disabled between " + connector.getEnableTimeStart() + " and "
-            + connector.getEnableTimeEnd());
+      } else {
+        statusLogger.logInfo("Logger is currently configured to be disabled between " + connector.getEnableTimeStart()
+            + " and " + connector.getEnableTimeEnd());
         return false;
       }
-    } else
-    {
+    } else {
       statusLogger.logWarn("Connection has not be configured properly to be disabled for certain hours of the day");
       statusLogger.logInfo("To configure time of day restrictions, please use HH:MM format and a 24 hour clock");
     }
     return false;
   }
 
-  public static Date makeDate(String time)
-  {
+  public static Date makeDate(String time) {
     Calendar today = Calendar.getInstance();
     int pos = time.indexOf(":");
-    if (pos != -1)
-    {
+    if (pos != -1) {
       String hourString = time.substring(0, pos);
       String minString = time.substring(pos + 1);
-      try
-      {
+      try {
         today.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hourString));
         today.set(Calendar.MINUTE, Integer.parseInt(minString));
         today.set(Calendar.SECOND, 0);
         return today.getTime();
-      } catch (NumberFormatException nfe)
-      {
+      } catch (NumberFormatException nfe) {
         // ignore
       }
     }
@@ -263,34 +223,26 @@ public class SendData extends Thread
 
   }
 
-  private void setupStatusReporter()
-  {
-    if (statusReporter == null)
-    {
-      try
-      {
+  private void setupStatusReporter() {
+    if (statusReporter == null) {
+      try {
         statusReporter = new StatusReporter(this);
         statusReporter.start();
-      } catch (IOException ioe)
-      {
+      } catch (IOException ioe) {
         ioe.printStackTrace();
         statusReporterException = ioe;
       }
     }
-    if (statusReporter != null)
-    {
+    if (statusReporter != null) {
       statusReporterException = statusReporter.getException();
     }
   }
 
-  private void logShutdown()
-  {
-    try
-    {
+  private void logShutdown() {
+    try {
       StatusReporter statusReporter = new StatusReporter(this);
       statusReporter.updateSupportCenter(null, null);
-    } catch (Throwable t)
-    {
+    } catch (Throwable t) {
       t.printStackTrace();
     }
   }
@@ -343,43 +295,35 @@ public class SendData extends Thread
 
   private Date lastSentRBURequestDate = null;
 
-  public StatusReporter getStatusReporter()
-  {
+  public StatusReporter getStatusReporter() {
     return statusReporter;
   }
 
-  public StatusLogger getStatusLogger()
-  {
+  public StatusLogger getStatusLogger() {
     return statusLogger;
   }
 
-  public int getAttemptCount()
-  {
+  public int getAttemptCount() {
     return attemptCount;
   }
 
-  public int getSentCount()
-  {
+  public int getSentCount() {
     return sentCount;
   }
 
-  public int getErrorCount()
-  {
+  public int getErrorCount() {
     return errorCount;
   }
 
-  public void incAttemptCount()
-  {
+  public void incAttemptCount() {
     attemptCount++;
   }
 
-  public void incSentCount()
-  {
+  public void incSentCount() {
     sentCount++;
   }
 
-  public void incErrorCount()
-  {
+  public void incErrorCount() {
     errorCount++;
   }
 
@@ -388,49 +332,41 @@ public class SendData extends Thread
   private static final long MIN = 60 * SEC;
   private static final long HOUR = 60 * MIN;
   private static final long DAY = 24 * HOUR;
-  private static final long[] retryWait = { 30 * SEC, 1 * MIN, 2 * MIN, 4 * MIN, 8 * MIN, 16 * MIN, 30 * MIN, HOUR, 2 * HOUR, 4 * HOUR, 8 * HOUR,
-      12 * HOUR, DAY };
+  private static final long[] retryWait = { 30 * SEC, 1 * MIN, 2 * MIN, 4 * MIN, 8 * MIN, 16 * MIN, 30 * MIN, HOUR,
+      2 * HOUR, 4 * HOUR, 8 * HOUR, 12 * HOUR, DAY };
   private Transformer transformer = null;
 
   private int randomId = 0;
 
-  public int getRandomId()
-  {
+  public int getRandomId() {
     return randomId;
   }
 
-  public Connector getConnector()
-  {
+  public Connector getConnector() {
     return connector;
   }
 
-  public File getRootDir()
-  {
+  public File getRootDir() {
     return rootDir;
   }
 
-  public void setRootDir(File rootDir)
-  {
+  public void setRootDir(File rootDir) {
     this.rootDir = rootDir;
   }
 
-  public File getConfigFile()
-  {
+  public File getConfigFile() {
     return configFile;
   }
 
-  public void setConfigFile(File configFile)
-  {
+  public void setConfigFile(File configFile) {
     this.configFile = configFile;
   }
 
-  public File getStatusFile()
-  {
+  public File getStatusFile() {
     return statusFile;
   }
 
-  public void setStatusFile(File statusFile)
-  {
+  public void setStatusFile(File statusFile) {
     this.statusFile = statusFile;
   }
 
@@ -441,122 +377,96 @@ public class SendData extends Thread
     randomId = random.nextInt(10000) + 1000;
   }
 
-  public ScanStatus getScanStatus()
-  {
+  public ScanStatus getScanStatus() {
     return scanStatus;
   }
 
-  private void setScanStatus(ScanStatus scanStatus)
-  {
+  private void setScanStatus(ScanStatus scanStatus) {
     this.scanStatus = scanStatus;
-    if (statusLogger != null)
-    {
+    if (statusLogger != null) {
       statusLogger.updateScanStatus(scanStatus);
     }
   }
 
-  private void createTransformer()
-  {
-    if (!connector.getCustomTransformations().equals(""))
-    {
+  private void createTransformer() {
+    if (!connector.getCustomTransformations().equals("")) {
       transformer = new Transformer();
       statusLogger.logInfo("Custom transformations are defined, setting up transformer");
     }
   }
 
-  private void deleteWorkingDir()
-  {
-    if (workDir.exists())
-    {
+  private void deleteWorkingDir() {
+    if (workDir.exists()) {
       workDir.delete();
     }
   }
 
-  private void closeLoggerAndUnlock()
-  {
-    if (statusLogger != null)
-    {
+  private void closeLoggerAndUnlock() {
+    if (statusLogger != null) {
       statusLogger.close();
     }
-    if (sendDataLocker != null)
-    {
+    if (sendDataLocker != null) {
       sendDataLocker.releaseLock();
       sendDataLocker = null;
     }
     transformer = null;
   }
 
-  private void handleException(String message, Throwable e)
-  {
+  private void handleException(String message, Throwable e) {
     setScanStatus(ScanStatus.PROBLEM);
-    if (statusLogger != null)
-    {
+    if (statusLogger != null) {
       statusLogger.setSomethingInterestingHappened(true);
       statusLogger.logError(message, e);
-    } else
-    {
+    } else {
       System.out.println("Unable to send data");
       e.printStackTrace();
     }
   }
 
-  private void resetProblemRetryCount()
-  {
+  private void resetProblemRetryCount() {
     retryCount = 0;
   }
 
-  private void waitAwhile()
-  {
-    synchronized (this)
-    {
-      try
-      {
+  private void waitAwhile() {
+    synchronized (this) {
+      try {
         this.wait(ManagerServlet.getCheckInterval() * 1000);
-      } catch (InterruptedException ie)
-      {
+      } catch (InterruptedException ie) {
         // continue
       }
     }
   }
 
-  private void sendData() throws IOException, FileNotFoundException, Exception
-  {
-    if (workDir.exists())
-    {
+  private void sendData() throws IOException, FileNotFoundException, Exception {
+    if (workDir.exists()) {
       setScanStatus(ScanStatus.SENDING);
       statusLogger.logDebug("Looking for files to send from working directory");
       String[] filesToSend = workDir.list();
       Arrays.sort(filesToSend);
       String lastRequestFilename = "";
-      for (String fileToSend : filesToSend)
-      {
+      for (String fileToSend : filesToSend) {
         verifyOkayToKeepRunning();
         statusLogger.setSomethingInterestingHappened(true);
         workFile = new File(workDir, fileToSend);
         sendDataLocker.renewLock();
         String requestFilename = getOriginalFileName(fileToSend);
-        if (!lastRequestFilename.equals(requestFilename))
-        {
+        if (!lastRequestFilename.equals(requestFilename)) {
           fileSentCount = 0;
           fileErrorCount = 0;
           statusLogger.logDebug("Sending file: " + requestFilename);
         }
-        if (workFile.isFile() && !requestFilename.equals(""))
-        {
+        if (workFile.isFile() && !requestFilename.equals("")) {
           fileSentCount++;
           lastSentRBURequestDate = new Date();
           readFilename(requestFilename);
           openSendingMessageInputs();
-          try
-          {
+          try {
             StringBuilder sb = new StringBuilder();
             String line = null;
             BufferedReader in = new BufferedReader(new FileReader(workFile));
             connector.setCurrentControlId("" + System.currentTimeMillis() + attemptCount);
-            while ((line = in.readLine()) != null)
-            {
-              if (line.startsWith(HL7.MSH))
-              {
+            while ((line = in.readLine()) != null) {
+              if (line.startsWith(HL7.MSH)) {
                 connector.setCurrentControlId(HL7.readField(line, 10));
               }
               sb.append(line);
@@ -569,15 +479,12 @@ public class SendData extends Thread
             String responseText = connector.submitMessage(messageText, false);
             verifyOkayToKeepRunning();
             saveAndHandleResponse(messageText, responseText);
-          } finally
-          {
+          } finally {
             closeSendingMethodInputs();
           }
         }
-        if (scanStatus == ScanStatus.PROBLEM)
-        {
-          if (workFile.getName().indexOf("-m00001") == -1)
-          {
+        if (scanStatus == ScanStatus.PROBLEM) {
+          if (workFile.getName().indexOf("-m00001") == -1) {
             // problem did not occur on the first message, leaving work files
             // alone
             return;
@@ -585,8 +492,7 @@ public class SendData extends Thread
           // problem occurred from the start, probably a configuration issue,
           // deleting work files
           File[] filesToDelete = workDir.listFiles();
-          for (File fileToDelete : filesToDelete)
-          {
+          for (File fileToDelete : filesToDelete) {
             fileToDelete.delete();
           }
           workDir.delete();
@@ -600,30 +506,24 @@ public class SendData extends Thread
     }
   }
 
-  private void deleteRequestFile(String lastOriginalFilename, String originalFilename)
-  {
-    if (!lastOriginalFilename.equals("") && !lastOriginalFilename.equals(originalFilename))
-    {
+  private void deleteRequestFile(String lastOriginalFilename, String originalFilename) {
+    if (!lastOriginalFilename.equals("") && !lastOriginalFilename.equals(originalFilename)) {
       File fileToDelete = new File(requestDir, lastOriginalFilename);
-      if (fileToDelete.exists())
-      {
+      if (fileToDelete.exists()) {
         statusLogger.logFile(fileToDelete.getName(), ScanStatus.SENT, fileSentCount, fileErrorCount);
         String message = "File sent: " + fileToDelete.getName() + " Message count: " + fileSentCount;
-        if (fileErrorCount > 0)
-        {
+        if (fileErrorCount > 0) {
           message += " Error count: " + fileErrorCount;
         }
         statusLogger.logDebug(message);
         fileToDelete.delete();
       }
-    } else
-    {
+    } else {
       statusLogger.logFile(originalFilename, ScanStatus.SENDING, fileSentCount, fileErrorCount);
     }
   }
 
-  private void saveAndHandleResponse(String messageText, String responseText) throws IOException
-  {
+  private void saveAndHandleResponse(String messageText, String responseText) throws IOException {
     String line;
     StringBuilder responseMessage = new StringBuilder();
     String responseMessageType = "";
@@ -631,62 +531,50 @@ public class SendData extends Thread
     String errorDescription = "";
     String ackMessage = null;
     BufferedReader responseIn = new BufferedReader(new StringReader(responseText));
-    while ((line = responseIn.readLine()) != null)
-    {
+    while ((line = responseIn.readLine()) != null) {
       line = line.trim();
-      if (line.length() < 3 || HL7.isFileBatchHeaderFooterSegment(line))
-      {
+      if (line.length() < 3 || HL7.isFileBatchHeaderFooterSegment(line)) {
         continue;
       }
-      if (line.startsWith(HL7.MSH))
-      {
-        if (ackMessage != null && responseMessageType.equals(HL7.ACK))
-        {
+      if (line.startsWith(HL7.MSH)) {
+        if (ackMessage != null && responseMessageType.equals(HL7.ACK)) {
           ackMessage = responseMessage.toString();
         }
         handleResponse(responseMessage, responseMessageType);
         responseMessage.setLength(0);
         responseMessageType = HL7.readField(line, 9);
-      } else if (line.startsWith(HL7.MSA))
-      {
-        if (acknowledgmentCode == null)
-        {
+      } else if (line.startsWith(HL7.MSA)) {
+        if (acknowledgmentCode == null) {
           acknowledgmentCode = HL7.readField(line, 1);
         }
         errorDescription = addToErrorDescription(errorDescription, HL7.readField(line, 3));
-      } else if (line.startsWith(HL7.ERR))
-      {
+      } else if (line.startsWith(HL7.ERR)) {
         String severity = HL7.readField(line, 4);
-        if (severity.equals("E"))
-        {
+        if (severity.equals("E")) {
           errorDescription = addToErrorDescription(errorDescription, HL7.readField(line, 8));
         }
       }
       responseMessage.append(line);
       responseMessage.append("\r");
     }
-    if (ackMessage == null && (responseMessageType.startsWith(HL7.ACK) || responseMessageType.equalsIgnoreCase(HL7.ACK)))
-    {
+    if (ackMessage == null
+        && (responseMessageType.startsWith(HL7.ACK) || responseMessageType.equalsIgnoreCase(HL7.ACK))) {
       ackMessage = responseMessage.toString();
     }
     handleResponse(responseMessage, responseMessageType);
     incSentCount();
 
     sentFileOut.print(messageText);
-    if (ackMessage == null)
-    {
+    if (ackMessage == null) {
       statusLogger.logWarn("No acknowledgement message returned");
     }
     AckAnalyzer ackAnalyzer = new AckAnalyzer(ackMessage, connector.getAckType(), errorFileOut);
-    if (!ackAnalyzer.isPositive())
-    {
+    if (!ackAnalyzer.isPositive()) {
       incErrorCount();
       fileErrorCount++;
-      if (ackAnalyzer.isAckMessage())
-      {
+      if (ackAnalyzer.isAckMessage()) {
         errorFileOut.printCommentLn("MESSAGE REJECTED");
-      } else
-      {
+      } else {
         errorFileOut.printCommentLn("MESSAGE NOT ACCEPTED");
       }
 
@@ -700,63 +588,51 @@ public class SendData extends Thread
       errorFileOut.println();
       errorFileOut.println();
 
-      if (ackAnalyzer.hasSetupProblem())
-      {
+      if (ackAnalyzer.hasSetupProblem()) {
         setScanStatus(ScanStatus.SETUP_PROBLEM);
       }
     }
 
   }
 
-  private void handleResponse(StringBuilder responseMessage, String responseMessageType) throws IOException
-  {
-    if (responseMessage.length() > 0)
-    {
-      if (responseMessageType.startsWith(HL7.ACK))
-      {
+  private void handleResponse(StringBuilder responseMessage, String responseMessageType) throws IOException {
+    if (responseMessage.length() > 0) {
+      if (responseMessageType.startsWith(HL7.ACK)) {
         responseFileOut.print(responseMessage.toString());
-      } else if (responseMessageType.startsWith(HL7.VXU))
-      {
+      } else if (responseMessageType.startsWith(HL7.VXU)) {
         updateFileOut.print(responseMessage.toString());
-      } else
-      {
+      } else {
         responseFileOut.print(responseMessage.toString());
       }
     }
   }
 
-  private void prepareDataToSend() throws IOException
-  {
+  private void prepareDataToSend() throws IOException {
     statusLogger.logDebug("Preparing to send data");
     statusLogger.setSomethingInterestingHappened(true);
     setScanStatus(ScanStatus.PREPARING);
-    for (File fileToSend : filesToProcessList)
-    {
+    for (File fileToSend : filesToProcessList) {
       verifyOkayToKeepRunning();
       requestFile = fileToSend;
-      try
-      {
+      try {
         sendDataLocker.renewLock();
         statusLogger.logFile(requestFile.getName(), ScanStatus.PREPARING, 0);
         statusLogger.logDebug("Preparing file: " + requestFile.getName());
         createWorkingFiles();
         prepareFile();
-      } catch (Throwable t)
-      {
+      } catch (Throwable t) {
         statusLogger.logError("Unable to send data for file: " + requestFile.getName(), t);
         problemFileOut = new FileOut(new File(filenameStart + "." + PROBLEM_NAME + "." + filenameEnd), false);
         problemFileOut.println("Unable to send the data: " + t.getMessage());
         problemFileOut.print(t);
         break;
-      } finally
-      {
+      } finally {
         closeOutputs();
       }
     }
   }
 
-  private void prepareFile() throws FileNotFoundException, IOException, Exception, TransmissionException
-  {
+  private void prepareFile() throws FileNotFoundException, IOException, Exception, TransmissionException {
     backupFileOut = new FileOut(new File(backupDir, filename), false);
     messageNumber = 0;
     StringBuilder message = new StringBuilder();
@@ -764,29 +640,24 @@ public class SendData extends Thread
     String line = readRealFirstLine(in);
     String messageType = null;
     boolean first = true;
-    if (line != null && (line.startsWith(HL7.MSH) || line.startsWith(HL7.FHS) || line.startsWith(HL7.BHS)))
-    {
-      do
-      {
-        if (!first)
-        {
+    if (line != null && (line.startsWith(HL7.MSH) || line.startsWith(HL7.FHS) || line.startsWith(HL7.BHS))) {
+      do {
+        if (!first) {
           backupFileOut.print(line);
           backupFileOut.print("\r");
         }
         first = false;
         line = line.trim();
-        if (line.startsWith("--- ") || line.length() < 3 || line.equals("---"))
-        {
+        if (line.startsWith("--- ") || line.length() < 3 || line.equals("---")) {
           // Is SMM comment or too short for HL7 segment
           continue;
         }
-        if (line.startsWith(HL7.MSH))
-        {
+        if (line.startsWith(HL7.MSH)) {
           moveMessageToWorking(message, messageType);
           message.setLength(0);
           messageType = HL7.readField(line, 9);
-        } else if (line.startsWith(HL7.FHS) || line.startsWith(HL7.BHS) || line.startsWith(HL7.BTS) || line.startsWith(HL7.FTS))
-        {
+        } else if (line.startsWith(HL7.FHS) || line.startsWith(HL7.BHS) || line.startsWith(HL7.BTS)
+            || line.startsWith(HL7.FTS)) {
           continue;
         }
         message.append(line);
@@ -801,16 +672,13 @@ public class SendData extends Thread
     backupFileOut = null;
   }
 
-  private boolean workDirIsEmpty()
-  {
+  private boolean workDirIsEmpty() {
     boolean workDirEmpty = !workDir.exists();
-    if (workDirEmpty)
-    {
+    if (workDirEmpty) {
       return workDirEmpty;
     }
     File[] filesInWorking = workDir.listFiles(new FileFilter() {
-      public boolean accept(File file)
-      {
+      public boolean accept(File file) {
         return file.isFile();
       }
     });
@@ -818,75 +686,62 @@ public class SendData extends Thread
     return workDirEmpty;
   }
 
-  private void setupConnector() throws Exception, FileNotFoundException, IOException
-  {
+  private void setupConnector() throws Exception, FileNotFoundException, IOException {
     List<Connector> connectors = Connector.makeConnectors(readScript());
-    if (connectors.size() == 0)
-    {
+    if (connectors.size() == 0) {
       throw new Exception("Script does not define connection");
     }
     connector = connectors.get(0);
-    for (int i = 1; i < connectors.size(); i++)
-    {
+    for (int i = 1; i < connectors.size(); i++) {
       Connector c = connectors.get(i);
-      if (!c.getPurpose().equals("") && !connector.getOtherConnectorMap().containsKey(c.getPurpose()))
-      {
+      if (!c.getPurpose().equals("") && !connector.getOtherConnectorMap().containsKey(c.getPurpose())) {
         connector.getOtherConnectorMap().put(c.getPurpose(), c);
       }
     }
     connector.setThrowExceptions(true);
-    if (statusLogger != null)
-    {
+    if (statusLogger != null) {
       statusLogger.logDebug("Looking for data to send to: " + connector.getLabel());
     }
-    readKeyStore();
+    if (!readKeyStore()) {
+      throw new Exception("Unable to read key store");
+    }
+
   }
 
-  private boolean obtainLock() throws TransmissionException, IOException
-  {
+  private boolean obtainLock() throws TransmissionException, IOException {
     lockFile = new File(rootDir, LOCK_FILE_NAME);
     sendDataLocker = new SendDataLocker(lockFile, LOCK_TIMEOUT);
-    if (!sendDataLocker.obtainLock())
-    {
+    if (!sendDataLocker.obtainLock()) {
       sendDataLocker = null;
       return false;
     }
     statusLogger = new StatusLogger(rootDir, this);
-    if (statusReporterException != null)
-    {
+    if (statusReporterException != null) {
       statusLogger.logError("Unable to update central support center", statusReporterException);
     }
     return true;
   }
 
-  private void waitAwhileMoreForProblem()
-  {
-    if (scanStatus == ScanStatus.PROBLEM || scanStatus == ScanStatus.SETUP_PROBLEM)
-    {
-      if (configFileModified)
-      {
+  private void waitAwhileMoreForProblem() {
+    if (scanStatus == ScanStatus.PROBLEM || scanStatus == ScanStatus.SETUP_PROBLEM) {
+      if (configFileModified) {
         statusLogger.logInfo("Config file modified, trying to send again. ");
         return;
       }
       retryCount++;
-      if (retryCount > retryWait.length)
-      {
+      if (retryCount > retryWait.length) {
         retryCount = retryWait.length;
       }
       long waitTime = retryWait[retryCount - 1];
       Date waitUntil = new Date(System.currentTimeMillis() + waitTime);
       SimpleDateFormat sdf = new SimpleDateFormat(ManagerServlet.STANDARD_DATE_FORMAT);
-      if (statusLogger != null)
-      {
+      if (statusLogger != null) {
         statusLogger.logInfo("Problem sending data, will try again: " + sdf.format(waitUntil));
       }
-      synchronized (this)
-      {
-        try
-        {
+      synchronized (this) {
+        try {
           this.wait(waitTime);
-        } catch (InterruptedException ie)
-        {
+        } catch (InterruptedException ie) {
           // continue
         }
       }
@@ -894,60 +749,49 @@ public class SendData extends Thread
 
   }
 
-  private String addToErrorDescription(String currentDescription, String addition)
-  {
-    if (addition == null || addition.equals(""))
-    {
+  private String addToErrorDescription(String currentDescription, String addition) {
+    if (addition == null || addition.equals("")) {
       return currentDescription;
     }
-    if (currentDescription.equals(""))
-    {
+    if (currentDescription.equals("")) {
       return addition;
     }
     return currentDescription + "; " + addition;
   }
 
-  private void closeSendingMethodInputs()
-  {
-    if (errorFileOut != null)
-    {
+  private void closeSendingMethodInputs() {
+    if (errorFileOut != null) {
       errorFileOut.close();
       errorFileOut = null;
     }
-    if (sentFileOut != null)
-    {
+    if (sentFileOut != null) {
       sentFileOut.close();
       sentFileOut = null;
     }
-    if (updateFileOut != null)
-    {
+    if (updateFileOut != null) {
       updateFileOut.close();
       updateFileOut = null;
     }
-    if (responseFileOut != null)
-    {
+    if (responseFileOut != null) {
       responseFileOut.close();
       responseFileOut = null;
     }
   }
 
-  private void openSendingMessageInputs()
-  {
+  private void openSendingMessageInputs() {
     errorFileOut = new FileOut(new File(requestDir, filenameStart + "." + REJECTED_NAME + "." + filenameEnd), true);
     sentFileOut = new FileOut(new File(sentDir, filename), true);
     responseFileOut = new FileOut(new File(responseDir, filename), true);
     updateFileOut = new FileOut(new File(updateDir, filename), true);
   }
 
-  private void moveMessageToWorking(StringBuilder message, String messageType) throws Exception, FileNotFoundException, TransmissionException
-  {
-    if (messageType != null && !messageType.startsWith(HL7.ACK) && message.length() > 0)
-    {
+  private void moveMessageToWorking(StringBuilder message, String messageType) throws Exception, FileNotFoundException,
+      TransmissionException {
+    if (messageType != null && !messageType.startsWith(HL7.ACK) && message.length() > 0) {
       messageNumber++;
       String messageText = message.toString();
       messageText = transform(messageText);
-      if (!workDir.exists())
-      {
+      if (!workDir.exists()) {
         workDir.mkdir();
       }
       File workFile = new File(workDir, filename + "-m" + getMessageNumberString());
@@ -958,36 +802,28 @@ public class SendData extends Thread
     }
   }
 
-  private String transform(String messageText)
-  {
-    if (transformer != null)
-    {
+  private String transform(String messageText) {
+    if (transformer != null) {
       connector.setCurrentFilename(requestFile.getName());
       messageText = transformer.transform(connector, messageText);
     }
     return messageText;
   }
 
-  private String getOriginalFileName(String filename)
-  {
+  private String getOriginalFileName(String filename) {
     int pos = filename.lastIndexOf("-m");
-    if (pos != -1)
-    {
+    if (pos != -1) {
       String originalFilename = filename.substring(0, pos);
       String numberPart = filename.substring(pos + 2);
-      if (numberPart.length() >= 5)
-      {
+      if (numberPart.length() >= 5) {
         boolean allNumbers = true;
-        for (char c : numberPart.toCharArray())
-        {
-          if (c < '0' || c > '9')
-          {
+        for (char c : numberPart.toCharArray()) {
+          if (c < '0' || c > '9') {
             allNumbers = false;
             break;
           }
         }
-        if (allNumbers)
-        {
+        if (allNumbers) {
           return originalFilename;
         }
       }
@@ -995,8 +831,7 @@ public class SendData extends Thread
     return "";
   }
 
-  private void createWorkingDirs()
-  {
+  private void createWorkingDirs() {
     backupDir = createDir(rootDir, BACKUP_FOLDER);
     requestDir = createDir(rootDir, REQUEST_FOLDER, REQUESTS_FOLDER);
     workDir = new File(requestDir, WORK_FOLDER);
@@ -1004,25 +839,20 @@ public class SendData extends Thread
     updateDir = createDir(rootDir, UPDATE_FOLDER, UPDATES_FOLDER);
     sentDir = createDir(rootDir, SENT_FOLDER);
 
-    if (configFileModified && workDir.exists())
-    {
+    if (configFileModified && workDir.exists()) {
       statusLogger.logInfo("Config file has been modified since the last run (or this sender has just started) "
           + "looking to delete working files that were generated under previous configurations");
       File[] files = workDir.listFiles(new FilenameFilter() {
 
-        public boolean accept(File file, String arg1)
-        {
+        public boolean accept(File file, String arg1) {
           return file.lastModified() < configFile.lastModified();
         }
       });
-      if (files.length == 0)
-      {
+      if (files.length == 0) {
         statusLogger.logInfo("No working files found that need to be deleted");
-      } else
-      {
+      } else {
         statusLogger.logInfo("Found " + files.length + " file(s) to delete ");
-        for (File file : files)
-        {
+        for (File file : files) {
           statusLogger.logInfo(" + deleting " + file.getName());
           file.delete();
         }
@@ -1031,73 +861,89 @@ public class SendData extends Thread
 
   }
 
-  public File getGeneratedDir()
-  {
+  public File getGeneratedDir() {
     File testDir = getTestDir();
     File generatedDir = new File(testDir, GENERATED_FOLDER);
-    if (!generatedDir.exists())
-    {
+    if (!generatedDir.exists()) {
       generatedDir.mkdir();
     }
     return generatedDir;
   }
 
-  private File getTestDir()
-  {
+  private File getTestDir() {
     File testDir = new File(rootDir, TEST_FOLDER);
-    if (!testDir.exists())
-    {
+    if (!testDir.exists()) {
       testDir.mkdir();
     }
     return testDir;
   }
 
-  public File getTestCaseDir()
-  {
+  public File getTestCaseDir() {
     File testDir = getTestDir();
     File testCaseDir = new File(testDir, TEST_CASES_FOLDER);
-    if (!testCaseDir.exists())
-    {
+    if (!testCaseDir.exists()) {
       testCaseDir.mkdir();
     }
     return testCaseDir;
   }
 
-  private void readKeyStore()
-  {
-    File keyStoreFile = new File(rootDir, KEYSTORE_FILE_NAME);
-    if (keyStoreFile.exists() && keyStoreFile.isFile())
-    {
-      String keyStorePassword = connector.getKeyStorePassword();
-      if (keyStorePassword.equals(""))
-      {
-        keyStorePassword = "changeit";
-      }
-      try
-      {
-        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        FileInputStream instream = new FileInputStream(keyStoreFile);
-        try
-        {
-          keyStore.load(instream, keyStorePassword.toCharArray());
-        } finally
-        {
-          instream.close();
+  private boolean readKeyStore() {
+    if (false) {
+      File keyStoreFile = new File(rootDir, KEYSTORE_FILE_NAME_NEW);
+      if (keyStoreFile.exists() && keyStoreFile.isFile()) {
+        String keyStorePassword = connector.getKeyStorePassword();
+        if (keyStorePassword.equals("")) {
+          keyStorePassword = "changeit";
         }
-        connector.setKeyStore(keyStore);
-      } catch (Exception e)
-      {
-        e.printStackTrace();
-        if (statusLogger != null)
-        {
-          statusLogger.logError("Unable to load key store file with password '" + keyStorePassword + "'", e);
+        try {
+          KeyStore keyStore = KeyStore.getInstance("PKCS12");
+          FileInputStream instream = new FileInputStream(keyStoreFile);
+          try {
+            keyStore.load(instream, keyStorePassword.toCharArray());
+          } finally {
+            instream.close();
+          }
+          connector.setKeyStore(keyStore);
+        } catch (Exception e) {
+          System.out.println("Unable to read key store with password " + keyStorePassword);
+          e.printStackTrace();
+          if (statusLogger != null) {
+            statusLogger.logError("Unable to load key store file with password '" + keyStorePassword + "'", e);
+          }
+          return false;
         }
       }
+      return true;
+    } else {
+      File keyStoreFile = new File(rootDir, KEYSTORE_FILE_NAME);
+      if (keyStoreFile.exists() && keyStoreFile.isFile()) {
+        String keyStorePassword = connector.getKeyStorePassword();
+        if (keyStorePassword.equals("")) {
+          keyStorePassword = "changeit";
+        }
+        try {
+          KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+          FileInputStream instream = new FileInputStream(keyStoreFile);
+          try {
+            keyStore.load(instream, keyStorePassword.toCharArray());
+          } finally {
+            instream.close();
+          }
+          connector.setKeyStore(keyStore);
+        } catch (Exception e) {
+          System.out.println("Unable to read key store with password " + keyStorePassword);
+          e.printStackTrace();
+          if (statusLogger != null) {
+            statusLogger.logError("Unable to load key store file with password '" + keyStorePassword + "'", e);
+          }
+          return false;
+        }
+      }
+      return true;
     }
   }
 
-  private void createWorkingFiles()
-  {
+  private void createWorkingFiles() {
     readFilename();
     String newFilename = null;
     File newRequestFile = null;
@@ -1105,8 +951,8 @@ public class SendData extends Thread
     File responseFile = new File(responseDir, filename);
     File updateFile = new File(updateDir, filename);
     int count = 1;
-    while (sentFile.exists() || responseFile.exists() || updateFile.exists() || (newRequestFile != null && newRequestFile.exists()))
-    {
+    while (sentFile.exists() || responseFile.exists() || updateFile.exists()
+        || (newRequestFile != null && newRequestFile.exists())) {
       count++;
       newFilename = filenameStart + "(" + count + ")." + filenameEnd;
       newRequestFile = new File(requestDir, newFilename);
@@ -1114,8 +960,7 @@ public class SendData extends Thread
       responseFile = new File(responseDir, newFilename);
       updateFile = new File(updateDir, newFilename);
     }
-    if (newRequestFile != null)
-    {
+    if (newRequestFile != null) {
       requestFile.renameTo(newRequestFile);
       requestFile = newRequestFile;
       filename = newFilename;
@@ -1124,91 +969,73 @@ public class SendData extends Thread
 
   }
 
-  private void closeOutputs()
-  {
-    if (errorFileOut != null)
-    {
+  private void closeOutputs() {
+    if (errorFileOut != null) {
       errorFileOut.close();
       errorFileOut = null;
     }
-    if (problemFileOut != null)
-    {
+    if (problemFileOut != null) {
       problemFileOut.close();
       problemFileOut = null;
     }
   }
 
-  private void readFilename()
-  {
+  private void readFilename() {
     readFilename(requestFile.getName());
   }
 
-  private void readFilename(String f)
-  {
+  private void readFilename(String f) {
     filename = f;
     int pos = filename.lastIndexOf('.');
-    if (pos == -1)
-    {
+    if (pos == -1) {
       filenameStart = filename;
       filenameEnd = "";
-    } else
-    {
+    } else {
       filenameStart = filename.substring(0, pos);
       pos++;
-      if (pos >= filename.length())
-      {
+      if (pos >= filename.length()) {
         filenameEnd = "";
-      } else
-      {
+      } else {
         filenameEnd = filename.substring(pos);
       }
     }
   }
 
-  private boolean lookForFilesToProcess() throws IOException
-  {
+  private boolean lookForFilesToProcess() throws IOException {
     statusLogger.logDebug("Looking for files to process");
     verifyOkayToKeepRunning();
     File[] filesToRead = requestDir.listFiles(new FileFilter() {
-      public boolean accept(File file)
-      {
+      public boolean accept(File file) {
         String name = file.getName();
-        if (file.isFile() && isNotGeneratedName(name) && file.length() > 0)
-        {
+        if (file.isFile() && isNotGeneratedName(name) && file.length() > 0) {
           return true;
         }
         return false;
       }
 
-      private boolean isNotGeneratedName(String name)
-      {
+      private boolean isNotGeneratedName(String name) {
         return name.indexOf("." + REJECTED_NAME + ".") == -1;
       }
     });
 
     filesToProcessList = new ArrayList<File>();
 
-    for (File fileToRead : filesToRead)
-    {
+    for (File fileToRead : filesToRead) {
       verifyOkayToKeepRunning();
       long timeSinceLastChange = System.currentTimeMillis() - fileToRead.lastModified();
       statusLogger.logFile(fileToRead.getName(), ScanStatus.LOOKING, 0);
       statusLogger.logDebug(" + Considering '" + fileToRead.getName() + "'");
       long fileChangeTimeout = FILE_CHANGE_TIMEOUT;
-      if (!fileToRead.canRead())
-      {
+      if (!fileToRead.canRead()) {
         statusLogger.logFile(fileToRead.getName(), ScanStatus.PROBLEM, 0);
         statusLogger.logError("Not allowed to read file: " + fileToRead.getName());
-      } else if (fileChangeTimeout > 0 && timeSinceLastChange < fileChangeTimeout)
-      {
+      } else if (fileChangeTimeout > 0 && timeSinceLastChange < fileChangeTimeout) {
         statusLogger.logFile(fileToRead.getName(), ScanStatus.WAITING, 0);
         statusLogger.logInfo("File was recently modified, not processing yet: " + fileToRead.getName());
-      } else if (!fileContainsHL7(fileToRead))
-      {
+      } else if (!fileContainsHL7(fileToRead)) {
         statusLogger.logFile(fileToRead.getName(), ScanStatus.PROBLEM, 0);
         statusLogger.logError("File does not contain HL7, not processing: " + fileToRead.getName());
-      } else
-      {
+      } else {
         statusLogger.logFile(fileToRead.getName(), ScanStatus.PREPARING, 0);
         statusLogger.logDebug("File found to send: " + fileToRead.getName());
         filesToProcessList.add(fileToRead);
@@ -1217,10 +1044,8 @@ public class SendData extends Thread
     return filesToProcessList.size() > 0;
   }
 
-  private void verifyOkayToKeepRunning()
-  {
-    if (!okayToRun)
-    {
+  private void verifyOkayToKeepRunning() {
+    if (!okayToRun) {
       throw new ApplicationShuttingDown();
     }
   }
@@ -1239,73 +1064,58 @@ public class SendData extends Thread
    * @return
    * @throws IOException
    */
-  private boolean fileContainsHL7(File inFile) throws IOException
-  {
+  private boolean fileContainsHL7(File inFile) throws IOException {
     BufferedReader in = new BufferedReader(new FileReader(inFile));
     boolean okay;
-    try
-    {
+    try {
       String line = readRealFirstLine(in);
-      if (line == null)
-      {
+      if (line == null) {
         okay = false;
         statusLogger.logFile(inFile.getName(), ScanStatus.PROBLEM, 0);
         statusLogger.logWarn("File is empty: " + inFile.getName());
-      } else if (line.startsWith(HL7.FHS))
-      {
+      } else if (line.startsWith(HL7.FHS)) {
         boolean hasMsh = false;
         String lastLine = line;
-        while ((line = in.readLine()) != null)
-        {
-          if (line.trim().length() > 0 && !line.startsWith("--- ") && !line.equals("---"))
-          {
+        while ((line = in.readLine()) != null) {
+          if (line.trim().length() > 0 && !line.startsWith("--- ") && !line.equals("---")) {
             lastLine = line;
           }
-          if (line.startsWith(HL7.MSH))
-          {
+          if (line.startsWith(HL7.MSH)) {
             hasMsh = true;
           }
         }
         okay = lastLine.startsWith(HL7.FTS);
-        if (!okay)
-        {
+        if (!okay) {
           statusLogger.logFile(inFile.getName(), ScanStatus.PROBLEM, 0);
           statusLogger.logWarn("File does not end with FTS segment as expected, not processing: " + inFile.getName());
         }
-        if (!hasMsh)
-        {
+        if (!hasMsh) {
           okay = false;
           statusLogger.logFile(inFile.getName(), ScanStatus.PROBLEM, 0);
           statusLogger.logWarn("File is empty, not processing: " + inFile.getName());
         }
-      } else if (line.startsWith(HL7.MSH))
-      {
+      } else if (line.startsWith(HL7.MSH)) {
         statusLogger.logDebug("File does not start with FHS segment as expected: " + inFile.getName());
         okay = true;
-      } else
-      {
+      } else {
         okay = false;
         statusLogger.logFile(inFile.getName(), ScanStatus.PROBLEM, 0);
-        statusLogger.logWarn("File does not appear to contain HL7 (Must start with FHS or MSH segment): " + inFile.getName());
+        statusLogger.logWarn("File does not appear to contain HL7 (Must start with FHS or MSH segment): "
+            + inFile.getName());
       }
-    } finally
-    {
+    } finally {
       in.close();
     }
     return okay;
   }
 
-  private File createDir(File dir, String preferredName, String alternateName)
-  {
+  private File createDir(File dir, String preferredName, String alternateName) {
     File file = new File(dir, preferredName);
-    if (!file.exists())
-    {
+    if (!file.exists()) {
       File alternateFile = new File(dir, alternateName);
-      if (alternateFile.exists())
-      {
+      if (alternateFile.exists()) {
         file = alternateFile;
-      } else
-      {
+      } else {
         file.mkdir();
         statusLogger.logInfo("Creating new folder: " + file.getName());
       }
@@ -1313,11 +1123,9 @@ public class SendData extends Thread
     return file;
   }
 
-  private File createDir(File rootDir, String filename)
-  {
+  private File createDir(File rootDir, String filename) {
     File file = new File(rootDir, filename);
-    if (!file.exists())
-    {
+    if (!file.exists()) {
       file.mkdir();
       statusLogger.logInfo("Creating new folder: " + file.getName());
     }
@@ -1333,32 +1141,26 @@ public class SendData extends Thread
    * @return
    * @throws IOException
    */
-  private String readRealFirstLine(BufferedReader in) throws IOException
-  {
+  private String readRealFirstLine(BufferedReader in) throws IOException {
     String line = null;
-    while ((line = in.readLine()) != null)
-    {
-      if (backupFileOut != null)
-      {
+    while ((line = in.readLine()) != null) {
+      if (backupFileOut != null) {
         backupFileOut.print(line);
         backupFileOut.print("\r");
       }
       line = line.trim();
-      if (line.length() > 0 && !line.startsWith("--- ") && !line.equals("---"))
-      {
+      if (line.length() > 0 && !line.startsWith("--- ") && !line.equals("---")) {
         break;
       }
     }
     return line;
   }
 
-  private String readScript() throws FileNotFoundException, IOException
-  {
+  private String readScript() throws FileNotFoundException, IOException {
     StringBuilder script = new StringBuilder();
     BufferedReader in = new BufferedReader(new FileReader(configFile));
     String line = null;
-    while ((line = in.readLine()) != null)
-    {
+    while ((line = in.readLine()) != null) {
       script.append(line);
       script.append("\n");
     }
@@ -1367,14 +1169,11 @@ public class SendData extends Thread
     return script.toString();
   }
 
-  private String getMessageNumberString()
-  {
+  private String getMessageNumberString() {
     String messageNumberString = String.valueOf(messageNumber);
-    if (messageNumberString.length() > 5)
-    {
+    if (messageNumberString.length() > 5) {
       return messageNumberString;
-    } else
-    {
+    } else {
       messageNumberString = "0000" + messageNumberString;
       return messageNumberString.substring(messageNumberString.length() - 5);
     }

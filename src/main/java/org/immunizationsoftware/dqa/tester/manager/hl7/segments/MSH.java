@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.segments;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
 import org.immunizationsoftware.dqa.tester.manager.hl7.conformance.ConformanceStatement;
@@ -225,7 +226,7 @@ public class MSH extends HL7Component
   }
 
   public MSH(UsageType usageType, Cardinality cardinality) {
-    super("MSH", "Message Header", "Message Header", 21, usageType, cardinality);
+    super(ItemType.SEGMENT, "MSH", "Message Header", "Message Header", 21, usageType, cardinality);
     init();
   }
 

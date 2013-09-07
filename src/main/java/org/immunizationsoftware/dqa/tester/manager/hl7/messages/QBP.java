@@ -13,7 +13,7 @@ public class QBP extends HL7Component
     super(copy);
     init();
   }
-
+  
   @Override
   public void init() {
     // TODO Auto-generated method stub

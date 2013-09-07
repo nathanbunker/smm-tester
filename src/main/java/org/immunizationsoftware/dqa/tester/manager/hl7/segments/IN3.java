@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.segments;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.MSG;
 
@@ -20,7 +21,7 @@ public class IN3 extends HL7Component
 
   public IN3(UsageType usageType, Cardinality cardinality)
   {
-    super ("IN3", "Insurance Additional Info - Cert Segment", "Insurance Additional Info - Cert Segment", 0, usageType, cardinality);
+    super (ItemType.SEGMENT, "IN3", "Insurance Additional Info - Cert Segment", "Insurance Additional Info - Cert Segment", 0, usageType, cardinality);
   }
   
   @Override

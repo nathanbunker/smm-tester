@@ -1,6 +1,8 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
+import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
 import org.immunizationsoftware.dqa.tester.manager.hl7.conformance.ExactValue;
@@ -38,7 +40,13 @@ public class CQ extends HL7Component
   }
 
   public CQ(String componentName, UsageType usageType) {
-    super("CQ", "Composite Quantity with Units", componentName, 2, usageType);
+    super(ItemType.DATATYPE, "CQ", "Composite Quantity with Units", componentName, 2, usageType);
+    setLengthMax(500);
+    init();
+  }
+
+  public CQ(String componentName, UsageType usageType, Cardinality cardinality) {
+    super(ItemType.DATATYPE, "CQ", "Composite Quantity with Units", componentName, 2, usageType, cardinality);
     setLengthMax(500);
     init();
   }

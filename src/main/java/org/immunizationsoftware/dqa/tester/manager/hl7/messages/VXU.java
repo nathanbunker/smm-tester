@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.messages;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.GT1;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.IN1;
@@ -129,7 +130,7 @@ public class VXU extends HL7Component
 
 
   public VXU() {
-    super("VXU", "Send Immunization History", 10, UsageType.R, Cardinality.ONE_TIME_ONLY);
+    super(ItemType.MESSAGE, "VXU", "Send Immunization History", 10, UsageType.R, Cardinality.ONE_TIME_ONLY);
     init();
   }
 
@@ -188,15 +189,14 @@ public class VXU extends HL7Component
     }
 
     public InsuranceGroup(UsageType usageType, Cardinality cardinality) {
-      super("IN1", "PID - Insurance Group", 3, usageType, cardinality);
-
+      super(ItemType.MESSAGE, "IN1", "PID - Insurance Group", 3, usageType, cardinality);
       init();
     }
 
     public void init() {
       setChild(1, in1 = new IN1(UsageType.O, Cardinality.ZERO_OR_ONE));
-      setChild(1, in2 = new IN2(UsageType.O, Cardinality.ZERO_OR_ONE));
-      setChild(1, in3 = new IN3(UsageType.O, Cardinality.ZERO_OR_ONE));
+      setChild(2, in2 = new IN2(UsageType.O, Cardinality.ZERO_OR_ONE));
+      setChild(3, in3 = new IN3(UsageType.O, Cardinality.ZERO_OR_ONE));
     }
 
   }
@@ -270,7 +270,7 @@ public class VXU extends HL7Component
     }
 
     public OrderGroup(UsageType usageType, Cardinality cardinality) {
-      super("ORC", "PID - Order Group", 6, usageType, cardinality);
+      super(ItemType.MESSAGE_PART, "ORC", "PID - Order Group", 6, usageType, cardinality);
       init();
     }
 
@@ -316,7 +316,7 @@ public class VXU extends HL7Component
       }
 
       public ObservationGroup(UsageType usageType, Cardinality cardinality) {
-        super("OBX", "PID - Order Group - Observation Group", 2, usageType, cardinality);
+        super(ItemType.MESSAGE_PART, "OBX", "PID - Order Group - Observation Group", 2, usageType, cardinality);
         init();
       }
 

@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.segments;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.HD;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.ID;
@@ -89,7 +90,7 @@ public class EVN extends HL7Component
 
   public EVN(UsageType usageType, Cardinality cardinality)
   {
-    super("EVN", "Event Type Segment", "Event Type Segment", 7, usageType, cardinality);
+    super(ItemType.SEGMENT, "EVN", "Event Type Segment", "Event Type Segment", 7, usageType, cardinality);
     
     init();
   }

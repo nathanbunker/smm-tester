@@ -29,10 +29,13 @@ import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
-import org.immunizationsoftware.dqa.tester.manager.HL7Analyzer;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
 import org.immunizationsoftware.dqa.tester.manager.ScenarioManager;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ConformanceIssue;
+import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.messages.ACK;
+import org.immunizationsoftware.dqa.tester.manager.hl7.messages.RSP;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 import org.immunizationsoftware.dqa.tester.transform.Issue;
 
@@ -42,8 +45,6 @@ public class CertifyRunner extends Thread
   private static final String QUERY_TYPE_VXQ = "V";
   private static final String QUERY_TYPE_NONE = "N";
 
-
-  
   public static final String STATUS_INITIALIZED = "Initialized";
   public static final String STATUS_STARTED = "Started";
   public static final String STATUS_COMPLETED = "Completed";
@@ -395,7 +396,7 @@ public class CertifyRunner extends Thread
 
   private void prepareFormatUpdateAnalysis() {
     for (TestCaseMessage testCaseMessage : statusCheckTestCaseList) {
-      if (testCaseMessage.isHasRun()) {
+      if (testCaseMessage.isHasRun() && testCaseMessage.getActualMessageResponseType().equals("ACK")) {
         ackAnalysisList.add(testCaseMessage);
       }
     }
@@ -403,7 +404,7 @@ public class CertifyRunner extends Thread
 
   private void prepareFormatQueryAnalysis() {
     for (TestCaseMessage testCaseMessage : statusCheckTestCaseList) {
-      if (testCaseMessage.getDerivedFromVXUMessage() != null) {
+      if (testCaseMessage.isHasRun() && testCaseMessage.getActualMessageResponseType().equals("RSP")) {
         rspAnalysisList.add(testCaseMessage);
       }
     }
@@ -415,14 +416,10 @@ public class CertifyRunner extends Thread
     for (TestCaseMessage testCaseMessage : ackAnalysisList) {
       count++;
       if (testCaseMessage.isHasRun()) {
-        List<String> il = new ArrayList<String>();
-        HL7Reader ackReader = new HL7Reader(testCaseMessage.getActualResponseMessage());
-        HL7Reader vxuReader = new HL7Reader(testCaseMessage.getMessageText());
-        HL7Analyzer analyzer = new HL7Analyzer(il, ackReader, vxuReader);
-        if (analyzer.analyzeAck()) {
+        if (testCaseMessage.getActualResponseMessageComponent() != null
+            && testCaseMessage.getActualResponseMessageComponent().hasNoErrors()) {
           pass++;
         }
-        testCaseMessage.setHl7Analyzer(analyzer);
         areaFLevel1Progress = makeScore(count, ackAnalysisList.size());
       }
       if (!keepRunning) {
@@ -440,14 +437,11 @@ public class CertifyRunner extends Thread
     for (TestCaseMessage testCaseMessage : rspAnalysisList) {
       count++;
       if (testCaseMessage.isHasRun()) {
-        List<String> il = new ArrayList<String>();
-        HL7Reader ackReader = new HL7Reader(testCaseMessage.getActualResponseMessage());
-        HL7Reader vxuReader = new HL7Reader(testCaseMessage.getMessageText());
-        HL7Analyzer analyzer = new HL7Analyzer(il, ackReader, vxuReader);
-        if (analyzer.analyzeRsp()) {
+        if (testCaseMessage.getActualResponseMessageComponent() != null
+            && testCaseMessage.getActualResponseMessageComponent().hasNoErrors()) {
           pass++;
         }
-        testCaseMessage.setHl7Analyzer(analyzer);
+
         areaFLevel2Progress = makeScore(count, rspAnalysisList.size());
       }
       if (!keepRunning) {
@@ -1171,7 +1165,7 @@ public class CertifyRunner extends Thread
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
     }
-    
+
     {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_ADD_DELETE);
       testCaseMessage.setDescription("Vaccination Added and then Deleted");
@@ -1505,6 +1499,7 @@ public class CertifyRunner extends Thread
             }
           }
         }
+        TestRunner.analyze(queryTestCaseMessage);
       } catch (Throwable t) {
         queryTestCaseMessage.setException(t);
       }
@@ -1587,6 +1582,7 @@ public class CertifyRunner extends Thread
             }
           }
         }
+        TestRunner.analyze(queryTestCaseMessage);
       } catch (Throwable t) {
         queryTestCaseMessage.setException(t);
       }
@@ -1650,6 +1646,7 @@ public class CertifyRunner extends Thread
             }
           }
         }
+        TestRunner.analyze(queryTestCaseMessage);
       } catch (Throwable t) {
         queryTestCaseMessage.setException(t);
       }
@@ -1937,10 +1934,10 @@ public class CertifyRunner extends Thread
 
   public void printProgressDetails(PrintWriter out, boolean toFile) {
 
-    out.println("<p>The IIS Test process is an automated sequence of tests to verify how closely an IIS HL7 Interface " +
-    		"conforms to national standards established by colloborate efforts of the Immunization Information Systems Support" +
-    		"Branch (IISSB) of the Centers for Disease Control and Prevention (CDC), the American Immunization Registry Association" +
-    		"(AIRA) and IIS community members.  </p>");
+    out.println("<p>The IIS Test process is an automated sequence of tests to verify how closely an IIS HL7 Interface "
+        + "conforms to national standards established by colloborate efforts of the Immunization Information Systems Support "
+        + "Branch (IISSB) of the Centers for Disease Control and Prevention (CDC), the American Immunization Registry Association "
+        + "(AIRA) and IIS community members.  </p>");
     SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm a");
     out.println("<table border=\"1\" cellspacing=\"0\">");
     if (testStarted != null) {
@@ -2006,15 +2003,15 @@ public class CertifyRunner extends Thread
       exception.printStackTrace(out);
       out.println("</pre>");
     }
-    
-    out.println("<p>The test process utilizes a real time connection to the IIS HL7 interface. " +
-    		"Connections are established using the Simple Message Mover standard for connecting " +
-    		"to IIS. This standard supports the most common used Web Service and HTTPS standards. </p>");
+
+    out.println("<p>The test process utilizes a real time connection to the IIS HL7 interface. "
+        + "Connections are established using the Simple Message Mover standard for connecting "
+        + "to IIS. This standard supports the most common used Web Service and HTTPS standards. </p>");
 
     if (!connector.getCustomTransformations().equals("")) {
-      out.println("<p>This interface requires customized Transformations to modify each message before trasnmitting" +
-      		"them to the IIS. These transformations can range from setting the correct submitter facility in the " +
-      		"message header to modifying the structure of the HL7 message to meet local requirements. </p>");
+      out.println("<p>This interface requires customized Transformations to modify each message before trasnmitting"
+          + "them to the IIS. These transformations can range from setting the correct submitter facility in the "
+          + "message header to modifying the structure of the HL7 message to meet local requirements. </p>");
     }
 
     out.println("<table border=\"1\" cellspacing=\"0\">");
@@ -2040,8 +2037,8 @@ public class CertifyRunner extends Thread
     out.println("</br>");
 
     if (queryConnector != connector) {
-      out.println("<p>The connection information for performing queries is different than for the updates. This is to either accomodate" +
-      		"different standards for message format or to allow for different credentials and URL. </p>");
+      out.println("<p>The connection information for performing queries is different than for the updates. This is to either accomodate"
+          + "different standards for message format or to allow for different credentials and URL. </p>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
       out.println("    <th>Query Connection</th>");
@@ -2121,6 +2118,7 @@ public class CertifyRunner extends Thread
             if (hasPassed) {
               out.println("    <td class=\"pass\">All required fields returned. "
                   + makeCompareDetailsLink(testCaseMessage, toFile, false));
+              out.println(makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
             } else if (hasRun) {
               out.println("    <td class=\"fail\">Required fields not returned:");
               out.println("      <ul>");
@@ -2135,6 +2133,7 @@ public class CertifyRunner extends Thread
               }
               out.println("      </ul>");
               out.println("      " + makeCompareDetailsLink(testCaseMessage, toFile, false));
+              out.println(makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
               out.println("    </td>");
             } else {
               out.println("    <td class=\"nottested\">not run yet</td>");
@@ -2329,14 +2328,14 @@ public class CertifyRunner extends Thread
       out.println("  </tr>");
       for (TestCaseMessage testCaseMessage : ackAnalysisList) {
         String classText = "nottested";
-        HL7Analyzer ackAnalyzer = testCaseMessage.getHL7Analyzer();
-        if (ackAnalyzer != null) {
-          classText = ackAnalyzer.isPassedTest() ? "pass" : "fail";
+        HL7Component actualResponseMessageComponent = testCaseMessage.getActualResponseMessageComponent();
+        if (actualResponseMessageComponent != null) {
+          classText = actualResponseMessageComponent.hasNoErrors() ? "pass" : "fail";
         }
         out.println("  <tr>");
         out.println("    <td class=\"" + classText + "\"><em>" + testCaseMessage.getDescription() + "</em></td>");
-        if (ackAnalyzer != null) {
-          if (ackAnalyzer.isPassedTest()) {
+        if (actualResponseMessageComponent != null) {
+          if (actualResponseMessageComponent.hasNoErrors()) {
             out.println("    <td class=\"" + classText + "\">Ack meets HL7 and CDC standards.  "
                 + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
           } else {
@@ -2360,14 +2359,14 @@ public class CertifyRunner extends Thread
       out.println("  </tr>");
       for (TestCaseMessage testCaseMessage : rspAnalysisList) {
         String classText = "nottested";
-        HL7Analyzer ackAnalyzer = testCaseMessage.getHL7Analyzer();
-        if (ackAnalyzer != null) {
-          classText = ackAnalyzer.isPassedTest() ? "pass" : "fail";
+        HL7Component actualResponseMessageComponent = testCaseMessage.getActualResponseMessageComponent();
+        if (actualResponseMessageComponent != null) {
+          classText = actualResponseMessageComponent.hasNoErrors() ? "pass" : "fail";
         }
         out.println("  <tr>");
         out.println("    <td class=\"" + classText + "\"><em>" + testCaseMessage.getDescription() + "</em></td>");
-        if (ackAnalyzer != null) {
-          if (ackAnalyzer.isPassedTest()) {
+        if (actualResponseMessageComponent != null) {
+          if (actualResponseMessageComponent.hasNoErrors()) {
             out.println("    <td class=\"" + classText + "\">RSP meets HL7 and CDC standards.  "
                 + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
           } else {
@@ -2385,15 +2384,13 @@ public class CertifyRunner extends Thread
 
   }
 
-  public void printTestCaseMessageDetailsQueryOptional(PrintWriter out, boolean toFile,
-      TestCaseMessage testCaseMessage) {
+  public void printTestCaseMessageDetailsQueryOptional(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage) {
     String classText = "nottested";
     boolean passedAllOptional = false;
     if (testCaseMessage.isHasRun() && testCaseMessage.getComparisonList() != null) {
       passedAllOptional = true;
       for (CompareManager.Comparison comparison : testCaseMessage.getComparisonList()) {
-        if (comparison.isTested()
-            && comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL
+        if (comparison.isTested() && comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL
             && !comparison.isPass()) {
           passedAllOptional = false;
           break;
@@ -2426,8 +2423,7 @@ public class CertifyRunner extends Thread
     out.println("  </tr>");
   }
 
-  public void printTestCaseMessageDetailsQueryRequired(PrintWriter out, boolean toFile,
-      TestCaseMessage testCaseMessage) {
+  public void printTestCaseMessageDetailsQueryRequired(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage) {
     String classText = "nottested";
     if (testCaseMessage.isHasRun()) {
       classText = testCaseMessage.isPassedTest() ? "pass" : "fail";
@@ -2507,10 +2503,10 @@ public class CertifyRunner extends Thread
     } else {
       if (substantialChanges) {
         return "<font size=\"-1\"><a href=\"CompareServlet?certifyServletBasicNum=" + testCaseMessage.getTestCaseId()
-            + "&showSubmissionChange=true\">(details)</a></font>";
+            + "&showSubmissionChange=true\">(compare details)</a></font>";
       } else {
         return "<font size=\"-1\"><a href=\"CompareServlet?certifyServletBasicNum=" + testCaseMessage.getTestCaseId()
-            + "\">(details)</a></font>";
+            + "\">(compare details)</a></font>";
 
       }
     }

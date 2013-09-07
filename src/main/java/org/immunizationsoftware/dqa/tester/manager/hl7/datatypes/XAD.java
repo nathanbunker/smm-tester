@@ -1,8 +1,11 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
+import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
+import org.immunizationsoftware.dqa.tester.manager.hl7.predicates.IsValued;
 
 public class XAD extends HL7Component
 {
@@ -144,10 +147,21 @@ public class XAD extends HL7Component
     init();
   }
 
+  public XAD(String componentName, UsageType usageType)
+  {
+    super(ItemType.DATATYPE, "XAD", "Extended Address", componentName, 14, usageType);
+    init();
+  }
+
+  public XAD(String componentName, UsageType usageType, Cardinality cardinality)
+  {
+    super(ItemType.DATATYPE, "XAD", "Extended Address", componentName, 14, usageType, cardinality);
+    init();
+  }
+
   public XAD(String componentName, UsageType usageType, int lengthMax)
   {
-    super("XAD", "Extended Address", componentName, 14, usageType, lengthMax);
-    
+    super(ItemType.DATATYPE, "XAD", "Extended Address", componentName, 14, usageType, lengthMax);
     init();
   }
 
@@ -160,6 +174,7 @@ public class XAD extends HL7Component
     setChild(6, country = new ID("Country", UsageType.RE, ValueSet.HL70399));
     country.setLength(3, 3);
     country.setDefaultValueWhenBlank("USA");
+    country.setDefaultValueWhenBlankPredicate(new IsValued(stateOrProvince));
     setChild(7, addressType = new ID("Address Type", UsageType.R, 3, ValueSet.HL70190));
     setChild(8, otherGeographicDesignation = new ST("Other Geographic Designation", UsageType.O));
     setChild(9, countyParishCode = new IS("County/Parish Code", UsageType.O));
@@ -167,6 +182,6 @@ public class XAD extends HL7Component
     setChild(11, addressRepresentationCode = new ID("Address Representation Code", UsageType.O));
     setChild(12, addressValidityRange = new DR("Address Validity Range", UsageType.X));
     setChild(13, effectiveDate = new TS("Effective Date", UsageType.O));
-    setChild(13, expirationDate = new TS("Expiration Date", UsageType.O));
+    setChild(14, expirationDate = new TS("Expiration Date", UsageType.O));
   }
 }

@@ -91,6 +91,10 @@ public class HomeServlet extends ClientServlet
           out.println("  </tr>");
         }
         out.println("  <tr>");
+        out.println("    <td><a href=\"ConformanceServlet\">Conformance</a></td>");
+        out.println("    <td>Verify HL7 Message, Segment or Field for conformance </td>");
+        out.println("  </tr>");
+        out.println("  <tr>");
         out.println("    <td><a href=\"CompareServlet\">Compare</a></td>");
         out.println("    <td>Compare VXU and RSP messages to determine if important information matches between the messages. </td>");
         out.println("  </tr>");

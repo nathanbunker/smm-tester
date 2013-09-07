@@ -1,6 +1,7 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 
 public class JCC extends HL7Component
@@ -45,7 +46,7 @@ public class JCC extends HL7Component
   }
 
   public JCC(String componentName, UsageType usageType) {
-    super("JCC", "job code/class", componentName, 3, usageType);
+    super(ItemType.DATATYPE, "JCC", "job code/class", componentName, 3, usageType);
     init();
   }
 

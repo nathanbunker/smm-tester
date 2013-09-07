@@ -192,7 +192,7 @@ public class HL7DateAnalyzer extends HL7FormatAnalyzer
                     errorMessageList
                         .add("Invalid format for DTM data type, value in position 15 must be one of these . + -");
                   } else {
-                    sec = Integer.parseInt(time.substring(14));
+                    sec = Integer.parseInt(time.substring(12));
                     precisionSec = true;
                     if (time.length() > 15) {
                       ms = Integer.parseInt(time.substring(15));

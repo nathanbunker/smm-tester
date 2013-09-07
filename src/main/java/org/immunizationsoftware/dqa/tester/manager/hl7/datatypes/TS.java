@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 
 public class TS extends HL7Component
@@ -43,7 +44,7 @@ public class TS extends HL7Component
 
   public TS(String componentName, UsageType usageType, Cardinality cardinality)
   {
-    super("TS", "Time Stamp", componentName, 2, usageType, cardinality, 26);
+    super(ItemType.DATATYPE, "TS", "Time Stamp", componentName, 2, usageType, cardinality, 26);
     init();
   }
 

@@ -1,6 +1,7 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 
 public class DR extends HL7Component
@@ -35,7 +36,7 @@ public class DR extends HL7Component
 
   public DR(String componentName, UsageType usageType)
   {
-    super("DR", "Date/Time Range", componentName, 2, usageType);
+    super(ItemType.DATATYPE, "DR", "Date/Time Range", componentName, 2, usageType);
     
     init();
   }

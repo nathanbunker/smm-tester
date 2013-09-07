@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.segments;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.CE;
@@ -79,7 +80,7 @@ public class MSA extends HL7Component
   }
 
   public MSA(UsageType usageType, Cardinality cardinality) {
-    super("MSA", "Message Acknowledement Segment", "Message Acknowledement Segment", 6, usageType, cardinality);
+    super(ItemType.SEGMENT, "MSA", "Message Acknowledement Segment", "Message Acknowledement Segment", 6, usageType, cardinality);
     init();
   }
 

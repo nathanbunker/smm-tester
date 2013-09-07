@@ -1,6 +1,8 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
+import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 
 public class NM extends HL7Component
@@ -9,13 +11,18 @@ public class NM extends HL7Component
   
   public NM(String componentName)
   {
-    super("NM", "Numeric", componentName, 0);
+    super(ItemType.DATATYPE, "NM", "Numeric", componentName, 0);
     setLengthMax(16);
   }
   
   public NM(String componentName, UsageType usageType)
   {
-    super("NM", "Numeric", componentName, 0, usageType);
+    super(ItemType.DATATYPE, "NM", "Numeric", componentName, 0, usageType);
+  }
+  
+  public NM(String componentName, UsageType usageType, Cardinality cardinality)
+  {
+    super(ItemType.DATATYPE, "NM", "Numeric", componentName, 0, usageType, cardinality);
   }
   
   @Override
@@ -32,7 +39,7 @@ public class NM extends HL7Component
   
   public NM(String componentName, UsageType usageType, int lengthMax)
   {
-    super("NM", "Numeric", componentName, 0, usageType, lengthMax);
+    super(ItemType.DATATYPE, "NM", "Numeric", componentName, 0, usageType, lengthMax);
   }
   
   @Override

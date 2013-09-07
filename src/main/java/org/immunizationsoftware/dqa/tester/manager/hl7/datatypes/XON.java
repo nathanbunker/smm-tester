@@ -1,6 +1,7 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ValueSet;
 import org.immunizationsoftware.dqa.tester.manager.hl7.predicates.IsNotValued;
@@ -110,9 +111,13 @@ public class XON extends HL7Component
     init();
   }
 
-  public XON(String componentName, UsageType usageType, int lengthMax) {
-    super("XON", "Extended Composite ID Number and Name for Organizations", componentName, 10, usageType, lengthMax);
+  public XON(String componentName, UsageType usageType) {
+    super(ItemType.DATATYPE, "XON", "Extended Composite ID Number and Name for Organizations", componentName, 10, usageType);
+    init();
+  }
 
+  public XON(String componentName, UsageType usageType, int lengthMax) {
+    super(ItemType.DATATYPE, "XON", "Extended Composite ID Number and Name for Organizations", componentName, 10, usageType, lengthMax);
     init();
   }
 

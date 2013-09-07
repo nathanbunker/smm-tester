@@ -1,6 +1,8 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
+import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 
 public class LA2 extends HL7Component
@@ -162,7 +164,12 @@ public class LA2 extends HL7Component
   }
 
   public LA2(String componentNameSpecific, UsageType usageType) {
-    super("LA2", "Location with Address Variation 2", componentNameSpecific, 5, usageType);
+    super(ItemType.DATATYPE, "LA2", "Location with Address Variation 2", componentNameSpecific, 16, usageType);
+    init();
+  }
+
+  public LA2(String componentNameSpecific, UsageType usageType, Cardinality cardinality) {
+    super(ItemType.DATATYPE, "LA2", "Location with Address Variation 2", componentNameSpecific, 16, usageType, cardinality);
     init();
   }
 

@@ -10,16 +10,25 @@ public class IsValuedAs extends ConditionalPredicate
 
   public IsValuedAs(HL7Component component, String value) {
     this(component, value, UsageType.O, UsageType.O);
+    if (component == null) {
+      throw new IllegalArgumentException("Component is required");
+    }
   }
 
   public IsValuedAs(HL7Component component, String value, UsageType usageTypeMet, UsageType usageTypeNotMet) {
     super(component, usageTypeMet, usageTypeNotMet);
     values = new String[1];
+    if (component == null) {
+      throw new IllegalArgumentException("Component is required");
+    }
     values[0] = value;
   }
 
   public IsValuedAs(HL7Component component, String[] values, UsageType usageTypeMet, UsageType usageTypeNotMet) {
     super(component, usageTypeMet, usageTypeNotMet);
+    if (component == null) {
+      throw new IllegalArgumentException("Component is required");
+    }
     this.values = values;
   }
 

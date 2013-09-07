@@ -2,6 +2,7 @@ package org.immunizationsoftware.dqa.tester.manager.hl7.datatypes;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
 
 public class VID extends HL7Component
@@ -46,10 +47,15 @@ public class VID extends HL7Component
     init();
   }
 
+  public VID(String componentName, UsageType usageType)
+  {
+    super(ItemType.DATATYPE, "VID", "Version ID", componentName, 3, usageType);
+    init();
+  }
+
   public VID(String componentName, UsageType usageType, Cardinality cardinality)
   {
-    super("VID", "Version ID", componentName, 3, usageType, cardinality);
-    
+    super(ItemType.DATATYPE, "VID", "Version ID", componentName, 3, usageType, cardinality);
     init();
   }
 
