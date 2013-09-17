@@ -403,7 +403,7 @@ public class NK1 extends HL7Component
     setChild(3, relationship = new CE("Relationship", UsageType.R, Cardinality.ONE_TIME_ONLY, ValueSet.HL70063));
     setChild(4, address = new XAD("Address", UsageType.RE, cardinality.ZERO_OR_MORE));
     address.getAddressType().addConformanceStatement(
-        new ExactValue("The mailing address must be sent in the first sequence", new String[] {"M", "L"}));
+        new ExactValue("The mailing address must be sent in the first sequence", new String[] {"M", "L", "P"}));
     setChild(5, phoneNumber = new XTN("Phone Number", UsageType.RE, Cardinality.ZERO_OR_MORE));
     phoneNumber.getTelecommunicationUseCode().addConformanceStatement(
         new ExactValue("The primary telephone number must be sent in the first sequence", "PRN"));

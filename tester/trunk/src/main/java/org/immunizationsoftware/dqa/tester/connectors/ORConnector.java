@@ -13,16 +13,19 @@ import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 
 /**
@@ -195,8 +198,8 @@ public class ORConnector extends Connector
         debugLog.append("Key store defined, looking to load it for use on this connection \r");
       }
       try {
-        SSLContext context = SSLContext.getInstance("TLS");
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        SSLContext context = SSLContext.getInstance("TLSv1");
+        final TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         tmf.init(getKeyStore());
         X509TrustManager defaultTrustManager = (X509TrustManager) tmf.getTrustManagers()[0];
         SavingTrustManager tm = new SavingTrustManager(defaultTrustManager);
@@ -205,6 +208,9 @@ public class ORConnector extends Connector
         if (debug) {
           debugLog.append("Key store loaded \r");
         }
+//        context.init(new KeyManager[] { new FilteredKeyManager((X509KeyManager)originalKeyManagers[0], desiredCertsForConnection) },
+//            tmf.getTrustManagers(), new SecureRandom());
+        
       } catch (Exception e) {
         e.printStackTrace();
         if (debug) {
@@ -216,6 +222,7 @@ public class ORConnector extends Connector
         debugLog.append("Key store was not defined, using default for this connection \r");
       }
     }
+    
     return factory;
   }
 

@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.immunizationsoftware.dqa.tester.Transformer.PatientType;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
+import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
 import org.immunizationsoftware.dqa.tester.manager.hl7.messages.ACK;
 import org.immunizationsoftware.dqa.tester.manager.hl7.messages.RSP;
@@ -236,15 +237,6 @@ public class TestCaseMessage
   private boolean majorChangesMade = false;
   private boolean hasRun = false;
   private int testCaseId = 0;
-  private HL7Component actualResponseMessageComponent = null;
-
-  public HL7Component getActualResponseMessageComponent() {
-    return actualResponseMessageComponent;
-  }
-
-  public void setActualResponseMessageComponent(HL7Component actualResponseMessageComponent) {
-    this.actualResponseMessageComponent = actualResponseMessageComponent;
-  }
 
   public boolean isAccepted() {
     return accepted;
@@ -895,5 +887,32 @@ public class TestCaseMessage
       throw new IllegalArgumentException("Unable to read string", ioe);
     }
     preparedMessage = sb.toString();
+  }
+
+  public HL7Component createHL7Component() {
+    try {
+      HL7Component comp = null;
+      if (getActualMessageResponseType().equals("")) {
+        if (!getActualResponseMessage().equalsIgnoreCase("")) {
+          HL7Reader ackMessageReader = new HL7Reader(getActualResponseMessage());
+          if (ackMessageReader.advanceToSegment("MSH")) {
+            setActualMessageResponseType(ackMessageReader.getValue(9));
+          }
+        }
+      }
+      if (getActualMessageResponseType().equals("ACK")) {
+        comp = new ACK();
+      } else if (getActualMessageResponseType().equals("RSP")) {
+        comp = new RSP();
+      }
+      if (comp != null) {
+        comp.parseTextFromMessage(getActualResponseMessage());
+        comp.checkConformance();
+        return comp;
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 }

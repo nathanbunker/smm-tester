@@ -68,11 +68,10 @@ public class TestTransformer
     messageText = transformer.transform(connector, messageText);
     assertEquals("MSH|\rNK1|\r", messageText);
   }
-  
-  private static final String CLEAN_TEST_BEFORE = "MSH|^~\\&|||||20130823111809||VXU^V04^VXU_V04|X94P18|P|2.5.1|\r" + 
-"PID|1||X94P18^^^OIS-TEST^MR||Court^Nye^^^^^L|Brazos^Maia|20130224|M|||321 Dundy St^^Haslett^MI^48840^USA^P||^PRN^PH^^^517^5489090|\r" + 
-"NK1|1|Court^Maia|MTH^Mother^HL70063|\r";
- 
+
+  private static final String CLEAN_TEST_BEFORE = "MSH|^~\\&|||||20130823111809||VXU^V04^VXU_V04|X94P18|P|2.5.1|\r"
+      + "PID|1||X94P18^^^OIS-TEST^MR||Court^Nye^^^^^L|Brazos^Maia|20130224|M|||321 Dundy St^^Haslett^MI^48840^USA^P||^PRN^PH^^^517^5489090|\r"
+      + "NK1|1|Court^Maia|MTH^Mother^HL70063|\r";
 
   @Test
   public void testClean() throws Exception {
@@ -127,6 +126,42 @@ public class TestTransformer
   }
 
   @Test
+  public void testFix() throws Exception {
+    Transformer transformer = new Transformer();
+    Connector connector = ConnectorFactory.getConnector(ConnectorFactory.TYPE_POST, "Test", "");
+    String messageText = "";
+
+    messageText = "MSH|^~\\&|RPMS|91116||NIST TEST IZ REG|20130730091012|ASD123|VXU^V04^VXU_V04|744705554.7469|P|2.5.1|||AL|AL|\r"
+        + "PID|1||I15J12^^^DEMO HOSP^MR~950831309^^^SSA^SS~441904393^^^MCD^MA||Lincoln^Geraldine^^^^^L^^^^^|Johnsson^Atin^^^^|19410508|F||1002-5^AMERICAN INDIAN OR ALASKA NATIVE^HL70005|311 Cherokee Cir^^ANYCITY^NC^28719^USA^L||^PRN^PH^^^906^4869809~^NET^^ottoline@hotmail.com|^PRN^PH^^^555^9993616||||||||2186-5^NOT HISPANIC OR LATINO^CDCREC||N\r"
+        + "PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|N|20070910|||A|20070910|20070910\r"
+        + "NK1|1|Johnsson^Atin^^^^^L|MTH^MOTHER^HL70063|^^^^^USA^L|||NOK^NEXT OF KIN^99IHS\r"
+        + "PV1|1|R|||||AB2001434^BEATTY,CINDY||AL2025662^LUCKETT,RANDALL|AMB|||||||||3245421|V01^20091120||||||||||||||||||||||||20091120\r"
+        + "ORC|RE|157598-232101^IHS|20120814-157598-232101000000^DEMO HOSP||IP|||||I-23432^BURDEN^DONNA^A^^^^^IHS^L||57422^RADON^NICHOLAS^^^^^^IHS^L|||||^^^DEMO HOSP\r"
+        + "RXA|0|1|20120814|20120814|52^HEP A, ADULT^CVX|1|mL^MilliLiters^UCUM||00^NEW IMMUNIZATION RECORD^NIP001|7832-1^LEMON^MIKE^A^^^^^IHS^L|^^^XYZ123||||I90FV|20121214|MSD^MERCK & CO.^MVX|||CP|A|20091103\r"
+        + "RXR|IM^INTRAMUSCULAR^HL70162|RA^Right Arm^HL70163\r"
+        + "OBX|1|CE|64994-7^funding eligibility for immunization^LN|1|V01^Not Eligible^HL70064||||||F|||20091103|||VXC40^per immunization^CDCPHINVS\r"
+        + "OBX|2|CE|30956-7^vaccine type^LN|2|85^HEP A, NOS^CVX||||||F\r"
+        + "OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20111025||||||F\r"
+        + "OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20120814||||||F\r";
+    connector.setCustomTransformations("fix ampersand\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals(
+        "MSH|^~\\&|RPMS|91116||NIST TEST IZ REG|20130730091012|ASD123|VXU^V04^VXU_V04|744705554.7469|P|2.5.1|||AL|AL|\r"
+            + "PID|1||I15J12^^^DEMO HOSP^MR~950831309^^^SSA^SS~441904393^^^MCD^MA||Lincoln^Geraldine^^^^^L^^^^^|Johnsson^Atin^^^^|19410508|F||1002-5^AMERICAN INDIAN OR ALASKA NATIVE^HL70005|311 Cherokee Cir^^ANYCITY^NC^28719^USA^L||^PRN^PH^^^906^4869809~^NET^^ottoline@hotmail.com|^PRN^PH^^^555^9993616||||||||2186-5^NOT HISPANIC OR LATINO^CDCREC||N\r"
+            + "PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|N|20070910|||A|20070910|20070910\r"
+            + "NK1|1|Johnsson^Atin^^^^^L|MTH^MOTHER^HL70063|^^^^^USA^L|||NOK^NEXT OF KIN^99IHS\r"
+            + "PV1|1|R|||||AB2001434^BEATTY,CINDY||AL2025662^LUCKETT,RANDALL|AMB|||||||||3245421|V01^20091120||||||||||||||||||||||||20091120\r"
+            + "ORC|RE|157598-232101^IHS|20120814-157598-232101000000^DEMO HOSP||IP|||||I-23432^BURDEN^DONNA^A^^^^^IHS^L||57422^RADON^NICHOLAS^^^^^^IHS^L|||||^^^DEMO HOSP\r"
+            + "RXA|0|1|20120814|20120814|52^HEP A, ADULT^CVX|1|mL^MilliLiters^UCUM||00^NEW IMMUNIZATION RECORD^NIP001|7832-1^LEMON^MIKE^A^^^^^IHS^L|^^^XYZ123||||I90FV|20121214|MSD^MERCK \\T\\ CO.^MVX|||CP|A|20091103\r"
+            + "RXR|IM^INTRAMUSCULAR^HL70162|RA^Right Arm^HL70163\r"
+            + "OBX|1|CE|64994-7^funding eligibility for immunization^LN|1|V01^Not Eligible^HL70064||||||F|||20091103|||VXC40^per immunization^CDCPHINVS\r"
+            + "OBX|2|CE|30956-7^vaccine type^LN|2|85^HEP A, NOS^CVX||||||F\r"
+            + "OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20111025||||||F\r"
+            + "OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20120814||||||F\r", messageText);
+
+  }
+
+  @Test
   public void testMap() throws Exception {
     Transformer transformer = new Transformer();
     Connector connector = ConnectorFactory.getConnector(ConnectorFactory.TYPE_POST, "Test", "");
@@ -143,10 +178,9 @@ public class TestTransformer
     assertEquals("MSH|\rPID|\rNK1|Howdy|||\r", messageText);
 
   }
-  
+
   @Test
-  public void testSetRepeats() throws Exception
-  {
+  public void testSetRepeats() throws Exception {
     Transformer transformer = new Transformer();
     Connector connector = ConnectorFactory.getConnector(ConnectorFactory.TYPE_POST, "Test", "");
     String messageText = "";
@@ -166,7 +200,6 @@ public class TestTransformer
     messageText = transformer.transform(connector, messageText);
     assertEquals("MSH|\rPID|\rNK1|Hi~Bye~Welcome|||\r", messageText);
 
-    
     messageText = "MSH|\rPID|\rNK1|~~Welcome|||\r";
     connector.setCustomTransformations("NK1-1#2=Bye\n");
     messageText = transformer.transform(connector, messageText);
@@ -191,12 +224,12 @@ public class TestTransformer
     connector.setCustomTransformations("NK1-1#2=Bye\n");
     messageText = transformer.transform(connector, messageText);
     assertEquals("MSH|\rPID|\rNK1|Hi~Bye~|||\r", messageText);
-    
+
     messageText = "MSH|\rPID|\rNK1|Hi~Hi~Welcome~|||\r";
     connector.setCustomTransformations("NK1-1#2=Bye\n");
     messageText = transformer.transform(connector, messageText);
     assertEquals("MSH|\rPID|\rNK1|Hi~Bye~Welcome~|||\r", messageText);
-    
+
   }
 
   private static final String TEST_NMSIIS_1 = "MSH|^~\\&||718||NMSIIS|20120731085717||VXU^V04^VXU_V04|CI809903|P|2.5.1|||AL|AL|\r"
@@ -255,7 +288,8 @@ public class TestTransformer
     messageText = TEST_NMSIIS_1;
     connector.setCustomTransformations("MSH-4=[USERID]\n" + "MSH-6=NMSIIS\n" + "insert segment BHS first\n"
         + "insert segment BTS last\n" + "insert segment FHS first\n" + "insert segment FTS last\n" + "FHS-8=CR\n"
-        + "BHS-8=CR\n" + "FHS-9=[FILENAME]\n" + "FTS-1=1\n" + "BTS-1=1\n" + "FTS-2=CR\n" + "BTS-2=CR\n" + "insert segment IN1 before ORC\n" + "insert segment IN2 after IN1\n" + "IN1-1=1\n");
+        + "BHS-8=CR\n" + "FHS-9=[FILENAME]\n" + "FTS-1=1\n" + "BTS-1=1\n" + "FTS-2=CR\n" + "BTS-2=CR\n"
+        + "insert segment IN1 before ORC\n" + "insert segment IN2 after IN1\n" + "IN1-1=1\n");
     connector.setCurrentFilename("HL7.251.batch.txt");
     connector.setCurrentControlId("CI809903");
     connector.setUserid("IHS2");

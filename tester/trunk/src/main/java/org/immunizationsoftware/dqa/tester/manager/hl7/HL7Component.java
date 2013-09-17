@@ -5,13 +5,18 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.print.attribute.standard.Severity;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.analyze.HL7FormatAnalyzer;
 import org.immunizationsoftware.dqa.tester.manager.hl7.conformance.ConformanceStatement;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.DynamicComponent;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.ERL;
 import org.immunizationsoftware.dqa.tester.manager.hl7.predicates.ConditionalPredicate;
+import org.immunizationsoftware.dqa.tester.manager.hl7.scenario.ScenarioChecker;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.ERR;
 
 public abstract class HL7Component
@@ -56,7 +61,7 @@ public abstract class HL7Component
     this.rawTextReceived = "";
     this.cardinalityCount = copy.cardinalityCount + 1;
     this.cardinality = copy.cardinality;
-
+    this.scenarioChecker = copy.scenarioChecker;
   }
 
   protected HL7Component(ItemType itemType, String componentCode, String componentName, int childComponentCount) {
@@ -161,12 +166,25 @@ public abstract class HL7Component
   protected boolean empty = true;
   protected int cardinalityCount = 1;
   protected Cardinality cardinality = null;
+  protected ScenarioChecker scenarioChecker = null;
   protected String[] constrainedToValues = null;
   protected List<ConformanceStatement> conformanceStatementList = new ArrayList<ConformanceStatement>();
   protected ERL errorLocation = null;
   protected HL7FormatAnalyzer formatAnalyzer = null;
   private List<ConformanceIssue> conformanceIssueList = null;
   private boolean hasNoErrors = true;
+
+  public boolean isEmpty() {
+    return empty;
+  }
+  
+  public ScenarioChecker getScenarioChecker() {
+    return scenarioChecker;
+  }
+
+  public void setScenarioChecker(ScenarioChecker scenarioChecker) {
+    this.scenarioChecker = scenarioChecker;
+  }
 
   public ConditionalPredicate getDefaultValueWhenBlankPredicate() {
     return defaultValueWhenBlankPredicate;
@@ -234,7 +252,10 @@ public abstract class HL7Component
 
   public abstract HL7Component makeAnother();
 
+  private Map<String, Integer> segmentSequenceCount = new HashMap<String, Integer>();
+
   public void parseTextFromMessage(String text) {
+    this.segmentSequenceCount = new HashMap<String, Integer>();
     this.errorLocation = new ERL();
     this.rawTextReceived = text;
     this.value = text;
@@ -250,29 +271,26 @@ public abstract class HL7Component
           if (line.length() >= 3) {
             segmentName = line.substring(0, 3);
           }
+          int segmentSequence = getAndIncSegmentSequence(segmentName);
           boolean found = false;
           if (pos > 0 && childComponents[pos].getComponentCode().equals(segmentName)) {
             // already reading this segment
-            int segmentSequence = 2;
             HL7Component next = childComponents[pos];
             while (next.getNextComponent() != null) {
               next = next.getNextComponent();
-              segmentSequence++;
             }
             next.setNextComponent(next.makeAnother());
             next = next.getNextComponent();
             if (childComponents[pos].getItemType() == ItemType.MESSAGE_PART) {
               List<String> stopSegmentNameList = findStopSegmentNameList(pos + 1);
               next.errorLocation = new ERL(errorLocation);
-              next.errorLocation.getSegmentID().setValue(segmentName);
-              next.errorLocation.getSegmentSequence().setValue("" + segmentSequence);
-              line = next.parseTextFromMessagePart(in, line, stopSegmentNameList, " ! ");
+              line = next.parseTextFromMessagePart(in, line, stopSegmentNameList, "");
               lineRead = true;
             } else {
               next.errorLocation = new ERL(errorLocation);
               next.errorLocation.getSegmentID().setValue(segmentName);
               next.errorLocation.getSegmentSequence().setValue("" + segmentSequence);
-              next.parseTextFromSegment(line);
+              next.parseTextFromSegment(line, "");
             }
           } else {
             int peak = pos + 1;
@@ -291,15 +309,13 @@ public abstract class HL7Component
               if (childComponents[pos].getItemType() == ItemType.MESSAGE_PART) {
                 List<String> stopSegmentNameList = findStopSegmentNameList(peak);
                 childComponents[pos].errorLocation = new ERL(errorLocation);
-                childComponents[pos].errorLocation.getSegmentID().setValue(segmentName);
-                childComponents[pos].errorLocation.getSegmentSequence().setValue("1");
-                line = childComponents[pos].parseTextFromMessagePart(in, line, stopSegmentNameList, " ! ");
+                line = childComponents[pos].parseTextFromMessagePart(in, line, stopSegmentNameList, "");
                 lineRead = true;
               } else {
                 childComponents[pos].errorLocation = new ERL(errorLocation);
                 childComponents[pos].errorLocation.getSegmentID().setValue(segmentName);
-                childComponents[pos].errorLocation.getSegmentSequence().setValue("1");
-                childComponents[pos].parseTextFromSegment(line);
+                childComponents[pos].errorLocation.getSegmentSequence().setValue("" + segmentSequence);
+                childComponents[pos].parseTextFromSegment(line, "");
               }
             }
           }
@@ -309,17 +325,115 @@ public abstract class HL7Component
         // not sure why reading a string would cause IO =, but just in case
         ioe.printStackTrace();
       }
+      populateErrorLocationForMessage();
+    }
+  }
+
+  public int getAndIncSegmentSequence(String segmentName) {
+    Integer count = segmentSequenceCount.get(segmentName);
+    if (count == null) {
+      count = new Integer(1);
+    } else {
+      count = new Integer(count + 1);
+    }
+    segmentSequenceCount.put(segmentName, count);
+    return count;
+  }
+
+  public int getSegmentSequence(String segmentName) {
+    Integer count = segmentSequenceCount.get(segmentName);
+    if (count == null) {
+      return 0;
+    }
+    return count;
+  }
+
+  private void populateErrorLocationForMessage() {
+    for (int i = 1; i < childComponents.length; i++) {
+      HL7Component next = childComponents[i];
+      int count = 1;
+      while (next != null) {
+        if (next.parentComponent == null)
+        {
+          next.parentComponent = this;
+        }
+        if (next.errorLocation == null) {
+          next.errorLocation = new ERL(errorLocation);
+        }
+        if (next.getItemType() == ItemType.MESSAGE_PART) {
+          next.populateErrorLocationForMessage();
+        } else {
+          next.errorLocation.getSegmentID().setValue(childComponents[i].getComponentCode());
+          next.errorLocation.getSegmentSequence().setValue("" + count);
+          next.populateErrorLocationForSegment();
+        }
+
+        next = next.nextComponent;
+        count++;
+      }
+    }
+  }
+
+  private void populateErrorLocationForSegment() {
+    if (childComponents != null) {
       for (int i = 1; i < childComponents.length; i++) {
         HL7Component next = childComponents[i];
         int count = 1;
         while (next != null) {
+          if (next.parentComponent == null)
+          {
+            next.parentComponent = this;
+          }
           if (next.errorLocation == null) {
             next.errorLocation = new ERL(errorLocation);
-            next.errorLocation.getSegmentID().setValue(childComponents[i].getComponentCode());
-            next.errorLocation.getSegmentSequence().setValue("" + count);
           }
+          next.errorLocation.copyValues(errorLocation);
+          next.errorLocation.getFieldPosition().setValue("" + i);
+          next.errorLocation.getFieldRepetition().setValue("" + count);
+          next.populateErrorLocationForField();
           next = next.nextComponent;
           count++;
+        }
+      }
+    }
+  }
+
+  private void populateErrorLocationForField() {
+    if (childComponents != null) {
+      for (int i = 1; i < childComponents.length; i++) {
+        HL7Component next = childComponents[i];
+        if (next != null) {
+          if (next.parentComponent == null)
+          {
+            next.parentComponent = this;
+          }
+          if (next.errorLocation == null) {
+            next.errorLocation = new ERL(errorLocation);
+            next.errorLocation.copyValues(errorLocation);
+            next.errorLocation.getComponentNumber().setValue("" + i);
+            next.populateErrorLocationForComponent();
+          }
+          next = next.nextComponent;
+        }
+      }
+    }
+  }
+
+  private void populateErrorLocationForComponent() {
+    if (childComponents != null) {
+      for (int i = 1; i < childComponents.length; i++) {
+        HL7Component next = childComponents[i];
+        if (next != null) {
+          if (next.parentComponent == null)
+          {
+            next.parentComponent = this;
+          }
+          if (next.errorLocation == null) {
+            next.errorLocation = new ERL(errorLocation);
+            next.errorLocation.copyValues(errorLocation);
+            next.errorLocation.getSubComponentNumber().setValue("" + i);
+          }
+          next = next.nextComponent;
         }
       }
     }
@@ -338,6 +452,9 @@ public abstract class HL7Component
         if (line.length() >= 3) {
           segmentName = line.substring(0, 3);
         }
+        if (lineRead == true) {
+          getAndIncSegmentSequence(segmentName);
+        }
         for (String stopSegmentName : stopSegmentNameList) {
           if (stopSegmentName.equals(segmentName)) {
             return line;
@@ -353,26 +470,22 @@ public abstract class HL7Component
         boolean found = false;
         if (pos > 0 && childComponents[pos].getComponentCode().equals(segmentName)) {
           // already reading this segment
-          int segmentSequence = 2;
           HL7Component next = childComponents[pos];
           while (next.getNextComponent() != null) {
             next = next.getNextComponent();
-            segmentSequence++;
           }
           next.setNextComponent(next.makeAnother());
           next = next.getNextComponent();
           if (next.getItemType() == ItemType.MESSAGE_PART) {
             List<String> stopSegmentNameListChild = findStopSegmentNameList(pos + 1);
             next.errorLocation = new ERL(errorLocation);
-            next.errorLocation.getSegmentID().setValue(segmentName);
-            next.errorLocation.getSegmentSequence().setValue("" + segmentSequence);
             line = next.parseTextFromMessagePart(in, line, stopSegmentNameListChild, indent + " ! ");
             lineRead = true;
           } else {
             next.errorLocation = new ERL(errorLocation);
             next.errorLocation.getSegmentID().setValue(segmentName);
-            next.errorLocation.getSegmentSequence().setValue("" + segmentSequence);
-            next.parseTextFromSegment(line);
+            next.errorLocation.getSegmentSequence().setValue("" + getSegmentSequence(segmentName));
+            next.parseTextFromSegment(line, indent + " ! ");
           }
         } else {
           int peak = pos + 1;
@@ -391,15 +504,13 @@ public abstract class HL7Component
             if (childComponents[pos].getItemType() == ItemType.MESSAGE_PART) {
               List<String> stopSegmentNameListChild = findStopSegmentNameList(peak);
               childComponents[pos].errorLocation = new ERL(errorLocation);
-              childComponents[pos].errorLocation.getSegmentID().setValue(segmentName);
-              childComponents[pos].errorLocation.getSegmentSequence().setValue("1");
               line = childComponents[pos].parseTextFromMessagePart(in, line, stopSegmentNameListChild, indent + " ! ");
               lineRead = true;
             } else {
               childComponents[pos].errorLocation = new ERL(errorLocation);
               childComponents[pos].errorLocation.getSegmentID().setValue(segmentName);
-              childComponents[pos].errorLocation.getSegmentSequence().setValue("1");
-              childComponents[pos].parseTextFromSegment(line);
+              childComponents[pos].errorLocation.getSegmentSequence().setValue("" + getSegmentSequence(segmentName));
+              childComponents[pos].parseTextFromSegment(line, indent + " ! ");
             }
           }
         }
@@ -409,19 +520,7 @@ public abstract class HL7Component
       // not sure why reading a string would cause IO =, but just in case
       ioe.printStackTrace();
     }
-    for (int i = 1; i < childComponents.length; i++) {
-      HL7Component next = childComponents[i];
-      int count = 1;
-      while (next != null) {
-        if (next.errorLocation == null) {
-          next.errorLocation = new ERL(errorLocation);
-          next.errorLocation.getSegmentID().setValue(componentCode);
-          next.errorLocation.getSegmentSequence().setValue("" + count);
-        }
-        next = next.nextComponent;
-        count++;
-      }
-    }
+    populateErrorLocationForMessage();
     return line;
   }
 
@@ -443,6 +542,10 @@ public abstract class HL7Component
   }
 
   public void parseTextFromSegment(String text) {
+    parseTextFromSegment(text, "");
+  }
+
+  public void parseTextFromSegment(String text, String indent) {
     if (errorLocation == null) {
       errorLocation = new ERL();
       errorLocation.getSegmentID().setValue(componentCode);
@@ -498,20 +601,7 @@ public abstract class HL7Component
           }
         }
       }
-      for (int i = 1; i < childComponents.length; i++) {
-        HL7Component next = childComponents[i];
-        int count = 1;
-        while (next != null) {
-          if (next.errorLocation == null) {
-            next.errorLocation = new ERL(errorLocation);
-            next.errorLocation.copyValues(errorLocation);
-            next.errorLocation.getFieldPosition().setValue("" + i);
-            next.errorLocation.getFieldRepetition().setValue("" + count);
-          }
-          next = next.nextComponent;
-          count++;
-        }
-      }
+      populateErrorLocationForSegment();
     }
   }
 
@@ -526,17 +616,7 @@ public abstract class HL7Component
         childComponents[i].errorLocation.getComponentNumber().setValue("" + i);
         childComponents[i].parseTextFromComponent(subFields[i - 1]);
       }
-      for (int i = subFields.length; i < childComponents.length; i++) {
-        HL7Component next = childComponents[i];
-        while (next != null) {
-          if (next.errorLocation == null) {
-            next.errorLocation = new ERL(errorLocation);
-            next.errorLocation.copyValues(errorLocation);
-            next.errorLocation.getComponentNumber().setValue("" + i);
-          }
-          next = next.nextComponent;
-        }
-      }
+      populateErrorLocationForField();
     }
   }
 
@@ -552,17 +632,7 @@ public abstract class HL7Component
         childComponents[i].errorLocation.getSubComponentNumber().setValue("" + i);
         childComponents[i].parseTextFromSubComponent(subFields[i - 1]);
       }
-      for (int i = subFields.length; i < childComponents.length; i++) {
-        HL7Component next = childComponents[i];
-        while (next != null) {
-          if (next.errorLocation == null) {
-            next.errorLocation = new ERL(errorLocation);
-            next.errorLocation.copyValues(errorLocation);
-            next.errorLocation.getSubComponentNumber().setValue("" + i);
-          }
-          next = next.nextComponent;
-        }
-      }
+      populateErrorLocationForComponent();
     }
   }
 
@@ -575,6 +645,10 @@ public abstract class HL7Component
   public List<ConformanceIssue> checkConformance() {
     conformanceIssueList = new ArrayList<ConformanceIssue>();
     checkConformance(conformanceIssueList, ERR.SEVERITY_ERROR);
+    if (scenarioChecker != null)
+    {
+      scenarioChecker.checkScenario(this);
+    }
     hasNoErrors = true;
     for (ConformanceIssue ci : conformanceIssueList) {
       if (ci.getSeverity().getValue().equals("E")) {
@@ -596,9 +670,9 @@ public abstract class HL7Component
     return hasNoErrors;
   }
 
-  public void checkConformance(List<ConformanceIssue> conformanceIssueList, String severity) {
+  private void checkConformance(List<ConformanceIssue> conformanceIssueList, String severity) {
     if (hasNoChildren()) {
-      determineConditionalUsage();
+      determineConditionalUsage(conformanceIssueList);
 
       if (value.length() > 0 && value.length() < lengthMin) {
         if (!severity.equals(ERR.SEVERITY_NONE) && !severity.equals(ERR.SEVERITY_NOT_SUPPORTED)) {
@@ -606,6 +680,11 @@ public abstract class HL7Component
           conformanceIssueList.add(ci);
           ci.getErrorLocation().copyValues(errorLocation);
           ci.getHl7ErrorCode().getIdentifier().setValue("102");
+          ci.getHl7ErrorCode().getText().setValue("Data type error");
+          ci.getHl7ErrorCode().getNameOfCodingSystem().setValue("HL70357");
+          ci.getApplicationErrorCode().getIdentifier().setValue("4");
+          ci.getApplicationErrorCode().getText().setValue("Invalid value");
+          ci.getApplicationErrorCode().getNameOfCodingSystem().setValue("HL70533");
           ci.getSeverity().setValue(severity);
           ci.getUserMessage().setValue("Length of value is less than required minimum " + lengthMin);
         }
@@ -615,6 +694,11 @@ public abstract class HL7Component
           conformanceIssueList.add(ci);
           ci.getErrorLocation().copyValues(errorLocation);
           ci.getHl7ErrorCode().getIdentifier().setValue("102");
+          ci.getHl7ErrorCode().getText().setValue("Data type error");
+          ci.getHl7ErrorCode().getNameOfCodingSystem().setValue("HL70357");
+          ci.getApplicationErrorCode().getIdentifier().setValue("4");
+          ci.getApplicationErrorCode().getText().setValue("Invalid value");
+          ci.getApplicationErrorCode().getNameOfCodingSystem().setValue("HL70533");
           ci.getSeverity().setValue(severity);
           ci.getUserMessage().setValue(
               "Length of value is more than required maximum " + lengthMax + ". Truncating data.");
@@ -639,6 +723,9 @@ public abstract class HL7Component
             conformanceIssueList.add(ci);
             ci.getErrorLocation().copyValues(errorLocation);
             ci.getHl7ErrorCode().getIdentifier().setValue("103");
+            ci.getApplicationErrorCode().getIdentifier().setValue("4");
+            ci.getApplicationErrorCode().getText().setValue("Invalid value");
+            ci.getApplicationErrorCode().getNameOfCodingSystem().setValue("HL70533");
             ci.getSeverity().setValue(severity);
             ci.getUserMessage()
                 .setValue("Value is not allowed or recognized. Field is constrained to specific values.");
@@ -646,8 +733,22 @@ public abstract class HL7Component
           value = "";
         }
       }
-      if (valueSet != null) {
-        // TODO Look up values in table
+      if (valueSet != null && !value.equals("")) {
+        if (ValueManager.recognizedConcept(valueSet.name())) {
+          if (!ValueManager.recognizedValue(value, valueSet.name())) {
+            ConformanceIssue ci = new ConformanceIssue();
+            conformanceIssueList.add(ci);
+            ci.getErrorLocation().copyValues(errorLocation);
+            ci.getHl7ErrorCode().getIdentifier().setValue("103");
+            ci.getHl7ErrorCode().getText().setValue("Table value not found");
+            ci.getHl7ErrorCode().getNameOfCodingSystem().setValue("HL70357");
+            ci.getApplicationErrorCode().getIdentifier().setValue("5");
+            ci.getApplicationErrorCode().getText().setValue("Table value not found");
+            ci.getApplicationErrorCode().getNameOfCodingSystem().setValue("HL70533");
+            ci.getSeverity().setValue(severity);
+            ci.getUserMessage().setValue(getComponentNameFull() + " has invalid format: ");
+          }
+        }
       }
       if (formatAnalyzer != null) {
         formatAnalyzer.analyze();
@@ -657,6 +758,11 @@ public abstract class HL7Component
             conformanceIssueList.add(ci);
             ci.getErrorLocation().copyValues(errorLocation);
             ci.getHl7ErrorCode().getIdentifier().setValue("102");
+            ci.getHl7ErrorCode().getText().setValue("Data type error");
+            ci.getHl7ErrorCode().getNameOfCodingSystem().setValue("HL70357");
+            ci.getApplicationErrorCode().getIdentifier().setValue("4");
+            ci.getApplicationErrorCode().getText().setValue("Invalid value");
+            ci.getApplicationErrorCode().getNameOfCodingSystem().setValue("HL70533");
             ci.getSeverity().setValue(severity);
             ci.getUserMessage().setValue(getComponentNameFull() + " has invalid format: " + problem);
           }
@@ -674,6 +780,11 @@ public abstract class HL7Component
             conformanceIssueList.add(ci);
             ci.getErrorLocation().copyValues(errorLocation);
             ci.getHl7ErrorCode().getIdentifier().setValue("101");
+            ci.getHl7ErrorCode().getText().setValue("Required field missing");
+            ci.getHl7ErrorCode().getNameOfCodingSystem().setValue("HL70357");
+            ci.getApplicationErrorCode().getIdentifier().setValue("7");
+            ci.getApplicationErrorCode().getText().setValue("Required data missing");
+            ci.getApplicationErrorCode().getNameOfCodingSystem().setValue("HL70533");
             ci.getSeverity().setValue(severity);
             ci.getUserMessage().setValue(getComponentNameFull() + " is required but was found empty");
           }
@@ -686,6 +797,11 @@ public abstract class HL7Component
             conformanceIssueList.add(ci);
             ci.getErrorLocation().copyValues(errorLocation);
             ci.getHl7ErrorCode().getIdentifier().setValue("101");
+            ci.getHl7ErrorCode().getText().setValue("Required field missing");
+            ci.getHl7ErrorCode().getNameOfCodingSystem().setValue("HL70357");
+            ci.getApplicationErrorCode().getIdentifier().setValue("4");
+            ci.getApplicationErrorCode().getText().setValue("Invalid value");
+            ci.getApplicationErrorCode().getNameOfCodingSystem().setValue("HL70533");
             ci.getSeverity().setValue(ERR.SEVERITY_ERROR);
             ci.getUserMessage().setValue(getComponentNameFull() + " must be left empty");
           }
@@ -693,7 +809,8 @@ public abstract class HL7Component
       }
 
     } else {
-      determineConditionalUsage();
+
+      determineConditionalUsage(conformanceIssueList);
       boolean allRequiredFieldsValued = true;
       boolean hasRequiredFields = false;
       boolean atLeastOneOptionFieldValued = false;
@@ -708,31 +825,40 @@ public abstract class HL7Component
               next.errorLocation = errorLocation;
             }
             String nextSeverity = severity;
-            if (severity != ERR.SEVERITY_NOT_SUPPORTED) {
-              if (usageType == UsageType.X) {
-                nextSeverity = ERR.SEVERITY_NOT_SUPPORTED;
-              } else if (severity == ERR.SEVERITY_ERROR) {
-                if (usageType == UsageType.RE) {
-                  nextSeverity = ERR.SEVERITY_WARNING;
-                } else if (usageType == UsageType.O) {
-                  nextSeverity = ERR.SEVERITY_NONE;
-                }
-              } else if (severity == ERR.SEVERITY_WARNING) {
-                if (usageType == UsageType.O) {
-                  nextSeverity = ERR.SEVERITY_NONE;
+            if (itemType == ItemType.DATATYPE
+                || ((itemType == ItemType.SEGMENT || itemType == ItemType.MESSAGE_PART) && rawTextReceived.equals(""))) {
+              if (severity != ERR.SEVERITY_NOT_SUPPORTED) {
+                if (usageType == UsageType.X) {
+                  nextSeverity = ERR.SEVERITY_NOT_SUPPORTED;
+                } else if (severity == ERR.SEVERITY_ERROR) {
+                  if (usageType == UsageType.RE) {
+                    nextSeverity = ERR.SEVERITY_WARNING;
+                  } else if (usageType == UsageType.O) {
+                    nextSeverity = ERR.SEVERITY_NONE;
+                  }
+                } else if (severity == ERR.SEVERITY_WARNING) {
+                  if (usageType == UsageType.RE || usageType == UsageType.O) {
+                    nextSeverity = ERR.SEVERITY_NONE;
+                  }
                 }
               }
             }
             next.checkConformance(conformanceIssueList, nextSeverity);
+            boolean foundConformanceProblem = false;
             for (ConformanceStatement conformanceStatement : next.conformanceStatementList) {
               ConditionalPredicate cp = conformanceStatement.getConditionalPredicate();
               if ((cp == null || cp.isMet()) && !conformanceStatement.conforms()) {
-                ConformanceIssue ci = new ConformanceIssue();
-                conformanceIssueList.add(ci);
-                ci.getErrorLocation().copyValues(next.errorLocation);
-                ci.getHl7ErrorCode().getIdentifier().setValue("101");
-                ci.getSeverity().setValue(nextSeverity);
-                ci.getUserMessage().setValue(conformanceStatement.getText());
+                foundConformanceProblem = true;
+                if (!nextSeverity.equals(ERR.SEVERITY_NONE) && !nextSeverity.equals(ERR.SEVERITY_NOT_SUPPORTED)) {
+                  ConformanceIssue ci = new ConformanceIssue();
+                  conformanceIssueList.add(ci);
+                  ci.getErrorLocation().copyValues(next.errorLocation);
+                  ci.getHl7ErrorCode().getIdentifier().setValue("101");
+                  ci.getHl7ErrorCode().getText().setValue("Required field missing");
+                  ci.getHl7ErrorCode().getNameOfCodingSystem().setValue("HL70357");
+                  ci.getSeverity().setValue(nextSeverity);
+                  ci.getUserMessage().setValue(conformanceStatement.getText());
+                }
               }
             }
             if (next.usageType == UsageType.R) {
@@ -755,6 +881,8 @@ public abstract class HL7Component
             conformanceIssueList.add(ci);
             ci.getErrorLocation().copyValues(errorLocation);
             ci.getHl7ErrorCode().getIdentifier().setValue("102");
+            ci.getHl7ErrorCode().getText().setValue("Data type error");
+            ci.getHl7ErrorCode().getNameOfCodingSystem().setValue("HL70357");
             ci.getSeverity().setValue(severity);
             ci.getUserMessage().setValue(
                 child.getComponentNameFull() + " has less repetitions that what is required: " + count
@@ -764,6 +892,8 @@ public abstract class HL7Component
             conformanceIssueList.add(ci);
             ci.getErrorLocation().copyValues(errorLocation);
             ci.getHl7ErrorCode().getIdentifier().setValue("102");
+            ci.getHl7ErrorCode().getText().setValue("Data type error");
+            ci.getHl7ErrorCode().getNameOfCodingSystem().setValue("HL70357");
             ci.getSeverity().setValue(severity);
             ci.getUserMessage().setValue(
                 child.getComponentNameFull() + " has more repetitions that what is allowed: " + count
@@ -785,6 +915,8 @@ public abstract class HL7Component
             conformanceIssueList.add(ci);
             ci.getErrorLocation().copyValues(errorLocation);
             ci.getHl7ErrorCode().getIdentifier().setValue("101");
+            ci.getHl7ErrorCode().getText().setValue("Required field missing");
+            ci.getHl7ErrorCode().getNameOfCodingSystem().setValue("HL70357");
             ci.getSeverity().setValue(severity);
             StringBuffer description = listMissingRequiredFields(missingRequired);
             ci.getUserMessage().setValue(description.toString());
@@ -796,17 +928,44 @@ public abstract class HL7Component
           conformanceIssueList.add(ci);
           ci.getErrorLocation().copyValues(errorLocation);
           ci.getHl7ErrorCode().getIdentifier().setValue("101");
+          ci.getHl7ErrorCode().getText().setValue("Required field missing");
+          ci.getHl7ErrorCode().getNameOfCodingSystem().setValue("HL70357");
           ci.getSeverity().setValue(ERR.SEVERITY_ERROR);
           ci.getUserMessage().setValue(getComponentNameFull() + " must be empty");
         }
       }
     }
   }
+  
+  public void addConformanceIssue(String userMessage, String hl7ErrorCode, String applicationErrorCode, String severity, List<ConformanceIssue> conformanceIssueList)
+  {
+    ConformanceIssue ci = new ConformanceIssue();
+    conformanceIssueList.add(ci);
+    ci.getErrorLocation().copyValues(errorLocation);
+    ci.getHl7ErrorCode().getIdentifier().setValue(hl7ErrorCode);
+    ci.getHl7ErrorCode().getText().setValue(""); // TODO
+    ci.getHl7ErrorCode().getNameOfCodingSystem().setValue("HL70357");
+    ci.getApplicationErrorCode().getIdentifier().setValue(applicationErrorCode);
+    ci.getApplicationErrorCode().getText().setValue(""); // TODO
+    ci.getApplicationErrorCode().getNameOfCodingSystem().setValue("HL70533");
+    ci.getSeverity().setValue(severity);
+    ci.getUserMessage().setValue(userMessage);
+  }
 
   public StringBuffer listMissingRequiredFields(List<HL7Component> missingRequired) {
     StringBuffer description = new StringBuffer();
     description.append(getComponentNameFull());
-    description.append(" is empty because not all required fields are valued");
+    if (itemType == ItemType.DATATYPE) {
+      description.append(" is not a valid " + componentNameGeneric + " because not all required sub parts are present");
+    } else if (itemType == ItemType.SEGMENT) {
+      description.append(" is empty because not all required fields are present");
+    } else if (itemType == ItemType.MESSAGE_PART) {
+      description.append(" is empty because not all required segments are present");
+    } else if (itemType == ItemType.MESSAGE) {
+      description.append(" is empty because not all required segments are present");
+    } else {
+      description.append(" is empty because not all required sub parts are present");
+    }
     if (missingRequired.size() > 0) {
       description.append(", expecting " + missingRequired.get(0).getComponentNameFull());
     }
@@ -912,7 +1071,7 @@ public abstract class HL7Component
     return subText;
   }
 
-  public void determineConditionalUsage() {
+  public void determineConditionalUsage(List<ConformanceIssue> conformanceIssueList) {
     if (usageType == UsageType.C) {
       if (conditionalPredicate == null) {
         throw new NullPointerException("Condition predicate was not defined for " + getComponentNameFull());
@@ -1092,11 +1251,15 @@ public abstract class HL7Component
       }
       String s = errorLocation.getSegmentID().getValue() + "-" + errorLocation.getFieldPosition().getValue();
       if (!errorLocation.getComponentNumber().getValue().equals("")) {
+        String parentName = parentComponent.getComponentNameSpecific();
         s = s + "." + errorLocation.getComponentNumber().getValue();
         if (!errorLocation.getSubComponentNumber().getValue().equals("")) {
           s = s + "." + errorLocation.getSubComponentNumber().getValue();
+          if (parentComponent.parentComponent != null) {
+            parentName = parentComponent.parentComponent.getComponentNameSpecific() + " - " + parentName;
+          }
         }
-        return parentComponent.getComponentNameSpecific() + " - " + componentNameSpecific + " (" + s + ")";
+        return parentName + " - " + componentNameSpecific + " (" + s + ")";
       }
       return componentNameSpecific + " (" + s + ")";
     }
@@ -1136,11 +1299,11 @@ public abstract class HL7Component
     } else if (itemType == ItemType.MESSAGE_PART) {
       return componentCode + " (segment section) " + componentNameGeneric;
     } else if (itemType == ItemType.SEGMENT) {
-      return componentCode + componentNameGeneric;
+      return componentCode + " " + componentNameGeneric;
     } else if (itemType == ItemType.DATATYPE) {
-      return itemType + componentNameGeneric;
+      return itemType + " " + componentNameGeneric;
     }
-    return itemType + componentNameGeneric;
+    return itemType + " " + componentNameGeneric;
   }
 
   public void printValues(PrintStream out) {

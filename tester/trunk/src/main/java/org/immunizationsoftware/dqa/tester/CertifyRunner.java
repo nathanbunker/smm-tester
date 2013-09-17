@@ -36,6 +36,7 @@ import org.immunizationsoftware.dqa.tester.manager.hl7.ConformanceIssue;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
 import org.immunizationsoftware.dqa.tester.manager.hl7.messages.ACK;
 import org.immunizationsoftware.dqa.tester.manager.hl7.messages.RSP;
+import org.immunizationsoftware.dqa.tester.manager.hl7.scenario.SpecialConformanceChecker;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 import org.immunizationsoftware.dqa.tester.transform.Issue;
 
@@ -49,9 +50,10 @@ public class CertifyRunner extends Thread
   public static final String STATUS_STARTED = "Started";
   public static final String STATUS_COMPLETED = "Completed";
   public static final String STATUS_STOPPED = "Stopped";
+  public static final String STATUS_PAUSED = "Paused";
 
   private String status = "";
-  private String statusMessage = "";
+  private List<String> statusMessageList = null;
   private Throwable exception = null;
   private boolean keepRunning = true;
   private TestCaseMessage testCaseMessageBase = null;
@@ -160,6 +162,15 @@ public class CertifyRunner extends Thread
 
   private String queryType = "";
   private boolean willQuery = false;
+  private boolean pauseBeforeQuerying = false;
+
+  public boolean isPauseBeforeQuerying() {
+    return pauseBeforeQuerying;
+  }
+
+  public void setPauseBeforeQuerying(boolean pauseBeforeQuerying) {
+    this.pauseBeforeQuerying = pauseBeforeQuerying;
+  }
 
   private List<TestCaseMessage> statusCheckTestCaseList = new ArrayList<TestCaseMessage>();
 
@@ -208,20 +219,24 @@ public class CertifyRunner extends Thread
     }
     this.session = session;
     status = STATUS_INITIALIZED;
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-hh-mm");
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
     testCaseSet = CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX + " " + sdf.format(new Date());
 
+    sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+    statusMessageList = new ArrayList<String>();
+    statusMessageList.add(sdf.format(new Date()) + " IIS Tester Initialized");
   }
 
   @Override
   public void run() {
+    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     status = STATUS_STARTED;
     try {
       willQuery = queryType != null && (queryType.equals(QUERY_TYPE_QBP) || queryType.equals(QUERY_TYPE_VXQ));
 
       testStarted = new Date();
 
-      statusMessage = "Preparing basic messages";
+      statusMessageList.add(sdf.format(new Date()) + " Preparing basic messages");
       prepareBasic();
 
       if (!keepRunning) {
@@ -229,19 +244,21 @@ public class CertifyRunner extends Thread
         return;
       }
 
-      statusMessage = "Updating basic messages";
+      statusMessageList.add(sdf.format(new Date()) + " Sending basic messages");
       updateBasic();
+      printReportToFile(sdf);
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
       }
       if (runB) {
 
-        statusMessage = "Preparing intermediate";
+        statusMessageList.add(sdf.format(new Date()) + " Preparing intermediate");
         prepareIntermediate();
 
-        statusMessage = "Updating intermediate";
+        statusMessageList.add(sdf.format(new Date()) + " Sending intermediate messages");
         updateIntermediate();
+        printReportToFile(sdf);
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
@@ -251,15 +268,16 @@ public class CertifyRunner extends Thread
           if (testCaseMessageBase != null) {
             Map<Integer, List<Issue>> issueMap = new HashMap<Integer, List<Issue>>();
 
-            statusMessage = "Preparing advanced";
+            statusMessageList.add(sdf.format(new Date()) + " Preparing advanced messages");
             prepareAdvanced(issueMap);
             if (!keepRunning) {
               status = STATUS_STOPPED;
               return;
             }
 
-            statusMessage = "Updating advanced";
+            statusMessageList.add(sdf.format(new Date()) + " Sending advanced messages");
             updateAdvanced(issueMap);
+            printReportToFile(sdf);
             if (!keepRunning) {
               status = STATUS_STOPPED;
               return;
@@ -268,11 +286,12 @@ public class CertifyRunner extends Thread
         }
       }
       if (runD) {
-        statusMessage = "Preparing exceptional";
+        statusMessageList.add(sdf.format(new Date()) + " Preparing exceptional messages");
         prepareExceptional();
 
-        statusMessage = "Updating exceptional";
+        statusMessageList.add(sdf.format(new Date()) + " Sending exceptional messages");
         updateExceptional();
+        printReportToFile(sdf);
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
@@ -285,15 +304,16 @@ public class CertifyRunner extends Thread
       }
       if (runF) {
 
-        statusMessage = "Prepare format update analysis";
+        statusMessageList.add(sdf.format(new Date()) + " Prepare for format analysis of update messages");
         prepareFormatUpdateAnalysis();
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
         }
 
-        statusMessage = "Analyze format updates";
+        statusMessageList.add(sdf.format(new Date()) + " Analyze format updates");
         analyzeFormatUpdates();
+        printReportToFile(sdf);
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
@@ -301,6 +321,30 @@ public class CertifyRunner extends Thread
       }
 
       if (willQuery) {
+
+        if (pauseBeforeQuerying) {
+          statusMessageList.add(sdf.format(new Date()) + " Paused, waiting to start query process");
+          status = STATUS_PAUSED;
+          int maxWait = 0;
+          while (pauseBeforeQuerying && keepRunning && maxWait < (60 * 10)) {
+            try {
+              synchronized (this) {
+                this.wait(1000);
+              }
+            } catch (InterruptedException ieo) {
+              // continue
+            }
+            maxWait++;
+          }
+          statusMessageList.add(sdf.format(new Date()) + " Begin query process");
+          status = STATUS_STARTED;
+        }
+
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          return;
+        }
+        statusMessageList.add(sdf.format(new Date()) + " Submit query for basic messages");
 
         queryBasic();
         if (!keepRunning) {
@@ -310,15 +354,16 @@ public class CertifyRunner extends Thread
 
         if (runB) {
 
-          statusMessage = "Prepare for query for intermediate";
+          statusMessageList.add(sdf.format(new Date()) + " Prepare query for intermediate messages");
           prepareQueryIntermediate();
           if (!keepRunning) {
             status = STATUS_STOPPED;
             return;
           }
 
-          statusMessage = "Query for intermediate";
+          statusMessageList.add(sdf.format(new Date()) + " Submit query for intermediate messages");
           queryIntermediate();
+          printReportToFile(sdf);
           if (!keepRunning) {
             status = STATUS_STOPPED;
             return;
@@ -326,8 +371,9 @@ public class CertifyRunner extends Thread
         }
 
         if (runD) {
-          statusMessage = "Query exceptional";
+          statusMessageList.add(sdf.format(new Date()) + " Submit query for exceptional messages");
           queryExceptional();
+          printReportToFile(sdf);
           if (!keepRunning) {
             status = STATUS_STOPPED;
             return;
@@ -340,57 +386,61 @@ public class CertifyRunner extends Thread
         }
 
         if (runF) {
-          statusMessage = "Prepare for format query analysis";
+          statusMessageList.add(sdf.format(new Date()) + " Prepare for format analysis of queries");
           prepareFormatQueryAnalysis();
           if (!keepRunning) {
             status = STATUS_STOPPED;
             return;
           }
 
-          statusMessage = "Analyze format of queries";
+          statusMessageList.add(sdf.format(new Date()) + " Analyze format of query messages");
           analyzeFormatQueries();
         }
-        if (!keepRunning) {
-          status = STATUS_STOPPED;
-          return;
-        }
+
       }
 
       areaFLevel3Progress = 100;
       testFinished = new Date();
 
-      if (testCaseMessageBase != null) {
-        File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessageBase, session);
-        if (testCaseDir != null) {
-          statusMessage = "Writing out final report";
-          File certificationReportFile = new File(testCaseDir, "IIS Testing Report.html");
-          try {
-            PrintWriter out = new PrintWriter(new FileWriter(certificationReportFile));
-            String title = "IIS Testing Report";
-            ClientServlet.printHtmlHeadForFile(out, title);
-            out.println("    <h3>IIS Testing Results for " + connector.getLabel() + "</h3>");
-            printResults(out);
-            out.println("    <h3>IIS Testing Details</h3>");
-            printProgressDetails(out, true);
-            ClientServlet.printHtmlFootForFile(out);
-            out.close();
-          } catch (IOException ioe) {
-            ioe.printStackTrace();
-            // unable to save, continue as normal
-          }
-        }
-      }
+      printReportToFile(sdf);
     }
 
     catch (Throwable t) {
       t.printStackTrace();
       exception = t;
       status = STATUS_STOPPED;
+      statusMessageList.add(sdf.format(new Date()) + " Exception ocurred: " + exception.getMessage());
     } finally {
       if (status != STATUS_STOPPED) {
         status = STATUS_COMPLETED;
+      } else {
+        statusMessageList.add(sdf.format(new Date()) + " Process stopped by user");
       }
-      statusMessage = null;
+      statusMessageList.add(sdf.format(new Date()) + " IIS Test Finished");
+    }
+  }
+
+  public void printReportToFile(SimpleDateFormat sdf) {
+    if (testCaseMessageBase != null) {
+      File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessageBase, session);
+      if (testCaseDir != null) {
+        statusMessageList.add(sdf.format(new Date()) + " Writing out final report");
+        File certificationReportFile = new File(testCaseDir, "IIS Testing Report.html");
+        try {
+          PrintWriter out = new PrintWriter(new FileWriter(certificationReportFile));
+          String title = "IIS Testing Report";
+          ClientServlet.printHtmlHeadForFile(out, title);
+          out.println("    <h3>IIS Testing Results for " + connector.getLabel() + "</h3>");
+          printResults(out);
+          out.println("    <h3>IIS Testing Details</h3>");
+          printProgressDetails(out, true);
+          ClientServlet.printHtmlFootForFile(out);
+          out.close();
+        } catch (IOException ioe) {
+          ioe.printStackTrace();
+          // unable to save, continue as normal
+        }
+      }
     }
   }
 
@@ -416,8 +466,8 @@ public class CertifyRunner extends Thread
     for (TestCaseMessage testCaseMessage : ackAnalysisList) {
       count++;
       if (testCaseMessage.isHasRun()) {
-        if (testCaseMessage.getActualResponseMessageComponent() != null
-            && testCaseMessage.getActualResponseMessageComponent().hasNoErrors()) {
+        HL7Component comp = testCaseMessage.createHL7Component();
+        if (comp != null && comp.hasNoErrors()) {
           pass++;
         }
         areaFLevel1Progress = makeScore(count, ackAnalysisList.size());
@@ -434,15 +484,25 @@ public class CertifyRunner extends Thread
   private void analyzeFormatQueries() {
     int count = 0;
     int pass = 0;
+    int passCDS = 0;
     for (TestCaseMessage testCaseMessage : rspAnalysisList) {
       count++;
       if (testCaseMessage.isHasRun()) {
-        if (testCaseMessage.getActualResponseMessageComponent() != null
-            && testCaseMessage.getActualResponseMessageComponent().hasNoErrors()) {
+        HL7Component comp = testCaseMessage.createHL7Component();
+        if (comp != null && comp.hasNoErrors()) {
           pass++;
         }
 
         areaFLevel2Progress = makeScore(count, rspAnalysisList.size());
+
+        // TODO look for query and rate
+
+        boolean okayCDS = SpecialConformanceChecker.containsForecast(comp);
+        if (okayCDS)
+        {
+          passCDS++;
+        }
+        areaFLevel3Progress = makeScore(count, rspAnalysisList.size());
       }
       if (!keepRunning) {
         status = STATUS_STOPPED;
@@ -450,7 +510,9 @@ public class CertifyRunner extends Thread
       }
     }
     areaFLevel2Progress = makeScore(count, rspAnalysisList.size());
+    areaFLevel3Progress = makeScore(count, rspAnalysisList.size());
     areaFLevel2Score = makeScore(pass, rspAnalysisList.size());
+    areaFLevel3Score = makeScore(passCDS, rspAnalysisList.size());
   }
 
   private void updateAdvanced(Map<Integer, List<Issue>> issueMap) {
@@ -972,7 +1034,7 @@ public class CertifyRunner extends Thread
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseNumber("B20." + count);
       testCaseMessage.appendCustomTransformation("PID-11.4=" + certifyItem.getTable());
-      testCaseMessage.appendCustomTransformation("PD1-11.7=N");
+      testCaseMessage.appendCustomTransformation("PID-11.7=N");
       testCaseMessage.appendCustomTransformation("PID-11.9=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
@@ -989,9 +1051,9 @@ public class CertifyRunner extends Thread
       testCaseMessage.setDescription("Primary Language is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseNumber("B21." + count);
-      testCaseMessage.appendCustomTransformation("PID-20.1=" + certifyItem.getCode());
-      testCaseMessage.appendCustomTransformation("PID-20.2=" + certifyItem.getLabel());
-      testCaseMessage.appendCustomTransformation("PID-20.3=" + certifyItem.getTable());
+      testCaseMessage.appendCustomTransformation("PID-15.1=" + certifyItem.getCode());
+      testCaseMessage.appendCustomTransformation("PID-15.2=" + certifyItem.getLabel());
+      testCaseMessage.appendCustomTransformation("PID-15.3=" + certifyItem.getTable());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
@@ -1008,9 +1070,9 @@ public class CertifyRunner extends Thread
           + " (Random value from CDC full set)");
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseNumber("B21." + count);
-      testCaseMessage.appendCustomTransformation("PID-20.1=" + certifyItem.getCode());
-      testCaseMessage.appendCustomTransformation("PID-20.2=" + certifyItem.getLabel());
-      testCaseMessage.appendCustomTransformation("PID-20.3=" + certifyItem.getTable());
+      testCaseMessage.appendCustomTransformation("PID-15.1=" + certifyItem.getCode());
+      testCaseMessage.appendCustomTransformation("PID-15.2=" + certifyItem.getLabel());
+      testCaseMessage.appendCustomTransformation("PID-15.3=" + certifyItem.getTable());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
@@ -1157,7 +1219,7 @@ public class CertifyRunner extends Thread
       testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Patient Not Deceased");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B28.2");
+      testCaseMessage.setTestCaseNumber("B28.3");
       testCaseMessage.appendCustomTransformation("PID-30=N");
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
@@ -1246,6 +1308,8 @@ public class CertifyRunner extends Thread
       register(testCaseMessage);
     }
 
+    // TODO add examples of message construction issues that should be ignored
+
     try {
 
       BufferedReader in = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(
@@ -1306,7 +1370,8 @@ public class CertifyRunner extends Thread
 
   private void changePatientIdentifyingInformation(String messageText, TestCaseMessage testCaseMessage) {
     HL7Reader hl7Reader = new HL7Reader(messageText);
-    testCaseMessage.appendCustomTransformation("MSH-10=" + messageText.hashCode() + "." + System.currentTimeMillis());
+    testCaseMessage.appendCustomTransformation("MSH-10=" + messageText.hashCode() + "."
+        + (System.currentTimeMillis() % 10000));
     if (hl7Reader.advanceToSegment("PID")) {
       String dob = hl7Reader.getValue(7);
       if (dob.length() >= 8) {
@@ -1499,7 +1564,6 @@ public class CertifyRunner extends Thread
             }
           }
         }
-        TestRunner.analyze(queryTestCaseMessage);
       } catch (Throwable t) {
         queryTestCaseMessage.setException(t);
       }
@@ -1582,7 +1646,6 @@ public class CertifyRunner extends Thread
             }
           }
         }
-        TestRunner.analyze(queryTestCaseMessage);
       } catch (Throwable t) {
         queryTestCaseMessage.setException(t);
       }
@@ -1646,7 +1709,6 @@ public class CertifyRunner extends Thread
             }
           }
         }
-        TestRunner.analyze(queryTestCaseMessage);
       } catch (Throwable t) {
         queryTestCaseMessage.setException(t);
       }
@@ -1925,7 +1987,21 @@ public class CertifyRunner extends Thread
           out.println("    <td>not analyzed yet</td>");
         }
       }
-      out.println("    <td>not defined</td>");
+      if (areaFLevel3Score >= 100) {
+        out.println("    <td class=\"pass\">All query response (RSP) messages included CDSi compatible evaluations and recommendations.  "
+            + "<font size=\"-1\"><a href=\"#areaFLevel2\">(details)</a></font></td>");
+      } else if (areaFLevel3Score >= 0) {
+        out.println("    <td class=\"fail\">Not all query response (RSP) messages included CDSi compatible evaluations and recommendations. ("
+            + areaFLevel2Score
+            + "% of fields returned) "
+            + "<font size=\"-1\"><a href=\"#areaFLevel2\">(details)</a></font></td>");
+      } else {
+        if (areaFLevel3Progress > -1) {
+          out.println("    <td>running now ... <br/>" + areaFLevel2Progress + "% complete</td>");
+        } else {
+          out.println("    <td>not analyzed yet</td>");
+        }
+      }
       out.println("  </tr>");
     }
     out.println("</table>");
@@ -1956,12 +2032,10 @@ public class CertifyRunner extends Thread
     out.println("    <th>Test Status</th>");
     out.println("    <td>" + status + "</td>");
     out.println("  </tr>");
-    if (statusMessage != null) {
-      out.println("  <tr>");
-      out.println("    <th>Currently</th>");
-      out.println("    <td>" + statusMessage + "</td>");
-      out.println("  </tr>");
-    }
+    out.println("  <tr>");
+    out.println("    <th>Currently</th>");
+    out.println("    <td>" + statusMessageList.get(statusMessageList.size() - 1) + "</td>");
+    out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th>Basic Tests</th>");
     out.println("    <td>Enabled</td>");
@@ -1995,7 +2069,13 @@ public class CertifyRunner extends Thread
     out.println("    <td>" + totalQueryCount + "</td>");
     out.println("  </tr>");
     out.println("</table>");
-    out.println("</br>");
+
+    out.println("<p>IIS Test Log</p>");
+    out.println("<pre>");
+    for (String statusMessage : statusMessageList) {
+      out.println(statusMessage);
+    }
+    out.println("</pre>");
 
     if (exception != null) {
       out.println("<p>Exception occurred during processing. Unable to complete analysis as expected. </p>");
@@ -2009,7 +2089,7 @@ public class CertifyRunner extends Thread
         + "to IIS. This standard supports the most common used Web Service and HTTPS standards. </p>");
 
     if (!connector.getCustomTransformations().equals("")) {
-      out.println("<p>This interface requires customized Transformations to modify each message before trasnmitting"
+      out.println("<p>This interface requires customized Transformations to modify each message before transmitting "
           + "them to the IIS. These transformations can range from setting the correct submitter facility in the "
           + "message header to modifying the structure of the HL7 message to meet local requirements. </p>");
     }
@@ -2037,7 +2117,7 @@ public class CertifyRunner extends Thread
     out.println("</br>");
 
     if (queryConnector != connector) {
-      out.println("<p>The connection information for performing queries is different than for the updates. This is to either accomodate"
+      out.println("<p>The connection information for performing queries is different than for the updates. This is to either accomodate "
           + "different standards for message format or to allow for different credentials and URL. </p>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
@@ -2064,6 +2144,16 @@ public class CertifyRunner extends Thread
 
     int testNum = 0;
     if (areaALevel1Progress > 0) {
+      out.println("<h2>Basic Interoperability Tests</h2>");
+      out.println("<p><b>Purpose</b>: Test to see if the IIS can accept updates from certified EHR systems. </p>");
+      out.println("<p><b>Requirements</b>: IIS must accept all 7 NIST messages than an EHR is required to be able to send in 2014. "
+          + "In addition the IIS should be able to store all IIS required core fields, and if possible all the "
+          + "IIS optional core fields. </p>");
+      out.println("<ul>");
+      out.println("  <li>Level 1: The IIS must be able to accept replicas of all NIST messages. </li>");
+      out.println("  <li>Level 2: The IIS should return all required 2007 IIS Core Data included in the NIST messages.</li>");
+      out.println("  <li>Level 3: The IIS may return all IIS 2013-2017 Core Data that was included in the NIST messages.</li>");
+      out.println("</ul>");
       for (TestCaseMessage testCaseMessage : statusCheckTestCaseBasicList) {
         testNum++;
         out.println("<div id=\"areaALevel1\"/>");
@@ -2091,6 +2181,11 @@ public class CertifyRunner extends Thread
         } else if (testCaseMessage.isHasRun()) {
           out.println("    <td class=\"fail\">");
           out.println("Message was not accepted. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+          out.println("</td>");
+        } else if (testCaseMessage.getException() != null) {
+          out.println("    <td class=\"fail\">");
+          out.println("Exception when transmitting message: " + testCaseMessage.getException().getMessage() + ". "
+              + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
           out.println("</td>");
         } else {
           out.println("    <td class=\"nottested\">not run yet</td>");
@@ -2135,6 +2230,11 @@ public class CertifyRunner extends Thread
               out.println("      " + makeCompareDetailsLink(testCaseMessage, toFile, false));
               out.println(makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
               out.println("    </td>");
+            } else if (testCaseMessage.getException() != null) {
+              out.println("    <td class=\"fail\">");
+              out.println("Exception when transmitting message: " + testCaseMessage.getException().getMessage() + ". "
+                  + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+              out.println("</td>");
             } else {
               out.println("    <td class=\"nottested\">not run yet</td>");
             }
@@ -2188,6 +2288,11 @@ public class CertifyRunner extends Thread
               }
               out.println("      " + makeCompareDetailsLink(testCaseMessage, toFile, false));
               out.println("    </td>");
+            } else if (testCaseMessage.getException() != null) {
+              out.println("    <td class=\"fail\">");
+              out.println("Exception when transmitting message: " + testCaseMessage.getException().getMessage() + ". "
+                  + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+              out.println("</td>");
             } else {
               out.println("    <td class=\"nottested\">not run yet</td>");
             }
@@ -2200,6 +2305,19 @@ public class CertifyRunner extends Thread
     }
 
     if (areaBLevel1Progress > 0) {
+
+      out.println("<h2>Basic Interoperability Tests</h2>");
+      out.println("<p><b>Purpose</b>: Test to see if the IIS can accept recognize valid codes. </p>");
+      out.println("<p><b>Requirements</b>: IIS must accept all valid codes for IIS core required and "
+          + "optional fields, and not reject messages because of invalid or unrecognized codes in optional "
+          + "fields. In addition the IIS should be able to store all IIS required core fields, and "
+          + "if possible all the IIS optional core fields. </p>");
+      out.println("<ul>");
+      out.println("  <li>Level 1: The IIS must be able to accept all valid codes, defined by the current CDC Implementation Guide. </li>");
+      out.println("  <li>Level 2: The IIS should return all required 2007 IIS Core Data that was submitted for Level 1 testing. </li>");
+      out.println("  <li>Level 3: The IIS may return all IIS 2013-2017 Core Data that was submitted for Level 1 testing.</li>");
+      out.println("</ul>");
+
       out.println("<div id=\"areaBLevel1\"/>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
@@ -2212,6 +2330,7 @@ public class CertifyRunner extends Thread
       out.println("</br>");
     }
     if (areaBLevel2Progress > 0) {
+
       out.println("<div id=\"areaBLevel2\"/>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
@@ -2239,6 +2358,19 @@ public class CertifyRunner extends Thread
     for (int i = 0; i < areaCLevelScore.length; i++) {
       if (profileTestCaseLists[i] == null || areaCLevelProgress[i] < 100) {
         continue;
+      }
+
+      if (i == 0) {
+        out.println("<h2>Advanced Interoperability Tests</h2>");
+        out.println("<p><b>Purpose</b>: Test to see if the IIS can identify quality issues. </p>");
+        out.println("<p><b>Requirements</b>: IIS must be able to identify critical data quality issues in messages. "
+            + "These include items that were documented and detailed as part of the 2008 Data Quality Assurance for IIS: "
+            + "Incoming Data project. </p>");
+        out.println("<ul>");
+        out.println("  <li>Level 1: The IIS must be able to identify all Level 1 priority issues. For each issue the ACK message returned should indicate that the IIS recognized the quality issue. The identified severity of the issue is not evaluated for this test.  </li>");
+        out.println("  <li>Level 2: The IIS should be able to identify all Level 2 priority issues. For each issue the ACK message returned should indicate that the IIS recognized the quality issue. The identified severity of the issue is not evaluated for this test.</li>");
+        out.println("  <li>Level 3: The IIS may be able to identify all Level 3 priority issues. For each issue the ACK message returned should indicate that the IIS recognized the quality issue. The identified severity of the issue is not evaluated for this test.</li>");
+        out.println("</ul>");
       }
 
       int priority = i + 1;
@@ -2273,6 +2405,11 @@ public class CertifyRunner extends Thread
               out.println("    <td class=\"" + classText + "\">Issue was NOT identified. "
                   + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
             }
+          } else if (testCaseMessage.getException() != null) {
+            out.println("    <td class=\"fail\">");
+            out.println("Exception when transmitting message: " + testCaseMessage.getException().getMessage() + ". "
+                + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+            out.println("</td>");
           } else {
             out.println("    <td class=\"" + classText + "\">not run yet</td>");
           }
@@ -2284,6 +2421,17 @@ public class CertifyRunner extends Thread
     }
 
     if (areaDLevel1Progress > 0) {
+      out.println("<h2>Exceptional Interoperability Tests</h2>");
+      out.println("<p><b>Purpose</b>: Test to see if the IIS can allow for minor differences. </p>");
+      out.println("<p><b>Requirements</b>: IIS must be able to accept input outside of what the IIS "
+          + "expects which does not directly impact HL7 message structure or the quality of core IIS fields. "
+          + "In short the IIS should be tolerant of minor message format and content issues.  </p>");
+      out.println("<ul>");
+      out.println("  <li>Level 1: The IIS must be able to accept update messages with incorrect data in fields that are not critical to HL7 message format and are not used to transmit IIS core data; be able to accept example update messages from EHR systems that pass EHR certification; be able to accept sample update messages that transmit IIS core data that is defined by the IIS Implementation Guide but were not tested by EHR Certification.</li>");
+      out.println("  <li>Level 2: The IIS should return all required 2007 IIS Core Data that was submitted for Level 1 testing.</li>");
+      out.println("  <li>Level 3: The IIS may return all IIS 2013-2017 Core Data that was submitted for Level 1 testing. </li>");
+      out.println("</ul>");
+
       out.println("<div id=\"areaDLevel1\"/>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
@@ -2321,14 +2469,24 @@ public class CertifyRunner extends Thread
     }
 
     if (areaFLevel1Progress > 0) {
+      out.println("<h2>Conformance Tests</h2>");
+      out.println("<p><b>Purpose</b>: Test to see if the IIS can respond correctly to requests. </p>");
+      out.println("<p><b>Requirements</b>: IIS must be able to return an ACK message that meets HL7 and CDC Standards "
+          + "for format and structure. IIS should also be able to return RSP messages in response to "
+          + "QBP messages that meet HL7 and CDC Standards for format and structure. </p>");
+      out.println("<ul>");
+      out.println("  <li>Level 1: That IIS can return an acknowledgement (ACK) messages that meet HL7 and CDC standards for format and content. Return messages correctly indicate if messages were rejected or accepted according to the CDC standard.</li>");
+      out.println("  <li>Level 2: IIS supports QDP/RSP and RSP message meets HL7 and CDC standards for format and content. IIS must be able to return a single record match for a patient submitted by VXU when the patient is queried using the same information supplied in the VXU. The query results should also include a forecast recommendation.</li>");
+      out.println("</ul>");
+
       out.println("<div id=\"areaFLevel1\"/>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
-      out.println("    <th colspan=\"2\">Exceptional Tests - Level 1 - ACK Correctly Formatted</th>");
+      out.println("    <th colspan=\"2\">Conformance Tests - Level 1 - ACK Correctly Formatted</th>");
       out.println("  </tr>");
       for (TestCaseMessage testCaseMessage : ackAnalysisList) {
         String classText = "nottested";
-        HL7Component actualResponseMessageComponent = testCaseMessage.getActualResponseMessageComponent();
+        HL7Component actualResponseMessageComponent = testCaseMessage.createHL7Component();
         if (actualResponseMessageComponent != null) {
           classText = actualResponseMessageComponent.hasNoErrors() ? "pass" : "fail";
         }
@@ -2342,6 +2500,11 @@ public class CertifyRunner extends Thread
             out.println("    <td class=\"" + classText + "\">Ack did not meet HL7 or CDC standards. "
                 + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
           }
+        } else if (testCaseMessage.getException() != null) {
+          out.println("    <td class=\"fail\">");
+          out.println("Exception when transmitting message: " + testCaseMessage.getException().getMessage() + ". "
+              + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+          out.println("</td>");
         } else {
           out.println("    <td class=\"" + classText + "\">not run yet</td>");
         }
@@ -2355,11 +2518,11 @@ public class CertifyRunner extends Thread
       out.println("<div id=\"areaFLevel2\"/>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
-      out.println("    <th colspan=\"2\">Exceptional Tests - Level 2 - RSP Correctly Formatted</th>");
+      out.println("    <th colspan=\"2\">Conformance Tests - Level 2 - RSP Correctly Formatted</th>");
       out.println("  </tr>");
       for (TestCaseMessage testCaseMessage : rspAnalysisList) {
         String classText = "nottested";
-        HL7Component actualResponseMessageComponent = testCaseMessage.getActualResponseMessageComponent();
+        HL7Component actualResponseMessageComponent = testCaseMessage.createHL7Component();
         if (actualResponseMessageComponent != null) {
           classText = actualResponseMessageComponent.hasNoErrors() ? "pass" : "fail";
         }
@@ -2373,6 +2536,11 @@ public class CertifyRunner extends Thread
             out.println("    <td class=\"" + classText + "\">RSP did not meet HL7 or CDC standards. "
                 + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
           }
+        } else if (testCaseMessage.getException() != null) {
+          out.println("    <td class=\"fail\">");
+          out.println("Exception when transmitting message: " + testCaseMessage.getException().getMessage() + ". "
+              + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+          out.println("</td>");
         } else {
           out.println("    <td class=\"" + classText + "\">not run yet</td>");
         }
@@ -2417,6 +2585,11 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"" + classText + "\">Not all optional and/or required fields were returned. "
             + makeCompareDetailsLink(testCaseMessage, toFile, false) + "</td>");
       }
+    } else if (testCaseMessage.getException() != null) {
+      out.println("    <td class=\"fail\">");
+      out.println("Exception when transmitting message: " + testCaseMessage.getException().getMessage() + ". "
+          + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+      out.println("</td>");
     } else {
       out.println("    <td class=\"" + classText + "\">not run yet</td>");
     }
@@ -2438,6 +2611,11 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"" + classText + "\">Not all  required fields were returned. "
             + makeCompareDetailsLink(testCaseMessage, toFile, false));
       }
+    } else if (testCaseMessage.getException() != null) {
+      out.println("    <td class=\"fail\">");
+      out.println("Exception when transmitting message: " + testCaseMessage.getException().getMessage() + ". "
+          + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+      out.println("</td>");
     } else {
       out.println("    <td class=\"" + classText + "\">not run yet</td>");
     }
@@ -2466,7 +2644,7 @@ public class CertifyRunner extends Thread
   }
 
   private int makeScore(int num, int denom) {
-    return (int) (100.0 * num / denom + 0.5);
+    return (int) (100.0 * num / denom);
   }
 
   public String getStatus() {

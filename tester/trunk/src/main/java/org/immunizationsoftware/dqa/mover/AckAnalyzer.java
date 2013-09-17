@@ -101,8 +101,7 @@ public class AckAnalyzer
   }
 
   public AckAnalyzer(String ack, AckType ackType, FileOut errorFileOut) {
-    while (ack != null && ack.length() > 0 && ack.charAt(0) <= ' ')
-    {
+    while (ack != null && ack.length() > 0 && ack.charAt(0) <= ' ') {
       ack = ack.substring(1);
     }
     this.ackType = ackType;
@@ -165,26 +164,23 @@ public class AckAnalyzer
         if (!positive) {
           log("At least one MSA-1 field was found with a value of AE so message was rejected");
         }
-      } else if (ackType.equals(AckType.WEBIZ))
-      {
+      } else if (ackType.equals(AckType.WEBIZ)) {
         positive = ackCode.equals("AA") || ackCode.equals("AE");
-      }
-      else 
-      {
-        if (ackCode.equals("AA"))
-        {
+      } else {
+        if (ackCode.equals("AA")) {
           positive = true;
-        }
-        else if (ackCode.equals("AR"))
-        {
+        } else if (ackCode.equals("AR")) {
           positive = false;
-        }
-        else {
+        } else {
           positive = true;
+          boolean noSeverity = true;
           int pos = 1;
           String[] values = null;
           while ((values = getFieldValues("ERR", pos, 4)) != null) {
             if (values.length > 4) {
+              if (!values[4].equals("")) {
+                noSeverity = false;
+              }
               if (values[4].equals("E")) {
                 positive = false;
                 break;
@@ -192,8 +188,11 @@ public class AckAnalyzer
             }
             pos++;
           }
+          if (noSeverity) {
+            positive = false;
+          }
         }
-        
+
       }
     }
   }

@@ -46,7 +46,7 @@ public class HttpConnector extends Connector
   private boolean stripXML = false;
   private boolean deduplicate = false;
   private AuthenticationMethod authenticationMethod = AuthenticationMethod.FORM;
-  private String[] fieldNames = { FIELD_USERID, FIELD_PASSWORD, FIELD_FACILITYID, FIELD_MESSAGEDATA, FIELD_OTHERID};
+  private String[] fieldNames = { FIELD_USERID, FIELD_PASSWORD, FIELD_FACILITYID, FIELD_MESSAGEDATA, FIELD_OTHERID };
 
   public AuthenticationMethod getAuthenticationMethod() {
     return authenticationMethod;
@@ -75,9 +75,8 @@ public class HttpConnector extends Connector
     stripXML = true;
     return this;
   }
-  
-  public HttpConnector deduplicate()
-  {
+
+  public HttpConnector deduplicate() {
     deduplicate = true;
     return this;
   }
@@ -101,6 +100,8 @@ public class HttpConnector extends Connector
     }
 
     if (stripXML) {
+      boolean foundMSH = false;
+      String msh = "";
       StringBuffer sbuf = new StringBuffer(result.length());
       boolean inTag = false;
       for (char c : result.toCharArray()) {
@@ -108,16 +109,26 @@ public class HttpConnector extends Connector
           inTag = true;
         } else if (c == '>') {
           inTag = false;
-        } else if (!inTag) {
+        } else if (!inTag && foundMSH) {
           sbuf.append(c);
+        } else {
+          if (msh.equals("") && c == 'M') {
+            msh = msh + c;
+          } else if (msh.equals("M") && c == 'S') {
+            msh = msh + c;
+          } else if (msh.equals("MS") && c == 'H') {
+            msh = msh + c;
+            sbuf.append(msh);
+            foundMSH = true;
+          }
+
         }
       }
       if (sbuf.length() > 0) {
         result = sbuf.toString();
       }
     }
-    while (result != null && result.length() > 0 && result.charAt(0) < ' ')
-    {
+    while (result != null && result.length() > 0 && result.charAt(0) < ' ') {
       result = result.substring(1);
     }
     return result;
@@ -179,8 +190,7 @@ public class HttpConnector extends Connector
         }
         StringBuilder sb = new StringBuilder();
 
-        if (deduplicate)
-        {
+        if (deduplicate) {
           sb.append("deduplicate=deduplicate&");
         }
 
@@ -204,7 +214,7 @@ public class HttpConnector extends Connector
           sb.append("=");
           sb.append(URLEncoder.encode(conn.otherId, "UTF-8"));
         }
-        
+
         sb.append("&");
         sb.append(fieldNames[MESSAGEDATA]);
         sb.append("=");

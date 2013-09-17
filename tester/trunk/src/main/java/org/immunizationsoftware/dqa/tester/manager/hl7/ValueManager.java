@@ -1,0 +1,55 @@
+package org.immunizationsoftware.dqa.tester.manager.hl7;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+public class ValueManager
+{
+  private static Map<String, Set<String>> conceptMap = null;
+
+  public static boolean recognizedConcept(String conceptType) {
+    init();
+    Set<String> conceptSet = conceptMap.get(conceptType);
+    return conceptSet != null;
+  }
+
+  public static boolean recognizedValue(String value, String conceptType) {
+    init();
+    Set<String> conceptSet = conceptMap.get(conceptType);
+    if (conceptSet != null) {
+      return conceptSet.contains(value);
+    }
+    return false;
+  }
+
+  public static void init() {
+    if (conceptMap == null) {
+      try {
+        conceptMap = new HashMap<String, Set<String>>();
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+            ValueManager.class.getResourceAsStream("values.txt")));
+        String line;
+        while ((line = in.readLine()) != null) {
+          int equals = line.indexOf("=");
+          if (equals != -1) {
+            String concept = line.substring(0, equals);
+            String[] values = line.substring(equals + 1).split("\\,");
+            Set<String> valueSet = conceptMap.get(concept);
+            if (valueSet == null) {
+              valueSet = new HashSet<String>();
+              conceptMap.put(concept, valueSet);
+            }
+            valueSet.add(values[0]);
+          }
+        }
+      } catch (IOException ioe) {
+        throw new IllegalArgumentException("Unable to load required values from certify.txt");
+      }
+    }
+  }
+}

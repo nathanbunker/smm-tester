@@ -1,9 +1,16 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.messages;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
+import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.CE;
+import org.immunizationsoftware.dqa.tester.manager.hl7.scenario.ScenarioChecker;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.ERR;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.IN1;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.MSA;
@@ -104,6 +111,181 @@ public class RSP extends HL7Component
     setChild(6, patientGroup = new PatientGroup(UsageType.R, Cardinality.ZERO_OR_MORE));
   }
 
+  public RSP(boolean checkForecastPresent) {
+    super(ItemType.MESSAGE, "RSP.cds", "Response with Evaluations and Recommendations", 6, UsageType.R,
+        Cardinality.ONE_TIME_ONLY);
+    init();
+    scenarioChecker = new ScenarioChecker() {
+      private final String[] SERIES_STATUS_INDICATORS = { "U", "I", "O", "S", "R" };
+
+      public boolean checkScenario(HL7Component comp) {
+        if (comp instanceof RSP) {
+          boolean foundAtLeastOneForecast = false;
+          boolean allVaccinationsHaveEvaluation = true;
+          RSP rsp = (RSP) comp;
+          RSP.PatientGroup patientGroup = rsp.getPatientGroup();
+          RSP.PatientGroup.OrderGroup orderGroup = patientGroup.getOrderGroup();
+          while (orderGroup != null) {
+            if (orderGroup.getRxa().getAdministeredCode().getIdentifier().getValue().equals("998")) {
+              // not administered
+              Map<String, RSP.ForecastRecommendation> forecastRecommendationMap = new HashMap<String, RSP.ForecastRecommendation>();
+              RSP.PatientGroup.OrderGroup.ObservationGroup observationGroup = orderGroup.getObservationGroup();
+              while (observationGroup != null) {
+                OBX obx = observationGroup.getObx();
+                String obsId = obx.getObservationIdentifier().getIdentifier().getValue();
+                String id = "order group #" + orderGroup.getCardinalityCount();
+                if (!obx.getObservationSubID().isEmpty()) {
+                  id += " sub id " + obx.getObservationSubID().getValue();
+                }
+                RSP.ForecastRecommendation forecastRecommendation = forecastRecommendationMap.get(id);
+                if (forecastRecommendation == null) {
+                  forecastRecommendationMap.put(id, forecastRecommendation = new RSP.ForecastRecommendation());
+                  forecastRecommendation.id = id;
+                }
+
+                if (obsId.equals("30979-9")) {
+                  forecastRecommendation.isValuedVaccinesDueNext = !obx.getObservationValue().isEmpty();
+                } else if (obsId.equals("59779-9")) {
+                  forecastRecommendation.isValuedVaccineScheduleUsed = !obx.getObservationValue().isEmpty();
+                } else if (obsId.equals("59783-1")) {
+                  forecastRecommendation.isValuedSeriesStatus = !obx.getObservationValue().isEmpty();
+                  if (obx.getObservationValue() instanceof CE) {
+                    CE ce = (CE) obx.getObservationValue();
+                    forecastRecommendation.seriesStatus = ce.getIdentifier().getValue();
+                  }
+                } else if (obsId.equals("30980-7")) {
+                  forecastRecommendation.isValuedDateVaccineDue = !obx.getObservationValue().isEmpty();
+                } else if (obsId.equals("30981-5")) {
+                  forecastRecommendation.isValuedEarliestDateToGive = !obx.getObservationValue().isEmpty();
+                } else if (obsId.equals("30973-2")) {
+                  forecastRecommendation.isValuedDoseNumberInSeries = !obx.getObservationValue().isEmpty();
+                } else if (obsId.equals("59782-3")) {
+                  forecastRecommendation.isValuedNumberOfDosesInPrimarySeries = !obx.getObservationValue().isEmpty();
+                }
+                orderGroup = (RSP.PatientGroup.OrderGroup) orderGroup.getNextComponent();
+              }
+              for (RSP.ForecastRecommendation forecastRecommendation : forecastRecommendationMap.values()) {
+                if (forecastRecommendation.isValuedVaccinesDueNext
+                    || forecastRecommendation.isValuedVaccineScheduleUsed
+                    || forecastRecommendation.isValuedSeriesStatus) {
+                  // this is a recommendation
+                  foundAtLeastOneForecast = true;
+                  String forSubIdText = "";
+                  if (!forecastRecommendation.id.equals("")) {
+                    forSubIdText = " for " + forecastRecommendation.id;
+                  }
+                  if (!forecastRecommendation.isValuedVaccinesDueNext) {
+                    orderGroup.orc.addConformanceIssue(
+                        "No OBX with recommendation - vaccines due next (LOINC 30979-9) was indicated" + forSubIdText,
+                        "101", "7", "E", rsp.getConformanceIssueList());
+                  }
+                  if (!forecastRecommendation.isValuedVaccineScheduleUsed) {
+                    orderGroup.orc.addConformanceIssue(
+                        "No OBX with recommendation - vaccine schedule used (LOINC 59779-9) was indicated"
+                            + forSubIdText, "101", "7", "E", rsp.getConformanceIssueList());
+                  }
+                  if (!forecastRecommendation.isValuedSeriesStatus) {
+                    orderGroup.orc.addConformanceIssue(
+                        "No OBX with recommendation - series status (LOINC 59783-1) was indicated" + forSubIdText,
+                        "101", "7", "E", rsp.getConformanceIssueList());
+                  } else {
+                    boolean shouldHaveRecommendation = false;
+                    for (String seriesStatusIndicator : SERIES_STATUS_INDICATORS) {
+                      if (forecastRecommendation.seriesStatus.equals(seriesStatusIndicator)) {
+                        shouldHaveRecommendation = true;
+                        break;
+                      }
+                    }
+                    if (shouldHaveRecommendation) {
+                      if (!forecastRecommendation.isValuedDateVaccineDue) {
+                        orderGroup.orc.addConformanceIssue(
+                            "No OBX with recommendation - date vaccine due (LOINC 30980-7) was indicated"
+                                + forSubIdText, "101", "7", "E", rsp.getConformanceIssueList());
+                      }
+                      if (!forecastRecommendation.isValuedEarliestDateToGive) {
+                        orderGroup.orc.addConformanceIssue(
+                            "No OBX with recommendation - earliest date to give (LOINC 30981-5) was indicated"
+                                + forSubIdText, "101", "7", "W", rsp.getConformanceIssueList());
+                      }
+                      if (!forecastRecommendation.isValuedDoseNumberInSeries) {
+                        orderGroup.orc.addConformanceIssue(
+                            "No OBX with recommendation - dose number in series (LOINC 30973-2) was indicated"
+                                + forSubIdText, "101", "7", "W", rsp.getConformanceIssueList());
+                      }
+                      if (!forecastRecommendation.isValuedNumberOfDosesInPrimarySeries) {
+                        orderGroup.orc.addConformanceIssue(
+                            "No OBX with recommendation - number of doses in primary series (LOINC 59782-3) was indicated"
+                                + forSubIdText, "101", "7", "W", rsp.getConformanceIssueList());
+                      }
+                    }
+                  }
+                }
+              }
+            } else if (orderGroup.getRxa().getCompletionStatus().getValue().equals("CP")
+                || orderGroup.getRxa().getCompletionStatus().getValue().equals("")) {
+              // must have evaluation
+              boolean isValuedVaccineType = false;
+              boolean isValuedVaccineScheduleUsed = false;
+              boolean isValuedDoseValidity = false;
+              RSP.PatientGroup.OrderGroup.ObservationGroup observationGroup = orderGroup.getObservationGroup();
+              while (observationGroup != null) {
+                OBX obx = observationGroup.getObx();
+                String obsId = obx.getObservationIdentifier().getIdentifier().getValue();
+
+                if (obsId.equals("30956-7")) {
+                  isValuedVaccineType = !obx.getObservationValue().isEmpty();
+                } else if (obsId.equals("59779-9")) {
+                  isValuedVaccineScheduleUsed = !obx.getObservationValue().isEmpty();
+                } else if (obsId.equals("59781-5")) {
+                  isValuedDoseValidity = !obx.getObservationValue().isEmpty();
+                }
+                observationGroup = (RSP.PatientGroup.OrderGroup.ObservationGroup) observationGroup.getNextComponent();
+              }
+              if (!isValuedVaccineType) {
+                orderGroup.orc.addConformanceIssue(
+                    "No OBX with evaluation - vaccine type (LOINC 30956-7) was indicated", "101", "7", "E",
+                    rsp.getConformanceIssueList());
+                allVaccinationsHaveEvaluation = false;
+              }
+              if (!isValuedVaccineScheduleUsed) {
+                orderGroup.orc.addConformanceIssue(
+                    "No OBX with evaluation - vaccine schedule used (LOINC 59779-9) was indicated", "101", "7", "E",
+                    rsp.getConformanceIssueList());
+                allVaccinationsHaveEvaluation = false;
+              }
+              if (!isValuedDoseValidity) {
+                orderGroup.orc.addConformanceIssue(
+                    "No OBX with evaluation - vaccine dose validity (LOINC 59781-5) was indicated", "101", "7", "E",
+                    rsp.getConformanceIssueList());
+                allVaccinationsHaveEvaluation = false;
+              }
+            }
+            orderGroup = (RSP.PatientGroup.OrderGroup) orderGroup.getNextComponent();
+          }
+          if (!foundAtLeastOneForecast) {
+            rsp.addConformanceIssue("No recommendations found, expecting them in order groups where RXA-5 = 998",
+                "101", "7", "E", rsp.getConformanceIssueList());
+          }
+          return foundAtLeastOneForecast && allVaccinationsHaveEvaluation;
+        }
+        return false;
+      }
+    };
+  }
+
+  private class ForecastRecommendation
+  {
+    public String id = "";
+    public boolean isValuedVaccinesDueNext = false;
+    public boolean isValuedVaccineScheduleUsed = false;
+    public boolean isValuedSeriesStatus = false;
+    public String seriesStatus = null;
+    public boolean isValuedDateVaccineDue = false;
+    public boolean isValuedEarliestDateToGive = false;
+    public boolean isValuedDoseNumberInSeries = false;
+    public boolean isValuedNumberOfDosesInPrimarySeries = false;
+  }
+
   public class PatientGroup extends HL7Component
   {
 
@@ -184,7 +366,7 @@ public class RSP extends HL7Component
       setChild(3, nk1 = new NK1(UsageType.RE, Cardinality.ZERO_OR_MORE));
       setChild(4, pv1 = new PV1(UsageType.O, Cardinality.ZERO_OR_ONE));
       setChild(5, in1 = new IN1(UsageType.O, Cardinality.ZERO_OR_ONE));
-      setChild(6, orderGroup = new OrderGroup(UsageType.O, Cardinality.ZERO_OR_MORE));
+      setChild(6, orderGroup = new OrderGroup(UsageType.R, Cardinality.ZERO_OR_MORE));
     }
 
     public class OrderGroup extends HL7Component
@@ -264,7 +446,7 @@ public class RSP extends HL7Component
         setChild(2, tq1 = new TQ1(UsageType.O, Cardinality.ZERO_OR_ONE));
         setChild(3, tq2 = new TQ2(UsageType.O, Cardinality.ZERO_OR_ONE));
         setChild(4, rxa = new RXA(UsageType.R, Cardinality.ONE_TIME_ONLY));
-        setChild(5, rxr = new RXR(UsageType.RE, Cardinality.ZERO_OR_ONE));
+        setChild(5, rxr = new RXR(UsageType.R, Cardinality.ZERO_OR_ONE));
         setChild(6, observationGroup = new ObservationGroup(UsageType.RE, Cardinality.ZERO_OR_MORE));
       }
 
