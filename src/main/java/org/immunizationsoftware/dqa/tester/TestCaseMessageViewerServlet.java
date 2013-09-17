@@ -219,7 +219,7 @@ public class TestCaseMessageViewerServlet extends ClientServlet
       CompareServlet.printComparison(testCaseMessage.getComparisonList(), out);
     }
 
-    HL7Component actualResponseMessageComponent = testCaseMessage.getActualResponseMessageComponent();
+    HL7Component actualResponseMessageComponent = testCaseMessage.createHL7Component();
 
     out.println("<h3>HL7 Analysis of Message</h3>");
     if (actualResponseMessageComponent != null) {

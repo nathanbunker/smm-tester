@@ -14,9 +14,6 @@ import org.immunizationsoftware.dqa.tester.TestCaseMessage;
 import org.immunizationsoftware.dqa.tester.Transformer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
-import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
-import org.immunizationsoftware.dqa.tester.manager.hl7.messages.ACK;
-import org.immunizationsoftware.dqa.tester.manager.hl7.messages.RSP;
 
 /**
  * 
@@ -134,6 +131,7 @@ public class TestRunner
             boolean accepted = false;
             boolean rejected = false;
             boolean issueFound = false;
+            boolean severitySet = false;
             errorType = ErrorType.UNKNOWN;
 
             if (testCaseMessage.getActualResultAckType().equals("AA")) {
@@ -155,6 +153,10 @@ public class TestRunner
               String userMessage = ackMessageReader.getValue(8);
               Error error = new Error();
               errorList.add(error);
+
+              if (!severity.equals("")) {
+                severitySet = true;
+              }
 
               if (severity.equals("E")) {
                 rejected = true;
@@ -190,7 +192,11 @@ public class TestRunner
               }
             }
             if (testCaseMessage.getActualResultAckType().equals("AE") && !rejected) {
-              accepted = true;
+              if (severitySet) {
+                accepted = true;
+              } else {
+                accepted = false;
+              }
             }
 
             passedTest = false;
@@ -237,33 +243,6 @@ public class TestRunner
     testCaseMessage.setPassedTest(passedTest);
     testCaseMessage.setHasRun(true);
 
-    analyze(testCaseMessage);
     return passedTest;
-  }
-
-  public static void analyze(TestCaseMessage testCaseMessage) {
-    try {
-      HL7Component comp = null;
-      if (testCaseMessage.getActualMessageResponseType().equals("")) {
-        if (!testCaseMessage.getActualResponseMessage().equalsIgnoreCase("")) {
-          HL7Reader ackMessageReader = new HL7Reader(testCaseMessage.getActualResponseMessage());
-          if (ackMessageReader.advanceToSegment("MSH")) {
-            testCaseMessage.setActualMessageResponseType(ackMessageReader.getValue(9));
-          }
-        }
-      }
-      if (testCaseMessage.getActualMessageResponseType().equals("ACK")) {
-        comp = new ACK();
-      } else if (testCaseMessage.getActualMessageResponseType().equals("RSP")) {
-        comp = new RSP();
-      }
-      if (comp != null) {
-        testCaseMessage.setActualResponseMessageComponent(comp);
-        comp.parseTextFromMessage(testCaseMessage.getActualResponseMessage());
-        comp.checkConformance();
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
   }
 }

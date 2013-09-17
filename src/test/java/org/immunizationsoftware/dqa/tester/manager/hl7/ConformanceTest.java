@@ -46,7 +46,7 @@ public class ConformanceTest extends TestCase
       + "OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20100416||||||F|\r"
       + "OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20130906||||||F|\r";
 
-  private static final String ACK_MESSAGE = "MSH|^~\\&|MCIR|MCIR|||20130907054645-0600||ACK^V04|20130907054645-0600.10|P|2.5.1|\r"
+  private static final String ACK_MESSAGE = "MSH|^~\\&|MCIR|MCIR|||20130907054645-0600||ACK^V04^ACK_V04|20130907054645-0600.10|P|2.5.1|\r"
       + "SFT|OIS|1.06dev|DQA||\r"
       + "MSA|AA|A1.1.1378554404763|\r"
       + "ERR|||0|I|||||Message accepted with 1 vaccination|\r";
@@ -60,6 +60,16 @@ public class ConformanceTest extends TestCase
       + "ORC|RE|F74W1.3||\r"
       + "RXA|0|1|20130907||141^^CVX|0.25|mL^^UCUM||00^^NIP001||||||Z1364WM||SKB^^MVX|\r"
       + "RXR|IM^^HL70162|RA^^HL70163|\r" + "OBX|1|CE|64994-7^^LN||V04^^HL70064|||||F|||||||\r";
+
+  private static final String RSP_MESSAGE_2 = "MSH|^~\\&|MCIR|MCIR|||20130910114900-0600||RSP^K11^RSP_K11|20130910114900-0600.8|P|2.5.1|||NE|AL|||||Z32^CDCPHINVS|\r"
+      + "MSA|AA|1378835340114.8|\r"
+      + "QAK|1378835340114.8|OK|Z34|\r"
+      + "QPD|Z34|1378835340114.8|A1.1^^^OIS-TEST^MR|Fillmore^Robin^Thanos^^^^L|O'Brian|20090911|M|309 Baylor Cir^^Pullman^MI^49450^USA^P^^|^PRN^PH^^^269^2832952^|||\r"
+      + "PID|||A1.1^^^OIS-TEST^MR||Fillmore^Robin^Thanos^^^^L|O'Brian|20090911|M||2106-3^^HL70005|309 Baylor Cir^^Pullman^MI^49450^USA^P^^||^^^^^269^2832952^|||||||||2186-5^^CDCREC||||\r"
+      + "NK1|1|O'Brian^Dep^^^^^|MTH^^HL70063|^^^^^^^^||\r"
+      + "ORC|RE|U93P8.3||\r"
+      + "RXA|0|1|20130910||^^CVX|0.25|mL^^UCUM||00^^NIP001||||||N2685LR||NOV^^MVX|\r"
+      + "RXR|IM^^HL70162|LA^^HL70163|\r" + "OBX|1|CE|64994-7^^LN||V02^^HL70064|||||F|||||||\r";
 
   public void testConformance() {
     PID pid = new PID(UsageType.R, Cardinality.ONE_TIME_ONLY);
@@ -135,6 +145,7 @@ public class ConformanceTest extends TestCase
     }
 
     {
+      System.out.println();
       System.out.println("Testing ACK");
       ACK ack = new ACK();
       ack.parseTextFromMessage(ACK_MESSAGE);
@@ -145,8 +156,8 @@ public class ConformanceTest extends TestCase
         System.out.println(conformanceIssue.createSegment());
       }
     }
-
     {
+      System.out.println();
       System.out.println("Testing RSP");
       RSP rsp = new RSP();
       rsp.parseTextFromMessage(RSP_MESSAGE);
@@ -158,6 +169,34 @@ public class ConformanceTest extends TestCase
       }
     }
 
+    {
+      System.out.println();
+      System.out.println("Testing RSP 2");
+      HL7Component rsp = new RSP().makeAnother();
+      rsp.setUsageType(UsageType.R);
+      rsp.setCardinalityCount(1);
+      rsp.parseTextFromMessage(RSP_MESSAGE_2);
+
+      List<ConformanceIssue> conformanceIssueList = rsp.checkConformance();
+      System.out.println(rsp.createMessage());
+      for (ConformanceIssue conformanceIssue : conformanceIssueList) {
+        System.out.println(conformanceIssue.createSegment());
+      }
+      assertTrue(hasError(conformanceIssueList, "Administered Code - Identifier (RXA-5.1) is required but was found empty"));
+      // rsp.printValues(System.out);
+
+    }
+  }
+  
+  private static boolean  hasError(List<ConformanceIssue> conformanceIssueList, String text)
+  {
+    for (ConformanceIssue conformanceIssue : conformanceIssueList) {
+      if (conformanceIssue.getUserMessage().getValue().equals(text) && conformanceIssue.getSeverity().getValue().equals("E"))
+      {
+        return true;
+      }
+    }
+    return false;
   }
 
 }

@@ -144,7 +144,7 @@ public class VXU extends HL7Component
     setChild(7, pv2 = new PV2(UsageType.O, Cardinality.ZERO_OR_ONE));
     setChild(8, gt1 = new GT1(UsageType.O, Cardinality.ZERO_OR_MORE));
     setChild(9, insuranceGroup = new InsuranceGroup(UsageType.O, Cardinality.ZERO_OR_MORE));
-    setChild(10, orderGroup = new OrderGroup(UsageType.O, Cardinality.ZERO_OR_MORE));
+    setChild(10, orderGroup = new OrderGroup(UsageType.R, Cardinality.ZERO_OR_MORE));
   }
 
   public class InsuranceGroup extends HL7Component

@@ -64,12 +64,20 @@ public class CertifyServlet extends ClientServlet
         certifyRunner.setRunC(request.getParameter("runC") != null);
         certifyRunner.setRunD(request.getParameter("runD") != null);
         certifyRunner.setRunF(request.getParameter("runF") != null);
+        certifyRunner.setPauseBeforeQuerying(request.getParameter("pauseBeforeQuerying") != null);
         session.setAttribute("certifyRunner", certifyRunner);
         certifyRunner.start();
       }
     } else if (action.equals("Stop")) {
       if (certifyRunner != null) {
         certifyRunner.stopRunning();
+      }
+    } else if (action.equals("Continue")) {
+      if (certifyRunner != null) {
+        synchronized (certifyRunner) {
+          certifyRunner.setPauseBeforeQuerying(false);
+          certifyRunner.interrupt();
+        }
       }
     }
     doGet(request, response, session, problem);
@@ -116,12 +124,34 @@ public class CertifyServlet extends ClientServlet
           || certifyRunner.getStatus().equals(CertifyRunner.STATUS_STOPPED);
 
       if (certifyRunner != null) {
+        if (!canStart) {
+          out.println("<script>");
+          out.println("  var refreshCount = 0;");
+          out.println("  function checkRefresh()");
+          out.println("  {");
+          out.println("    refreshCount++;");
+          out.println("    if (refreshCount > 30)");
+          out.println("    {");
+          out.println("      window.location.href=\"CertifyServlet\"");
+          out.println("    }");
+          out.println("    else");
+          out.println("    {");
+          out.println("      setTimeout('checkRefresh()', 1000);");
+          out.println("    }");
+          out.println("  }");
+          out.println("  checkRefresh(); ");
+          out.println("</script>");
+        }
+
         out.println("    <h2>Test Results</h2>");
         certifyRunner.printResults(out);
         out.println("    <form action=\"CertifyServlet\" method=\"POST\">");
         out.println("      <input type=\"submit\" name=\"action\" value=\"Refresh\"/>");
         if (!canStart) {
           out.println("      <input type=\"submit\" name=\"action\" value=\"Stop\"/>");
+        }
+        if (certifyRunner.getStatus().equals(CertifyRunner.STATUS_PAUSED)) {
+          out.println("      <input type=\"submit\" name=\"action\" value=\"Continue\"/>");
         }
         out.println("    </form>");
       }
@@ -167,6 +197,12 @@ public class CertifyServlet extends ClientServlet
         out.println("            <input type=\"radio\" name=\"queryType\" value=\"Q\"> QBP");
         out.println("            <input type=\"radio\" name=\"queryType\" value=\"V\"> VXQ");
         out.println("            <input type=\"radio\" name=\"queryType\" value=\"N\"> None");
+        out.println("          </td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td></td>");
+        out.println("          <td>");
+        out.println("            <input type=\"checkbox\" name=\"pauseBeforeQuerying\" value=\"true\" checked=\"true\"/> Pause Before Querying");
         out.println("          </td>");
         out.println("        </tr>");
         out.println("        <tr>");

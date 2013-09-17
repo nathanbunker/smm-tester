@@ -1,0 +1,18 @@
+MSH|^~\&|RPMS|91116|||20130913073500||VXU^V04^VXU_V04|A1.7.859.2|P|2.5.1|
+PID|1||A1.7^^^OIS-TEST^MR||Rockcastle^Corowa^Marsha^^^^L||20090905|F||2106-3^White^HL70005|^^^^^^||^PRN^PH^^^586^4069956|||||||||2186-5^not Hispanic or Latino^CDCREC|
+ORC|RE||W61R7.1^OIS|
+RXA|0|1|20100912|20100912|03^MMR^CVX|0.25|mL^milliliters^UCUM||00^Administered^NIP001||||||P3400YX||MSD^Merck and Co^MVX||||A|
+RXR|SC^^HL70162|LA^^HL70163|
+OBX|1|CE|64994-7^Vaccine funding program eligibility category^LN|1|V05^VFC eligible - Federally Qualified Health Center Patient (under-insured)^HL70064||||||F|||20130913|||VXC40^Eligibility captured at the immunization level^CDCPHINVS|
+OBX|2|CE|30956-7^Vaccine Type^LN|2|03^MMR^CVX||||||F|
+OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20120420||||||F|
+OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20100912||||||F|
+ORC|RE||W61R7.2^OIS|
+RXA|0|1|20110407|20110407|141^Influenza^CVX|999|||01^Historical^NIP001||||||||||||A|
+ORC|RE||W61R7.3^OIS|
+RXA|0|1|20130913|20130913|21^Varicella^CVX|0.25|mL^milliliters^UCUM||00^Administered^NIP001||||||G3407KC||MSD^Merck and Co^MVX||||A|
+RXR|SC^^HL70162|LA^^HL70163|
+OBX|1|CE|64994-7^Vaccine funding program eligibility category^LN|1|V05^VFC eligible - Federally Qualified Health Center Patient (under-insured)^HL70064||||||F|||20130913|||VXC40^Eligibility captured at the immunization level^CDCPHINVS|
+OBX|2|CE|30956-7^Vaccine Type^LN|2|21^Varicella^CVX||||||F|
+OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20080313||||||F|
+OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20130913||||||F|

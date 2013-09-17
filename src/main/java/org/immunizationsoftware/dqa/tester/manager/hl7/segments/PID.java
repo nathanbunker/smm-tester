@@ -409,7 +409,7 @@ public class PID extends HL7Component
     setChild(9, patientAlias = new XPN("Patient Alias", UsageType.X));
     setChild(10, race = new CE("Race", UsageType.RE, Cardinality.ZERO_OR_MORE, ValueSet.HL70005));
     setChild(11, patientAddress = new XAD("Patient Address", UsageType.RE, Cardinality.ZERO_OR_MORE));
-    patientAddress.getAddressType().addConformanceStatement(new ExactValue("The primary mailing address must be sent first in the sequence (for backward compatibility)", new String[] {"M", "L"}));
+    patientAddress.getAddressType().addConformanceStatement(new ExactValue("The primary mailing address must be sent first in the sequence (for backward compatibility)", new String[] {"M", "L", "P"}));
     setChild(12, countyCode = new IS("County Code", UsageType.X));
     setChild(13, phoneNumberHome = new XTN("Phone Number Home", UsageType.RE, Cardinality.ZERO_OR_MORE));
     phoneNumberHome.getTelecommunicationUseCode().addConformanceStatement(

@@ -41,8 +41,37 @@ import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.XCN;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.XON;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.XPN;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.XTN;
+import org.immunizationsoftware.dqa.tester.manager.hl7.messages.ACK;
+import org.immunizationsoftware.dqa.tester.manager.hl7.messages.RSP;
 import org.immunizationsoftware.dqa.tester.manager.hl7.messages.VXU;
-import org.immunizationsoftware.dqa.tester.manager.hl7.segments.*;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.BHS;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.BTS;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.ERR;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.EVN;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.FHS;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.FTS;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.GT1;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.IN1;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.IN2;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.IN3;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.MSA;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.MSH;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.NK1;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.NTE;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.OBX;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.ORC;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.PD1;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.PID;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.PV1;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.PV2;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.QAK;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.QPD;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.RCP;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.RXA;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.RXR;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.SFT;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.TQ1;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.TQ2;
 
 public class HL7ComponentManager
 {
@@ -52,11 +81,41 @@ public class HL7ComponentManager
     init();
     return componentList;
   }
+  
+  public static HL7Component getComponent(String componentCode)
+  {
+    init();
+    for (HL7Component hl7Component : componentList)
+    {
+      if (hl7Component.getComponentCode().equals(componentCode))
+      {
+        return hl7Component;
+      }
+    }
+    return null;
+  }
+  
+  public static int getComponentPosition(HL7Component hl7Component)
+  {
+    init();
+    for (int i = 0; i < componentList.size(); i++)
+    {
+      if (hl7Component == componentList.get(i))
+      {
+        return i;
+      }
+    }
+    return 0;
+  }
+  
 
   public static void init() {
     if (componentList == null) {
       componentList = new ArrayList<HL7Component>();
       // Messages
+      componentList.add(new ACK());
+      componentList.add(new RSP());
+      componentList.add(new RSP(true));
       componentList.add(new VXU());
       // Segments
       componentList.add(new BHS(UsageType.R, Cardinality.ONE_TIME_ONLY));

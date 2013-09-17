@@ -65,6 +65,9 @@ public class Transformer
 
   private static final String CLEAN = "clean";
   private static final String CLEAN_NO_LAST_SLASH = "no last slash";
+  private static final String FIX = "fix";
+  private static final String FIX_AMPERSAND = "ampersand";
+  private static final String FIX_ESCAPE = "escape";
 
   private static final int VACCINE_CVX = 0;
   private static final int VACCINE_NAME = 1;
@@ -469,7 +472,7 @@ public class Transformer
           quickTransforms += "MSH-9.1=VXU\n";
           quickTransforms += "MSH-9.2=V04\n";
           quickTransforms += "MSH-9.3=VXU_V04\n";
-          quickTransforms += "MSH-10=" + actualTestCase + "." + System.currentTimeMillis() + "\n";
+          quickTransforms += "MSH-10=" + actualTestCase + "." + (System.currentTimeMillis() % 10000) + "\n";
           quickTransforms += "MSH-11=P\n";
           quickTransforms += "MSH-12=2.5.1\n";
           quickTransforms += "PID-1=1\n";
@@ -796,6 +799,37 @@ public class Transformer
                 }
               }
             }
+          } else if (line.toLowerCase().trim().startsWith(FIX)) {
+            if (resultText.length() > 9) {
+              if (line.toLowerCase().indexOf(FIX_ESCAPE) > 0) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < resultText.length(); i++) {
+                  char c = resultText.charAt(i);
+                  if (i < 8 || c != '\\') {
+                    sb.append(c);
+                  } else {
+                    if ((i + 2) >= resultText.length() || resultText.charAt(i + 2) != '\\') {
+                      sb.append("\\E\\");
+                    } else {
+                      sb.append(c);
+                    }
+                  }
+                }
+                resultText = sb.toString();
+              }
+              if (line.toLowerCase().indexOf(FIX_AMPERSAND) > 0) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < resultText.length(); i++) {
+                  char c = resultText.charAt(i);
+                  if (i < 8 || c != '&') {
+                    sb.append(c);
+                  } else {
+                    sb.append("\\T\\");
+                  }
+                }
+                resultText = sb.toString();
+              }
+            }
           } else if (line.toLowerCase().trim().startsWith(CLEAN)) {
             boolean noLastSlash = line.toLowerCase().indexOf(CLEAN_NO_LAST_SLASH) != -1;
             BufferedReader inResult = new BufferedReader(new StringReader(resultText));
@@ -859,13 +893,11 @@ public class Transformer
                   }
                 }
                 if (noLastSlash) {
-                resultText += finalLine + "\r";
-                }
-                else 
-                {
+                  resultText += finalLine + "\r";
+                } else {
                   resultText += finalLine + "|\r";
                 }
-              
+
                 if (headerStart != null) {
                   resultText = headerStart + resultText;
                 }
