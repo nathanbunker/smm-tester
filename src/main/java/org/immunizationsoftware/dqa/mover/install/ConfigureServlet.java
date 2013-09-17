@@ -186,7 +186,7 @@ public class ConfigureServlet extends ClientServlet
             + "BTS-1=1\n" + "FTS-2=CR\n" + "BTS-2=CR\n" + "FHS-4=[USERID]\n" + "BHS-4=[USERID]\n");
       } else if (templateName.equals(TEMPLATE_ASIIS_PROD) || templateName.equals(TEMPLATE_ASIIS_TEST)) {
         HttpConnector httpConnector = (HttpConnector) connector;
-        httpConnector.setCustomTransformations("MSH-3=RPMS\n" + "MSH-4=[FACILITYID]\n" + "PV1-10=\n");
+        httpConnector.setCustomTransformations("MSH-3=RPMS\n" + "MSH-4=[FACILITYID]\n" + "PV1-10=\n" + "fix ampersand\n");
       } else if (templateName.equals(TEMPLATE_NV_WEBIZ_TESTING) || templateName.equals(TEMPLATE_NV_WEBIZ_PRODUCTION)) {
         HttpConnector httpConnector = (HttpConnector) connector;
         httpConnector.stripXML();
