@@ -366,7 +366,7 @@ public class RSP extends HL7Component
       setChild(3, nk1 = new NK1(UsageType.RE, Cardinality.ZERO_OR_MORE));
       setChild(4, pv1 = new PV1(UsageType.O, Cardinality.ZERO_OR_ONE));
       setChild(5, in1 = new IN1(UsageType.O, Cardinality.ZERO_OR_ONE));
-      setChild(6, orderGroup = new OrderGroup(UsageType.R, Cardinality.ZERO_OR_MORE));
+      setChild(6, orderGroup = new OrderGroup(UsageType.RE, Cardinality.ZERO_OR_MORE));
     }
 
     public class OrderGroup extends HL7Component
@@ -446,7 +446,7 @@ public class RSP extends HL7Component
         setChild(2, tq1 = new TQ1(UsageType.O, Cardinality.ZERO_OR_ONE));
         setChild(3, tq2 = new TQ2(UsageType.O, Cardinality.ZERO_OR_ONE));
         setChild(4, rxa = new RXA(UsageType.R, Cardinality.ONE_TIME_ONLY));
-        setChild(5, rxr = new RXR(UsageType.R, Cardinality.ZERO_OR_ONE));
+        setChild(5, rxr = new RXR(UsageType.RE, Cardinality.ZERO_OR_ONE));
         setChild(6, observationGroup = new ObservationGroup(UsageType.RE, Cardinality.ZERO_OR_MORE));
       }
 

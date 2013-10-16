@@ -17,5 +17,14 @@ public class IsNotValuedAs extends ConditionalPredicate
   public boolean isMet() {
     return component.getValue() == null || !component.getValue().equalsIgnoreCase(value);
   }
+  
+  @Override
+  public String printDocument() {
+    if (component != null) {
+      return "If " + component.getComponentReferenceShort() + " is not valued as \"" + value + "\"";
+    }
+    return "";
+  }
+
 
 }

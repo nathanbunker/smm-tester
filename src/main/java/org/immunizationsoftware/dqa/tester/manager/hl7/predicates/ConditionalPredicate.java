@@ -33,4 +33,6 @@ public abstract class ConditionalPredicate
   }
   
   public abstract boolean isMet();
+  
+  public abstract String printDocument();
 }

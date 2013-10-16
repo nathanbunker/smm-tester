@@ -161,7 +161,7 @@ public class QPD extends HL7Component
     messageQueryName.getIdentifier().addConformanceStatement(new ExactValue("The only value supported", "Z34"));
     setChild(2, queryTag = new ST("Query Tag", UsageType.R));
     queryTag.setLength(0, 32);
-    setChild(3, patientList = new CX("Patient List", UsageType.RE));
+    setChild(3, patientList = new CX("Patient List", UsageType.RE, Cardinality.ZERO_OR_MORE));
     setChild(4, patientName = new XPN("Patient Name", UsageType.RE));
     setChild(5, patientMotherMaidenName = new XPN("Patient Mother Maiden Name", UsageType.RE));
     setChild(6, patientDateOfBirth = new TS("Patient Date of Birth", UsageType.RE));

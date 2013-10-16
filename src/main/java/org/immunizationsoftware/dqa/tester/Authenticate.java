@@ -157,8 +157,8 @@ public class Authenticate {
             addUser("Banana", "TpN6s7tkSqSA68y", "Jennifer Wain", "jua7@cdc.gov", true);
             addUser("Blackberry", "RI12y21m9a3616g", "Stuart Myerburg", "jyz0@cdc.gov", true);
             addUser("Breadfruit", "RI12y21m9a3616g", "Cecile Town", "Cecile.Town@ihs.gov", true);
-            addUser("Cherry", "411461FE814r2QN");
-            addUser("Coconut", "U7F3Dfu1jt224Wq");
+            addUser("Cherry", "411461FE814r2QN", "Gerry Bragg", "BraggG1@michigan.gov");
+            addUser("Coconut", "U7F3Dfu1jt224Wq", "David Willhite", "willhited@michigan.gov");
             addUser("Coffee", "Q3Ay6c74KxM6Ch4", "Kevin Samuelson", "kevin.samuelson@hp.com");
             addUser("Custard", "Ww7xUvc3b574rFu");
             addUser("Date", "bx735h6S6y658rm");
@@ -168,10 +168,10 @@ public class Authenticate {
             addUser("Gooseberry", "1i2E81q2Ff5K66v", "Joel Freborg", "Joel.Freborg@bcbsnd.com");
             addUser("Grape", "5w005eeg707388P");
             addUser("Guava", "72F3NJym543TL6r");
-            addUser("Jackfruit", "13vG71f41233S7q", "Harshal Patel", "Harshal.Patel@odh.ohio.gov");
-            addUser("Jujube", "rqK275tcM2Cfi6w", "Raveendra Mudunri", "Raveendra.Mudunuri@odh.ohio.gov");
-            addUser("Kiwifruit", "d4UGV51c4POgt1l", "Mayara Joshi", "Mayura.Joshi@odh.ohio.gov");
-            addUser("Longan", "26Cau26Rd7DcUSb", "Shashi Kuppa", "Shashidhar.Kuppa@odh.ohio.gov");
+            addUser("Jackfruit", "13vG71f41233S7q");
+            addUser("Jujube", "rqK275tcM2Cfi6w");
+            addUser("Kiwifruit", "d4UGV51c4POgt1l");
+            addUser("Longan", "26Cau26Rd7DcUSb");
             addUser("Lychee", "26Cau26Rd7DcUSb");
             addUser("Mafai", "LU0Z23LJlqW1bQR", "Nathan Bunker", "Nathan.Bunker@gmail.com", true);
             addUser("Mango", "6Y847F1EL2W55fr", "Tony Mack", "tmack1@health.nyc.gov");
@@ -186,7 +186,7 @@ public class Authenticate {
             addUser("Plum", "2M7632L8Df011GQ", "Rob Savage", "hzv3@cdc.gov", true);
             addUser("Pomegranate", "aGWBac39r113uYB");
             addUser("Pomelo", "mR5nOH16HwQSW6e");
-            addUser("Rambutan", "m62w2K9D73w9g6z", "Chicago Training", ""); // http://ois-pt.org/tester/LoginServlet?username=Rambutan&password=m62w2K9D73w9g6z&action=Login
+            addUser("Rambutan", "m62w2K9D73w9g6z");
             addUser("Raspberry", "A432p3tPo17IcFr");
             addUser("Currant", "Rk1452294qXcv71");
             addUser("Rose", "CqOvK7VKxqHCM4n");
@@ -198,6 +198,7 @@ public class Authenticate {
             addUser("Tamarind", "IPkURqU7erHyEgW");
             addUser("Tangerine", "KrFJCE6uO974A80");
             addUser("Watermelon", "M7g1ZG29473v83W");
+
         }
     }
 

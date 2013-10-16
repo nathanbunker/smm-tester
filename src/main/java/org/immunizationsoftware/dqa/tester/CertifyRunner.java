@@ -1263,6 +1263,19 @@ public class CertifyRunner extends Thread
     {
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+      testCaseMessage.appendCustomTransformation("RXA-5.2=This is a very long description for a vaccine, that normally you shouldn't expect to see, but since this field should not be read by the receiver it should cause no problem, furthermore HL7 allows this field to have up to 999 characters, which should not cause a problem to the receiver. Also this tests to verify that the receiver is not trying to verify the text of the vaccine. ");
+      testCaseMessage.setDescription("Tolerance Check: Message includes description for vaccine that is extremely long");
+      testCaseMessage.setTestCaseSet(testCaseSet);
+      testCaseMessage.setTestCaseNumber("E1." + count);
+      statusCheckTestCaseExceptionalList.add(testCaseMessage);
+      transformer.transform(testCaseMessage);
+      testCaseMessage.setAssertResult("Accept - *");
+      register(testCaseMessage);
+    }
+
+    {
+      count++;
+      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.appendOriginalMessage("YES|This|is|a|segment^you^should^never^see|in|production\n");
       testCaseMessage.setDescription("Tolerance Check: Message includes segment not defined by HL7");
       testCaseMessage.setTestCaseSet(testCaseSet);
