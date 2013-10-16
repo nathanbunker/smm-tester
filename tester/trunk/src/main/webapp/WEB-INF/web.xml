@@ -35,6 +35,10 @@
     <servlet-class>org.immunizationsoftware.dqa.tester.CertifyServlet</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>DocumentServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.tester.DocumentServlet</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>ConformanceServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.tester.ConformanceServlet</servlet-class>
   </servlet>
@@ -113,6 +117,10 @@
   <servlet-mapping>
     <servlet-name>CertifyServlet</servlet-name>
     <url-pattern>/CertifyServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>DocumentServlet</servlet-name>
+    <url-pattern>/DocumentServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>ConformanceServlet</servlet-name>

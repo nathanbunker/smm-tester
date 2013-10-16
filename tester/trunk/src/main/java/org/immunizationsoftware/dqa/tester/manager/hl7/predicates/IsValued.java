@@ -26,5 +26,14 @@ public class IsValued extends ConditionalPredicate
   public boolean isMet() {
     return component.getValue() != null && !component.getValue().equals("");
   }
+  
+  @Override
+  public String printDocument() {
+    if (component != null) {
+      return "If " + component.getComponentReferenceShort() + " is valued";
+    }
+    return "";
+  }
+
 
 }

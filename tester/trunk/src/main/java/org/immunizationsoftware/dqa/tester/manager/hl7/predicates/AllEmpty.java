@@ -22,4 +22,27 @@ public class AllEmpty extends ConditionalPredicate
     }
     return true;
   }
+
+  @Override
+  public String printDocument() {
+    if (components == null || components.length == 0) {
+      return "";
+    } else if (components.length == 1) {
+      return "If " + components[0].getComponentReferenceShort() + " is not valued";
+    } else {
+      StringBuilder sb = new StringBuilder();
+      sb.append("If ");
+      boolean first = true;
+      for (HL7Component c : components) {
+        if (!first) {
+          sb.append(" and ");
+        }
+        first = false;
+        sb.append(c.getComponentNameSpecific());
+
+      }
+      sb.append(" are not valued");
+    }
+    return "";
+  }
 }

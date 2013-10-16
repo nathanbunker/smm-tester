@@ -173,6 +173,15 @@ public abstract class HL7Component
   protected HL7FormatAnalyzer formatAnalyzer = null;
   private List<ConformanceIssue> conformanceIssueList = null;
   private boolean hasNoErrors = true;
+  private String comments = "";
+
+  public String getComments() {
+    return comments;
+  }
+
+  public void setComments(String comments) {
+    this.comments = comments;
+  }
 
   public boolean isEmpty() {
     return empty;
@@ -550,6 +559,12 @@ public abstract class HL7Component
       errorLocation = new ERL();
       errorLocation.getSegmentID().setValue(componentCode);
       errorLocation.getSegmentSequence().setValue("1");
+    }
+    text = text.trim();
+    if (text.trim().endsWith("<CR>"))
+    {
+      text = text.trim();
+      text = text.substring(0, text.length() - 4 ).trim();
     }
     this.rawTextReceived = text;
     this.value = text;
@@ -1304,6 +1319,35 @@ public abstract class HL7Component
       return itemType + " " + componentNameGeneric;
     }
     return itemType + " " + componentNameGeneric;
+  }
+  
+  public String getComponentReferenceShort()
+  {
+    if (itemType == ItemType.MESSAGE) {
+      return componentCode;
+    } else if (itemType == ItemType.MESSAGE_PART) {
+      if (parentComponent == null)
+      {
+        return "";
+      }
+      return parentComponent.getComponentReferenceShort();
+    } else if (itemType == ItemType.SEGMENT) {
+      return componentCode;
+    } else if (itemType == ItemType.DATATYPE) {
+      if (parentComponent == null)
+      {
+        return componentCode;
+      }
+      if (parentComponent.getItemType() == ItemType.SEGMENT)
+      {
+        return parentComponent.componentCode + "-" + sequence;
+      }
+      else
+      {
+        return parentComponent.getComponentReferenceShort() + "." + sequence;
+      }
+    }
+    return componentCode;
   }
 
   public void printValues(PrintStream out) {

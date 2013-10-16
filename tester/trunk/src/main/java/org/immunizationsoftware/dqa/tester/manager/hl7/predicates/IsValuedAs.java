@@ -45,4 +45,25 @@ public class IsValuedAs extends ConditionalPredicate
     return false;
   }
 
+  @Override
+  public String printDocument() {
+    if (values != null && values.length > 0 && component != null) {
+      if (values.length == 1) {
+        return "If " + component.getComponentReferenceShort() + " is not valued as \"" + values[0] + "\"";
+      }
+      StringBuilder sb = new StringBuilder();
+      sb.append("If " + component.getComponentReferenceShort() + " is not valued as ");
+      boolean first = true;
+      for (String value : values) {
+        if (!first) {
+          sb.append(" or ");
+        }
+        first = false;
+        sb.append("\"" + value + "\"");
+      }
+      return sb.toString();
+    }
+    return "";
+  }
+
 }
