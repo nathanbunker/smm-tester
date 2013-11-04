@@ -117,6 +117,16 @@ public class TestCaseMessageViewerServlet extends ClientServlet
       out.println("<p>The following custom transformations applied to original message:</p>");
       out.println("<pre>" + testCaseMessage.getCustomTransformations() + "</pre>");
     }
+    if (testCaseMessage.getCauseIssues() != null && !testCaseMessage.getCauseIssues().equals(""))
+    {
+      out.println("<p>The following issues were introduced in to this message:</p>");
+      out.println("<pre>" + testCaseMessage.getCauseIssues() + "</pre>");
+    }
+    if (testCaseMessage.getCauseIssueTransforms() != null && !testCaseMessage.getCauseIssueTransforms().equals(""))
+    {
+      out.println("<p>The issues above resulted in these transformations:</p>");
+      out.println("<pre>" + testCaseMessage.getCauseIssueTransforms() + "</pre>");
+    }
     out.println("<h3>Request</h3>");
     out.println("<p>This is the base text for the request. No local transformations have been applied.</p>");
     out.println("<pre>" + testCaseMessage.getMessageText() + "</pre>");

@@ -165,6 +165,7 @@ public class HL7DateAnalyzer extends HL7FormatAnalyzer
         if (i != -1) {
           timezone = Integer.parseInt(time.substring(i + 1));
           time = time.substring(0, i);
+          hasTimezone = true;
         }
         if (timezone > 2400 || timezone < -2400) {
           errorMessageList.add("Time zone is not within the range of 2400 to -2400");

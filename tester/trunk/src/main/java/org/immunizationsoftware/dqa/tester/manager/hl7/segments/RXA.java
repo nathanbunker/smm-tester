@@ -314,17 +314,17 @@ public class RXA extends HL7Component
     substanceManufacturerName.setConditionalPredicate(new IsValuedAs(administrationNotes.getIdentifier(), "00",
         UsageType.R, UsageType.O));
     setChild(18, substanceTreatmentRefusalReason = new CE("Substance Treatment Refusal Reason", UsageType.C,
-        Cardinality.ZERO_OR_MORE, ValueSet.MVX));
+        Cardinality.ZERO_OR_MORE, ValueSet.NIP002));
     setChild(19, indication = new CE("Indication", UsageType.O));
     setChild(20,
         completionStatus = new ID("Completion Status", UsageType.RE, Cardinality.ZERO_OR_ONE, ValueSet.HL70322));
     completionStatus.setLengthMax(2);
-    substanceTreatmentRefusalReason.setConditionalPredicate(new IsValuedAs(completionStatus, "00", UsageType.R,
+    substanceTreatmentRefusalReason.setConditionalPredicate(new IsValuedAs(completionStatus, "RE", UsageType.R,
         UsageType.X));
     ExactValue exactValue = new ExactValue(
         "IZ-32 If the RXA-18 (Refusal Reason) is populated, this field shall be valued to \"RE\"", "RE");
     exactValue.setConditionalPredicate(new IsValued(substanceTreatmentRefusalReason));
-    substanceTreatmentRefusalReason.addConformanceStatement(exactValue);
+    completionStatus.addConformanceStatement(exactValue);
     administrationNotes.setConditionalPredicate(new IsValuedAs(completionStatus, new String[] { "CP", "PA" },
         UsageType.R, UsageType.O));
     setChild(21, actionCodeRXA = new ID("Action Code - RXA", UsageType.RE, Cardinality.ZERO_OR_ONE, ValueSet.HL70323));

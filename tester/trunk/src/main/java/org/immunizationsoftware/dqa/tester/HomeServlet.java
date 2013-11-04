@@ -34,21 +34,18 @@ public class HomeServlet extends ClientServlet
    * @throws IOException
    *           if an I/O error occurs
    */
-  protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-  {
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException,
+      IOException {
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
 
     PrintWriter out = response.getWriter();
-    try
-    {
+    try {
       printHtmlHead(out, MENU_HEADER_HOME, request);
-      if (username == null)
-      {
+      if (username == null) {
         out.println("<h1>Immunization Registry Tester &amp; Simple Message Mover</h1>");
-      } else
-      {
+      } else {
         out.println("<h2>Primary Test Functions</h2>");
         out.println("<table border=\"1\" cellspacing=\"0\">");
         out.println("  <tr>");
@@ -83,8 +80,7 @@ public class HomeServlet extends ClientServlet
         out.println("    <td>Send multiple messages to an IIS to verify it's ability to handle many different requests at the same time. </td>");
         out.println("  </tr>");
         Authenticate.User user = (Authenticate.User) session.getAttribute("user");
-        if (user.hasSendData())
-        {
+        if (user.hasSendData()) {
           out.println("  <tr>");
           out.println("    <td><a href=\"InstallCertServlet\">Install Cert</a></td>");
           out.println("    <td>Install certificate for use on a particular connection.</td>");
@@ -110,12 +106,17 @@ public class HomeServlet extends ClientServlet
         out.println("    <td><a href=\"interfaceProfile\">Profile Interface</a></td>");
         out.println("    <td>This is a deprecated function that is now covered by the Test IIS. </td>");
         out.println("  </tr>");
+        if (user.isAdmin()) {
+          out.println("  <tr>");
+          out.println("    <td><a href=\"CertifyHistoryServlet\">Test IIS Results</a></td>");
+          out.println("    <td>Review previously run Test IIS reports.</td>");
+          out.println("  </tr>");
+        }
         out.println("</table>");
       }
       printHtmlFoot(out);
 
-    } finally
-    {
+    } finally {
       out.close();
     }
   }
@@ -136,8 +137,7 @@ public class HomeServlet extends ClientServlet
    *           if an I/O error occurs
    */
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-  {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     processRequest(request, response);
   }
 
@@ -154,8 +154,7 @@ public class HomeServlet extends ClientServlet
    *           if an I/O error occurs
    */
   @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-  {
+  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     processRequest(request, response);
   }
 
@@ -165,8 +164,7 @@ public class HomeServlet extends ClientServlet
    * @return a String containing servlet description
    */
   @Override
-  public String getServletInfo()
-  {
+  public String getServletInfo() {
     return "DQA Tester Home Page";
   }// </editor-fold>
 }

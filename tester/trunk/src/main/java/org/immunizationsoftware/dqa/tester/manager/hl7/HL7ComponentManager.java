@@ -115,7 +115,7 @@ public class HL7ComponentManager
       // Messages
       componentList.add(new ACK());
       componentList.add(new RSP());
-      componentList.add(new RSP(true));
+      // componentList.add(new RSP(true));
       componentList.add(new VXU());
       // Segments
       componentList.add(new BHS(UsageType.R, Cardinality.ONE_TIME_ONLY));

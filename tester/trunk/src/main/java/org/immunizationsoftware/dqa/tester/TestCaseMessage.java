@@ -219,6 +219,7 @@ public class TestCaseMessage
   private String[] quickTransformations = new String[] {};
   private String quickTransformationsConverted = "";
   private String customTransformations = "";
+  private String causeIssueTransforms = "";
   private String causeIssues = "";
   private List<Comment> comments = new ArrayList<Comment>();
   private String actualResultStatus = "";
@@ -237,6 +238,23 @@ public class TestCaseMessage
   private boolean majorChangesMade = false;
   private boolean hasRun = false;
   private int testCaseId = 0;
+  private boolean resultNotExpectedToConform = false;
+
+  public boolean isResultNotExpectedToConform() {
+    return resultNotExpectedToConform;
+  }
+
+  public String getCauseIssueTransforms() {
+    return causeIssueTransforms;
+  }
+
+  public void setCauseIssueTransforms(String causeIssueTransforms) {
+    this.causeIssueTransforms = causeIssueTransforms;
+  }
+
+  public void setResultNotExpectedToConform(boolean resultNotExpectedToConform) {
+    this.resultNotExpectedToConform = resultNotExpectedToConform;
+  }
 
   public boolean isAccepted() {
     return accepted;
@@ -368,6 +386,7 @@ public class TestCaseMessage
     System.arraycopy(copy.quickTransformations, 0, this.quickTransformations, 0, copy.quickTransformations.length);
     this.quickTransformationsConverted = copy.quickTransformationsConverted;
     this.customTransformations = copy.customTransformations;
+    this.causeIssueTransforms = copy.causeIssueTransforms;
     this.causeIssues = copy.causeIssues;
     this.comments = new ArrayList<Comment>(copy.comments);
     this.actualResultStatus = copy.actualResultStatus;
