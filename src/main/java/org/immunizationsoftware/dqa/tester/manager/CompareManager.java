@@ -2,9 +2,13 @@ package org.immunizationsoftware.dqa.tester.manager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import org.eclipse.jetty.server.session.HashSessionIdManager;
 
 public class CompareManager
 {
@@ -23,6 +27,11 @@ public class CompareManager
     private Boolean tested = null;
 
     private Map<String, String> equivalents = new HashMap<String, String>();
+    private Set<String> allowedValuesMask = new HashSet<String>();
+
+    public void registerAllowedValueMask(String s) {
+      allowedValuesMask.add(s);
+    }
 
     public void registerEquivelant(String s1, String s2) {
       equivalents.put(s1.toUpperCase(), s2);
@@ -83,12 +92,24 @@ public class CompareManager
               if (otherValue != null && originalValue.equals(otherValue)) {
                 pass = true;
               } else {
-                pass = false;
+                if (!allowedValuesMask.contains(originalValue) && otherValue.equals("")) {
+                  // if original value is non standard then don't expect the
+                  // non-standard value to come back
+                  pass = true;
+                } else {
+                  pass = false;
+                }
               }
             }
           }
         } else {
-          pass = originalValue != null && returnedValue != null && originalValue.equalsIgnoreCase(returnedValue);
+          if (returnedValue.equals("") && !allowedValuesMask.contains(originalValue)) {
+            // if original value is non standard then don't expect the
+            // non-standard value to come back
+            pass = true;
+          } else {
+            pass = originalValue != null && returnedValue != null && originalValue.equalsIgnoreCase(returnedValue);
+          }
         }
       }
       return pass;
@@ -267,7 +288,17 @@ public class CompareManager
     comparison.registerEquivelant("I", "1002-5");
     comparison.registerEquivelant("B", "2054-5");
     comparison.registerEquivelant("W", "2106-3");
-    comparison.registerEquivelant("U", "");
+    comparison.registerEquivelant("U", "2131-1");
+    comparison.registerAllowedValueMask("1002-5");
+    comparison.registerAllowedValueMask("2028-9");
+    comparison.registerAllowedValueMask("2076-8");
+    comparison.registerAllowedValueMask("2054-5");
+    comparison.registerAllowedValueMask("2106-3");
+    comparison.registerAllowedValueMask("2131-1");
+    comparison.registerAllowedValueMask("I");
+    comparison.registerAllowedValueMask("B");
+    comparison.registerAllowedValueMask("W");
+    comparison.registerAllowedValueMask("U");
     comparisonList.add(comparison);
 
     comparison = new Comparison();

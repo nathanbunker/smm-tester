@@ -1,8 +1,16 @@
 package org.immunizationsoftware.dqa.tester;
 
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_1_R_ADMIN_CHILD;
+import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_1_R_ADMIN_FOUR_YEARS_OLD;
+import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_1_R_ADMIN_TWELVE_YEARS_OLD;
+import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_1_R_ADMIN_TWO_MONTHS_OLD;
+import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_1_R_ADMIN_TWO_YEARS_OLD;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_2_R_ADMIN_ADULT;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_3_R_HISTORICAL_CHILD;
+import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_3_R_HISTORICAL_FOUR_YEARS_OLD;
+import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_3_R_HISTORICAL_TWELVE_YEARS_OLD;
+import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_3_R_HISTORICAL_TWO_MONTHS_OLD;
+import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_3_R_HISTORICAL_TWO_YEARS_OLD;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_4_R_CONSENTED_CHILD;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_5_R_REFUSED_TODDLER;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_6_R_VARICELLA_HISTORY_CHILD;
@@ -22,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -32,11 +41,7 @@ import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
 import org.immunizationsoftware.dqa.tester.manager.ScenarioManager;
-import org.immunizationsoftware.dqa.tester.manager.hl7.ConformanceIssue;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
-import org.immunizationsoftware.dqa.tester.manager.hl7.messages.ACK;
-import org.immunizationsoftware.dqa.tester.manager.hl7.messages.RSP;
-import org.immunizationsoftware.dqa.tester.manager.hl7.scenario.SpecialConformanceChecker;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 import org.immunizationsoftware.dqa.tester.transform.Issue;
 
@@ -62,6 +67,8 @@ public class CertifyRunner extends Thread
   private boolean runC = false;
   private boolean runD = false;
   private boolean runF = false;
+  
+  private Map<String, PrintWriter> exampleOutSet = new HashMap<String, PrintWriter>();
 
   public boolean isRunB() {
     return runB;
@@ -163,6 +170,7 @@ public class CertifyRunner extends Thread
   private String queryType = "";
   private boolean willQuery = false;
   private boolean pauseBeforeQuerying = false;
+  private String uniqueMRNBase = "";
 
   public boolean isPauseBeforeQuerying() {
     return pauseBeforeQuerying;
@@ -227,11 +235,16 @@ public class CertifyRunner extends Thread
     statusMessageList.add(sdf.format(new Date()) + " IIS Tester Initialized");
   }
 
+  private static int uniqueMRNBaseInc = 0;
+
+  private SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
   @Override
   public void run() {
-    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+    
     status = STATUS_STARTED;
     try {
+
+      uniqueMRNBase = "" + System.currentTimeMillis() % 100000 + (uniqueMRNBaseInc++) + "-";
       willQuery = queryType != null && (queryType.equals(QUERY_TYPE_QBP) || queryType.equals(QUERY_TYPE_VXQ));
 
       testStarted = new Date();
@@ -246,7 +259,7 @@ public class CertifyRunner extends Thread
 
       statusMessageList.add(sdf.format(new Date()) + " Sending basic messages");
       updateBasic();
-      printReportToFile(sdf);
+      printReportToFile();
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
@@ -258,40 +271,41 @@ public class CertifyRunner extends Thread
 
         statusMessageList.add(sdf.format(new Date()) + " Sending intermediate messages");
         updateIntermediate();
-        printReportToFile(sdf);
+        printReportToFile();
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
         }
 
-        if (runC) {
-          if (testCaseMessageBase != null) {
-            Map<Integer, List<Issue>> issueMap = new HashMap<Integer, List<Issue>>();
+      }
+      if (runC) {
+        if (testCaseMessageBase != null) {
+          Map<Integer, List<Issue>> issueMap = new HashMap<Integer, List<Issue>>();
 
-            statusMessageList.add(sdf.format(new Date()) + " Preparing advanced messages");
-            prepareAdvanced(issueMap);
-            if (!keepRunning) {
-              status = STATUS_STOPPED;
-              return;
-            }
+          statusMessageList.add(sdf.format(new Date()) + " Preparing advanced messages");
+          prepareAdvanced(issueMap);
+          if (!keepRunning) {
+            status = STATUS_STOPPED;
+            return;
+          }
 
-            statusMessageList.add(sdf.format(new Date()) + " Sending advanced messages");
-            updateAdvanced(issueMap);
-            printReportToFile(sdf);
-            if (!keepRunning) {
-              status = STATUS_STOPPED;
-              return;
-            }
+          statusMessageList.add(sdf.format(new Date()) + " Sending advanced messages");
+          updateAdvanced(issueMap);
+          printReportToFile();
+          if (!keepRunning) {
+            status = STATUS_STOPPED;
+            return;
           }
         }
       }
+
       if (runD) {
         statusMessageList.add(sdf.format(new Date()) + " Preparing exceptional messages");
         prepareExceptional();
 
         statusMessageList.add(sdf.format(new Date()) + " Sending exceptional messages");
         updateExceptional();
-        printReportToFile(sdf);
+        printReportToFile();
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
@@ -313,7 +327,7 @@ public class CertifyRunner extends Thread
 
         statusMessageList.add(sdf.format(new Date()) + " Analyze format updates");
         analyzeFormatUpdates();
-        printReportToFile(sdf);
+        printReportToFile();
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
@@ -363,7 +377,7 @@ public class CertifyRunner extends Thread
 
           statusMessageList.add(sdf.format(new Date()) + " Submit query for intermediate messages");
           queryIntermediate();
-          printReportToFile(sdf);
+          printReportToFile();
           if (!keepRunning) {
             status = STATUS_STOPPED;
             return;
@@ -373,7 +387,7 @@ public class CertifyRunner extends Thread
         if (runD) {
           statusMessageList.add(sdf.format(new Date()) + " Submit query for exceptional messages");
           queryExceptional();
-          printReportToFile(sdf);
+          printReportToFile();
           if (!keepRunning) {
             status = STATUS_STOPPED;
             return;
@@ -402,7 +416,7 @@ public class CertifyRunner extends Thread
       areaFLevel3Progress = 100;
       testFinished = new Date();
 
-      printReportToFile(sdf);
+      printReportToFile();
     }
 
     catch (Throwable t) {
@@ -416,11 +430,32 @@ public class CertifyRunner extends Thread
       } else {
         statusMessageList.add(sdf.format(new Date()) + " Process stopped by user");
       }
+      for (PrintWriter exampleOut : exampleOutSet.values())
+      {
+        exampleOut.close();
+      }
       statusMessageList.add(sdf.format(new Date()) + " IIS Test Finished");
     }
   }
 
-  public void printReportToFile(SimpleDateFormat sdf) {
+  public PrintWriter setupExampleFile(String name, TestCaseMessage testCaseMessage) {
+    if (testCaseMessage != null) {
+      File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessage, session);
+      if (testCaseDir != null) {
+        statusMessageList.add(sdf.format(new Date()) + " Saving example");
+        File exampleFile = new File(testCaseDir, "Example Messages " + name + ".hl7");
+        try {
+          return new PrintWriter(exampleFile);
+        } catch (IOException ioe) {
+          ioe.printStackTrace();
+          statusMessageList.add(sdf.format(new Date()) + " Unable to write examples out: " + ioe);
+        }
+      }
+    }
+return null;
+  }
+
+  public void printReportToFile() {
     if (testCaseMessageBase != null) {
       File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessageBase, session);
       if (testCaseDir != null) {
@@ -446,7 +481,8 @@ public class CertifyRunner extends Thread
 
   private void prepareFormatUpdateAnalysis() {
     for (TestCaseMessage testCaseMessage : statusCheckTestCaseList) {
-      if (testCaseMessage.isHasRun() && testCaseMessage.getActualMessageResponseType().equals("ACK")) {
+      if (testCaseMessage.isHasRun() && testCaseMessage.getActualMessageResponseType().equals("ACK")
+          && !testCaseMessage.isResultNotExpectedToConform()) {
         ackAnalysisList.add(testCaseMessage);
       }
     }
@@ -454,7 +490,8 @@ public class CertifyRunner extends Thread
 
   private void prepareFormatQueryAnalysis() {
     for (TestCaseMessage testCaseMessage : statusCheckTestCaseList) {
-      if (testCaseMessage.isHasRun() && testCaseMessage.getActualMessageResponseType().equals("RSP")) {
+      if (testCaseMessage.isHasRun() && testCaseMessage.getActualMessageResponseType().equals("RSP")
+          && !testCaseMessage.isResultNotExpectedToConform()) {
         rspAnalysisList.add(testCaseMessage);
       }
     }
@@ -484,7 +521,6 @@ public class CertifyRunner extends Thread
   private void analyzeFormatQueries() {
     int count = 0;
     int pass = 0;
-    int passCDS = 0;
     for (TestCaseMessage testCaseMessage : rspAnalysisList) {
       count++;
       if (testCaseMessage.isHasRun()) {
@@ -497,11 +533,6 @@ public class CertifyRunner extends Thread
 
         // TODO look for query and rate
 
-        boolean okayCDS = SpecialConformanceChecker.containsForecast(comp);
-        if (okayCDS)
-        {
-          passCDS++;
-        }
         areaFLevel3Progress = makeScore(count, rspAnalysisList.size());
       }
       if (!keepRunning) {
@@ -512,7 +543,6 @@ public class CertifyRunner extends Thread
     areaFLevel2Progress = makeScore(count, rspAnalysisList.size());
     areaFLevel3Progress = makeScore(count, rspAnalysisList.size());
     areaFLevel2Score = makeScore(pass, rspAnalysisList.size());
-    areaFLevel3Score = makeScore(passCDS, rspAnalysisList.size());
   }
 
   private void updateAdvanced(Map<Integer, List<Issue>> issueMap) {
@@ -534,7 +564,7 @@ public class CertifyRunner extends Thread
           count++;
           TestCaseMessage testCaseMessage = new TestCaseMessage(testCaseMessageBase);
           testCaseMessage.setTestCaseSet(testCaseSet);
-          testCaseMessage.setTestCaseNumber("C" + priority + "." + paddWithZeros(count, 3));
+          testCaseMessage.setTestCaseNumber(uniqueMRNBase + "C" + priority + "." + paddWithZeros(count, 3));
           profileTestCaseLists[i].add(testCaseMessage);
           testCaseMessage.setDescription(issue.getName());
           testCaseMessage.addCauseIssues(issue.getName());
@@ -551,6 +581,7 @@ public class CertifyRunner extends Thread
               if (testCaseMessage.isPassedTest()) {
                 countPass++;
               }
+              printExampleMessage(testCaseMessage, "C Advanced");
             } catch (Throwable t) {
               testCaseMessage.setException(t);
             }
@@ -582,19 +613,39 @@ public class CertifyRunner extends Thread
   }
 
   private void prepareBasic() {
+    
     Transformer transformer = new Transformer();
     int count = 0;
     for (String scenario : statusCheckScenarios) {
       count++;
       TestCaseMessage testCaseMessage = createTestCaseMessage(scenario);
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("A1." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "A1." + count);
       statusCheckTestCaseBasicList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
+      String type = "A";
+      
+      
     }
 
+  }
+
+  public void printExampleMessage(TestCaseMessage testCaseMessage, String type) {
+    PrintWriter exampleOut = exampleOutSet.get(type);
+    if (exampleOut == null)
+    {
+      exampleOut = setupExampleFile(type, testCaseMessage);
+      if (exampleOut != null)
+      {
+        exampleOutSet.put(type, exampleOut);
+      }
+    }
+    if (exampleOut != null)
+    {
+      exampleOut.print(testCaseMessage.getMessageTextSent());
+    }
   }
 
   private void updateBasic() {
@@ -617,7 +668,7 @@ public class CertifyRunner extends Thread
           testCaseMessageBase = null;
         }
         testCaseMessage.setErrorList(testRunner.getErrorList());
-
+        printExampleMessage(testCaseMessage, "A Basic");
       } catch (Throwable t) {
         testCaseMessage.setException(t);
       }
@@ -661,7 +712,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Sex is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B01." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B01." + count);
       testCaseMessage.appendCustomTransformation("PID-8=" + certifyItem.getCode());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
@@ -676,7 +727,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Race is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B02." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B02." + count);
       testCaseMessage.appendCustomTransformation("PID-10=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PID-10.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-10.3=" + certifyItem.getTable());
@@ -693,7 +744,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Race is " + certifyItem.getLabel() + " (Random value from CDC full set)");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B02." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B02." + count);
       testCaseMessage.appendCustomTransformation("PID-10=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PID-10.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-10.3=" + certifyItem.getTable());
@@ -711,7 +762,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Ethnicity is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B03." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B03." + count);
       testCaseMessage.appendCustomTransformation("PID-22=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PID-22.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-22.3=" + certifyItem.getTable());
@@ -725,10 +776,16 @@ public class CertifyRunner extends Thread
     count = 0;
     for (Certify.CertifyItem certifyItem : certifyItems) {
       count++;
-      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_CHILD);
+      TestCaseMessage testCaseMessage;
+      if (count == 1) {
+        testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+      } else {
+        testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_CHILD);
+      }
+
       testCaseMessage.setDescription("Information Source is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B04." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B04." + count);
       testCaseMessage.appendCustomTransformation("RXA-9=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-9.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-9.3=" + certifyItem.getTable());
@@ -745,7 +802,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("VFC Status is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B05." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B05." + count);
       testCaseMessage.appendCustomTransformation("OBX-5=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("OBX-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("OBX-5.3=" + certifyItem.getTable());
@@ -762,7 +819,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_6_R_VARICELLA_HISTORY_CHILD);
       testCaseMessage.setDescription("History of Disease is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B06." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B06." + count);
       testCaseMessage.appendCustomTransformation("OBX-5=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("OBX-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("OBX-5.3=" + certifyItem.getTable());
@@ -779,7 +836,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Registry Status is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B07." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B07." + count);
       testCaseMessage.appendCustomTransformation("PD1-16=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PD1-17=[NOW]");
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
@@ -795,7 +852,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_5_R_REFUSED_TODDLER);
       testCaseMessage.setDescription("Refusal Reason is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B08." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B08." + count);
       testCaseMessage.appendCustomTransformation("RXA-18=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-18.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-18.3=" + certifyItem.getTable());
@@ -812,7 +869,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Relationship is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B09." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B09." + count);
       testCaseMessage.appendCustomTransformation("NK1-3.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("NK1-3.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("NK1-3.3=" + certifyItem.getTable());
@@ -822,14 +879,14 @@ public class CertifyRunner extends Thread
       register(testCaseMessage);
     }
 
-    certifyItems = certify.getCertifyItemList(Certify.FIELD_VAC_HISTORICAL);
+    certifyItems = certify.getCertifyItemList(Certify.FIELD_VAC_HISTORICAL_TWO_MONTHS);
     count = 0;
     for (Certify.CertifyItem certifyItem : certifyItems) {
       count++;
-      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_CHILD);
+      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_TWO_MONTHS_OLD);
       testCaseMessage.setDescription("Historical vaccination is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B10." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B10." + count);
       testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
@@ -839,41 +896,131 @@ public class CertifyRunner extends Thread
       register(testCaseMessage);
     }
 
-    certifyItems = certify.getCertifyItemList(Certify.FIELD_VAC_ADMIN);
-    List<Certify.CertifyItem> mvxItems = certify.getCertifyItemList(Certify.FIELD_VAC_ADMIN);
+    certifyItems = certify.getCertifyItemList(Certify.FIELD_VAC_HISTORICAL_TWO_YEARS);
     count = 0;
     for (Certify.CertifyItem certifyItem : certifyItems) {
       count++;
-      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
-      testCaseMessage.setDescription("Administered vaccination is " + certifyItem.getLabel());
+      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_TWO_YEARS_OLD);
+      testCaseMessage.setDescription("Historical vaccination is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B11." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B10." + count);
       testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
-      testCaseMessage.appendCustomTransformation("RXA-5.3=CVX");
-      Certify.CertifyItem mvxItem = null;
-      for (Certify.CertifyItem ci : mvxItems) {
-        if (ci.getCode().equalsIgnoreCase(certifyItem.getTable())) {
-          mvxItem = ci;
-          break;
-        }
-      }
-      if (mvxItem != null) {
-        testCaseMessage.appendCustomTransformation("RXA-17.1=" + certifyItem.getCode());
-        testCaseMessage.appendCustomTransformation("RXA-17.2=" + certifyItem.getLabel());
-        testCaseMessage.appendCustomTransformation("RXA-17.3=" + certifyItem.getTable());
-      } else {
-        testCaseMessage.appendCustomTransformation("RXA-17.1=");
-        testCaseMessage.appendCustomTransformation("RXA-17.2=");
-        testCaseMessage.appendCustomTransformation("RXA-17.3=");
-      }
-
+      testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
     }
 
+    certifyItems = certify.getCertifyItemList(Certify.FIELD_VAC_HISTORICAL_FOUR_YEARS);
+    count = 0;
+    for (Certify.CertifyItem certifyItem : certifyItems) {
+      count++;
+      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_FOUR_YEARS_OLD);
+      testCaseMessage.setDescription("Historical vaccination is " + certifyItem.getLabel());
+      testCaseMessage.setTestCaseSet(testCaseSet);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B10." + count);
+      testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
+      testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
+      testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
+      statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      transformer.transform(testCaseMessage);
+      testCaseMessage.setAssertResult("Accept - *");
+      register(testCaseMessage);
+    }
+
+    certifyItems = certify.getCertifyItemList(Certify.FIELD_VAC_HISTORICAL_TWELVE_YEARS);
+    count = 0;
+    for (Certify.CertifyItem certifyItem : certifyItems) {
+      count++;
+      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_TWELVE_YEARS_OLD);
+      testCaseMessage.setDescription("Historical vaccination is " + certifyItem.getLabel());
+      testCaseMessage.setTestCaseSet(testCaseSet);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B10." + count);
+      testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
+      testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
+      testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
+      statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      transformer.transform(testCaseMessage);
+      testCaseMessage.setAssertResult("Accept - *");
+      register(testCaseMessage);
+    }
+
+    String[][] adminChecks = { { "two months", Certify.FIELD_VAC_ADMIN_TWO_MONTHS, SCENARIO_1_R_ADMIN_TWO_MONTHS_OLD },
+        { "two years", Certify.FIELD_VAC_ADMIN_TWO_YEARS, SCENARIO_1_R_ADMIN_TWO_YEARS_OLD },
+        { "four years", Certify.FIELD_VAC_ADMIN_FOUR_YEARS, SCENARIO_1_R_ADMIN_FOUR_YEARS_OLD },
+        { "twelve years", Certify.FIELD_VAC_ADMIN_TWELVE_YEARS, SCENARIO_1_R_ADMIN_TWELVE_YEARS_OLD } };
+
+    List<Certify.CertifyItem> productItems = certify.getCertifyItemList(Certify.FIELD_VAC_PRODUCT);
+    List<Certify.CertifyItem> mvxItems = certify.getCertifyItemList(Certify.FIELD_MVX);
+    List<Certify.CertifyItem> cptItems = certify.getCertifyItemList(Certify.FIELD_CPT);
+    for (int i = 0; i < adminChecks.length; i++) {
+      certifyItems = certify.getCertifyItemList(adminChecks[i][1]);
+      count = 0;
+      for (Certify.CertifyItem certifyItem : certifyItems) {
+        for (Certify.CertifyItem productCi : productItems) {
+          if (productCi.getLabel().equals(certifyItem.getCode())) {
+            Certify.CertifyItem mvxItem = null;
+            for (Certify.CertifyItem ci : mvxItems) {
+              if (ci.getCode().equalsIgnoreCase(productCi.getTable())) {
+                mvxItem = ci;
+                break;
+              }
+            }
+            if (mvxItem == null) {
+              mvxItem = new Certify.CertifyItem();
+            }
+            {
+              count++;
+              TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(adminChecks[i][2]);
+              testCaseMessage.setDescription("Vaccination administered at " + adminChecks[i][0] + " of age is "
+                  + certifyItem.getLabel() + " (" + productCi.getCode() + ")");
+              testCaseMessage.setTestCaseSet(testCaseSet);
+              testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B11." + count);
+              testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
+              testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
+              testCaseMessage.appendCustomTransformation("RXA-5.3=CVX");
+              testCaseMessage.appendCustomTransformation("RXA-17.1=" + mvxItem.getCode());
+              testCaseMessage.appendCustomTransformation("RXA-17.2=" + mvxItem.getLabel());
+              testCaseMessage.appendCustomTransformation("RXA-17.3=" + mvxItem.getTable());
+
+              statusCheckTestCaseIntermediateList.add(testCaseMessage);
+              transformer.transform(testCaseMessage);
+              testCaseMessage.setAssertResult("Accept - *");
+              register(testCaseMessage);
+            }
+
+            for (Certify.CertifyItem cptCi : cptItems) {
+              if (cptCi.getTable().equals(certifyItem.getCode())) {
+                {
+                  count++;
+                  TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(adminChecks[i][2]);
+                  testCaseMessage.setDescription("Vaccination administered at " + adminChecks[i][0] + " of age is CPT "
+                      + cptCi.getLabel() + " (" + productCi.getCode() + ")");
+                  testCaseMessage.setTestCaseSet(testCaseSet);
+                  testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B11." + count);
+                  testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
+                  testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
+                  testCaseMessage.appendCustomTransformation("RXA-5.3=CVX");
+                  testCaseMessage.appendCustomTransformation("RXA-5.4=" + cptCi.getCode());
+                  testCaseMessage.appendCustomTransformation("RXA-5.5=" + cptCi.getLabel());
+                  testCaseMessage.appendCustomTransformation("RXA-5.6=CPT");
+                  testCaseMessage.appendCustomTransformation("RXA-17.1=" + mvxItem.getCode());
+                  testCaseMessage.appendCustomTransformation("RXA-17.2=" + mvxItem.getLabel());
+                  testCaseMessage.appendCustomTransformation("RXA-17.3=" + mvxItem.getTable());
+
+                  statusCheckTestCaseIntermediateList.add(testCaseMessage);
+                  transformer.transform(testCaseMessage);
+                  testCaseMessage.setAssertResult("Accept - *");
+                  register(testCaseMessage);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     certifyItems = certify.getCertifyItemList(Certify.FIELD_BODY_ROUTE);
     count = 0;
     for (Certify.CertifyItem certifyItem : certifyItems) {
@@ -881,7 +1028,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Body Route is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B12." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B12." + count);
       testCaseMessage.appendCustomTransformation("RXR-1.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXR-1.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXR-1.3=" + certifyItem.getTable());
@@ -898,7 +1045,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Body Site is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B13." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B13." + count);
       testCaseMessage.appendCustomTransformation("RXR-2.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXR-2.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXR-2.3=" + certifyItem.getTable());
@@ -915,7 +1062,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Additional Address Type is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B14." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B14." + count);
       testCaseMessage.appendCustomTransformation("PID-11.1#2=PID-11.1");
       testCaseMessage.appendCustomTransformation("PID-11.2#2=PID-11.2");
       testCaseMessage.appendCustomTransformation("PID-11.3#2=PID-11.3");
@@ -935,7 +1082,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Additional Name Type is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B15." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B15." + count);
       testCaseMessage.appendCustomTransformation("PID-5.1#2=PID-5.1");
       testCaseMessage.appendCustomTransformation("PID-5.2#2=PID-5.2");
       testCaseMessage.appendCustomTransformation("PID-5.7#2=" + certifyItem.getCode());
@@ -952,13 +1099,16 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Phone Telcommunications Use Code is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B16." + count);
-      testCaseMessage.appendCustomTransformation("PID-13.2=" + certifyItem.getCode());
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B16." + count);
       if (certifyItem.getCode().equalsIgnoreCase("NET")) {
-        testCaseMessage.appendCustomTransformation("PID-13.3=X.400");
-        testCaseMessage.appendCustomTransformation("PID-13.4=[EMAIL]");
+        testCaseMessage.appendCustomTransformation("PID-13.3#2=X.400");
+        testCaseMessage.appendCustomTransformation("PID-13.4#2=[EMAIL]");
+        testCaseMessage.appendCustomTransformation("PID-13.2#2=" + certifyItem.getCode());
       } else if (certifyItem.getCode().equalsIgnoreCase("BPN")) {
-        testCaseMessage.appendCustomTransformation("PID-13.3=BP");
+        testCaseMessage.appendCustomTransformation("PID-13.2#2=" + certifyItem.getCode());
+        testCaseMessage.appendCustomTransformation("PID-13.3#2=BP");
+      } else {
+        testCaseMessage.appendCustomTransformation("PID-13.2=" + certifyItem.getCode());
       }
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
@@ -973,16 +1123,20 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Phone Telcommunications Equipment Type is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B17." + count);
-      testCaseMessage.appendCustomTransformation("PID-13.3=" + certifyItem.getCode());
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B17." + count);
       if (certifyItem.getCode().equals("BP")) {
-        testCaseMessage.appendCustomTransformation("PID-13.2=BPN");
+        testCaseMessage.appendCustomTransformation("PID-13.2#2=BPN");
+        testCaseMessage.appendCustomTransformation("PID-13.3#2=" + certifyItem.getCode());
       } else if (certifyItem.getCode().equalsIgnoreCase("X.400")) {
-        testCaseMessage.appendCustomTransformation("PID-13.2=NET");
-        testCaseMessage.appendCustomTransformation("PID-13.4=[EMAIL]");
+        testCaseMessage.appendCustomTransformation("PID-13.2#2=NET");
+        testCaseMessage.appendCustomTransformation("PID-13.3#2=" + certifyItem.getCode());
+        testCaseMessage.appendCustomTransformation("PID-13.4#2=[EMAIL]");
       } else if (certifyItem.getCode().equalsIgnoreCase("Internet")) {
-        testCaseMessage.appendCustomTransformation("PID-13.2=NET");
-        testCaseMessage.appendCustomTransformation("PID-13.4=http://openimmunizationsoftware.net/");
+        testCaseMessage.appendCustomTransformation("PID-13.2#2=NET");
+        testCaseMessage.appendCustomTransformation("PID-13.3#2=" + certifyItem.getCode());
+        testCaseMessage.appendCustomTransformation("PID-13.4#2=http://openimmunizationsoftware.net/");
+      } else {
+        testCaseMessage.appendCustomTransformation("PID-13.3=" + certifyItem.getCode());
       }
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
@@ -993,11 +1147,16 @@ public class CertifyRunner extends Thread
     certifyItems = certify.getCertifyItemList(Certify.FIELD_ID_TYPE);
     count = 0;
     for (Certify.CertifyItem certifyItem : certifyItems) {
+      if (certifyItem.getCode().equals("MR")) {
+        // do not test this here, already being tested by messages
+        continue;
+      }
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Person Id Type is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B18." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B18." + count);
+      testCaseMessage.appendCustomTransformation("PID-3.1#2=[MRN]");
       testCaseMessage.appendCustomTransformation("PID-3.4#2=OIS");
       testCaseMessage.appendCustomTransformation("PID-3.5#2=" + certifyItem.getCode());
 
@@ -1014,7 +1173,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Publicity Code is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B19." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B19." + count);
       testCaseMessage.appendCustomTransformation("PD1-11.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PD1-11.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PD1-11.3=" + certifyItem.getTable());
@@ -1032,7 +1191,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("County Code is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B20." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B20." + count);
       testCaseMessage.appendCustomTransformation("PID-11.4=" + certifyItem.getTable());
       testCaseMessage.appendCustomTransformation("PID-11.7=N");
       testCaseMessage.appendCustomTransformation("PID-11.9=" + certifyItem.getCode());
@@ -1050,7 +1209,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Primary Language is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B21." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B21." + count);
       testCaseMessage.appendCustomTransformation("PID-15.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PID-15.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-15.3=" + certifyItem.getTable());
@@ -1069,7 +1228,7 @@ public class CertifyRunner extends Thread
       testCaseMessage.setDescription("Primary Language is " + certifyItem.getLabel()
           + " (Random value from CDC full set)");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B21." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B21." + count);
       testCaseMessage.appendCustomTransformation("PID-15.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PID-15.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-15.3=" + certifyItem.getTable());
@@ -1098,7 +1257,7 @@ public class CertifyRunner extends Thread
 
       testCaseMessage.setDescription("Vaccination completion is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B22." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B22." + count);
       testCaseMessage.appendCustomTransformation("RXA-20.1=" + completionStatus);
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
@@ -1114,7 +1273,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Vaccination Action Code is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B23." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B23." + count);
       testCaseMessage.appendCustomTransformation("RXA-21=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
@@ -1130,7 +1289,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Vaccination Action is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B24." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B24." + count);
       testCaseMessage.appendCustomTransformation("RXA-21=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
@@ -1146,7 +1305,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Vaccination Administering Provider's Degree is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B25." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B25." + count);
       testCaseMessage.appendCustomTransformation("RXA-10.2=[LAST_DIFFERENT]");
       testCaseMessage.appendCustomTransformation("RXA-10.3=[FATHER]");
       testCaseMessage.appendCustomTransformation("RXA-10.21=" + certifyItem.getCode());
@@ -1157,14 +1316,14 @@ public class CertifyRunner extends Thread
       register(testCaseMessage);
     }
 
-    for (int i = 1; i < 3; i++) {
+    for (int i = 1; i <= 4; i++) {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Mulitiple Birth: First of " + i);
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B26." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B26." + count);
       if (i == 1) {
         testCaseMessage.appendCustomTransformation("PID-24=N");
-        testCaseMessage.appendCustomTransformation("PID-25=1");
+        testCaseMessage.appendCustomTransformation("PID-25=");
       } else {
         testCaseMessage.appendCustomTransformation("PID-24=Y");
         testCaseMessage.appendCustomTransformation("PID-25=1");
@@ -1177,11 +1336,11 @@ public class CertifyRunner extends Thread
 
     }
 
-    for (int i = 2; i < 3; i++) {
+    for (int i = 2; i <= 4; i++) {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Mulitiple Birth: Last of " + i);
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B27." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B27." + count);
 
       testCaseMessage.appendCustomTransformation("PID-24=Y");
       testCaseMessage.appendCustomTransformation("PID-25=" + i);
@@ -1196,7 +1355,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_CHILD);
       testCaseMessage.setDescription("Death Recorded Without Date");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B28.1");
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B28.1");
       testCaseMessage.appendCustomTransformation("PID-30=Y");
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
@@ -1207,7 +1366,7 @@ public class CertifyRunner extends Thread
       testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_CHILD);
       testCaseMessage.setDescription("Death Recorded With Date");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B28.2");
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B28.2");
       testCaseMessage.appendCustomTransformation("PID-30=Y");
       testCaseMessage.appendCustomTransformation("PID-29=[TODAY]");
 
@@ -1219,7 +1378,7 @@ public class CertifyRunner extends Thread
       testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Patient Not Deceased");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B28.3");
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B28.3");
       testCaseMessage.appendCustomTransformation("PID-30=N");
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
@@ -1228,18 +1387,19 @@ public class CertifyRunner extends Thread
       register(testCaseMessage);
     }
 
-    {
-      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_ADD_DELETE);
-      testCaseMessage.setDescription("Vaccination Added and then Deleted");
-      testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("B29.1");
-
-      statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      transformer.transform(testCaseMessage);
-      testCaseMessage.setAssertResult("Accept - *");
-      register(testCaseMessage);
-
-    }
+    // {
+    // TestCaseMessage testCaseMessage =
+    // ScenarioManager.createTestCaseMessage(SCENARIO_ADD_DELETE);
+    // testCaseMessage.setDescription("Vaccination Added and then Deleted");
+    // testCaseMessage.setTestCaseSet(testCaseSet);
+    // testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B29.1");
+    //
+    // statusCheckTestCaseIntermediateList.add(testCaseMessage);
+    // transformer.transform(testCaseMessage);
+    // testCaseMessage.setAssertResult("Accept - *");
+    // register(testCaseMessage);
+    //
+    // }
   }
 
   private void prepareExceptional() {
@@ -1253,7 +1413,7 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendOriginalMessage("OBX|5|NM|6287-7^Baker's yeast IgE Ab in Serum^LN||1945||||||F\n");
       testCaseMessage.setDescription("Tolerance Check: Message includes observation not typically sent to IIS");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("E1." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1263,10 +1423,12 @@ public class CertifyRunner extends Thread
     {
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
-      testCaseMessage.appendCustomTransformation("RXA-5.2=This is a very long description for a vaccine, that normally you shouldn't expect to see, but since this field should not be read by the receiver it should cause no problem, furthermore HL7 allows this field to have up to 999 characters, which should not cause a problem to the receiver. Also this tests to verify that the receiver is not trying to verify the text of the vaccine. ");
-      testCaseMessage.setDescription("Tolerance Check: Message includes description for vaccine that is extremely long");
+      testCaseMessage
+          .appendCustomTransformation("RXA-5.2=This is a very long description for a vaccine, that normally you shouldn't expect to see, but since this field should not be read by the receiver it should cause no problem, furthermore HL7 allows this field to have up to 999 characters, which should not cause a problem to the receiver. Also this tests to verify that the receiver is not trying to verify the text of the vaccine. ");
+      testCaseMessage
+          .setDescription("Tolerance Check: Message includes description for vaccine that is extremely long");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("E1." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1279,7 +1441,7 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendOriginalMessage("YES|This|is|a|segment^you^should^never^see|in|production\n");
       testCaseMessage.setDescription("Tolerance Check: Message includes segment not defined by HL7");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("E1." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1291,7 +1453,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Tolerance Check: Hospital service code is set to a non-standard value");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("E1." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
       testCaseMessage.appendCustomTransformation("PV1-10=AMB");
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
@@ -1304,7 +1466,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Tolerance Check: Observation at patient level (HL7 2.8 capability)");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber("E1." + count);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
       testCaseMessage.appendCustomTransformation("insert segment OBX after NK1");
       testCaseMessage.appendCustomTransformation("OBX-1=1");
       testCaseMessage.appendCustomTransformation("OBX-2=59784-9");
@@ -1373,7 +1535,7 @@ public class CertifyRunner extends Thread
     testCaseMessage.setDescription("Certified Message: "
         + (previousDescription == null ? "Unidentified EHR" : previousDescription));
     testCaseMessage.setTestCaseSet(testCaseSet);
-    testCaseMessage.setTestCaseNumber("E1." + count);
+    testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
     statusCheckTestCaseExceptionalList.add(testCaseMessage);
     transformer.transform(testCaseMessage);
     testCaseMessage.setAssertResult("Accept - *");
@@ -1489,6 +1651,7 @@ public class CertifyRunner extends Thread
           testPass++;
         }
         testCaseMessage.setErrorList(testRunner.getErrorList());
+        printExampleMessage(testCaseMessage, "B Intermediate");
       } catch (Throwable t) {
         testCaseMessage.setException(t);
       }
@@ -1519,6 +1682,7 @@ public class CertifyRunner extends Thread
           testPass++;
         }
         testCaseMessage.setErrorList(testRunner.getErrorList());
+        printExampleMessage(testCaseMessage, "D Exceptional");
       } catch (Throwable t) {
         testCaseMessage.setException(t);
       }
@@ -1548,7 +1712,7 @@ public class CertifyRunner extends Thread
       queryTestCaseMessage.setDescription("Query for " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText()));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
-      queryTestCaseMessage.setTestCaseNumber("A3." + count);
+      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + "A3." + count);
       statusCheckQueryTestCaseBasicList.add(queryTestCaseMessage);
       register(queryTestCaseMessage);
       try {
@@ -1613,7 +1777,7 @@ public class CertifyRunner extends Thread
       queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText()));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
-      queryTestCaseMessage.setTestCaseNumber("B3." + count);
+      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + "B3." + count);
       statusCheckQueryTestCaseIntermediateList.add(queryTestCaseMessage);
       register(queryTestCaseMessage);
     }
@@ -1690,7 +1854,7 @@ public class CertifyRunner extends Thread
       queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText()));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
-      queryTestCaseMessage.setTestCaseNumber("B3." + count);
+      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + "B3." + count);
       statusCheckQueryTestCaseTolerantList.add(queryTestCaseMessage);
       register(queryTestCaseMessage);
       try {
@@ -2000,21 +2164,7 @@ public class CertifyRunner extends Thread
           out.println("    <td>not analyzed yet</td>");
         }
       }
-      if (areaFLevel3Score >= 100) {
-        out.println("    <td class=\"pass\">All query response (RSP) messages included CDSi compatible evaluations and recommendations.  "
-            + "<font size=\"-1\"><a href=\"#areaFLevel2\">(details)</a></font></td>");
-      } else if (areaFLevel3Score >= 0) {
-        out.println("    <td class=\"fail\">Not all query response (RSP) messages included CDSi compatible evaluations and recommendations. ("
-            + areaFLevel2Score
-            + "% of fields returned) "
-            + "<font size=\"-1\"><a href=\"#areaFLevel2\">(details)</a></font></td>");
-      } else {
-        if (areaFLevel3Progress > -1) {
-          out.println("    <td>running now ... <br/>" + areaFLevel2Progress + "% complete</td>");
-        } else {
-          out.println("    <td>not analyzed yet</td>");
-        }
-      }
+      out.println("    <td>not defined</td>");
       out.println("  </tr>");
     }
     out.println("</table>");

@@ -20,10 +20,18 @@ public class Certify
   public static final String FIELD_REGISTRY_STATUS = "REGISTRY STATUS";
   public static final String FIELD_REFUSAL_REASON = "REFUSAL REASON";
   public static final String FIELD_RELATIONSHIP = "RELATIONSHIP";
+  public static final String FIELD_CPT = "CPT";
   public static final String FIELD_BODY_ROUTE = "BODY ROUTE";
   public static final String FIELD_BODY_SITE = "BODY SITE";
-  public static final String FIELD_VAC_HISTORICAL = "VAC HISTORICAL";
-  public static final String FIELD_VAC_ADMIN= "VAC ADMIN";
+  public static final String FIELD_VAC_HISTORICAL_TWO_MONTHS = "VAC HISTORICAL 2 MONTHS";
+  public static final String FIELD_VAC_HISTORICAL_TWO_YEARS = "VAC HISTORICAL 2 YEARS";
+  public static final String FIELD_VAC_HISTORICAL_FOUR_YEARS = "VAC HISTORICAL 4 YEARS";
+  public static final String FIELD_VAC_HISTORICAL_TWELVE_YEARS = "VAC HISTORICAL 12 MONTHS";
+  public static final String FIELD_VAC_ADMIN_TWO_MONTHS = "VAC ADMIN 2 MONTHS";
+  public static final String FIELD_VAC_ADMIN_TWO_YEARS = "VAC ADMIN 2 YEARS";
+  public static final String FIELD_VAC_ADMIN_FOUR_YEARS = "VAC ADMIN 4 YEARS";
+  public static final String FIELD_VAC_ADMIN_TWELVE_YEARS = "VAC ADMIN 12 MONTHS";
+  public static final String FIELD_VAC_PRODUCT = "VAC PRODUCT";
   public static final String FIELD_MVX = "MVX";
   public static final String FIELD_ADDRESS_TYPE = "ADDRESS TYPE";
   public static final String FIELD_NAME_TYPE = "NAME TYPE";
@@ -119,7 +127,11 @@ public class Certify
   
   private String readValue(String[] values, int pos) {
     if (pos < values.length) {
-      return values[pos];
+      if (values[pos] == null)
+      {
+        return "";
+      }
+      return values[pos].trim();
     }
     return "";
   }

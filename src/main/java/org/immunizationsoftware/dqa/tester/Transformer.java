@@ -142,7 +142,7 @@ public class Transformer
   }
 
   public enum PatientType {
-    ANY_CHILD, BABY, TODDLER, TWEEN, ADULT, NONE
+    ANY_CHILD, TWO_MONTHS_OLD, TWO_YEARS_OLD, FOUR_YEARS_OLD, TWELVE_YEARS_OLD, BABY, TODDLER, TWEEN, ADULT, NONE
   };
 
   protected PatientType createDates(String[] dates, PatientType type) {
@@ -171,10 +171,65 @@ public class Transformer
         Calendar cal2Month = Calendar.getInstance();
         cal2Month.setTime(calBorn.getTime());
         cal2Month.add(Calendar.MONTH, 2);
-        cal4Month.add(Calendar.DAY_OF_MONTH, random.nextInt(10) - 3);
-        dates[1] = sdf.format(cal2Month.getTime());
+        cal2Month.add(Calendar.DAY_OF_MONTH, random.nextInt(10) - 3);
+        if (cal2Month.after(cal6Month.getTime())) {
+          dates[1] = dates[3];
+        } else {
+          dates[1] = sdf.format(cal2Month.getTime());
+        }
 
         return PatientType.BABY;
+      } else if (type == PatientType.TWO_MONTHS_OLD || type == PatientType.TWO_YEARS_OLD
+          || type == PatientType.FOUR_YEARS_OLD || type == PatientType.TWELVE_YEARS_OLD) {
+        // Setting up baby, 2 months old today
+        // 2 month appointment
+        // This type will always be at least two and the appointment will always
+        // be when the patient was at least two
+        Calendar calToday = Calendar.getInstance();
+        dates[3] = sdf.format(calToday.getTime());
+
+        int months = 0;
+        int years = 0;
+        if (type == PatientType.TWO_MONTHS_OLD) {
+          months = 2;
+        } else if (type == PatientType.TWO_YEARS_OLD) {
+          years = 2;
+        } else if (type == PatientType.FOUR_YEARS_OLD) {
+          years = 4;
+        } else if (type == PatientType.TWELVE_YEARS_OLD) {
+          years = 12;
+        }
+        // set birth date
+        Calendar calBorn = Calendar.getInstance();
+        calBorn.add(Calendar.MONTH, -months);
+        calBorn.add(Calendar.YEAR, -years);
+        calBorn.add(Calendar.DAY_OF_MONTH, -random.nextInt(17));
+        dates[0] = sdf.format(calBorn.getTime());
+
+        // 2 month appointment
+        Calendar cal2Month = Calendar.getInstance();
+        cal2Month.setTime(calBorn.getTime());
+        cal2Month.add(Calendar.MONTH, months);
+        cal2Month.add(Calendar.YEAR, years);
+        cal2Month.add(Calendar.DAY_OF_MONTH, random.nextInt(10));
+        if (cal2Month.getTime().after(calToday.getTime())) {
+          dates[1] = dates[3];
+          dates[2] = dates[3];
+        } else {
+          dates[1] = sdf.format(cal2Month.getTime());
+          dates[2] = dates[1];
+        }
+
+        if (type == PatientType.TWO_MONTHS_OLD) {
+          return PatientType.BABY;
+        } else if (type == PatientType.TWO_YEARS_OLD) {
+          return PatientType.TODDLER;
+        } else if (type == PatientType.FOUR_YEARS_OLD) {
+          return PatientType.TODDLER;
+        } else if (type == PatientType.TWELVE_YEARS_OLD) {
+          return PatientType.TWEEN;
+        }
+        return type;
       } else {
         if (type == PatientType.TODDLER || (type == PatientType.ANY_CHILD && random.nextBoolean())) {
           // Setting up toddler
@@ -532,6 +587,7 @@ public class Transformer
     }
 
     String causeIssueTransforms = IssueCreator.createTransforms(testCaseMessage);
+    testCaseMessage.setCauseIssueTransforms(causeIssueTransforms);
     String transforms = quickTransforms + "\n" + testCaseMessage.getCustomTransformations() + "\n"
         + causeIssueTransforms;
     String result = transform(testCaseMessage.getPreparedMessage(), transforms, testCaseMessage.getPatientType(), null);
@@ -648,8 +704,10 @@ public class Transformer
       }
       SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
       String today = sdf.format(new Date());
-      sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+      sdf = new SimpleDateFormat("yyyyMMddHHmmssZ");
       String now = sdf.format(new Date());
+      sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+      String nowNoTimezone = sdf.format(new Date());
       String line;
       while ((line = inTransform.readLine()) != null) {
         line = line.trim();
@@ -917,7 +975,7 @@ public class Transformer
                   t.segmentRepeat = i;
                 }
                 handleSometimes(t);
-                doReplacements(patientType, patient, today, now, connector, t, resultText);
+                doReplacements(patientType, patient, today, now, nowNoTimezone, connector, t, resultText);
                 resultText = setValueInHL7(resultText, t);
               }
             }
@@ -1271,13 +1329,15 @@ public class Transformer
     }
   }
 
-  private void doReplacements(PatientType patientType, Patient patient, String today, String now, Connector connector,
+  private void doReplacements(PatientType patientType, Patient patient, String today, String now, String nowNoTimezone, Connector connector,
       Transform t, String resultText) throws IOException {
     if (patientType != PatientType.NONE) {
       doPatientReplacements(patient, t);
     }
     if (t.value.equalsIgnoreCase("[NOW]")) {
       t.value = now;
+    } else if (t.value.equalsIgnoreCase("[NOW_NO_TIMEZONE]")) {
+      t.value = nowNoTimezone;
     } else if (t.value.equalsIgnoreCase("[TODAY]")) {
       t.value = today;
     } else if (t.value.equalsIgnoreCase("[CONTROL_ID]")) {
