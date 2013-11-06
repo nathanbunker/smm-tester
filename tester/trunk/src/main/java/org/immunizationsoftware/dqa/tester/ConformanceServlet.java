@@ -192,16 +192,6 @@ public class ConformanceServlet extends ClientServlet
           "ACK", "MSH|^~\\&||^~\\&|DCS|MYIIS|MYIIS||2009060400||ACK^V04^ACK|12343467|P|2.5.1|||\r" + "MSA|AR|9299381\r"
               + "ERR||MSH^12|203^unsupported version id^^HL70357|E|\r"));
 
-      exampleList.add(new Example("ACK Spec  - ", "ACK", "\r"));
-
-      exampleList.add(new Example("ACK Spec  - ", "ACK", "\r"));
-
-      exampleList.add(new Example("ACK Spec  - ", "ACK", "\r"));
-
-      exampleList.add(new Example("ACK Spec  - ", "ACK", "\r"));
-
-      exampleList.add(new Example("ACK Spec  - ", "ACK", "\r"));
-
     }
   }
 
@@ -373,6 +363,13 @@ public class ConformanceServlet extends ClientServlet
         if (!errorLocation.getSubComponentNumber().getValue().equals("")) {
           s = s + "." + errorLocation.getSubComponentNumber().getValue();
         }
+      }
+    }
+    else if (!errorLocation.getComponentNumber().getValue().equals(""))
+    {
+      s = s + "." + errorLocation.getComponentNumber().getValue();
+      if (!errorLocation.getSubComponentNumber().getValue().equals("")) {
+        s = s + "." + errorLocation.getSubComponentNumber().getValue();
       }
     }
     return s;

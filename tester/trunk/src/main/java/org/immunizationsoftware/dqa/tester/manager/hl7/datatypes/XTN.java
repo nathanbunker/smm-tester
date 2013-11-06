@@ -155,6 +155,6 @@ public class XTN extends HL7Component
     setChild(9 , anyText = new ST("Any Text", UsageType.O));
     setChild(10,  extensionPrefix = new ST("Extension Prefix", UsageType.O));
     setChild(11,  speedDialCode = new ST("Speed Dial Code", UsageType.O));
-    setChild(12,  unformattedTelephoneNumber = new ST("Unformatted Telphone Number", UsageType.O));
+    setChild(12,  unformattedTelephoneNumber = new ST("Unformatted Telephone Number", UsageType.O));
   }
 }
