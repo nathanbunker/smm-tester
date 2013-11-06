@@ -37,7 +37,6 @@ public abstract class HL7Component
   public abstract void init();
 
   protected HL7Component(HL7Component copy) {
-
     this.itemType = copy.itemType;
     this.componentNameSpecific = copy.componentNameSpecific;
     this.componentNameGeneric = copy.componentNameGeneric;
@@ -186,7 +185,7 @@ public abstract class HL7Component
   public boolean isEmpty() {
     return empty;
   }
-  
+
   public ScenarioChecker getScenarioChecker() {
     return scenarioChecker;
   }
@@ -362,8 +361,7 @@ public abstract class HL7Component
       HL7Component next = childComponents[i];
       int count = 1;
       while (next != null) {
-        if (next.parentComponent == null)
-        {
+        if (next.parentComponent == null) {
           next.parentComponent = this;
         }
         if (next.errorLocation == null) {
@@ -389,8 +387,7 @@ public abstract class HL7Component
         HL7Component next = childComponents[i];
         int count = 1;
         while (next != null) {
-          if (next.parentComponent == null)
-          {
+          if (next.parentComponent == null) {
             next.parentComponent = this;
           }
           if (next.errorLocation == null) {
@@ -412,8 +409,7 @@ public abstract class HL7Component
       for (int i = 1; i < childComponents.length; i++) {
         HL7Component next = childComponents[i];
         if (next != null) {
-          if (next.parentComponent == null)
-          {
+          if (next.parentComponent == null) {
             next.parentComponent = this;
           }
           if (next.errorLocation == null) {
@@ -433,8 +429,7 @@ public abstract class HL7Component
       for (int i = 1; i < childComponents.length; i++) {
         HL7Component next = childComponents[i];
         if (next != null) {
-          if (next.parentComponent == null)
-          {
+          if (next.parentComponent == null) {
             next.parentComponent = this;
           }
           if (next.errorLocation == null) {
@@ -561,10 +556,9 @@ public abstract class HL7Component
       errorLocation.getSegmentSequence().setValue("1");
     }
     text = text.trim();
-    if (text.trim().endsWith("<CR>"))
-    {
+    if (text.trim().endsWith("<CR>")) {
       text = text.trim();
-      text = text.substring(0, text.length() - 4 ).trim();
+      text = text.substring(0, text.length() - 4).trim();
     }
     this.rawTextReceived = text;
     this.value = text;
@@ -623,6 +617,10 @@ public abstract class HL7Component
   public void parseTextFromField(String text) {
     this.rawTextReceived = text;
     this.value = text;
+    if (this.errorLocation == null) {
+      this.errorLocation = new ERL();
+      this.errorLocation.getSegmentID().setValue(componentCode);
+    }
     if (childComponents != null && childComponents.length > 0) {
       String[] subFields = text.split("\\^");
       for (int i = 1; (i - 1) < subFields.length && i < childComponents.length; i++) {
@@ -660,8 +658,7 @@ public abstract class HL7Component
   public List<ConformanceIssue> checkConformance() {
     conformanceIssueList = new ArrayList<ConformanceIssue>();
     checkConformance(conformanceIssueList, ERR.SEVERITY_ERROR);
-    if (scenarioChecker != null)
-    {
+    if (scenarioChecker != null) {
       scenarioChecker.checkScenario(this);
     }
     hasNoErrors = true;
@@ -928,7 +925,9 @@ public abstract class HL7Component
           if (!severity.equals(ERR.SEVERITY_NONE) && !severity.equals(ERR.SEVERITY_NOT_SUPPORTED)) {
             ConformanceIssue ci = new ConformanceIssue();
             conformanceIssueList.add(ci);
-            ci.getErrorLocation().copyValues(errorLocation);
+            if (errorLocation != null) {
+              ci.getErrorLocation().copyValues(errorLocation);
+            }
             ci.getHl7ErrorCode().getIdentifier().setValue("101");
             ci.getHl7ErrorCode().getText().setValue("Required field missing");
             ci.getHl7ErrorCode().getNameOfCodingSystem().setValue("HL70357");
@@ -941,7 +940,9 @@ public abstract class HL7Component
         if (!empty) {
           ConformanceIssue ci = new ConformanceIssue();
           conformanceIssueList.add(ci);
-          ci.getErrorLocation().copyValues(errorLocation);
+          if (errorLocation != null) {
+            ci.getErrorLocation().copyValues(errorLocation);
+          }
           ci.getHl7ErrorCode().getIdentifier().setValue("101");
           ci.getHl7ErrorCode().getText().setValue("Required field missing");
           ci.getHl7ErrorCode().getNameOfCodingSystem().setValue("HL70357");
@@ -951,9 +952,9 @@ public abstract class HL7Component
       }
     }
   }
-  
-  public void addConformanceIssue(String userMessage, String hl7ErrorCode, String applicationErrorCode, String severity, List<ConformanceIssue> conformanceIssueList)
-  {
+
+  public void addConformanceIssue(String userMessage, String hl7ErrorCode, String applicationErrorCode,
+      String severity, List<ConformanceIssue> conformanceIssueList) {
     ConformanceIssue ci = new ConformanceIssue();
     conformanceIssueList.add(ci);
     ci.getErrorLocation().copyValues(errorLocation);
@@ -1320,30 +1321,24 @@ public abstract class HL7Component
     }
     return itemType + " " + componentNameGeneric;
   }
-  
-  public String getComponentReferenceShort()
-  {
+
+  public String getComponentReferenceShort() {
     if (itemType == ItemType.MESSAGE) {
       return componentCode;
     } else if (itemType == ItemType.MESSAGE_PART) {
-      if (parentComponent == null)
-      {
+      if (parentComponent == null) {
         return "";
       }
       return parentComponent.getComponentReferenceShort();
     } else if (itemType == ItemType.SEGMENT) {
       return componentCode;
     } else if (itemType == ItemType.DATATYPE) {
-      if (parentComponent == null)
-      {
+      if (parentComponent == null) {
         return componentCode;
       }
-      if (parentComponent.getItemType() == ItemType.SEGMENT)
-      {
+      if (parentComponent.getItemType() == ItemType.SEGMENT) {
         return parentComponent.componentCode + "-" + sequence;
-      }
-      else
-      {
+      } else {
         return parentComponent.getComponentReferenceShort() + "." + sequence;
       }
     }

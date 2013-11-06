@@ -49,10 +49,10 @@ public class IsValuedAs extends ConditionalPredicate
   public String printDocument() {
     if (values != null && values.length > 0 && component != null) {
       if (values.length == 1) {
-        return "If " + component.getComponentReferenceShort() + " is not valued as \"" + values[0] + "\"";
+        return "If " + component.getComponentReferenceShort() + " is valued as \"" + values[0] + "\"";
       }
       StringBuilder sb = new StringBuilder();
-      sb.append("If " + component.getComponentReferenceShort() + " is not valued as ");
+      sb.append("If " + component.getComponentReferenceShort() + " is valued as ");
       boolean first = true;
       for (String value : values) {
         if (!first) {
