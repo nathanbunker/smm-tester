@@ -22,32 +22,32 @@ import org.immunizationsoftware.dqa.tester.manager.hl7.predicates.IsValuedAs;
 public class RXA extends HL7Component
 {
 
-  private NM giveSubIDCounter = null;
-  private NM administrationSubIDCounter = null;
-  private TS dateTimeStartOfAdministration = null;
-  private TS dateTimeEndOfAdministration = null;
-  private CE administeredCode = null;
-  private NM administeredAmount = null;
-  private CE administeredUnits = null;
-  private CE administeredDosageForm = null;
-  private CE administrationNotes = null;
-  private XCN administeringProvider = null;
-  private LA2 administeredAtLocation = null;
-  private ST administeredPerTimeUnit = null;
-  private NM administeredStrength = null;
-  private CE administeredStrengthUnits = null;
-  private ST substanceLotNumber = null;
-  private TS substanceExpirationDate = null;
-  private CE substanceManufacturerName = null;
-  private CE substanceTreatmentRefusalReason = null;
-  private CE indication = null;
-  private ID completionStatus = null;
-  private ID actionCodeRXA = null;
-  private TS systemEntryDateTime = null;
-  private NM administeredDrugStrengthVolume = null;
-  private CWE administeredDrugStrengthVolumeUnits = null;
-  private CWE administeredBarcodeIdentifier = null;
-  private ID pharmacyOrderType = null;
+  protected NM giveSubIDCounter = null;
+  protected NM administrationSubIDCounter = null;
+  protected TS dateTimeStartOfAdministration = null;
+  protected TS dateTimeEndOfAdministration = null;
+  protected CE administeredCode = null;
+  protected NM administeredAmount = null;
+  protected CE administeredUnits = null;
+  protected CE administeredDosageForm = null;
+  protected CE administrationNotes = null;
+  protected XCN administeringProvider = null;
+  protected LA2 administeredAtLocation = null;
+  protected ST administeredPerTimeUnit = null;
+  protected NM administeredStrength = null;
+  protected CE administeredStrengthUnits = null;
+  protected ST substanceLotNumber = null;
+  protected TS substanceExpirationDate = null;
+  protected CE substanceManufacturerName = null;
+  protected CE substanceTreatmentRefusalReason = null;
+  protected CE indication = null;
+  protected ID completionStatus = null;
+  protected ID actionCodeRXA = null;
+  protected TS systemEntryDateTime = null;
+  protected NM administeredDrugStrengthVolume = null;
+  protected CWE administeredDrugStrengthVolumeUnits = null;
+  protected CWE administeredBarcodeIdentifier = null;
+  protected ID pharmacyOrderType = null;
 
   public NM getGiveSubIDCounter() {
     return giveSubIDCounter;

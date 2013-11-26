@@ -19,7 +19,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.axis2.util.FileWriter;
 import org.immunizationsoftware.dqa.tester.Transformer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 

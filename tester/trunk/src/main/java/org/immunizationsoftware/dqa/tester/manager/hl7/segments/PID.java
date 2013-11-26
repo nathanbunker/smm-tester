@@ -27,45 +27,45 @@ import org.immunizationsoftware.dqa.tester.manager.hl7.predicates.IsValuedAs;
 public class PID extends HL7Component
 {
 
-  private SI setIDPID;
-  private CX patientID;
-  private CX patientIdentiferList;
-  private CX alternatePatientID;
-  private XPN patientName;
-  private XPN_maiden mothersMaidenName;
-  private TS dateTimeOfBirth;
-  private IS administrativeSex;
-  private XPN patientAlias;
-  private CE race;
-  private XAD patientAddress;
-  private IS countyCode;
-  private XTN phoneNumberHome;
-  private XTN PhoneNumberBusiness;
-  private CE primaryLanguage;
-  private CE maritalStatus;
-  private CE religion;
-  private CX patientAccountNumber;
-  private ST ssnNumberPatient;
-  private DLN driversLicenseNumberPatient;
-  private CX mothersIdentifer;
-  private CE ethnicGroup;
-  private ST birthPlace;
-  private ID multipleBirthIndicator;
-  private NM birthOrder;
-  private CE citizenship;
-  private CE veteransMilitaryStatus;
-  private CE nationality;
-  private TS patientDeathDateAndTime;
-  private ID patientDeathIndicator;
-  private ID identityUnknownIndicator;
-  private IS identityReliabilityCode;
-  private TS lastUpdateDateTime;
-  private HD lastUpdateFacility;
-  private CE speciesCode;
-  private CE breedCode;
-  private ST strain;
-  private CE productionClassCode;
-  private CWE tribalCitizenship;
+  protected SI setIDPID;
+  protected CX patientID;
+  protected CX patientIdentifierList;
+  protected CX alternatePatientID;
+  protected XPN patientName;
+  protected XPN_maiden mothersMaidenName;
+  protected TS dateTimeOfBirth;
+  protected IS administrativeSex;
+  protected XPN patientAlias;
+  protected CE race;
+  protected XAD patientAddress;
+  protected IS countyCode;
+  protected XTN phoneNumberHome;
+  protected XTN PhoneNumberBusiness;
+  protected CE primaryLanguage;
+  protected CE maritalStatus;
+  protected CE religion;
+  protected CX patientAccountNumber;
+  protected ST ssnNumberPatient;
+  protected DLN driversLicenseNumberPatient;
+  protected CX mothersIdentifier;
+  protected CE ethnicGroup;
+  protected ST birthPlace;
+  protected ID multipleBirthIndicator;
+  protected NM birthOrder;
+  protected CE citizenship;
+  protected CE veteransMilitaryStatus;
+  protected CE nationality;
+  protected TS patientDeathDateAndTime;
+  protected ID patientDeathIndicator;
+  protected ID identityUnknownIndicator;
+  protected IS identityReliabilityCode;
+  protected TS lastUpdateDateTime;
+  protected HD lastUpdateFacility;
+  protected CE speciesCode;
+  protected CE breedCode;
+  protected ST strain;
+  protected CE productionClassCode;
+  protected CWE tribalCitizenship;
 
   public SI getSetIDPID() {
     return setIDPID;
@@ -83,12 +83,12 @@ public class PID extends HL7Component
     this.patientID = patientID;
   }
 
-  public CX getPatientIdentiferList() {
-    return patientIdentiferList;
+  public CX getPatientIdentifierList() {
+    return patientIdentifierList;
   }
 
-  public void setPatientIdentiferList(CX patientIdentiferList) {
-    this.patientIdentiferList = patientIdentiferList;
+  public void setPatientIdentifierList(CX patientIdentifierList) {
+    this.patientIdentifierList = patientIdentifierList;
   }
 
   public CX getAlternatePatientID() {
@@ -227,12 +227,12 @@ public class PID extends HL7Component
     this.driversLicenseNumberPatient = driversLicenseNumberPatient;
   }
 
-  public CX getMothersIdentifer() {
-    return mothersIdentifer;
+  public CX getMothersIdentifier() {
+    return mothersIdentifier;
   }
 
-  public void setMothersIdentifer(CX mothersIdentifer) {
-    this.mothersIdentifer = mothersIdentifer;
+  public void setMothersIdentifier(CX mothersIdentifier) {
+    this.mothersIdentifier = mothersIdentifier;
   }
 
   public CE getEthnicGroup() {
@@ -397,7 +397,7 @@ public class PID extends HL7Component
   public void init() {
     setChild(1, setIDPID = new SI("Set ID - PID", UsageType.RE, Cardinality.ZERO_OR_ONE));
     setChild(2, patientID = new CX("Patient ID", UsageType.X));
-    setChild(3, patientIdentiferList = new CX("Patient Identifer List", UsageType.R, Cardinality.ONE_OR_MORE_TIMES));
+    setChild(3, patientIdentifierList = new CX("Patient Identifier List", UsageType.R, Cardinality.ONE_OR_MORE_TIMES));
     setChild(4, alternatePatientID = new CX("Alternate Patient ID", UsageType.X));
     setChild(5, patientName = new XPN("Patient Name", UsageType.R, Cardinality.ONE_OR_MORE_TIMES));
     patientName.getNameTypeCode().addConformanceStatement(new ExactValue("The primary or legal name of the patient is reported first, name type code in this field shoud be \"L - Legal\"", "L"));
@@ -423,7 +423,7 @@ public class PID extends HL7Component
     setChild(18, patientAccountNumber = new CX("Patient Account Number", UsageType.O));
     setChild(19, ssnNumberPatient = new ST("SSN Number - Patient", UsageType.X));
     setChild(20, driversLicenseNumberPatient = new DLN("Driver's License Number - Patient", UsageType.X));
-    setChild(21, mothersIdentifer = new CX("Mother's Identifer", UsageType.X));
+    setChild(21, mothersIdentifier = new CX("Mother's Identifier", UsageType.X));
     setChild(22, ethnicGroup = new CE("Ethnic Group", UsageType.RE, Cardinality.ZERO_OR_ONE, ValueSet.HL70189));
     setChild(23, birthPlace = new ST("Birth Place", UsageType.O));
     setChild(24, multipleBirthIndicator = new ID("Multiple Birth Indicator", UsageType.RE, Cardinality.ZERO_OR_ONE,

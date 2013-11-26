@@ -42,6 +42,7 @@ import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.XON;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.XPN;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.XTN;
 import org.immunizationsoftware.dqa.tester.manager.hl7.messages.ACK;
+import org.immunizationsoftware.dqa.tester.manager.hl7.messages.QBP;
 import org.immunizationsoftware.dqa.tester.manager.hl7.messages.RSP;
 import org.immunizationsoftware.dqa.tester.manager.hl7.messages.VXU;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.BHS;
@@ -115,7 +116,7 @@ public class HL7ComponentManager
       // Messages
       componentList.add(new ACK());
       componentList.add(new RSP());
-      // componentList.add(new RSP(true));
+      componentList.add(new QBP());
       componentList.add(new VXU());
       // Segments
       componentList.add(new BHS(UsageType.R, Cardinality.ONE_TIME_ONLY));

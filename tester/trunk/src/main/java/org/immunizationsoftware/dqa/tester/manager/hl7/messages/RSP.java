@@ -1,8 +1,6 @@
 package org.immunizationsoftware.dqa.tester.manager.hl7.messages;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.immunizationsoftware.dqa.tester.manager.hl7.Cardinality;
@@ -20,11 +18,11 @@ import org.immunizationsoftware.dqa.tester.manager.hl7.segments.NTE;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.OBX;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.ORC;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.PD1;
-import org.immunizationsoftware.dqa.tester.manager.hl7.segments.PID;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.PIDforRSP;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.PV1;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.QAK;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.QPD;
-import org.immunizationsoftware.dqa.tester.manager.hl7.segments.RXA;
+import org.immunizationsoftware.dqa.tester.manager.hl7.segments.RXAforRSP;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.RXR;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.TQ1;
 import org.immunizationsoftware.dqa.tester.manager.hl7.segments.TQ2;
@@ -108,7 +106,7 @@ public class RSP extends HL7Component
     setChild(3, err = new ERR(UsageType.O, Cardinality.ZERO_OR_MORE));
     setChild(4, qak = new QAK(UsageType.R, Cardinality.ONE_TIME_ONLY));
     setChild(5, qpd = new QPD(UsageType.R, Cardinality.ONE_TIME_ONLY));
-    setChild(6, patientGroup = new PatientGroup(UsageType.R, Cardinality.ZERO_OR_MORE));
+    setChild(6, patientGroup = new PatientGroup(UsageType.RE, Cardinality.ZERO_OR_MORE));
   }
 
   public RSP(boolean checkForecastPresent) {
@@ -289,18 +287,18 @@ public class RSP extends HL7Component
   public class PatientGroup extends HL7Component
   {
 
-    private PID pid = null;
+    private PIDforRSP pid = null;
     private PD1 pd1 = null;
     private NK1 nk1 = null;
     private PV1 pv1 = null;
     private IN1 in1 = null;
     private OrderGroup orderGroup = null;
 
-    public PID getPid() {
+    public PIDforRSP getPid() {
       return pid;
     }
 
-    public void setPid(PID pid) {
+    public void setPid(PIDforRSP pid) {
       this.pid = pid;
     }
 
@@ -361,7 +359,7 @@ public class RSP extends HL7Component
 
     @Override
     public void init() {
-      setChild(1, pid = new PID(UsageType.R, Cardinality.ONE_TIME_ONLY));
+      setChild(1, pid = new PIDforRSP(UsageType.R, Cardinality.ONE_TIME_ONLY));
       setChild(2, pd1 = new PD1(UsageType.RE, Cardinality.ZERO_OR_ONE));
       setChild(3, nk1 = new NK1(UsageType.RE, Cardinality.ZERO_OR_MORE));
       setChild(4, pv1 = new PV1(UsageType.O, Cardinality.ZERO_OR_ONE));
@@ -374,7 +372,7 @@ public class RSP extends HL7Component
       private ORC orc = null;
       private TQ1 tq1 = null;
       private TQ2 tq2 = null;
-      private RXA rxa = null;
+      private RXAforRSP rxa = null;
       private RXR rxr = null;
       private ObservationGroup observationGroup = null;
 
@@ -402,11 +400,11 @@ public class RSP extends HL7Component
         this.tq2 = tq2;
       }
 
-      public RXA getRxa() {
+      public RXAforRSP getRxa() {
         return rxa;
       }
 
-      public void setRxa(RXA rxa) {
+      public void setRxa(RXAforRSP rxa) {
         this.rxa = rxa;
       }
 
@@ -445,8 +443,8 @@ public class RSP extends HL7Component
         setChild(1, orc = new ORC(UsageType.R, Cardinality.ONE_OR_MORE_TIMES));
         setChild(2, tq1 = new TQ1(UsageType.O, Cardinality.ZERO_OR_ONE));
         setChild(3, tq2 = new TQ2(UsageType.O, Cardinality.ZERO_OR_ONE));
-        setChild(4, rxa = new RXA(UsageType.R, Cardinality.ONE_TIME_ONLY));
-        setChild(5, rxr = new RXR(UsageType.RE, Cardinality.ZERO_OR_ONE));
+        setChild(4, rxa = new RXAforRSP(UsageType.R, Cardinality.ONE_TIME_ONLY));
+        setChild(5, rxr = new RXR(UsageType.O, Cardinality.ZERO_OR_ONE));
         setChild(6, observationGroup = new ObservationGroup(UsageType.RE, Cardinality.ZERO_OR_MORE));
       }
 

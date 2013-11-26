@@ -6,7 +6,7 @@ package org.immunizationsoftware.dqa.tester;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.net.URLEncoder;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -19,8 +19,9 @@ import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7ComponentManager;
 import org.immunizationsoftware.dqa.tester.manager.hl7.ItemType;
 import org.immunizationsoftware.dqa.tester.manager.hl7.UsageType;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ValueManager;
+import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.CE;
 import org.immunizationsoftware.dqa.tester.manager.hl7.datatypes.ERL;
-import org.immunizationsoftware.dqa.tester.manager.hl7.messages.VXU;
 
 /**
  * 
@@ -61,6 +62,8 @@ public class DocumentServlet extends ClientServlet
         childStep = request.getParameter("childStep").split("\\.");
       }
 
+      String conceptType = request.getParameter("conceptType");
+
       PrintWriter out = new PrintWriter(response.getWriter());
       response.setContentType("text/html;charset=UTF-8");
       printHtmlHead(out, MENU_HEADER_HOME, request);
@@ -86,153 +89,182 @@ public class DocumentServlet extends ClientServlet
       out.println("        </tr>");
       out.println("      </table>");
       out.println("    </form>");
-      if (pos > -1) {
-        HL7Component component = componentList.get(pos).makeAnother();
-        String childStepLink = "0";
-        String parentStepLink = "0";
-        if (childStep != null) {
-          int i = 1;
-          while (i < childStep.length && childStep[i] != null && childStep[i].length() > 0 && component != null) {
-            if (i > 1) {
-              parentStepLink += "." + childStep[i - 1];
-            }
-            component = component.getChildComponent(Integer.parseInt(childStep[i]));
-            childStepLink += "." + childStep[i];
-            i++;
-          }
-        }
-        out.println("    <h2>Documentation for " + component.getComponentNameFull() + "</h2>");
-        out.println("");
-        if (component.getItemType() == ItemType.MESSAGE) {
 
+      if (conceptType != null) {
+        List<CE> conceptList = ValueManager.getConceptList(conceptType);
+        if (conceptList == null) {
+          out.println("    <h2>Coded Values for " + conceptType + "</h2>");
+          out.println("<p>Values not loaded</p>");
+        } else {
+          out.println("    <h2>Coded Values for " + conceptType + "</h2>");
           out.println("      <table border=\"1\" cellspacing=\"0\">");
           out.println("        <tr>");
-          out.println("          <th>Segment</th>");
-          out.println("          <th>Cardinality</th>");
-          out.println("          <th>Usage</th>");
-          out.println("          <th>Comment</th>");
+          out.println("          <th>Identifier</th>");
+          out.println("          <th>Text</th>");
+          out.println("          <th>Coding System</th>");
           out.println("        </tr>");
-          printMessagePart(out, component, childStepLink, pos);
-          out.println("      </table>");
+          for (CE ce : conceptList) {
+            out.println("        <tr>");
+            out.println("          <td>" + ce.getIdentifier().getValue() + "</td>");
+            out.println("          <td>" + ce.getText().getValue() + "</td>");
+            out.println("          <td>" + ce.getNameOfCodingSystem().getValue() + "</td>");
+            out.println("        </tr>");
+          }
+        }
+        out.println("      </table>");
+      } else {
+        if (pos > -1) {
+          HL7Component component = componentList.get(pos).makeAnother();
+          String childStepLink = "0";
+          if (childStep != null) {
+            int i = 1;
+            while (i < childStep.length && childStep[i] != null && childStep[i].length() > 0 && component != null) {
+              component = component.getChildComponent(Integer.parseInt(childStep[i]));
+              childStepLink += "." + childStep[i];
+              i++;
+            }
+          }
+          out.println("    <h2>Documentation for " + component.getComponentNameFull() + "</h2>");
+          out.println("");
+          if (component.getItemType() == ItemType.MESSAGE) {
 
-        } else if (component.getItemType() == ItemType.SEGMENT) {
-          out.println("    <p>This is segment is part of a <a href=\"DocumentServlet?objectType=" + pos + "&childStep="
-              + parentStepLink + "\">" + n(component.getParentComponent().getComponentCode()) + "</a> segment.</p>");
-
-          if (component.getChildComponent() != null) {
             out.println("      <table border=\"1\" cellspacing=\"0\">");
             out.println("        <tr>");
-            out.println("          <th>Seq</th>");
-            out.println("          <th>Element Name</th>");
-            out.println("          <th>Data Type</th>");
-            out.println("          <th>Usage</th>");
+            out.println("          <th>Segment</th>");
             out.println("          <th>Cardinality</th>");
-            out.println("          <th>Len</th>");
-            out.println("          <th>Conditional Predicate</th>");
-            out.println("          <th>Value Set</th>");
-            out.println("          <th>Description/Comment</th>");
-            out.println("        </tr>");
-            for (int i = 1; i < component.getChildComponent().length; i++) {
-              HL7Component child = component.getChildComponent(i);
-              String passClass = (child.getUsageType() == UsageType.R || child.getUsageType() == UsageType.RE) ? " class=\"pass\""
-                  : " class=\"nottested\"";
-              out.println("        <tr>");
-
-              out.println("          <td" + passClass + ">" + i + "</td>");
-              out.println("          <td" + passClass + "><a href=\"DocumentServlet?objectType=" + pos + "&childStep="
-                  + (childStepLink + "." + i) + "\">" + n(child.getComponentNameSpecific()) + "</a></td>");
-              out.println("          <td" + passClass + "><a href=\"DocumentServlet?objectType=" + pos + "&childStep="
-                  + (childStepLink + "." + i) + "\">" + n(child.getComponentCode()) + "</a></td>");
-              out.println("          <td" + passClass + ">" + n(printUsage(child)) + "</td>");
-              if (child.getCardinality() != null) {
-                out.println("          <td" + passClass + ">" + n(child.getCardinalityMin(), child.getCardinalityMax())
-                    + "</td>");
-              } else {
-                out.println("          <td" + passClass + ">&nbsp;</td>");
-              }
-              if (child.getLengthMin() > 1 || child.getLengthMax() < Integer.MAX_VALUE) {
-                if (child.getLengthMax() == Integer.MAX_VALUE) {
-                  out.println("          <td" + passClass + ">" + child.getLengthMin() + "..*</td>");
-                } else {
-                  out.println("          <td" + passClass + ">" + child.getLengthMin() + ".." + child.getLengthMax()
-                      + "</td>");
-                }
-              } else {
-                out.println("          <td" + passClass + ">&nbsp;</td>");
-              }
-              if (child.getConditionalPredicate() != null) {
-                out.println("          <td" + passClass + ">" + n(child.getConditionalPredicate().printDocument())
-                    + "</td>");
-              } else {
-                out.println("          <td" + passClass + ">&nbsp;</td>");
-              }
-              if (child.getValueSet() != null) {
-                out.println("          <td" + passClass + ">" + child.getValueSet() + "</td>");
-              } else {
-                out.println("          <td" + passClass + ">&nbsp;</td>");
-              }
-              out.println("          <td" + passClass + ">" + n(child.getComments()) + "</td>");
-              out.println("        </tr>");
-            }
-
-            out.println("      </table>");
-          }
-        } else if (component.getItemType() == ItemType.DATATYPE) {
-          out.println("    <p>This is field is part of a <a href=\"DocumentServlet?objectType=" + pos + "&childStep="
-              + parentStepLink + "\">" + n(component.getComponentReferenceShort())
-              + "</a> field.</p>");
-
-          if (component.getChildComponent() != null) {
-            out.println("      <table border=\"1\" cellspacing=\"0\">");
-            out.println("        <tr>");
-            out.println("          <th>Seq</th>");
-            out.println("          <th>Component Name</th>");
-            out.println("          <th>Data Type</th>");
             out.println("          <th>Usage</th>");
-            out.println("          <th>Len</th>");
-            out.println("          <th>Conditional Predicate</th>");
-            out.println("          <th>Value Set</th>");
-            out.println("          <th>Comments</th>");
+            out.println("          <th>Comment</th>");
             out.println("        </tr>");
-            for (int i = 1; i < component.getChildComponent().length; i++) {
-              HL7Component child = component.getChildComponent(i);
-              String passClass = (child.getUsageType() == UsageType.R || child.getUsageType() == UsageType.RE) ? " class=\"pass\""
-                  : " class=\"nottested\"";
-              out.println("        <tr>");
-
-              out.println("          <td" + passClass + ">" + i + "</td>");
-              out.println("          <td" + passClass + "><a href=\"DocumentServlet?objectType=" + pos + "&childStep="
-                  + (childStepLink + "." + i) + "\">" + n(child.getComponentNameSpecific()) + "</a></td>");
-              out.println("          <td" + passClass + "><a href=\"DocumentServlet?objectType=" + pos + "&childStep="
-                  + (childStepLink + "." + i) + "\">" + n(child.getComponentCode()) + "</a></td>");
-              out.println("          <td" + passClass + ">" + n(printUsage(child)) + "</td>");
-              if (child.getLengthMin() > 1 || child.getLengthMax() < Integer.MAX_VALUE) {
-                if (child.getLengthMax() == Integer.MAX_VALUE) {
-                  out.println("          <td" + passClass + ">" + child.getLengthMin() + "..*</td>");
-                } else {
-                  out.println("          <td" + passClass + ">" + child.getLengthMin() + ".." + child.getLengthMax()
-                      + "</td>");
-                }
-              } else {
-                out.println("          <td" + passClass + ">&nbsp;</td>");
-              }
-              if (child.getConditionalPredicate() != null) {
-                out.println("          <td" + passClass + ">" + n(child.getConditionalPredicate().printDocument())
-                    + "</td>");
-              } else {
-                out.println("          <td" + passClass + ">&nbsp;</td>");
-              }
-              if (child.getValueSet() != null) {
-                out.println("          <td" + passClass + ">" + child.getValueSet() + "</td>");
-              } else {
-                out.println("          <td" + passClass + ">&nbsp;</td>");
-              }
-              out.println("          <td" + passClass + ">" + n(child.getComments()) + "</td>");
-              out.println("        </tr>");
-            }
+            printMessagePart(out, component, childStepLink, pos);
             out.println("      </table>");
-          }
 
+          } else if (component.getItemType() == ItemType.SEGMENT) {
+
+            if (component.getChildComponent() != null) {
+              out.println("      <table border=\"1\" cellspacing=\"0\">");
+              out.println("        <tr>");
+              out.println("          <th>Seq</th>");
+              out.println("          <th>Element Name</th>");
+              out.println("          <th>Data Type</th>");
+              out.println("          <th>Usage</th>");
+              out.println("          <th>Cardinality</th>");
+              out.println("          <th>Len</th>");
+              out.println("          <th>Conditional Predicate</th>");
+              out.println("          <th>Value Set</th>");
+              out.println("          <th>Description/Comment</th>");
+              out.println("        </tr>");
+              for (int i = 1; i < component.getChildComponent().length; i++) {
+                HL7Component child = component.getChildComponent(i);
+                String passClass = (child.getUsageType() == UsageType.R || child.getUsageType() == UsageType.RE) ? " class=\"pass\""
+                    : " class=\"nottested\"";
+                out.println("        <tr>");
+
+                out.println("          <td" + passClass + ">" + i + "</td>");
+                out.println("          <td" + passClass + "><a href=\"DocumentServlet?objectType=" + pos
+                    + "&childStep=" + (childStepLink + "." + i) + "\">" + n(child.getComponentNameSpecific())
+                    + "</a></td>");
+                out.println("          <td" + passClass + "><a href=\"DocumentServlet?objectType=" + pos
+                    + "&childStep=" + (childStepLink + "." + i) + "\">" + n(child.getComponentCode()) + "</a></td>");
+                out.println("          <td" + passClass + ">" + n(printUsage(child)) + "</td>");
+                if (child.getCardinality() != null) {
+                  out.println("          <td" + passClass + ">"
+                      + n(child.getCardinalityMin(), child.getCardinalityMax()) + "</td>");
+                } else {
+                  out.println("          <td" + passClass + ">&nbsp;</td>");
+                }
+                if (child.getLengthMin() > 1 || child.getLengthMax() < Integer.MAX_VALUE) {
+                  if (child.getLengthMax() == Integer.MAX_VALUE) {
+                    out.println("          <td" + passClass + ">" + child.getLengthMin() + "..*</td>");
+                  } else {
+                    out.println("          <td" + passClass + ">" + child.getLengthMin() + ".." + child.getLengthMax()
+                        + "</td>");
+                  }
+                } else {
+                  out.println("          <td" + passClass + ">&nbsp;</td>");
+                }
+                if (child.getConditionalPredicate() != null) {
+                  out.println("          <td" + passClass + ">" + n(child.getConditionalPredicate().printDocument())
+                      + "</td>");
+                } else {
+                  out.println("          <td" + passClass + ">&nbsp;</td>");
+                }
+                if (child.getValueSet() != null) {
+                  if (ValueManager.recognizedConcept(child.getValueSet().name())) {
+                    out.println("          <td" + passClass + "><a href=\"DocumentServlet?conceptType="
+                        + URLEncoder.encode(child.getValueSet().name(), "UTF-8") + "\">" + child.getValueSet()
+                        + "</a></td>");
+                  } else {
+                    out.println("          <td" + passClass + ">" + child.getValueSet() + "</td>");
+                  }
+                } else {
+                  out.println("          <td" + passClass + ">&nbsp;</td>");
+                }
+                out.println("          <td" + passClass + ">" + n(child.getComments()) + "</td>");
+                out.println("        </tr>");
+              }
+
+              out.println("      </table>");
+            }
+          } else if (component.getItemType() == ItemType.DATATYPE) {
+            if (component.getChildComponent() != null) {
+              out.println("      <table border=\"1\" cellspacing=\"0\">");
+              out.println("        <tr>");
+              out.println("          <th>Seq</th>");
+              out.println("          <th>Component Name</th>");
+              out.println("          <th>Data Type</th>");
+              out.println("          <th>Usage</th>");
+              out.println("          <th>Len</th>");
+              out.println("          <th>Conditional Predicate</th>");
+              out.println("          <th>Value Set</th>");
+              out.println("          <th>Comments</th>");
+              out.println("        </tr>");
+              for (int i = 1; i < component.getChildComponent().length; i++) {
+                HL7Component child = component.getChildComponent(i);
+                String passClass = (child.getUsageType() == UsageType.R || child.getUsageType() == UsageType.RE) ? " class=\"pass\""
+                    : " class=\"nottested\"";
+                out.println("        <tr>");
+
+                out.println("          <td" + passClass + ">" + i + "</td>");
+                out.println("          <td" + passClass + "><a href=\"DocumentServlet?objectType=" + pos
+                    + "&childStep=" + (childStepLink + "." + i) + "\">" + n(child.getComponentNameSpecific())
+                    + "</a></td>");
+                out.println("          <td" + passClass + "><a href=\"DocumentServlet?objectType=" + pos
+                    + "&childStep=" + (childStepLink + "." + i) + "\">" + n(child.getComponentCode()) + "</a></td>");
+                out.println("          <td" + passClass + ">" + n(printUsage(child)) + "</td>");
+                if (child.getLengthMin() > 1 || child.getLengthMax() < Integer.MAX_VALUE) {
+                  if (child.getLengthMax() == Integer.MAX_VALUE) {
+                    out.println("          <td" + passClass + ">" + child.getLengthMin() + "..*</td>");
+                  } else {
+                    out.println("          <td" + passClass + ">" + child.getLengthMin() + ".." + child.getLengthMax()
+                        + "</td>");
+                  }
+                } else {
+                  out.println("          <td" + passClass + ">&nbsp;</td>");
+                }
+                if (child.getConditionalPredicate() != null) {
+                  out.println("          <td" + passClass + ">" + n(child.getConditionalPredicate().printDocument())
+                      + "</td>");
+                } else {
+                  out.println("          <td" + passClass + ">&nbsp;</td>");
+                }
+                if (child.getValueSet() != null) {
+                  if (ValueManager.recognizedConcept(child.getValueSet().name())) {
+                    out.println("          <td" + passClass + "><a href=\"DocumentServlet?conceptType="
+                        + URLEncoder.encode(child.getValueSet().name(), "UTF-8") + "\">" + child.getValueSet()
+                        + "</a></td>");
+                  } else {
+                    out.println("          <td" + passClass + ">" + child.getValueSet() + "</td>");
+                  }
+                } else {
+                  out.println("          <td" + passClass + ">&nbsp;</td>");
+                }
+                out.println("          <td" + passClass + ">" + n(child.getComments()) + "</td>");
+                out.println("        </tr>");
+              }
+              out.println("      </table>");
+            }
+
+          }
         }
       }
 

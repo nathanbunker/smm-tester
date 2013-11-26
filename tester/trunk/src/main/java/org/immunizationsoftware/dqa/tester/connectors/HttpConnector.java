@@ -104,11 +104,25 @@ public class HttpConnector extends Connector
       String msh = "";
       StringBuffer sbuf = new StringBuffer(result.length());
       boolean inTag = false;
+      boolean escaped = false;
+      String escapedString = "";
       for (char c : result.toCharArray()) {
         if (c == '<') {
           inTag = true;
         } else if (c == '>') {
           inTag = false;
+        } else if (c == '&') {
+          escaped = true;
+          escapedString = "";
+        } else if (escaped) {
+          if (c == ';') {
+            escaped = false;
+            if (escapedString.equals("amp")) {
+              sbuf.append("&");
+            }
+          } else {
+            escapedString += c;
+          }
         } else if (!inTag && foundMSH) {
           sbuf.append(c);
         } else {
@@ -121,7 +135,6 @@ public class HttpConnector extends Connector
             sbuf.append(msh);
             foundMSH = true;
           }
-
         }
       }
       if (sbuf.length() > 0) {

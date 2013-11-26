@@ -163,7 +163,7 @@ public class ConnectServlet extends ClientServlet
         for (Connector connector : connectors)
         {
           id++;
-          out.println("<form action=\"SetupServlet\" method=\"POST\">");
+          out.println("<form action=\"ConnectServlet\" method=\"POST\">");
           out.println("  <tr class=\"boxed\">");
           out.println("    <td class=\"boxed\">" + connector.getLabel() + "</td>");
           out.println("    <td class=\"boxed\">" + connector.getType() + "</td>");
@@ -202,7 +202,7 @@ public class ConnectServlet extends ClientServlet
         {
           facilityid = "";
         }
-        out.println("<form action=\"SetupServlet\" method=\"POST\">");
+        out.println("<form action=\"ConnectServlet\" method=\"POST\">");
         out.println("  <tr class=\"boxed\">");
         out.println("    <td class=\"boxed\"><input type=\"text\" name=\"label\" size=\"12\" value=\"" + label + "\"></td>");
         out.println("    <td class=\"boxed\">");
@@ -233,7 +233,7 @@ public class ConnectServlet extends ClientServlet
           }
         }
         out.println("</table>");
-        out.println("<form action=\"SetupServlet\" method=\"POST\">");
+        out.println("<form action=\"ConnectServlet\" method=\"POST\">");
         out.println("<table border=\"0\">");
         out.println("  <tr>");
         out.println("    <td valign=\"top\">Script</td>");
