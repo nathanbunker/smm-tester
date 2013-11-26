@@ -42,7 +42,7 @@ public abstract class Connector
   protected static Connector addConnector(String label, String type, String url, String userid, String otherid,
       String facilityid, String password, String keyStorePassword, String enableTimeStart, String enableTimeEnd,
       AckAnalyzer.AckType ackType, TransferType transferType, List<String> fields, String customTransformations,
-      List<Connector> connectors, String purpose) throws Exception {
+      List<Connector> connectors, String purpose, int tchForecastTesterSoftwareId) throws Exception {
     if (!label.equals("") && !type.equals("")) {
       Connector connector = null;
       if (type.equals(ConnectorFactory.TYPE_SOAP)) {
@@ -70,6 +70,7 @@ public abstract class Connector
       connector.setTransferType(transferType);
       connector.setEnableTimeStart(enableTimeStart);
       connector.setEnableTimeEnd(enableTimeEnd);
+      connector.setTchForecastTesterSoftwareId(tchForecastTesterSoftwareId);
       connectors.add(connector);
       return connector;
     }
@@ -99,6 +100,15 @@ public abstract class Connector
   private AckAnalyzer.AckType ackType = AckAnalyzer.AckType.DEFAULT;
   private Map<String, Connector> otherConnectorMap = new HashMap<String, Connector>();
   private String purpose = "";
+  private int tchForecastTesterSoftwareId = 0;
+
+  public int getTchForecastTesterSoftwareId() {
+    return tchForecastTesterSoftwareId;
+  }
+
+  public void setTchForecastTesterSoftwareId(int tchForecastTesterSoftwareId) {
+    this.tchForecastTesterSoftwareId = tchForecastTesterSoftwareId;
+  }
 
   public Map<String, Connector> getOtherConnectorMap() {
     return otherConnectorMap;
@@ -345,6 +355,7 @@ public abstract class Connector
     String keyStorePassword = "";
     String enableTimeStart = "";
     String enableTimeEnd = "";
+    int tchForecastTesterSoftwareId = 0;
     TransferType transferType = TransferType.NEAR_REAL_TIME_LINK;
     AckAnalyzer.AckType ackType = AckAnalyzer.AckType.DEFAULT;
     List<String> fields = new ArrayList<String>();
@@ -355,7 +366,7 @@ public abstract class Connector
       line = line.trim();
       if (line.startsWith("Connection")) {
         addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
-            enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose);
+            enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose, tchForecastTesterSoftwareId);
         label = "";
         purpose = "";
         type = "";
@@ -370,6 +381,7 @@ public abstract class Connector
         transferType = TransferType.NEAR_REAL_TIME_LINK;
         customTransformations = "";
         keyStorePassword = "";
+        tchForecastTesterSoftwareId = 0;
         fields = new ArrayList<String>();
       } else if (line.startsWith("Label:")) {
         label = readValue(line);
@@ -401,6 +413,12 @@ public abstract class Connector
         lastList = "CI";
       } else if (line.startsWith("Custom Transformations:")) {
         lastList = "CT";
+      } else if (line.startsWith("TCH Forecast Tester Software Id:")) {
+        try {
+          tchForecastTesterSoftwareId = Integer.parseInt(readValue(line));
+        } catch (NumberFormatException nfe) {
+          // ignore, can't read
+        }
       } else if (line.startsWith("+")) {
         if (lastList.equals("CT")) {
           customTransformations += line.substring(1).trim() + "\n";
@@ -411,7 +429,7 @@ public abstract class Connector
 
     }
     addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
-        enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose);
+        enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose, tchForecastTesterSoftwareId);
     return connectors;
   }
 

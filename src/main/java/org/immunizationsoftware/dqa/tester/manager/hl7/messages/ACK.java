@@ -69,6 +69,7 @@ public class ACK extends HL7Component
   @Override
   public void init() {
     setChild(1, msh = new MSH(UsageType.R, Cardinality.ONE_TIME_ONLY));
+    // msh.getMessageType()
     setChild(2, sft = new SFT(UsageType.O, Cardinality.ZERO_OR_MORE));
     setChild(3, msa = new MSA(UsageType.R, Cardinality.ONE_TIME_ONLY));
     setChild(4, err = new ERR(UsageType.RE, Cardinality.ZERO_OR_MORE));

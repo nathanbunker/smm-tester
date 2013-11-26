@@ -276,24 +276,28 @@ public class ConformanceServlet extends ClientServlet
         }
 
         List<ConformanceIssue> conformanceIssueList = component.checkConformance();
-        printConformanceIssues(out, conformanceIssueList);
-        out.println("      <p>Error segments generated</p>");
-        out.print("    <pre>");
-        for (ConformanceIssue conformanceIssue : conformanceIssueList) {
-          out.println(conformanceIssue.createSegment());
-        }
-        out.println("</pre>");
-        out.println("      <p>Cleaned up Message</p>");
-        out.print("    <pre>");
-        if (component.getItemType() == ItemType.MESSAGE) {
-          out.print(component.createMessage());
-        } else if (component.getItemType() == ItemType.SEGMENT) {
-          out.print(component.createSegment());
-        } else if (component.getItemType() == ItemType.DATATYPE) {
-          out.print(component.createField());
-        }
-        out.println("</pre>");
+        if (conformanceIssueList.size() == 0) {
+          out.println("No conformance issues found");
+        } else {
+          printConformanceIssues(out, conformanceIssueList);
+          out.println("      <p>Error segments generated</p>");
+          out.print("    <pre>");
+          for (ConformanceIssue conformanceIssue : conformanceIssueList) {
+            out.println(conformanceIssue.createSegment());
+          }
+          out.println("</pre>");
+          out.println("      <p>Cleaned up Message</p>");
+          out.print("    <pre>");
+          if (component.getItemType() == ItemType.MESSAGE) {
+            out.print(component.createMessage());
+          } else if (component.getItemType() == ItemType.SEGMENT) {
+            out.print(component.createSegment());
+          } else if (component.getItemType() == ItemType.DATATYPE) {
+            out.print(component.createField());
+          }
+          out.println("</pre>");
 
+        }
       }
 
       out.println("<h2>Examples</h2>");
@@ -364,9 +368,7 @@ public class ConformanceServlet extends ClientServlet
           s = s + "." + errorLocation.getSubComponentNumber().getValue();
         }
       }
-    }
-    else if (!errorLocation.getComponentNumber().getValue().equals(""))
-    {
+    } else if (!errorLocation.getComponentNumber().getValue().equals("")) {
       s = s + "." + errorLocation.getComponentNumber().getValue();
       if (!errorLocation.getSubComponentNumber().getValue().equals("")) {
         s = s + "." + errorLocation.getSubComponentNumber().getValue();

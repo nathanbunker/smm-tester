@@ -758,7 +758,7 @@ public abstract class HL7Component
             ci.getApplicationErrorCode().getText().setValue("Table value not found");
             ci.getApplicationErrorCode().getNameOfCodingSystem().setValue("HL70533");
             ci.getSeverity().setValue(severity);
-            ci.getUserMessage().setValue(getComponentNameFull() + " has invalid format: ");
+            ci.getUserMessage().setValue(getComponentNameFull() + " has value that was not found in table " + valueSet.name());
           }
         }
       }

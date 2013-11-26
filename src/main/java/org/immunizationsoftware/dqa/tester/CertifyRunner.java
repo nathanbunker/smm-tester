@@ -15,7 +15,6 @@ import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENAR
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_5_R_REFUSED_TODDLER;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_6_R_VARICELLA_HISTORY_CHILD;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_7_R_COMPLETE_RECORD;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_ADD_DELETE;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.createTestCaseMessage;
 
 import java.io.BufferedReader;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +39,9 @@ import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
 import org.immunizationsoftware.dqa.tester.manager.ScenarioManager;
+import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestCase;
+import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestEvent;
+import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTesterManager;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 import org.immunizationsoftware.dqa.tester.transform.Issue;
@@ -63,98 +64,40 @@ public class CertifyRunner extends Thread
   private boolean keepRunning = true;
   private TestCaseMessage testCaseMessageBase = null;
 
-  private boolean runB = false;
-  private boolean runC = false;
-  private boolean runD = false;
-  private boolean runF = false;
-  
+  public static final int SUITE_A_BASIC = 0;
+  public static final int SUITE_B_INTERMEDIATE = 1;
+  public static final int SUITE_C_ADVANCED = 2;
+  public static final int SUITE_D_EXCEPTIONAL = 3;
+  public static final int SUITE_E_FORECAST_PREP = 4;
+  public static final int SUITE_F_FORECAST = 5;
+  public static final int SUITE_G_PERFORMANCE = 6;
+  public static final int SUITE_H_CONFORMANCE = 7;
+  public static final int SUITE_COUNT = 8;
+
+  private boolean run[] = new boolean[SUITE_COUNT];
+  private int[][] areaScore = new int[SUITE_COUNT][3];
+  private int[][] areaProgress = new int[SUITE_COUNT][3];
+
+  {
+    for (int i = 0; i < SUITE_COUNT; i++) {
+      areaScore[i][0] = -1;
+      areaScore[i][1] = -1;
+      areaScore[i][2] = -1;
+      areaProgress[i][0] = -1;
+      areaProgress[i][1] = -1;
+      areaProgress[i][2] = -1;
+    }
+  }
+
   private Map<String, PrintWriter> exampleOutSet = new HashMap<String, PrintWriter>();
 
-  public boolean isRunB() {
-    return runB;
+  public boolean isRun(int suite) {
+    return run[suite];
   }
 
-  public void setRunB(boolean runB) {
-    this.runB = runB;
+  public void setRun(boolean r, int suite) {
+    run[suite] = r;
   }
-
-  public boolean isRunC() {
-    return runC;
-  }
-
-  public void setRunC(boolean runC) {
-    this.runC = runC;
-  }
-
-  public boolean isRunD() {
-    return runD;
-  }
-
-  public void setRunD(boolean runD) {
-    this.runD = runD;
-  }
-
-  public boolean isRunF() {
-    return runF;
-  }
-
-  public void setRunF(boolean runF) {
-    this.runF = runF;
-  }
-
-  private int areaALevel1Score = -1;
-  private int areaALevel2Score = -1;
-  private int areaALevel3Score = -1;
-
-  private int areaBLevel1Score = -1;
-  private int areaBLevel2Score = -1;
-  private int areaBLevel3Score = -1;
-
-  private int[] areaCLevelScore = new int[3];
-  {
-    areaCLevelScore[0] = -1;
-    areaCLevelScore[1] = -1;
-    areaCLevelScore[2] = -1;
-  }
-
-  private int areaDLevel1Score = -1;
-  private int areaDLevel2Score = -1;
-  private int areaDLevel3Score = -1;
-
-  private int areaELevel1Score = -1;
-  private int areaELevel2Score = -1;
-  private int areaELevel3Score = -1;
-
-  private int areaFLevel1Score = -1;
-  private int areaFLevel2Score = -1;
-  private int areaFLevel3Score = -1;
-
-  private int areaALevel1Progress = -1;
-  private int areaALevel2Progress = -1;
-  private int areaALevel3Progress = -1;
-
-  private int areaBLevel1Progress = -1;
-  private int areaBLevel2Progress = -1;
-  private int areaBLevel3Progress = -1;
-
-  private int[] areaCLevelProgress = new int[3];
-  {
-    areaCLevelProgress[0] = -1;
-    areaCLevelProgress[1] = -1;
-    areaCLevelProgress[2] = -1;
-  }
-
-  private int areaDLevel1Progress = -1;
-  private int areaDLevel2Progress = -1;
-  private int areaDLevel3Progress = -1;
-
-  private int areaELevel1Progress = -1;
-  private int areaELevel2Progress = -1;
-  private int areaELevel3Progress = -1;
-
-  private int areaFLevel1Progress = -1;
-  private int areaFLevel2Progress = -1;
-  private int areaFLevel3Progress = -1;
 
   private long totalQueryTime = 0;
   private long totalUpdateTime = 0;
@@ -185,10 +128,12 @@ public class CertifyRunner extends Thread
   private List<TestCaseMessage> statusCheckTestCaseBasicList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckTestCaseIntermediateList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckTestCaseExceptionalList = new ArrayList<TestCaseMessage>();
+  private List<TestCaseMessage> statusCheckTestCaseForecastPrepList = new ArrayList<TestCaseMessage>();
 
   private List<TestCaseMessage> statusCheckQueryTestCaseBasicList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckQueryTestCaseIntermediateList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckQueryTestCaseTolerantList = new ArrayList<TestCaseMessage>();
+  private List<TestCaseMessage> statusCheckQueryTestCaseForecastPrepList = new ArrayList<TestCaseMessage>();
 
   private List<TestCaseMessage> ackAnalysisList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> rspAnalysisList = new ArrayList<TestCaseMessage>();
@@ -238,9 +183,10 @@ public class CertifyRunner extends Thread
   private static int uniqueMRNBaseInc = 0;
 
   private SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+
   @Override
   public void run() {
-    
+
     status = STATUS_STARTED;
     try {
 
@@ -264,7 +210,7 @@ public class CertifyRunner extends Thread
         status = STATUS_STOPPED;
         return;
       }
-      if (runB) {
+      if (run[SUITE_B_INTERMEDIATE]) {
 
         statusMessageList.add(sdf.format(new Date()) + " Preparing intermediate");
         prepareIntermediate();
@@ -278,7 +224,7 @@ public class CertifyRunner extends Thread
         }
 
       }
-      if (runC) {
+      if (run[SUITE_C_ADVANCED]) {
         if (testCaseMessageBase != null) {
           Map<Integer, List<Issue>> issueMap = new HashMap<Integer, List<Issue>>();
 
@@ -299,7 +245,7 @@ public class CertifyRunner extends Thread
         }
       }
 
-      if (runD) {
+      if (run[SUITE_D_EXCEPTIONAL]) {
         statusMessageList.add(sdf.format(new Date()) + " Preparing exceptional messages");
         prepareExceptional();
 
@@ -312,11 +258,24 @@ public class CertifyRunner extends Thread
         }
       }
 
-      if (totalUpdateCount > 0) {
-        areaELevel1Score = (int) totalUpdateTime / totalUpdateCount;
-        areaELevel1Progress = 100;
+      if (run[SUITE_E_FORECAST_PREP]) {
+        statusMessageList.add(sdf.format(new Date()) + " Preparing forecast prep messages");
+        prepareForecastPrep();
+
+        statusMessageList.add(sdf.format(new Date()) + " Sending forecast prep messages");
+        updateForecastPrep();
+        printReportToFile();
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          return;
+        }
       }
-      if (runF) {
+
+      if (totalUpdateCount > 0) {
+        areaScore[SUITE_G_PERFORMANCE][0] = (int) totalUpdateTime / totalUpdateCount;
+        areaScore[SUITE_G_PERFORMANCE][0] = 100;
+      }
+      if (run[SUITE_H_CONFORMANCE]) {
 
         statusMessageList.add(sdf.format(new Date()) + " Prepare for format analysis of update messages");
         prepareFormatUpdateAnalysis();
@@ -366,7 +325,7 @@ public class CertifyRunner extends Thread
           return;
         }
 
-        if (runB) {
+        if (run[SUITE_B_INTERMEDIATE]) {
 
           statusMessageList.add(sdf.format(new Date()) + " Prepare query for intermediate messages");
           prepareQueryIntermediate();
@@ -376,7 +335,7 @@ public class CertifyRunner extends Thread
           }
 
           statusMessageList.add(sdf.format(new Date()) + " Submit query for intermediate messages");
-          queryIntermediate();
+          query(SUITE_B_INTERMEDIATE, statusCheckQueryTestCaseIntermediateList);
           printReportToFile();
           if (!keepRunning) {
             status = STATUS_STOPPED;
@@ -384,9 +343,28 @@ public class CertifyRunner extends Thread
           }
         }
 
-        if (runD) {
+        if (run[SUITE_D_EXCEPTIONAL]) {
           statusMessageList.add(sdf.format(new Date()) + " Submit query for exceptional messages");
-          queryExceptional();
+          query(SUITE_D_EXCEPTIONAL, statusCheckQueryTestCaseTolerantList);
+          printReportToFile();
+          if (!keepRunning) {
+            status = STATUS_STOPPED;
+            return;
+          }
+        }
+
+        if (run[SUITE_E_FORECAST_PREP]) {
+
+          statusMessageList.add(sdf.format(new Date()) + " Prepare query for forecast prep messages");
+          prepareQueryForecastPrep();
+          if (!keepRunning) {
+            status = STATUS_STOPPED;
+            return;
+          }
+
+          statusMessageList.add(sdf.format(new Date()) + " Submit query for forecast prep messages");
+          query(SUITE_E_FORECAST_PREP, statusCheckQueryTestCaseForecastPrepList);
+
           printReportToFile();
           if (!keepRunning) {
             status = STATUS_STOPPED;
@@ -395,11 +373,11 @@ public class CertifyRunner extends Thread
         }
 
         if (totalQueryCount > 0) {
-          areaELevel2Score = (int) totalQueryTime / totalQueryCount;
-          areaELevel2Progress = 100;
+          areaScore[SUITE_G_PERFORMANCE][1] = (int) totalQueryTime / totalQueryCount;
+          areaProgress[SUITE_G_PERFORMANCE][1] = 100;
         }
 
-        if (runF) {
+        if (run[SUITE_H_CONFORMANCE]) {
           statusMessageList.add(sdf.format(new Date()) + " Prepare for format analysis of queries");
           prepareFormatQueryAnalysis();
           if (!keepRunning) {
@@ -413,7 +391,7 @@ public class CertifyRunner extends Thread
 
       }
 
-      areaFLevel3Progress = 100;
+      areaProgress[SUITE_H_CONFORMANCE][2] = 100;
       testFinished = new Date();
 
       printReportToFile();
@@ -430,8 +408,7 @@ public class CertifyRunner extends Thread
       } else {
         statusMessageList.add(sdf.format(new Date()) + " Process stopped by user");
       }
-      for (PrintWriter exampleOut : exampleOutSet.values())
-      {
+      for (PrintWriter exampleOut : exampleOutSet.values()) {
         exampleOut.close();
       }
       statusMessageList.add(sdf.format(new Date()) + " IIS Test Finished");
@@ -452,7 +429,7 @@ public class CertifyRunner extends Thread
         }
       }
     }
-return null;
+    return null;
   }
 
   public void printReportToFile() {
@@ -507,15 +484,15 @@ return null;
         if (comp != null && comp.hasNoErrors()) {
           pass++;
         }
-        areaFLevel1Progress = makeScore(count, ackAnalysisList.size());
+        areaProgress[SUITE_H_CONFORMANCE][0] = makeScore(count, ackAnalysisList.size());
       }
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
       }
     }
-    areaFLevel1Progress = makeScore(count, ackAnalysisList.size());
-    areaFLevel1Score = makeScore(pass, ackAnalysisList.size());
+    areaProgress[SUITE_H_CONFORMANCE][0] = makeScore(count, ackAnalysisList.size());
+    areaScore[SUITE_H_CONFORMANCE][0] = makeScore(pass, ackAnalysisList.size());
   }
 
   private void analyzeFormatQueries() {
@@ -529,27 +506,27 @@ return null;
           pass++;
         }
 
-        areaFLevel2Progress = makeScore(count, rspAnalysisList.size());
+        areaProgress[SUITE_H_CONFORMANCE][1] = makeScore(count, rspAnalysisList.size());
 
         // TODO look for query and rate
 
-        areaFLevel3Progress = makeScore(count, rspAnalysisList.size());
+        areaProgress[SUITE_H_CONFORMANCE][2] = makeScore(count, rspAnalysisList.size());
       }
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
       }
     }
-    areaFLevel2Progress = makeScore(count, rspAnalysisList.size());
-    areaFLevel3Progress = makeScore(count, rspAnalysisList.size());
-    areaFLevel2Score = makeScore(pass, rspAnalysisList.size());
+    areaProgress[SUITE_H_CONFORMANCE][1] = makeScore(count, rspAnalysisList.size());
+    areaProgress[SUITE_H_CONFORMANCE][2] = makeScore(count, rspAnalysisList.size());
+    areaScore[SUITE_H_CONFORMANCE][1] = makeScore(pass, rspAnalysisList.size());
   }
 
   private void updateAdvanced(Map<Integer, List<Issue>> issueMap) {
     TestRunner testRunner = new TestRunner();
     Transformer transformer = new Transformer();
     int count;
-    for (int i = 0; i < areaCLevelScore.length; i++) {
+    for (int i = 0; i < areaScore[SUITE_C_ADVANCED].length; i++) {
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
@@ -588,13 +565,13 @@ return null;
           }
           testCaseMessage.setHasRun(true);
           CreateTestCaseServlet.saveTestCase(testCaseMessage, session);
-          areaCLevelProgress[i] = makeScore(count, issueList.size());
+          areaProgress[SUITE_C_ADVANCED][i] = makeScore(count, issueList.size());
           if (!keepRunning) {
             status = STATUS_STOPPED;
             return;
           }
         }
-        areaCLevelScore[i] = makeScore(countPass, issueList.size());
+        areaProgress[SUITE_C_ADVANCED][i] = makeScore(countPass, issueList.size());
       }
 
     }
@@ -613,7 +590,7 @@ return null;
   }
 
   private void prepareBasic() {
-    
+
     Transformer transformer = new Transformer();
     int count = 0;
     for (String scenario : statusCheckScenarios) {
@@ -626,24 +603,20 @@ return null;
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
       String type = "A";
-      
-      
+
     }
 
   }
 
   public void printExampleMessage(TestCaseMessage testCaseMessage, String type) {
     PrintWriter exampleOut = exampleOutSet.get(type);
-    if (exampleOut == null)
-    {
+    if (exampleOut == null) {
       exampleOut = setupExampleFile(type, testCaseMessage);
-      if (exampleOut != null)
-      {
+      if (exampleOut != null) {
         exampleOutSet.put(type, exampleOut);
       }
     }
-    if (exampleOut != null)
-    {
+    if (exampleOut != null) {
       exampleOut.print(testCaseMessage.getMessageTextSent());
     }
   }
@@ -672,14 +645,14 @@ return null;
       } catch (Throwable t) {
         testCaseMessage.setException(t);
       }
-      areaALevel1Progress = makeScore(count, statusCheckTestCaseBasicList.size());
+      areaProgress[SUITE_A_BASIC][0] = makeScore(count, statusCheckTestCaseBasicList.size());
       CreateTestCaseServlet.saveTestCase(testCaseMessage, session);
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
       }
     }
-    areaALevel1Score = makeScore(testPass, statusCheckTestCaseBasicList.size());
+    areaScore[SUITE_A_BASIC][0] = makeScore(testPass, statusCheckTestCaseBasicList.size());
   }
 
   private boolean verifyNoMajorChangesMade(TestCaseMessage testCaseMessage) {
@@ -1402,6 +1375,90 @@ return null;
     // }
   }
 
+  private static final int[] TEST_PANELS = { ForecastTesterManager.TEST_PANEL_IHS_ROLLOUT_2013, ForecastTesterManager.TEST_PANEL_CDSI_TEST_CASES_V1_0, ForecastTesterManager.TEST_PANEL_IHS_ROLLOUT_2013, ForecastTesterManager.TEST_PANEL_IHS_FROM_RPMS };
+  // private static final int[] TEST_PANELS = { ForecastTesterManager.TEST_PANEL_VDH };
+  private static final String TCH_FORECAST_TESTER_URL = "http://localhost:8181/ExternalTestServlet";
+
+  private ForecastTesterManager forecastTesterManager = null;
+
+  private void prepareForecastPrep() {
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.YEAR, -18);
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+    String eighteen = sdf.format(calendar.getTime());
+
+    Transformer transformer = new Transformer();
+    int count = 0;
+    forecastTesterManager = new ForecastTesterManager(TCH_FORECAST_TESTER_URL);
+    try {
+      for (int testPanelId : TEST_PANELS) {
+        List<ForecastTestCase> forecastTestCaseList = forecastTesterManager.getForecastTestCaseList(testPanelId);
+        for (ForecastTestCase forecastTestCase : forecastTestCaseList) {
+          count++;
+          TestCaseMessage testCaseMessage = new TestCaseMessage();
+          testCaseMessage.setForecastTestCase(forecastTestCase);
+          StringBuilder sb = new StringBuilder();
+          sb.append("MSH|\nPID|\n");
+          boolean isUnderEighteen = forecastTestCase.getPatientDob().compareTo(eighteen) > 0;
+          if (isUnderEighteen) {
+            sb.append("NK1|\n");
+          }
+          for (ForecastTestEvent forecastTestEvent : forecastTestCase.getForecastTestEventList()) {
+            if (forecastTestEvent.getEventTypeCode().equals("V")) {
+              sb.append("ORC|\nRXA|\n");
+            }
+          }
+
+          testCaseMessage.appendOriginalMessage(sb.toString());
+          testCaseMessage.setDescription(forecastTestCase.getCategoryName() + ": " + forecastTestCase.getDescription());
+          testCaseMessage.setTestCaseSet(testCaseSet);
+          testCaseMessage.setTestCaseNumber(uniqueMRNBase + "F1." + count);
+          testCaseMessage.setQuickTransformations(new String[] { "2.5.1",
+              (forecastTestCase.getPatientSex().equals("M") ? "BOY" : "GIRL"), "ADDRESS", "PHONE", "MOTHER", "RACE",
+              "ETHNICITY" });
+          testCaseMessage.appendCustomTransformation("PID-7=" + forecastTestCase.getPatientDob());
+          int vaccinationCount = 0;
+          for (ForecastTestEvent forecastTestEvent : forecastTestCase.getForecastTestEventList()) {
+            if (forecastTestEvent.getEventTypeCode().equals("V")) {
+              vaccinationCount++;
+              testCaseMessage.appendCustomTransformation("ORC#" + vaccinationCount + "-1=RE");
+              testCaseMessage.appendCustomTransformation("ORC#" + vaccinationCount + "-3.1="
+                  + forecastTestEvent.getTestEventId());
+              testCaseMessage.appendCustomTransformation("ORC#" + vaccinationCount + "-3.2=TCH-FT");
+              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-1=0");
+              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-2=1");
+              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-3="
+                  + forecastTestEvent.getEventDate());
+              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-5.1="
+                  + forecastTestEvent.getVaccineCvx());
+              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-5.2="
+                  + forecastTestEvent.getLabel());
+              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-5.3=CVX");
+              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-6=999");
+              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-9.1=01");
+              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-9.2=Historical");
+              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-9.3=NIP001");
+              if (!forecastTestEvent.getVaccineMvx().equals("")) {
+                testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-17.1="
+                    + forecastTestEvent.getVaccineMvx());
+                testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-17.3=MVX");
+              }
+
+            }
+          }
+
+          statusCheckTestCaseForecastPrepList.add(testCaseMessage);
+          transformer.transform(testCaseMessage);
+          testCaseMessage.setAssertResult("Accept - *");
+          register(testCaseMessage);
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      statusMessageList.add(sdf.format(new Date()) + " Unable to get forecast schedules because: " + e.getMessage());
+    }
+  }
+
   private void prepareExceptional() {
 
     Transformer transformer = new Transformer();
@@ -1655,14 +1712,14 @@ return null;
       } catch (Throwable t) {
         testCaseMessage.setException(t);
       }
-      areaBLevel1Progress = makeScore(count, statusCheckTestCaseIntermediateList.size());
+      areaProgress[SUITE_B_INTERMEDIATE][0] = makeScore(count, statusCheckTestCaseIntermediateList.size());
       CreateTestCaseServlet.saveTestCase(testCaseMessage, session);
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
       }
     }
-    areaBLevel1Score = makeScore(testPass, statusCheckTestCaseIntermediateList.size());
+    areaScore[SUITE_B_INTERMEDIATE][0] = makeScore(testPass, statusCheckTestCaseIntermediateList.size());
   }
 
   private void updateExceptional() {
@@ -1686,14 +1743,45 @@ return null;
       } catch (Throwable t) {
         testCaseMessage.setException(t);
       }
-      areaDLevel1Progress = makeScore(count, statusCheckTestCaseExceptionalList.size());
+      areaProgress[SUITE_D_EXCEPTIONAL][0] = makeScore(count, statusCheckTestCaseExceptionalList.size());
       CreateTestCaseServlet.saveTestCase(testCaseMessage, session);
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
       }
     }
-    areaDLevel1Score = makeScore(testPass, statusCheckTestCaseExceptionalList.size());
+    areaScore[SUITE_D_EXCEPTIONAL][0] = makeScore(testPass, statusCheckTestCaseExceptionalList.size());
+  }
+
+  private void updateForecastPrep() {
+    int count;
+    int testPass = 0;
+    TestRunner testRunner = new TestRunner();
+    count = 0;
+    for (TestCaseMessage testCaseMessage : statusCheckTestCaseForecastPrepList) {
+      count++;
+      try {
+        testRunner.runTest(connector, testCaseMessage);
+        boolean pass = testCaseMessage.isAccepted();
+        totalUpdateCount++;
+        totalUpdateTime += testRunner.getTotalRunTime();
+        testCaseMessage.setHasRun(true);
+        if (pass) {
+          testPass++;
+        }
+        testCaseMessage.setErrorList(testRunner.getErrorList());
+        printExampleMessage(testCaseMessage, "E Forecast Prep");
+      } catch (Throwable t) {
+        testCaseMessage.setException(t);
+      }
+      areaProgress[SUITE_E_FORECAST_PREP][0] = makeScore(count, statusCheckTestCaseForecastPrepList.size());
+      CreateTestCaseServlet.saveTestCase(testCaseMessage, session);
+      if (!keepRunning) {
+        status = STATUS_STOPPED;
+        return;
+      }
+    }
+    areaScore[SUITE_E_FORECAST_PREP][0] = makeScore(testPass, statusCheckTestCaseForecastPrepList.size());
   }
 
   private void queryBasic() {
@@ -1744,16 +1832,16 @@ return null;
       } catch (Throwable t) {
         queryTestCaseMessage.setException(t);
       }
-      areaALevel3Progress = makeScore(count, statusCheckTestCaseBasicList.size());
-      areaALevel2Progress = areaALevel3Progress;
+      areaProgress[SUITE_A_BASIC][2] = makeScore(count, statusCheckTestCaseBasicList.size());
+      areaProgress[SUITE_A_BASIC][1] = areaProgress[SUITE_A_BASIC][2];
       CreateTestCaseServlet.saveTestCase(queryTestCaseMessage, session);
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
       }
     }
-    areaALevel2Score = makeScore(testQueryPassRequired, testQueryCountRequired);
-    areaALevel3Score = makeScore(testQueryPassOptional, testQueryCountOptional);
+    areaScore[SUITE_A_BASIC][1] = makeScore(testQueryPassRequired, testQueryCountRequired);
+    areaScore[SUITE_A_BASIC][2] = makeScore(testQueryPassOptional, testQueryCountOptional);
   }
 
   private String prepareSendQueryMessage(TestCaseMessage queryTestCaseMessage) {
@@ -1783,14 +1871,30 @@ return null;
     }
   }
 
-  private void queryIntermediate() {
+  private void prepareQueryForecastPrep() {
+    int count = 0;
+    for (TestCaseMessage testCaseMessage : statusCheckTestCaseForecastPrepList) {
+      count++;
+      TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
+      queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
+      queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
+      queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText()));
+      queryTestCaseMessage.setTestCaseSet(testCaseSet);
+      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + "E3." + count);
+      queryTestCaseMessage.setForecastTestCase(testCaseMessage.getForecastTestCase());
+      statusCheckQueryTestCaseForecastPrepList.add(queryTestCaseMessage);
+      register(queryTestCaseMessage);
+    }
+  }
+
+  private void query(int suite, List<TestCaseMessage> testCaseMessageList) {
     int count;
     int testQueryPassRequired = 0;
     int testQueryPassOptional = 0;
     int testQueryCountRequired = 0;
     int testQueryCountOptional = 0;
     count = 0;
-    for (TestCaseMessage queryTestCaseMessage : statusCheckQueryTestCaseIntermediateList) {
+    for (TestCaseMessage queryTestCaseMessage : testCaseMessageList) {
       count++;
 
       try {
@@ -1823,82 +1927,29 @@ return null;
             }
           }
         }
-      } catch (Throwable t) {
-        queryTestCaseMessage.setException(t);
-      }
-      areaBLevel3Progress = makeScore(count, statusCheckQueryTestCaseIntermediateList.size());
-      areaBLevel2Progress = areaBLevel3Progress;
-      CreateTestCaseServlet.saveTestCase(queryTestCaseMessage, session);
-      if (!keepRunning) {
-        status = STATUS_STOPPED;
-        return;
-      }
-    }
-    areaBLevel2Score = makeScore(testQueryPassRequired, testQueryCountRequired);
-    areaBLevel3Score = makeScore(testQueryPassOptional, testQueryCountOptional);
-  }
-
-  private void queryExceptional() {
-    int count;
-    int testQueryPassRequired = 0;
-    int testQueryPassOptional = 0;
-    int testQueryCountRequired = 0;
-    int testQueryCountOptional = 0;
-    count = 0;
-    for (TestCaseMessage testCaseMessage : statusCheckTestCaseExceptionalList) {
-      count++;
-      String vxuMessage = testCaseMessage.getMessageText();
-
-      TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
-      queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
-      queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
-      queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText()));
-      queryTestCaseMessage.setTestCaseSet(testCaseSet);
-      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + "B3." + count);
-      statusCheckQueryTestCaseTolerantList.add(queryTestCaseMessage);
-      register(queryTestCaseMessage);
-      try {
-        long startTime = System.currentTimeMillis();
-        String message = prepareSendQueryMessage(queryTestCaseMessage);
-        String rspMessage = queryConnector.submitMessage(message, false);
-        totalQueryCount++;
-        totalQueryTime += System.currentTimeMillis() - startTime;
-        queryTestCaseMessage.setHasRun(true);
-        queryTestCaseMessage.setActualResponseMessage(rspMessage);
-        List<CompareManager.Comparison> comparisonList = CompareManager.compareMessages(vxuMessage, rspMessage);
-        queryTestCaseMessage.setComparisonList(comparisonList);
-        queryTestCaseMessage.setPassedTest(true);
-        for (CompareManager.Comparison comparison : comparisonList) {
-          if (comparison.isTested()
-              && comparison.getPriorityLevel() <= CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL) {
-            testQueryCountOptional++;
-            if (comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED) {
-              testQueryCountRequired++;
-            }
-
-            if (comparison.isPass()) {
-              testQueryPassOptional++;
-              if (comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED) {
-                testQueryPassRequired++;
-              }
-            } else if (comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED) {
-              queryTestCaseMessage.setPassedTest(false);
+        if (queryTestCaseMessage.getForecastTestCase() != null) {
+          if (connector.getTchForecastTesterSoftwareId() > 0) {
+            try {
+              forecastTesterManager.reportForecastResults(queryTestCaseMessage.getForecastTestCase(), rspMessage,
+                  connector.getTchForecastTesterSoftwareId());
+            } catch (Exception e) {
+              e.printStackTrace();
             }
           }
         }
       } catch (Throwable t) {
         queryTestCaseMessage.setException(t);
       }
-      areaDLevel3Progress = makeScore(count, statusCheckTestCaseExceptionalList.size());
-      areaDLevel2Progress = areaDLevel3Progress;
+      areaProgress[suite][2] = makeScore(count, testCaseMessageList.size());
+      areaProgress[suite][1] = areaProgress[suite][2];
       CreateTestCaseServlet.saveTestCase(queryTestCaseMessage, session);
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
       }
     }
-    areaDLevel2Score = makeScore(testQueryPassRequired, testQueryCountRequired);
-    areaDLevel3Score = makeScore(testQueryPassOptional, testQueryCountOptional);
+    areaScore[suite][1] = makeScore(testQueryPassRequired, testQueryCountRequired);
+    areaScore[suite][2] = makeScore(testQueryPassOptional, testQueryCountOptional);
   }
 
   public void printResults(PrintWriter out) {
@@ -1911,26 +1962,27 @@ return null;
     out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th><font size=\"+1\">Basic</font><br/><font size=\"-2\">IIS can accept updates from EHR</font></th>");
-    if (areaALevel1Score >= 100) {
+    if (areaScore[SUITE_A_BASIC][0] >= 100) {
       out.println("    <td class=\"pass\">All NIST 2014 scenarios are accepted. <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
-    } else if (areaALevel1Score >= 0) {
-      out.println("    <td class=\"fail\">Not all NIST 2014 scenarios are accepted. (" + areaALevel1Score
+    } else if (areaScore[SUITE_A_BASIC][0] >= 0) {
+      out.println("    <td class=\"fail\">Not all NIST 2014 scenarios are accepted. (" + areaScore[SUITE_A_BASIC][0]
           + "% accepted) <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
     } else {
-      if (areaALevel1Progress > -1) {
-        out.println("    <td>running now ... <br/>" + areaALevel1Progress + "% complete</td>");
+      if (areaProgress[SUITE_A_BASIC][0] > -1) {
+        out.println("    <td>running now ... <br/>" + areaProgress[SUITE_A_BASIC][0] + "% complete</td>");
       } else {
         out.println("    <td>updates not sent yet</td>");
       }
     }
-    if (areaALevel2Score >= 100) {
+    if (areaScore[SUITE_A_BASIC][1] >= 100) {
       out.println("    <td class=\"pass\">All required IIS core fields are supported.  <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
-    } else if (areaALevel2Score >= 0) {
-      out.println("    <td class=\"fail\">Not all required IIS core fields are supported. (" + areaALevel2Score
+    } else if (areaScore[SUITE_A_BASIC][1] >= 0) {
+      out.println("    <td class=\"fail\">Not all required IIS core fields are supported. ("
+          + areaScore[SUITE_A_BASIC][1]
           + "% of tests passed) <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
     } else {
-      if (areaALevel2Progress > -1) {
-        out.println("    <td>running now ... <br/>" + areaALevel2Progress + "% complete</td>");
+      if (areaProgress[SUITE_A_BASIC][1] > -1) {
+        out.println("    <td>running now ... <br/>" + areaProgress[SUITE_A_BASIC][1] + "% complete</td>");
       } else {
         if (willQuery) {
           out.println("    <td>queries not sent yet</td>");
@@ -1939,16 +1991,16 @@ return null;
         }
       }
     }
-    if (areaALevel3Score >= 100) {
+    if (areaScore[SUITE_A_BASIC][2] >= 100) {
       out.println("    <td class=\"pass\">All required and optional IIS core data were returned when queried. "
           + "<font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
-    } else if (areaALevel3Score >= 0) {
+    } else if (areaScore[SUITE_A_BASIC][2] >= 0) {
       out.println("    <td class=\"fail\">Not all required or optional IIS core data were returned when queried ("
-          + areaALevel3Score
+          + areaScore[SUITE_A_BASIC][2]
           + "% of fields returned) <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
     } else {
-      if (areaALevel3Progress > -1) {
-        out.println("    <td>running now ... <br/>" + areaALevel3Progress + "% complete</td>");
+      if (areaProgress[SUITE_A_BASIC][2] > -1) {
+        out.println("    <td>running now ... <br/>" + areaProgress[SUITE_A_BASIC][2] + "% complete</td>");
       } else {
         if (willQuery) {
           out.println("    <td>queries not sent yet</td>");
@@ -1958,32 +2010,33 @@ return null;
       }
     }
     out.println("  </tr>");
-    if (runB) {
+    if (run[SUITE_B_INTERMEDIATE]) {
       out.println("  <tr>");
       out.println("    <th><font size=\"+1\">Intermediate</font><br/><font size=\"-2\">IIS can recognize valid codes</font></th>");
-      if (areaBLevel1Score >= 100) {
+      if (areaScore[SUITE_B_INTERMEDIATE][0] >= 100) {
         out.println("    <td class=\"pass\">All messages with core coded data elements were accepted. "
             + "<font size=\"-1\"><a href=\"#areaBLevel1\">(details)</a></font></td>");
-      } else if (areaBLevel1Score >= 0) {
+      } else if (areaScore[SUITE_B_INTERMEDIATE][0] >= 0) {
         out.println("    <td class=\"fail\">Some messages with core coded data elements were NOT accepted. ("
-            + areaBLevel1Score + "% messages accepted) "
+            + areaScore[SUITE_B_INTERMEDIATE][0] + "% messages accepted) "
             + "<font size=\"-1\"><a href=\"#areaBLevel1\">(details)</a></font></td>");
       } else {
-        if (areaBLevel1Progress > -1) {
-          out.println("    <td>running now ... <br/>" + areaBLevel1Progress + "% complete</td>");
+        if (areaProgress[SUITE_B_INTERMEDIATE][0] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_B_INTERMEDIATE][0] + "% complete</td>");
         } else {
           out.println("    <td>updates not sent yet</td>");
         }
       }
-      if (areaBLevel2Score >= 100) {
+      if (areaScore[SUITE_B_INTERMEDIATE][1] >= 100) {
         out.println("    <td class=\"pass\">All required IIS core fields were returned. "
             + "<font size=\"-1\"><a href=\"#areaBLevel2\">(details)</a></font></td>");
-      } else if (areaBLevel2Score >= 0) {
-        out.println("    <td class=\"fail\">Not all required IIS core fields were returned. (" + areaBLevel2Score
-            + "% core fields returned) " + "<font size=\"-1\"><a href=\"#areaBLevel2\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_B_INTERMEDIATE][1] >= 0) {
+        out.println("    <td class=\"fail\">Not all required IIS core fields were returned. ("
+            + areaScore[SUITE_B_INTERMEDIATE][1] + "% core fields returned) "
+            + "<font size=\"-1\"><a href=\"#areaBLevel2\">(details)</a></font></td>");
       } else {
-        if (areaBLevel2Progress > -1) {
-          out.println("    <td>running now ... <br/>" + areaBLevel2Progress + "% complete</td>");
+        if (areaProgress[SUITE_B_INTERMEDIATE][1] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_B_INTERMEDIATE][1] + "% complete</td>");
         } else {
           if (willQuery) {
             out.println("    <td>queries not sent yet</td>");
@@ -1992,16 +2045,16 @@ return null;
           }
         }
       }
-      if (areaBLevel3Score >= 100) {
+      if (areaScore[SUITE_B_INTERMEDIATE][2] >= 100) {
         out.println("    <td class=\"pass\">All required and optional IIS core fields were returned. "
             + "<font size=\"-1\"><a href=\"#areaBLevel3\">(details)</a></font></td>");
-      } else if (areaBLevel3Score >= 0) {
+      } else if (areaScore[SUITE_B_INTERMEDIATE][2] >= 0) {
         out.println("    <td class=\"fail\">Not all required or optional IIS core fields were returned. ("
-            + areaBLevel3Score + "% required and optional were returned) "
+            + areaScore[SUITE_B_INTERMEDIATE][2] + "% required and optional were returned) "
             + "<font size=\"-1\"><a href=\"#areaBLevel3\">(details)</a></font></td>");
       } else {
-        if (areaBLevel3Progress > -1) {
-          out.println("    <td>running now ... <br/>" + areaBLevel3Progress + "% complete</td>");
+        if (areaProgress[SUITE_B_INTERMEDIATE][2] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_B_INTERMEDIATE][2] + "% complete</td>");
         } else {
           if (willQuery) {
             out.println("    <td>queries not sent yet</td>");
@@ -2012,75 +2065,80 @@ return null;
       }
       out.println("  </tr>");
     }
-    if (runC) {
+    if (run[SUITE_C_ADVANCED]) {
       out.println("  <tr>");
       out.println("    <th><font size=\"+1\">Advanced</font><br/><font size=\"-2\">IIS can identify quality issues</font></th>");
-      if (areaCLevelScore[0] >= 100) {
+      if (areaScore[SUITE_C_ADVANCED][0] >= 100) {
         out.println("    <td class=\"pass\">All high priority issues were identified. "
             + "<font size=\"-1\"><a href=\"#areaCLevel1\">(details)</a></font></td>");
-      } else if (areaCLevelScore[0] >= 0) {
-        out.println("    <td class=\"fail\">Not all high priority issues were identified. (" + areaCLevelScore[0]
-            + "% of issues identified) " + "<font size=\"-1\"><a href=\"#areaCLevel1\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_C_ADVANCED][0] >= 0) {
+        out.println("    <td class=\"fail\">Not all high priority issues were identified. ("
+            + areaScore[SUITE_C_ADVANCED][0] + "% of issues identified) "
+            + "<font size=\"-1\"><a href=\"#areaCLevel1\">(details)</a></font></td>");
       } else {
-        if (areaCLevelProgress[0] > -1) {
-          out.println("    <td>running now ... <br/>" + areaCLevelProgress[0] + "% complete</td>");
+        if (areaProgress[SUITE_C_ADVANCED][0] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_C_ADVANCED][0] + "% complete</td>");
         } else {
           out.println("    <td>updates not sent yet</td>");
         }
       }
-      if (areaCLevelScore[1] >= 100) {
+      if (areaScore[SUITE_C_ADVANCED][1] >= 100) {
         out.println("    <td class=\"pass\">All medium priority issues were identified. "
             + "<font size=\"-1\"><a href=\"#areaCLevel2\">(details)</a></font></td>");
-      } else if (areaCLevelScore[1] >= 0) {
-        out.println("    <td class=\"fail\">Not all medium priority issues were identified. (" + areaCLevelScore[1]
-            + "% issues identified) " + "<font size=\"-1\"><a href=\"#areaCLevel2\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_C_ADVANCED][1] >= 0) {
+        out.println("    <td class=\"fail\">Not all medium priority issues were identified. ("
+            + areaScore[SUITE_C_ADVANCED][1] + "% issues identified) "
+            + "<font size=\"-1\"><a href=\"#areaCLevel2\">(details)</a></font></td>");
       } else {
-        if (areaCLevelProgress[1] > -1) {
-          out.println("    <td>running now ... <br/>" + areaCLevelProgress[1] + "% complete</td>");
+        if (areaProgress[SUITE_C_ADVANCED][1] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_C_ADVANCED][1] + "% complete</td>");
         } else {
           out.println("    <td>updates not sent yet</td>");
         }
       }
-      if (areaCLevelScore[2] >= 100) {
+      if (areaScore[SUITE_C_ADVANCED][2] >= 100) {
         out.println("    <td class=\"pass\">All low priority issues were identified. "
             + "<font size=\"-1\"><a href=\"#areaCLevel3\">(details)</a></font></td>");
-      } else if (areaCLevelScore[2] >= 0) {
-        out.println("    <td class=\"fail\">Not all low priority issues were identified. (" + areaCLevelScore[2]
-            + "% issues were identified) " + "<font size=\"-1\"><a href=\"#areaCLevel3\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_C_ADVANCED][2] >= 0) {
+        out.println("    <td class=\"fail\">Not all low priority issues were identified. ("
+            + areaScore[SUITE_C_ADVANCED][2] + "% issues were identified) "
+            + "<font size=\"-1\"><a href=\"#areaCLevel3\">(details)</a></font></td>");
       } else {
-        if (areaCLevelProgress[2] > -1) {
-          out.println("    <td>running now ... <br/>" + areaCLevelProgress[2] + "% complete</td>");
+        if (areaProgress[SUITE_C_ADVANCED][2] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_C_ADVANCED][2] + "% complete</td>");
         } else {
           out.println("    <td>updates not sent yet</td>");
         }
       }
       out.println("  </tr>");
     }
-    if (runD) {
+    if (run[SUITE_D_EXCEPTIONAL]) {
       out.println("  <tr>");
       out.println("    <th><font size=\"+1\">Exceptional</font><br/><font size=\"-2\">IIS can allow for minor differences</font></th>");
-      if (areaDLevel1Score >= 100) {
+      if (areaScore[SUITE_D_EXCEPTIONAL][0] >= 100) {
         out.println("    <td class=\"pass\">All messages accepted as-is. "
             + "<font size=\"-1\"><a href=\"#areaDLevel1\">(details)</a></font></td>");
-      } else if (areaDLevel1Score >= 0) {
-        out.println("    <td class=\"fail\">Some messages were not accepted as-is. (" + areaDLevel1Score
-            + "% messages accepted) " + "<font size=\"-1\"><a href=\"#areaDLevel1\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_D_EXCEPTIONAL][0] >= 0) {
+        out.println("    <td class=\"fail\">Some messages were not accepted as-is. ("
+            + areaScore[SUITE_D_EXCEPTIONAL][0] + "% messages accepted) "
+            + "<font size=\"-1\"><a href=\"#areaDLevel1\">(details)</a></font></td>");
       } else {
-        if (areaDLevel1Progress > -1) {
-          out.println("    <td>running now ... <br/>" + areaDLevel1Progress + "% complete</td>");
+        if (areaProgress[SUITE_D_EXCEPTIONAL][0] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_D_EXCEPTIONAL][0] + "% complete</td>");
         } else {
           out.println("    <td>updates not sent yet</td>");
         }
       }
-      if (areaDLevel2Score >= 100) {
+      if (areaScore[SUITE_D_EXCEPTIONAL][1] >= 100) {
         out.println("    <td class=\"pass\">All required IIS core fields were returned. "
             + "<font size=\"-1\"><a href=\"#areaDLevel2\">(details)</a></font></td>");
-      } else if (areaDLevel2Score >= 0) {
-        out.println("    <td class=\"fail\">Not all required IIS core fields were returned. (" + areaDLevel2Score
-            + "% core fields returned) " + "<font size=\"-1\"><a href=\"#areaDLevel2\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_D_EXCEPTIONAL][1] >= 0) {
+        out.println("    <td class=\"fail\">Not all required IIS core fields were returned. ("
+            + areaScore[SUITE_D_EXCEPTIONAL][1] + "% core fields returned) "
+            + "<font size=\"-1\"><a href=\"#areaDLevel2\">(details)</a></font></td>");
       } else {
-        if (areaDLevel2Progress > -1) {
-          out.println("    <td>running now ... <br/>" + areaDLevel2Progress + "% complete</td>");
+        if (areaProgress[SUITE_D_EXCEPTIONAL][1] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_D_EXCEPTIONAL][1] + "% complete</td>");
         } else {
           if (willQuery) {
             out.println("    <td>queries not sent yet</td>");
@@ -2089,16 +2147,71 @@ return null;
           }
         }
       }
-      if (areaDLevel3Score >= 100) {
+      if (areaScore[SUITE_D_EXCEPTIONAL][2] >= 100) {
         out.println("    <td class=\"pass\">All required and optional IIS core fields were returned. "
             + "<font size=\"-1\"><a href=\"#areaDLevel3\">(details)</a></font></td>");
-      } else if (areaDLevel3Score >= 0) {
+      } else if (areaScore[SUITE_D_EXCEPTIONAL][2] >= 0) {
         out.println("    <td class=\"fail\">Not all required or optional IIS core fields were returned. ("
-            + areaDLevel3Score + "% required and optional were returned) "
+            + areaScore[SUITE_D_EXCEPTIONAL][2] + "% required and optional were returned) "
             + "<font size=\"-1\"><a href=\"#areaDLevel3\">(details)</a></font></td>");
       } else {
-        if (areaDLevel3Progress > -1) {
-          out.println("    <td>running now ... <br/>" + areaDLevel3Progress + "% complete</td>");
+        if (areaProgress[SUITE_D_EXCEPTIONAL][2] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_D_EXCEPTIONAL][2] + "% complete</td>");
+        } else {
+          if (willQuery) {
+            out.println("    <td>queries not sent yet</td>");
+          } else {
+            out.println("    <td>query tests not enabled</td>");
+          }
+        }
+      }
+      out.println("  </tr>");
+    }
+    if (run[SUITE_E_FORECAST_PREP]) {
+      out.println("  <tr>");
+      out.println("    <th><font size=\"+1\">Forecast Prep</font><br/><font size=\"-2\">IIS can accept shot histories</font></th>");
+      if (areaScore[SUITE_E_FORECAST_PREP][0] >= 100) {
+        out.println("    <td class=\"pass\">All shot histories were accepted. "
+            + "<font size=\"-1\"><a href=\"#areaELevel1\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_E_FORECAST_PREP][0] >= 0) {
+        out.println("    <td class=\"fail\">Some shot histories were NOT accepted. ("
+            + areaScore[SUITE_E_FORECAST_PREP][0] + "% messages accepted) "
+            + "<font size=\"-1\"><a href=\"#areaELevel1\">(details)</a></font></td>");
+      } else {
+        if (areaProgress[SUITE_E_FORECAST_PREP][0] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_E_FORECAST_PREP][0] + "% complete</td>");
+        } else {
+          out.println("    <td>updates not sent yet</td>");
+        }
+      }
+      if (areaScore[SUITE_E_FORECAST_PREP][1] >= 100) {
+        out.println("    <td class=\"pass\">All required IIS core fields were returned. "
+            + "<font size=\"-1\"><a href=\"#areaELevel2\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_E_FORECAST_PREP][1] >= 0) {
+        out.println("    <td class=\"fail\">Not all required IIS core fields were returned. ("
+            + areaScore[SUITE_E_FORECAST_PREP][1] + "% core fields returned) "
+            + "<font size=\"-1\"><a href=\"#areaELevel2\">(details)</a></font></td>");
+      } else {
+        if (areaProgress[SUITE_E_FORECAST_PREP][1] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_E_FORECAST_PREP][1] + "% complete</td>");
+        } else {
+          if (willQuery) {
+            out.println("    <td>queries not sent yet</td>");
+          } else {
+            out.println("    <td>query tests not enabled</td>");
+          }
+        }
+      }
+      if (areaScore[SUITE_E_FORECAST_PREP][2] >= 100) {
+        out.println("    <td class=\"pass\">All required and optional IIS core fields were returned. "
+            + "<font size=\"-1\"><a href=\"#areaELevel3\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_E_FORECAST_PREP][2] >= 0) {
+        out.println("    <td class=\"fail\">Not all required or optional IIS core fields were returned. ("
+            + areaScore[SUITE_E_FORECAST_PREP][2] + "% required and optional were returned) "
+            + "<font size=\"-1\"><a href=\"#areaELevel3\">(details)</a></font></td>");
+      } else {
+        if (areaProgress[SUITE_E_FORECAST_PREP][2] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_E_FORECAST_PREP][2] + "% complete</td>");
         } else {
           if (willQuery) {
             out.println("    <td>queries not sent yet</td>");
@@ -2111,55 +2224,57 @@ return null;
     }
     out.println("  <tr>");
     out.println("    <th><font size=\"+1\">Performance</font><br/><font size=\"-2\">IIS can reply quickly</font></th>");
-    if (areaELevel1Progress == -1) {
+    if (areaProgress[SUITE_G_PERFORMANCE][0] == -1) {
       out.println("    <td>not calculated yet</td>");
     } else {
-      if (areaELevel1Score < 3000) {
-        out.println("    <td class=\"pass\">Performance was acceptable: " + areaELevel1Score + "ms for updates.</td>");
-      } else {
-        out.println("    <td class=\"fail\">Performance was below acceptable levels: " + areaELevel1Score
+      if (areaScore[SUITE_G_PERFORMANCE][0] < 3000) {
+        out.println("    <td class=\"pass\">Performance was acceptable: " + areaScore[SUITE_G_PERFORMANCE][0]
             + "ms for updates.</td>");
+      } else {
+        out.println("    <td class=\"fail\">Performance was below acceptable levels: "
+            + areaScore[SUITE_G_PERFORMANCE][0] + "ms for updates.</td>");
       }
     }
-    if (areaELevel2Progress == -1) {
+    if (areaProgress[SUITE_G_PERFORMANCE][1] == -1) {
       out.println("    <td>not calculated yet</td>");
     } else {
-      if (areaELevel2Score < 5000) {
-        out.println("    <td class=\"pass\">Performance was acceptable: " + areaELevel2Score + "ms for queries.</td>");
-      } else {
-        out.println("    <td class=\"fail\">Performance was below acceptable levels: " + areaELevel2Score
+      if (areaScore[SUITE_G_PERFORMANCE][1] < 5000) {
+        out.println("    <td class=\"pass\">Performance was acceptable: " + areaScore[SUITE_G_PERFORMANCE][1]
             + "ms for queries.</td>");
+      } else {
+        out.println("    <td class=\"fail\">Performance was below acceptable levels: "
+            + areaScore[SUITE_G_PERFORMANCE][1] + "ms for queries.</td>");
       }
     }
     out.println("    <td>not defined</td>");
     out.println("  </tr>");
-    if (runF) {
+    if (run[SUITE_H_CONFORMANCE]) {
       out.println("  <tr>");
       out.println("    <th><font size=\"+1\">Conformance</font><br/><font size=\"-2\">IIS can respond correctly to requests</font></th>");
-      if (areaFLevel1Score >= 100) {
+      if (areaScore[SUITE_H_CONFORMANCE][0] >= 100) {
         out.println("    <td class=\"pass\">All acknowledgement (ACK) responses meet HL7 and CDC standards. "
-            + "<font size=\"-1\"><a href=\"#areaFLevel1\">(details)</a></font></td>");
-      } else if (areaFLevel1Score >= 0) {
+            + "<font size=\"-1\"><a href=\"#areaHLevel1\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_H_CONFORMANCE][0] >= 0) {
         out.println("    <td class=\"fail\">Not all acknowledgement (ACK) responses meet HL7 and CDC standards. ("
-            + areaFLevel1Score + "% of messages met standard) "
-            + "<font size=\"-1\"><a href=\"#areaFLevel1\">(details)</a></font></td>");
+            + areaScore[SUITE_H_CONFORMANCE][0] + "% of messages met standard) "
+            + "<font size=\"-1\"><a href=\"#areaHLevel1\">(details)</a></font></td>");
       } else {
-        if (areaFLevel1Progress > -1) {
-          out.println("    <td>running now ... <br/>" + areaFLevel1Progress + "% complete</td>");
+        if (areaProgress[SUITE_H_CONFORMANCE][0] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_H_CONFORMANCE][0] + "% complete</td>");
         } else {
           out.println("    <td>not analyzed yet</td>");
         }
       }
-      if (areaFLevel2Score >= 100) {
+      if (areaScore[SUITE_H_CONFORMANCE][1] >= 100) {
         out.println("    <td class=\"pass\">All query response (RSP) messages met HL7 and CDC standards.  "
-            + "<font size=\"-1\"><a href=\"#areaFLevel2\">(details)</a></font></td>");
-      } else if (areaFLevel2Score >= 0) {
+            + "<font size=\"-1\"><a href=\"#areaHLevel2\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_H_CONFORMANCE][1] >= 0) {
         out.println("    <td class=\"fail\">Not all query response (RSP) messages met HL7 and CDC standards. ("
-            + areaFLevel2Score + "% of fields returned) "
-            + "<font size=\"-1\"><a href=\"#areaFLevel2\">(details)</a></font></td>");
+            + areaScore[SUITE_H_CONFORMANCE][1] + "% of fields returned) "
+            + "<font size=\"-1\"><a href=\"#areaHLevel2\">(details)</a></font></td>");
       } else {
-        if (areaFLevel2Progress > -1) {
-          out.println("    <td>running now ... <br/>" + areaFLevel2Progress + "% complete</td>");
+        if (areaProgress[SUITE_H_CONFORMANCE][1] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_H_CONFORMANCE][1] + "% complete</td>");
         } else {
           out.println("    <td>not analyzed yet</td>");
         }
@@ -2205,15 +2320,19 @@ return null;
     out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th>Intermediate Tests</th>");
-    out.println("    <td>" + (runB ? "Enabled" : "Not Enabled") + "</td>");
+    out.println("    <td>" + (run[SUITE_B_INTERMEDIATE] ? "Enabled" : "Not Enabled") + "</td>");
     out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th>Advanced Tests</th>");
-    out.println("    <td>" + (runC ? "Enabled" : "Not Enabled") + "</td>");
+    out.println("    <td>" + (run[SUITE_C_ADVANCED] ? "Enabled" : "Not Enabled") + "</td>");
     out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th>Exceptional Tests</th>");
-    out.println("    <td>" + (runD ? "Enabled" : "Not Enabled") + "</td>");
+    out.println("    <td>" + (run[SUITE_D_EXCEPTIONAL] ? "Enabled" : "Not Enabled") + "</td>");
+    out.println("  </tr>");
+    out.println("  <tr>");
+    out.println("    <th>Forecast Prep</th>");
+    out.println("    <td>" + (run[SUITE_E_FORECAST_PREP] ? "Enabled" : "Not Enabled") + "</td>");
     out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th>Performance Tests</th>");
@@ -2221,7 +2340,7 @@ return null;
     out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th>Conformance Tests</th>");
-    out.println("    <td>" + (runF ? "Enabled" : "Not Enabled") + "</td>");
+    out.println("    <td>" + (run[SUITE_H_CONFORMANCE] ? "Enabled" : "Not Enabled") + "</td>");
     out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th>Update Test Count</th>");
@@ -2306,7 +2425,7 @@ return null;
     }
 
     int testNum = 0;
-    if (areaALevel1Progress > 0) {
+    if (areaProgress[SUITE_A_BASIC][0] > 0) {
       out.println("<h2>Basic Interoperability Tests</h2>");
       out.println("<p><b>Purpose</b>: Test to see if the IIS can accept updates from certified EHR systems. </p>");
       out.println("<p><b>Requirements</b>: IIS must accept all 7 NIST messages than an EHR is required to be able to send in 2014. "
@@ -2467,7 +2586,7 @@ return null;
       }
     }
 
-    if (areaBLevel1Progress > 0) {
+    if (areaProgress[SUITE_B_INTERMEDIATE][0] > 0) {
 
       out.println("<h2>Basic Interoperability Tests</h2>");
       out.println("<p><b>Purpose</b>: Test to see if the IIS can accept recognize valid codes. </p>");
@@ -2492,7 +2611,7 @@ return null;
       out.println("</table>");
       out.println("</br>");
     }
-    if (areaBLevel2Progress > 0) {
+    if (areaProgress[SUITE_B_INTERMEDIATE][1] > 0) {
 
       out.println("<div id=\"areaBLevel2\"/>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
@@ -2505,7 +2624,7 @@ return null;
       out.println("</table>");
       out.println("</br>");
     }
-    if (areaBLevel3Progress > 0) {
+    if (areaProgress[SUITE_B_INTERMEDIATE][2] > 0) {
       out.println("<div id=\"areaBLevel3\"/>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
@@ -2518,8 +2637,8 @@ return null;
       out.println("</br>");
     }
 
-    for (int i = 0; i < areaCLevelScore.length; i++) {
-      if (profileTestCaseLists[i] == null || areaCLevelProgress[i] < 100) {
+    for (int i = 0; i < areaScore[SUITE_C_ADVANCED].length; i++) {
+      if (profileTestCaseLists[i] == null || areaProgress[SUITE_C_ADVANCED][i] < 100) {
         continue;
       }
 
@@ -2583,7 +2702,7 @@ return null;
       out.println("</br>");
     }
 
-    if (areaDLevel1Progress > 0) {
+    if (areaProgress[SUITE_D_EXCEPTIONAL][0] > 0) {
       out.println("<h2>Exceptional Interoperability Tests</h2>");
       out.println("<p><b>Purpose</b>: Test to see if the IIS can allow for minor differences. </p>");
       out.println("<p><b>Requirements</b>: IIS must be able to accept input outside of what the IIS "
@@ -2606,7 +2725,7 @@ return null;
       out.println("</table>");
       out.println("</br>");
     }
-    if (areaDLevel2Progress > 0) {
+    if (areaProgress[SUITE_D_EXCEPTIONAL][1] > 0) {
       out.println("<div id=\"areaDLevel2\"/>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
@@ -2618,7 +2737,7 @@ return null;
       out.println("</table>");
       out.println("</br>");
     }
-    if (areaDLevel3Progress > 0) {
+    if (areaProgress[SUITE_D_EXCEPTIONAL][2] > 0) {
       out.println("<div id=\"areaDLevel3\"/>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
@@ -2631,7 +2750,55 @@ return null;
       out.println("</br>");
     }
 
-    if (areaFLevel1Progress > 0) {
+    if (areaProgress[SUITE_E_FORECAST_PREP][0] > 0) {
+
+      out.println("<h2>Forecast Prep Tests</h2>");
+      out.println("<p><b>Purpose</b>: Test to submit patient histories to IIS in preparation for retrieving forecasts. </p>");
+      out.println("<p><b>Requirements</b>: IIS should be able to accept and store vaccination histories. </p>");
+      out.println("<ul>");
+      out.println("  <li>Level 1: The IIS must be able to accept vaccination histories. </li>");
+      out.println("  <li>Level 2: The IIS should return all required 2007 IIS Core Data that was submitted for Level 1 testing. </li>");
+      out.println("  <li>Level 3: The IIS may return all IIS 2013-2017 Core Data that was submitted for Level 1 testing.</li>");
+      out.println("</ul>");
+
+      out.println("<div id=\"areaELevel1\"/>");
+      out.println("<table border=\"1\" cellspacing=\"0\">");
+      out.println("  <tr>");
+      out.println("    <th colspan=\"2\">Forecaster Prep Tests - Level 1 - Accepting Vaccination Histories</th>");
+      out.println("  </tr>");
+      for (TestCaseMessage testCaseMessage : statusCheckTestCaseForecastPrepList) {
+        printTestCaseMessageDetailsUpdate(out, toFile, testCaseMessage);
+      }
+      out.println("</table>");
+      out.println("</br>");
+    }
+    if (areaProgress[SUITE_E_FORECAST_PREP][1] > 0) {
+
+      out.println("<div id=\"areaELevel2\"/>");
+      out.println("<table border=\"1\" cellspacing=\"0\">");
+      out.println("  <tr>");
+      out.println("    <th colspan=\"2\">Forecaster Prep Tests - Level 2 - Supports Required</th>");
+      out.println("  </tr>");
+      for (TestCaseMessage testCaseMessage : statusCheckQueryTestCaseForecastPrepList) {
+        printTestCaseMessageDetailsQueryRequired(out, toFile, testCaseMessage);
+      }
+      out.println("</table>");
+      out.println("</br>");
+    }
+    if (areaProgress[SUITE_E_FORECAST_PREP][2] > 0) {
+      out.println("<div id=\"areaELevel3\"/>");
+      out.println("<table border=\"1\" cellspacing=\"0\">");
+      out.println("  <tr>");
+      out.println("    <th colspan=\"2\">Forecaster Prep Tests - Level 3 - Supports Optional</th>");
+      out.println("  </tr>");
+      for (TestCaseMessage testCaseMessage : statusCheckQueryTestCaseForecastPrepList) {
+        printTestCaseMessageDetailsQueryOptional(out, toFile, testCaseMessage);
+      }
+      out.println("</table>");
+      out.println("</br>");
+    }
+
+    if (areaProgress[SUITE_H_CONFORMANCE][0] > 0) {
       out.println("<h2>Conformance Tests</h2>");
       out.println("<p><b>Purpose</b>: Test to see if the IIS can respond correctly to requests. </p>");
       out.println("<p><b>Requirements</b>: IIS must be able to return an ACK message that meets HL7 and CDC Standards "
@@ -2642,7 +2809,7 @@ return null;
       out.println("  <li>Level 2: IIS supports QDP/RSP and RSP message meets HL7 and CDC standards for format and content. IIS must be able to return a single record match for a patient submitted by VXU when the patient is queried using the same information supplied in the VXU. The query results should also include a forecast recommendation.</li>");
       out.println("</ul>");
 
-      out.println("<div id=\"areaFLevel1\"/>");
+      out.println("<div id=\"areaHLevel1\"/>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
       out.println("    <th colspan=\"2\">Conformance Tests - Level 1 - ACK Correctly Formatted</th>");
@@ -2677,8 +2844,8 @@ return null;
       out.println("</br>");
     }
 
-    if (areaFLevel2Progress > 0) {
-      out.println("<div id=\"areaFLevel2\"/>");
+    if (areaProgress[SUITE_H_CONFORMANCE][1] > 0) {
+      out.println("<div id=\"areaHLevel2\"/>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
       out.println("    <th colspan=\"2\">Conformance Tests - Level 2 - RSP Correctly Formatted</th>");

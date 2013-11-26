@@ -75,7 +75,7 @@ public class HD extends HL7Component
     universalID.setConditionalPredicate(new IsNotValued(namespaceID, UsageType.R, UsageType.O));
     universalID.addConformanceStatement(new OID(
         "IZ-5: If populated, HD.2 (Universal ID) it SHALL be valued with an ISO_compliant OID"));
-    setChild(3, universalIDType = new ID("Universtal ID Type", UsageType.C, 6, ValueSet.HL70301));
+    setChild(3, universalIDType = new ID("Universal ID Type", UsageType.C, 6, ValueSet.HL70301));
     universalIDType.setConditionalPredicate(new IsValued(universalID, UsageType.R, UsageType.X));
     universalIDType.addConformanceStatement(new ExactValue(
         "IZ-6: If populated,  HD.3 (Universal ID Type) SHALL be valued the literal value: \"ISO\"", "ISO"));

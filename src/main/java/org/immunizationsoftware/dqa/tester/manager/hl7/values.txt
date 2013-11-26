@@ -1,3 +1,11 @@
+HL70126=RD,Records,HL70126
+HL70008=AA,Original Mode: Application Accept,HL70008
+HL70008=AE,Original Mode: Application Error,HL70008
+HL70008=AR,Original Mode: Application Reject,HL70008
+HL70008=CA,Enhanced Mode: Commit Accept,HL70008
+HL70008=CE,Enhanced Mode: Commit Error,HL70008
+HL70008=CR,Enhanced Mode: Commit Reject,HL70008
+
 SEX=F,Female,HL70001
 SEX=M,Male,HL70001
 SEX=U,Unknown/undifferentiated,HL70001
@@ -714,8 +722,7 @@ LANGUAGE FULL=chi,Chinese,HL70396
 LANGUAGE FULL=chn,Chinook jargon,HL70396
 LANGUAGE FULL=chp,Chipewyan; Dene Suline,HL70396
 LANGUAGE FULL=cho,Choctaw,HL70396
-"LANGUAGE FULL=chu,Church Slavic; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church 
-Slavonic,HL70396"
+LANGUAGE FULL=chu,Church Slavic; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic,HL70396
 LANGUAGE FULL=chk,Chuukese,HL70396
 LANGUAGE FULL=chv,Chuvash,HL70396
 LANGUAGE FULL=nwc,Classical Newari; Old Newari; Classical Nepal Bhasa,HL70396
@@ -2104,3 +2111,610 @@ DEGREE=RN,Registered Nurse,HL70360
 DEGREE=RPH,Registered Pharmacist,HL70360
 DEGREE=SEC,Secretarial Certificate,HL70360
 DEGREE=TS,Trade School Graduate,HL70360
+
+
+HL70155=AL,Always,HL70155
+HL70155=ER,Error/reject only,HL70155
+HL70155=NE,Never,HL70155
+HL70155=SU,Successful completion only,HL70155
+HL70190=B,Firm/Business,HL70190
+HL70190=BA,Bad address ,HL70190
+HL70190=BDL,Birth delivery location,HL70190
+HL70190=BR,Residence at birth,HL70190
+HL70190=C,Current or temporary,HL70190
+HL70190=F,Country of origin ,HL70190
+HL70190=H,Home,HL70190
+HL70190=L,Legal address ,HL70190
+HL70190=M,Mailing,HL70190
+HL70190=N,Birth (nee) ,HL70190
+HL70190=O,Office,HL70190
+HL70190=P,Permanent,HL70190
+HL70190=RH,Registry home ,HL70190
+
+UCUM=mL,Milliliter,UCUM
+
+
+
+
+
+HL70162=C28161,Intramuscular ,HL70162
+HL70162=C38238,Intradermal ,HL70162
+HL70162=C38276,Intravenous ,HL70162
+HL70162=C38284,Nasal ,HL70162
+HL70162=C38288,Oral ,HL70162
+HL70162=C38299,Subcutaneous ,HL70162
+HL70162=C38305,Transdermal ,HL70162
+HL70162=C38676,Percutaneous ,HL70162
+HL70162=ID,Intradermal ,HL70162
+HL70162=IM,Intramuscular ,HL70162
+
+HL70162=IV,Intravenous ,HL70162
+HL70162=NS,Nasal ,HL70162
+HL70162=OTH,Other/Miscellaneous ,HL70162
+HL70162=PO,Oral ,HL70162
+HL70162=SC,Subcutaneous ,HL70162
+HL70162=TD,Transdermal ,HL70162
+HL70163=LA,Left Upper Arm ,HL70163
+HL70163=LD,Left Deltoid ,HL70163
+HL70163=LG,Left Gluteous Medius ,HL70163
+HL70163=LLFA,Left Lower Forearm ,HL70163
+HL70163=LT,Left Thigh ,HL70163
+HL70163=LVL,Left Vastus Lateralis ,HL70163
+HL70163=RA,Right Upper Arm ,HL70163
+HL70163=RD,Right Deltoid ,HL70163
+HL70163=RG,Right Gluteous Medius ,HL70163
+HL70163=RLFA,Right Lower Forearm ,HL70163
+HL70163=RT,Right Thigh ,HL70163
+HL70163=RVL,Right Vastus Lateralis ,HL70163
+HL70163=BN,Bilateral Nares,HL70163
+HL70163=LA,Left Arm,HL70163
+HL70163=MO,Mouth,HL70163
+HL70163=LN,Left Nares,HL70163
+HL70163=RN,Right Nares,HL70163
+
+HL70064=V01,Not VFC eligible ,HL70064
+HL70064=V02,VFC eligible-Medicaid/Medicaid managed care,HL70064
+HL70064=V03,VFC eligible-Uninsured ,HL70064
+HL70064=V04,VFC eligible- American Indian/Alaskan Native ,HL70064
+HL70064=V05,VFC eligible-Federally Qualified Health Center Patient (under-insured) ,HL70064
+HL70064=V06,VFC eligible- State specific eligibility (e.g. S-CHIP plan) ,HL70064
+HL70064=V07,VFC eligibility- Local-specific eligibility ,HL70064
+HL70064=V08,Not VFC eligible-Under-insured ,HL70064
+HL70064=OR01,S - Special Projects,HL70064
+HL70064=MIA04,Public vaccine - MI-VRP (Michigan Vaccine Replacement Program),HL70064
+HL70064=MIA05,Medicare (parts A, B and D),HL70064
+HL70064=MIA08,Private Stock Vaccine -Other Public Purchase,HL70064
+HL70064=MIA10,All Hazard eligible -Public Purchase,HL70064
+HL70064=MIA14,Medicaid-Non VFC,HL70064
+HL70396=HL70001,Administrative Sex,HL70396
+HL70396=HL70003,Event type,HL70396
+HL70396=HL70004,Patient class,HL70396
+HL70396=HL70005,Race,HL70396
+HL70396=HL70008,Acknowledgement code,HL70396
+HL70396=HL70010,Physician ID,HL70396
+HL70396=HL70061,Check digit scheme,HL70396
+HL70396=HL70063,Relationship,HL70396
+HL70396=HL70064,Financial class,HL70396
+HL70396=HL70076,Message type,HL70396
+HL70396=HL70078,Abnormal flags,HL70396
+HL70396=HL70085,Observation result status codes interpretation,HL70396
+HL70396=HL70091,Query priority,HL70396
+HL70396=HL70102,Delayed acknowledgment type,HL70396
+HL70396=HL70103,Processing ID,HL70396
+HL70396=HL70104,Version ID,HL70396
+HL70396=HL70105,Source of comment,HL70396
+HL70396=HL70199,Order Control Codes,HL70396
+HL70396=HL70126,Quantity limited request,HL70396
+HL70396=HL70136,Yes/No indicator,HL70396
+HL70396=HL70155,Accept/Application acknowledgment conditions,HL70396
+HL70396=HL70162,Route of administration,HL70396
+HL70396=HL70163,Administrative site,HL70396
+HL70396=HL70189,Ethnic Group,HL70396
+HL70396=HL70190,Address type,HL70396
+HL70396=HL70200,Name type,HL70396
+HL70396=HL70201,Telecommunication use code,HL70396
+HL70396=HL70202,Telecommunication equipment type,HL70396
+HL70396=HL70203,Identifier type,HL70396
+HL70396=HL70204,Organizational name type,HL70396
+HL70396=HL70207,Procesing mode,HL70396
+HL70396=HL70208,Query response status,HL70396
+HL70396=HL70211,Alternate character sets,HL70396
+HL70396=HL70215,Publicity code,HL70396
+HL70396=HL70220,Living arrangement,HL70396
+HL70396=MVX,Manufacturers of vaccines,HL70396
+
+HL70396=HL70228,Census tract,HL70396
+HL70396=HL70289,County/parish,HL70396
+
+HL70396=CVX,Codes for Vaccines administered,HL70396
+HL70396=HL70296,Language,HL70396
+HL70396=HL70297,CN ID source,HL70396
+HL70396=HL70300,Namespace ID,HL70396
+HL70396=HL70322,Completion Status,HL70396
+HL70396=HL70323,Action code,HL70396
+HL70396=HL70354,Message structure,HL70396
+HL70396=HL70356,Alternate character set handling scheme,HL70396
+HL70396=HL70357,Message error status code,HL70396
+HL70396=HL70360,Degree,HL70396
+HL70396=HL70361,Application,HL70396
+HL70396=HL70362,Facility,HL70396
+HL70396=HL70363,Assigning Authority,HL70396
+HL70396=HL70396,Coding system,HL70396
+HL70396=HL70441,Immunization registry status,HL70396
+HL70396=HL70471,Query Name,HL70396
+HL70396=HL70516,Error Severity,HL70396
+HL70396=HL70533,Application Error Code,HL70396
+HL70396=NIP001,Immunization information source,HL70396
+HL70396=NIP002,Substance refusal reason,HL70396
+HL70396=NIP003,Observation identifiers,HL70396
+HL70396=NIP004,Contraindications, Precautions, and Immunities,HL70396
+
+HL70125=CE,Coded Entry,HL70125
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+HL70125=TS,Time Stamp (Date & Time),HL70125
+
+
+
+
+
+
+HL70203=AN,Account number,HL70203
+HL70203=ANON,Anonymous identifier,HL70203
+HL70203=ANC,Account number Creditor,HL70203
+HL70203=AND,Account number debitor,HL70203
+HL70203=ANT,Temporary Account Number,HL70203
+HL70203=APRN,Advanced Practice Registered Nurse number,HL70203
+HL70203=BA,Bank Account Number,HL70203
+HL70203=BC,Bank Card Number,HL70203
+HL70203=BR,Birth registry number,HL70203
+HL70203=CC,Cost Center number,HL70203
+HL70203=CY,County number,HL70203
+HL70203=DDS,Dentist license number,HL70203
+HL70203=DEA,Drug Enforcement Administration registration number,HL70203
+HL70203=DFN,Drug Furnishng or prescriptive authority Number,HL70203
+HL70203=DL,Drivers license number,HL70203
+HL70203=DN,Doctor number,HL70203
+HL70203=DPM,Podiatrist license number,HL70203
+HL70203=DO,Osteopathic License number,HL70203
+HL70203=DR,Donor Registration Number,HL70203
+HL70203=EI,Employee number,HL70203
+HL70203=EN,Employer number,HL70203
+HL70203=FI,Facility ID,HL70203
+HL70203=GI,Guarantor internal identifier,HL70203
+HL70203=GL,General ledger number,HL70203
+HL70203=GN,Guarantor external identifier,HL70203
+HL70203=HC,Health Card Number,HL70203
+HL70203=JHN,Jurisdictional health number (Canada),HL70203
+HL70203=IND,Indigenouse/Aboriginal,HL70203
+HL70203=LI,Labor and industries number,HL70203
+HL70203=LN,License number,HL70203
+HL70203=LR,Local Registry ID,HL70203
+HL70203=MA,Patient Medicaid number,HL70203
+HL70203=MB,Member Number,HL70203
+HL70203=MC,Patients Medicare number,HL70203
+HL70203=MCD,Practioner Medicaid number,HL70203
+HL70203=MCN,Microchip Number,HL70203
+HL70203=MCR,Practitioner Medicare number,HL70203
+HL70203=MD,Medical License number,HL70203
+HL70203=MI,Military ID number,HL70203
+HL70203=MR,Medical record number,HL70203
+HL70203=MRT,Temporary Medical Record Number,HL70203
+HL70203=NE,National employer identifier,HL70203
+HL70203=NH,National Health Plan Identifier,HL70203
+HL70203=NI,National unique individual identifier,HL70203
+HL70203=NII,National Insurance Organization Identifier,HL70203
+HL70203=NIIP,National Insurance Payor Identifier,HL70203
+HL70203=NP,Nurse practitioner number,HL70203
+HL70203=NPI,National provider identifier,HL70203
+HL70203=OD,Optometrist license number,HL70203
+HL70203=PA,Physician Assistant number,HL70203
+HL70203=PCN,Penitentiary/correctional institution Number,HL70203
+HL70203=PE,Living Subject Enterprise Number,HL70203
+HL70203=PEN,Pension Number,HL70203
+HL70203=PI,Patient internal identifier,HL70203
+HL70203=PN,Person number,HL70203
+HL70203=PNT,Temporary Living Subject Number,HL70203
+HL70203=PPN,Passport number,HL70203
+HL70203=PRC,Permanent Resident Card Number,HL70203
+HL70203=PRN,Provider number,HL70203
+HL70203=PT,Patient external identifier,HL70203
+HL70203=QA,QA number,HL70203
+HL70203=RI,Resource identifier,HL70203
+HL70203=RPH,Pharmacist license number,HL70203
+HL70203=RN,Registered Nurse Number,HL70203
+HL70203=RR,Railroad Retirement number,HL70203
+HL70203=RRI,Regional registry ID,HL70203
+HL70203=SL,State license,HL70203
+HL70203=SN,Subsriber Number,HL70203
+HL70203=SR,State registry id,HL70203
+HL70203=SS,Social Security number,HL70203
+HL70203=TAX,Tax ID number,HL70203
+HL70203=U,Unspecified identifier,HL70203
+HL70203=UPIN,Medicare/CMS Universal Physician Identification numbers,HL70203
+HL70203=VN,Visit number,HL70203
+HL70203=WC,WIC identifier,HL70203
+HL70203=WCN,Workers Comp Number,HL70203
+HL70203=XX,Organization identifier,HL70203
+HL70103=D,Debug,HL70103
+HL70103=P,Production,HL70103
+HL70103=T,Training,HL70103
+LN=64994-7,Vaccine funding program eligibility category,LN
+LN=30963-3,Vaccine funding source,LN
+LN=30956-7,Vaccine type,LN
+LN=38890-0,Component Vaccine Type,LN
+LN=30946-8,Vaccination contraindication/precaution effective date,LN
+LN=30944-3,Vaccination temporary contraindication/precaution expiration date,LN
+LN=30945-0,Vaccination contraindication/precaution,LN
+LN=31044-1,Reaction,LN
+LN=59784-9,Disease with presumed immunity,LN
+LN=59785-6,Indications to immunize,LN
+LN=69764-9,Document type,LN
+LN=29768-9,Date Vaccine Information Sheet Published,LN
+LN=29769-7,Date Vaccine Information Statement Presented,LN
+LN=30979-9,Vaccines due next,LN
+LN=30980-7,Date vaccine due,LN
+LN=30981-5,Earliest date to give,LN
+LN=30982-3,Reason applied by forecast logic to project this vaccine,LN
+LN=59799-9,Immunization Schedule used,LN
+LN=59780-7,Immunization Series name,LN
+LN=59782-3,Number of doses in primary series,LN
+LN=59781-5,Dose validity,LN
+LN=59783-1,Status in immunization series,LN
+LN=46249-9,Vaccination Take-Response Type,LN
+LN=46250-7,Vaccination Take-Response Date,LN
+
+
+
+
+
+
+
+CDCPHINVS=VXC30,alergy (anaphylactic) to proteins of rodent or neural orgin,CDCPHINVS
+CDCPHINVS=VXC17,alergy (anaphylactic) to 2-phenoxyethanol,CDCPHINVS
+CDCPHINVS=VXC18,allergy to bakers yeast (anaphylactic),CDCPHINVS
+CDCPHINVS=91930004,Alergy to eggs (disorder),CDCPHINVS
+CDCPHINVS=294847001,Gelatin alergy (disorder),CDCPHINVS
+CDCPHINVS=794468006,Neomycin allergy (disorder),CDCPHINVS
+CDCPHINVS=294466005,Streptomycin allergy (disorder),CDCPHINVS
+CDCPHINVS=VXC19,allergy to thimerosal (anaphylactic),CDCPHINVS
+CDCPHINVS=VXC20,allergy to previous dose of this vaccine or to any of its unlisted vaccine components (anaphylactic),CDCPHINVS
+CDCPHINVS=402306009,Allergy to aluminum (disorder),CDCPHINVS
+CDCPHINVS=300916003,Latex allergy (disorder),CDCPHINVS
+CDCPHINVS=294530006,Polymyxin B allergy (disorder),CDCPHINVS
+CDCPHINVS=VXC21,Previous hisotry of intussusception,CDCPHINVS
+CDCPHINVS=VXC22,encephalopathy within 7 days of previous dose of DTP or DTaP,CDCPHINVS
+CDCPHINVS=VXC23,current fever with moderate-to-severe illness,CDCPHINVS
+CDCPHINVS=VXC24,current acute illness, moderate to severe (with or without fever),CDCPHINVS
+CDCPHINVS=27624003,Chronic disease (disorder),CDCPHINVS
+CDCPHINVS=VXC25,History of Arthus hypersenstiviity reaction to a tetanus-containing vaccine administered <10 years previously,CDCPHINVS
+CDCPHINVS=VXC26,underlying unstable, evolving neurologic diorders, (including seizure disorders, cerebral palsy, and developmental delay),CDCPHINVS
+CDCPHINVS=VXC27,immunodeficiency due to any cause, including HIV (hemotologic and solid tumors, congential immunodeficiency, long-term immunosuppressive therapy, including steroids),CDCPHINVS
+CDCPHINVS=77386006,Patient current pregnant (finding),CDCPHINVS
+CDCPHINVS=302215000,Thrombocytopenic disorder (disorder),CDCPHINVS
+CDCPHINVS=161461006,History of - purpura (situation),CDCPHINVS
+CDCPHINVS=39579001,Anaphylaxis (disorder),CDCPHINVS
+CDCPHINVS=81308009,Disorder of brain (disorder),CDCPHINVS
+CDCPHINVS=VXC9,persistent, inconsolable cryting lasting > 3 hours within 48 hours of dose,CDCPHINVS
+CDCPHINVS=VXC10,collapse or shock-like state within 48 hours of dose,CDCPHINVS
+CDCPHINVS=VXC11,convulsions (fits, seizures) within 72 hours of dose,CDCPHINVS
+CDCPHINVS=VXC12,fever of >40.5C within 48 hours of dose,CDCPHINVS
+CDCPHINVS=VXC13,Guillain-Barre syndrome (GBS) within 6 weeks of dose,CDCPHINVS
+CDCPHINVS=VXC14,Rash within 14 days of dose,CDCPHINVS
+CDCPHINVS=VXC15,Intussesception within 30 days of dose,CDCPHINVS
+CDCPHINVS=VXC7,Rabies exposure within previous 10 days,CDCPHINVS
+CDCPHINVS=VXC8,Member of special group,CDCPHINVS
+CDCPHINVS=VXC16,ACIP Schedule,CDCPHINVS
+CDCPHINVS=409498004,History of anthrax infection,CDCPHINVS
+CDCPHINVS=397428000,History of diphteria infection,CDCPHINVS
+CDCPHINVS=76902006,History of tetanus infection,CDCPHINVS
+CDCPHINVS=27836007,History of pertussis infection,CDCPHINVS
+CDCPHINVS=40468003,History of Hepatitis A infection,CDCPHINVS
+CDCPHINVS=66071002,History of Hepatitis B infection,CDCPHINVS
+CDCPHINVS=91428005,History of HIB infection,CDCPHINVS
+CDCPHINVS=240532009,History of HPV infection,CDCPHINVS
+CDCPHINVS=6142004,History of influenza infection,CDCPHINVS
+CDCPHINVS=52947006,History of Japanese encephalitis infection,CDCPHINVS
+CDCPHINVS=14189004,History of mealses infection,CDCPHINVS
+CDCPHINVS=36989005,History of mumps infection,CDCPHINVS
+CDCPHINVS=36653000,History of rubella infection,CDCPHINVS
+CDCPHINVS=23511006,History of meningococcal infection,CDCPHINVS
+CDCPHINVS=16814004,History of pneumococcal infection,CDCPHINVS
+CDCPHINVS=398102009,History of polio infection,CDCPHINVS
+CDCPHINVS=14168008,History of rabies infection,CDCPHINVS
+CDCPHINVS=18624000,History of rotavirus infection,CDCPHINVS
+CDCPHINVS=4834000,History of typhoid infection,CDCPHINVS
+CDCPHINVS=111852003,History of vaccinia infection,CDCPHINVS
+CDCPHINVS=38907003,History of Varicella infection,CDCPHINVS
+CDCPHINVS=16541001,History of yellow fever infection,CDCPHINVS
+CDCPHINVS=271511000,History of hepatitis B infection,CDCPHINVS
+
+
+
+
+
+
+
+
+
+CDCGI1VIS=253088698300001111110714,Adnovirus VIS,CDCGI1VIS
+CDCGI1VIS=253088698300002811100310,Antrx VIS,CDCGI1VIS
+CDCGI1VIS=253088698300004211111025,Hepatits A VIS,CDCGI1VIS
+CDCGI1VIS=253088698300006611981216,Haemophilus Influenzae type b VIS,CDCGI1VIS
+CDCGI1VIS=253088698300007311110503,Human papillomavirus (Cervarix) VIS,CDCGI1VIS
+CDCGI1VIS=253088698300008011120222,Human papillomavirus (Gardasil) VIS,CDCGI1VIS
+CDCGI1VIS=253088698300009711120702,Influenza Vaccine - Live, Intranasal VIS,CDCGI1VIS
+CDCGI1VIS=253088698300010311120702,Influenza Vaccine - Inactivated VIS,CDCGI1VIS
+CDCGI1VIS=253088698300011011111207,Japanese Encephalitis VIS,CDCGI1VIS
+CDCGI1VIS=253088698300012711120420,Measles/Mumps/Rubella VIS,CDCGI1VIS
+CDCGI1VIS=253088698300013411100521,Measles/Mumps/Rubella/Varicella VIS,CDCGI1VIS
+CDCGI1VIS=253088698300014111111014,Meningococcal VIS,CDCGI1VIS
+CDCGI1VIS=253088698300015811100416,Pneumococcal Conjugate (PCV13) VIS,CDCGI1VIS
+CDCGI1VIS=253088698300016511091006,Pneumococcal Polysaccharide VIS,CDCGI1VIS
+CDCGI1VIS=253088698300017211111108,Polio VIS,CDCGI1VIS
+CDCGI1VIS=253088698300018911091006,Rabies VIS,CDCGI1VIS
+CDCGI1VIS=253088698300020211091006,Shingles VIS,CDCGI1VIS
+CDCGI1VIS=253088698300022611120124,Tetanus/Diphtheria/(Pertussis) VIS,CDCGI1VIS
+CDCGI1VIS=253088698300023311120529,Typhoid VIS,CDCGI1VIS
+CDCGI1VIS=253088698300005911120202,Hepatitis B VIS,CDCGI1VIS
+CDCPHINVS=VXC40,Eligibility captured at the immunization level,CDCPHINVS
+CDCPHINVS=VXC41,Eligibility captured at the visit level,CDCPHINVS
+CVX=106,DTaP, 5 pertussis antigens,CVX
+CVX=146,DTaP, IPV, Hib, HepB,CVX
+CVX=110,DTaP-HepB-IPV,CVX
+CVX=50,DTaP-Hib,CVX
+CVX=120,DTaP-Hib-IPV,CVX
+CVX=130,DTaP-IPV,CVX
+CVX=52,Hep A, adult,CVX
+CVX=83,Hep A, ped/adol, 2 dose,CVX
+CVX=104,Hep A-Hep B,CVX
+CVX=08,Hep B, adolescent or pediatric,CVX
+CVX=42,Hep B, adolescent/high risk infant,CVX
+CVX=43,Hep B, adult,CVX
+CVX=44,Hep B, dialysis,CVX
+CVX=49,Hib (PRP-OMP),CVX
+CVX=48,Hib (PRP-T),CVX
+CVX=51,Hib-Hep B,CVX
+CVX=118,HPV, bivalent,CVX
+CVX=62,HPV, quadrivalent,CVX
+CVX=135,Influenza, high dose seasonal,CVX
+CVX=111,influezna, live, intranasal,CVX
+CVX=141,Influenza, seasonal, injectable,CVX
+CVX=140,Influenza, seasonal, injectable, preservative free,CVX
+CVX=144,influenza, seasonal, intradermal, preservative free,CVX
+CVX=10,IPV,CVX
+CVX=148,Meningococcal C/Y-Hib PRP,CVX
+CVX=136,Meningococcal MCVRO,CVX
+CVX=114,meningococcal MCV4P,CVX
+CVX=32,Meningococcal MPSV4,CVX
+CVX=03,MMR,CVX
+CVX=94,MMRV,CVX
+CVX=133,Pneumococcal conjugate PCV 13,CVX
+CVX=100,pneumococcal conjugate PCV 7,CVX
+CVX=119,rotavirus, monovalent,CVX
+CVX=116,rotavirus, pentavalent,CVX
+CVX=138,Td (adult),CVX
+CVX=113,Td (adult) preservative free,CVX
+CVX=09,Td (adult), adsorbed,CVX
+CVX=115,Tdap,CVX
+CVX=21,varicella,CVX
+HL70004=R,Recurring,HL70004
+HL70189=2135-2,Hispanic or Latino,HL70189
+HL70189=2186-5,not Hispanic or Latino,HL70189
+
+
+
+
+
+HL70215=01,No reminder/recall,HL70215
+HL70215=02,Reminder/recall - any method,HL70215
+HL70215=03,Reminder/recall - no calls,HL70215
+HL70215=04,Reminder only - any method,HL70215
+HL70215=05,Reminder only - no calls,HL70215
+HL70215=06,Recall only - any method,HL70215
+HL70215=07,Recall only - no calls,HL70215
+HL70215=08,Reminder/recall - to provider,HL70215
+HL70215=09,Reminder to provider,HL70215
+HL70215=10,Only reminder to provider, no recall,HL70215
+HL70215=11,Recall to provider,HL70215
+HL70215=12,Only recall to provider, no reminder,HL70215
+HL70005=1002-5,American Indian or Alaska Native ,HL70005
+HL70005=2028-9,Asian ,HL70005
+HL70005=2054-5,Black or African-American ,HL70005
+HL70005=2076-8,Native Hawaiian or Other Pacific Islander ,HL70005
+HL70005=2106-3,White ,HL70005
+HL70005=2131-1,Other Race ,HL70005
+
+
+
+
+
+
+
+HL70005=2186-5,not Hispanic or Latino,HL70005
+HL70005=2034-7,Chinese,HL70005
+HL70005=2039-6,Japanese,HL70005
+HL70005=2036-2,Filipino,HL70005
+HL70005=2076-8,Hawaiian,HL70005
+HL70001=F,Female,HL70001
+HL70001=M,Male,HL70001
+HL70001=U,Unknown/undifferentiated,HL70001
+HL70001=O,Other,HL70001
+HL70296=ara,Arabic ,HL70296
+HL70296=arm,Armenian ,HL70296
+HL70296=cat,Catalan; Valencian ,HL70296
+HL70296=chi,Chinese ,HL70296
+HL70296=dan,Danish ,HL70296
+
+
+HL70296=eng,English ,HL70296
+HL70296=fre,French ,HL70296
+HL70296=ger,German ,HL70296
+HL70296=hat,Haitian; Haitian Creole ,HL70296
+HL70296=heb,Hebrew ,HL70296
+HL70296=hin,Hindi ,HL70296
+HL70296=hmn,Hmong ,HL70296
+HL70296=jpn,Japanese ,HL70296
+HL70296=kor,Korean ,HL70296
+HL70296=rus,Russian ,HL70296
+HL70296=som,Somali ,HL70296
+HL70296=spa,Spanish; Castilian ,HL70296
+HL70296=vie,Vietnamese ,HL70296
+HL70296=ASE,American sign language,HL70296
+
+
+
+HL70296=Km,Cambodian (Khmer),HL70296
+HL70296=CJD,Chamorro,HL70296
+HL70296=YUH,Chinese, Canotonese,HL70296
+
+
+
+
+
+
+
+
+
+
+HL70296=ILO,Ilocano,HL70296
+
+
+
+
+
+
+
+
+
+HL70200=A,Alias name ,HL70200
+HL70200=B,Name at birth ,HL70200
+HL70200=C,Adopted name ,HL70200
+HL70200=D,Display name ,HL70200
+HL70200=L,Legal name ,HL70200
+HL70200=M,Maiden name ,HL70200
+HL70200=P,Name of partner/spouse ,HL70200
+HL70200=U,Unspecified ,HL70200
+
+HL70063=CGV,Care Giver,HL70063
+HL70063=CHD,Child,HL70063
+HL70063=FCH,Foster Child,HL70063
+HL70063=FTH,Father,HL70063
+HL70063=GRD,Guardian,HL70063
+HL70063=GRP,Grand Parent,HL70063
+HL70063=MTH,Mother,HL70063
+
+HL70063=PAR,Parent,HL70063
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+HL70441=A,Active,HL70441
+HL70441=I,Inactive - Unspecified,HL70441
+HL70441=L,Inactive - Lost to follow-up,HL70441
+HL70441=M,Inactive - Moved or gone elsewhere,HL70441
+HL70441=P,Inactive - Permanently inactive,HL70441
+HL70441=U,Unknown,HL70441
+
+HL70202=BP,Beeper,HL70202
+HL70202=CP,Cellular phone,HL70202
+HL70202=FX,Fax,HL70202
+HL70202=Internet,Internet address,HL70202
+HL70202=MD,Modem,HL70202
+HL70202=PH,Telephone,HL70202
+HL70202=TDD,Telecommunications Device for the Deaf,HL70202
+HL70202=TTY,Teletypewriter,HL70202
+HL70202=X.400,X.400 email address,HL70202
+HL70201=ASN,Answering service number,HL70201
+HL70201=BPN,Beeper number,HL70201
+HL70201=EMR,Emergency number,HL70201
+HL70201=NET,Network (email) address,HL70201
+HL70201=ORN,Other residence number,HL70201
+HL70201=PRN,Primary residence number,HL70201
+HL70201=VHN,Vacation home number,HL70201
+HL70201=WPN,Work number,HL70201
+HL70323=A,Add,HL70323
+HL70323=D,Delete,HL70323
+HL70323=U,Update,HL70323
+HL70322=CP,Complete ,HL70322
+HL70322=NA,Not Administered ,HL70322
+HL70322=PA,Partially Administered ,HL70322
+HL70322=RE,Refused ,HL70322
+
+
+
+NIP001=00,New immunization record ,NIP001
+NIP001=01,Historical information - source unspecified ,NIP001
+HL70119=02,Historical information - from other provider ,HL70119
+HL70119=03,Historical information - from parents written record ,HL70119
+HL70119=04,Historical information - from parents recall ,HL70119
+HL70119=05,Historical information - from other registry ,HL70119
+HL70119=06,Historical information - from birth certificate ,HL70119
+HL70119=07,Historical information - from school record ,HL70119
+HL70119=08,Historical information - from public agency ,HL70119
+
+HL70119=RE,Observations to follow,HL70119
+NIP002=00,Parental decision,NIP002
+NIP002=01,Religious exemption,NIP002
+NIP002=02,Other,NIP002
+NIP002=03,Patient decision,NIP002
+CVX=82,Adenovirus VIS,CVX
+CVX=24,Anthrax VIS,CVX
+CVX=107,Diphtheria / Tetanus / Pertussis (DTaP) VIS,CVX
+CVX=85,Hepatitis A VIS,CVX
+CVX=45,Hepatitis B VIS,CVX
+CVX=17,Haemophilus Influenzae type b VIS,CVX
+CVX=118,Human papillomavirus Vaccine (Cervarix) VIS,CVX
+CVX=137,Human papillomavirus Vaccine (Gardasil) VIS,CVX
+CVX=62,Human papillomavirus Vaccine (Gardasil) VIS,CVX
+CVX=111,Influenza Vaccine - Live, Intranasal VIS,CVX
+CVX=141,Influenza Vaccine - Inactivated VIS,CVX
+CVX=129,Japanese Encephalitis VIS,CVX
+CVX=03,Measles / Mumps / Rubella VIS,CVX
+CVX=94,Measles / Mumps / Rubella / Varicella VIS,CVX
+CVX=108,Meningococcal VIS,CVX
+CVX=152,Pneumococcal Conjugate (PCV13) VIS,CVX
+CVX=33,Pneumococcal Polysaccharide VIS,CVX
+CVX=89,Polio VIS,CVX
+CVX=90,Rabies VIS,CVX
+CVX=122,Rotavirus VIS,CVX
+CVX=121,Shingles VIS,CVX
+CVX=139,Tetanus / Diphtheria / Pertussis (Tdap/Td) VIS,CVX
+CVX=91,Typhoid VIS,CVX
+CVX=21,Varicella (Chickenpox) VIS,CVX
+CVX=37,Yellow Fever VIS,CVX
+CVX=115,Tetanus/Diphtheria/Pertussis (Tdap) VIS,CVX
+CVX=140,Influenza Vaccine - Inactivated VIS,CVX

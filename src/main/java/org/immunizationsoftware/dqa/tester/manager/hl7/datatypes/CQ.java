@@ -55,6 +55,6 @@ public class CQ extends HL7Component
     setChild(1, quantity = new NM("Quantity"));
     setChild(2, units = new CE("Units", UsageType.R, ValueSet.HL70126));
     quantity.addConformanceStatement(new PositiveInteger("IZ-1: CQ-1 (Quantity) shall be a positive integer."));
-    quantity.addConformanceStatement(new ExactValue("IZ-2: CQ-2 (Units) shall be the literal value \"RD\".", "RD"));
+    units.addConformanceStatement(new ExactValue("IZ-2: CQ-2 (Units) shall be the literal value \"RD\".", "RD"));
   }
 }

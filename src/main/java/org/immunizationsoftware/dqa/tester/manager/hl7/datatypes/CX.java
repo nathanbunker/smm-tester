@@ -112,12 +112,12 @@ public class CX extends HL7Component
   }
 
   public CX(String componentName, UsageType usageType) {
-    super(ItemType.DATATYPE, "CX", "Extended Composit ID With Check Digit", componentName, 10, usageType);
+    super(ItemType.DATATYPE, "CX", "Extended Composite ID With Check Digit", componentName, 10, usageType);
     init();
   }
 
   public CX(String componentName, UsageType usageType, Cardinality cardinality) {
-    super(ItemType.DATATYPE, "CX", "Extended Composit ID With Check Digit", componentName, 10, usageType, cardinality);
+    super(ItemType.DATATYPE, "CX", "Extended Composite ID With Check Digit", componentName, 10, usageType, cardinality);
     init();
   }
 
