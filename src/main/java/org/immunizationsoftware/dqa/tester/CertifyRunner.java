@@ -41,6 +41,7 @@ import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
 import org.immunizationsoftware.dqa.tester.manager.ScenarioManager;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestCase;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestEvent;
+import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestPanel;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTesterManager;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
@@ -77,6 +78,8 @@ public class CertifyRunner extends Thread
   private boolean run[] = new boolean[SUITE_COUNT];
   private int[][] areaScore = new int[SUITE_COUNT][3];
   private int[][] areaProgress = new int[SUITE_COUNT][3];
+  private int[][] areaCount = new int[SUITE_COUNT][3];
+  private String[] areaLabel = new String[SUITE_COUNT];
 
   {
     for (int i = 0; i < SUITE_COUNT; i++) {
@@ -86,7 +89,19 @@ public class CertifyRunner extends Thread
       areaProgress[i][0] = -1;
       areaProgress[i][1] = -1;
       areaProgress[i][2] = -1;
+      areaCount[i][0] = -1;
+      areaCount[i][1] = -1;
+      areaCount[i][2] = -1;
     }
+    areaLabel[SUITE_A_BASIC] = "Basic";
+    areaLabel[SUITE_B_INTERMEDIATE] = "Intermediate";
+    areaLabel[SUITE_C_ADVANCED] = "Advanced";
+    areaLabel[SUITE_D_EXCEPTIONAL] = "Exceptional";
+    areaLabel[SUITE_E_FORECAST_PREP] = "Forecast Prep";
+    areaLabel[SUITE_F_FORECAST] = "Forecast";
+    areaLabel[SUITE_G_PERFORMANCE] = "Performance";
+    areaLabel[SUITE_H_CONFORMANCE] = "Conformance";
+
   }
 
   private Map<String, PrintWriter> exampleOutSet = new HashMap<String, PrintWriter>();
@@ -273,7 +288,8 @@ public class CertifyRunner extends Thread
 
       if (totalUpdateCount > 0) {
         areaScore[SUITE_G_PERFORMANCE][0] = (int) totalUpdateTime / totalUpdateCount;
-        areaScore[SUITE_G_PERFORMANCE][0] = 100;
+        areaProgress[SUITE_G_PERFORMANCE][0] = 100;
+        areaCount[SUITE_G_PERFORMANCE][0] = totalUpdateCount;
       }
       if (run[SUITE_H_CONFORMANCE]) {
 
@@ -374,6 +390,7 @@ public class CertifyRunner extends Thread
 
         if (totalQueryCount > 0) {
           areaScore[SUITE_G_PERFORMANCE][1] = (int) totalQueryTime / totalQueryCount;
+          areaCount[SUITE_G_PERFORMANCE][1] = totalQueryCount;
           areaProgress[SUITE_G_PERFORMANCE][1] = 100;
         }
 
@@ -420,7 +437,13 @@ public class CertifyRunner extends Thread
       File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessage, session);
       if (testCaseDir != null) {
         statusMessageList.add(sdf.format(new Date()) + " Saving example");
-        File exampleFile = new File(testCaseDir, "Example Messages " + name + ".hl7");
+        File exampleFile;
+        if (testCaseMessage.getForecastTestPanel() != null) {
+          exampleFile = new File(testCaseDir, "Example Messages " + name + ""
+              + testCaseMessage.getForecastTestPanel().getLabel() + ".hl7");
+        } else {
+          exampleFile = new File(testCaseDir, "Example Messages " + name + ".hl7");
+        }
         try {
           return new PrintWriter(exampleFile);
         } catch (IOException ioe) {
@@ -463,6 +486,7 @@ public class CertifyRunner extends Thread
         ackAnalysisList.add(testCaseMessage);
       }
     }
+    areaCount[SUITE_H_CONFORMANCE][0] = ackAnalysisList.size();
   }
 
   private void prepareFormatQueryAnalysis() {
@@ -472,6 +496,7 @@ public class CertifyRunner extends Thread
         rspAnalysisList.add(testCaseMessage);
       }
     }
+    areaCount[SUITE_H_CONFORMANCE][1] = rspAnalysisList.size();
   }
 
   private void analyzeFormatUpdates() {
@@ -518,8 +543,8 @@ public class CertifyRunner extends Thread
       }
     }
     areaProgress[SUITE_H_CONFORMANCE][1] = makeScore(count, rspAnalysisList.size());
-    areaProgress[SUITE_H_CONFORMANCE][2] = makeScore(count, rspAnalysisList.size());
     areaScore[SUITE_H_CONFORMANCE][1] = makeScore(pass, rspAnalysisList.size());
+
   }
 
   private void updateAdvanced(Map<Integer, List<Issue>> issueMap) {
@@ -571,8 +596,10 @@ public class CertifyRunner extends Thread
             return;
           }
         }
-        areaProgress[SUITE_C_ADVANCED][i] = makeScore(countPass, issueList.size());
+        areaScore[SUITE_C_ADVANCED][i] = makeScore(countPass, issueList.size());
+        areaCount[SUITE_C_ADVANCED][i] = issueList.size();
       }
+      areaProgress[SUITE_C_ADVANCED][i] = 100;
 
     }
   }
@@ -603,9 +630,9 @@ public class CertifyRunner extends Thread
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
       String type = "A";
-
     }
 
+    areaCount[SUITE_A_BASIC][0] = statusCheckTestCaseBasicList.size();
   }
 
   public void printExampleMessage(TestCaseMessage testCaseMessage, String type) {
@@ -653,6 +680,8 @@ public class CertifyRunner extends Thread
       }
     }
     areaScore[SUITE_A_BASIC][0] = makeScore(testPass, statusCheckTestCaseBasicList.size());
+    areaProgress[SUITE_A_BASIC][0] = 100;
+
   }
 
   private boolean verifyNoMajorChangesMade(TestCaseMessage testCaseMessage) {
@@ -1358,6 +1387,8 @@ public class CertifyRunner extends Thread
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
+
+      areaCount[SUITE_B_INTERMEDIATE][0] = statusCheckTestCaseIntermediateList.size();
     }
 
     // {
@@ -1375,9 +1406,11 @@ public class CertifyRunner extends Thread
     // }
   }
 
-  private static final int[] TEST_PANELS = { ForecastTesterManager.TEST_PANEL_IHS_ROLLOUT_2013, ForecastTesterManager.TEST_PANEL_CDSI_TEST_CASES_V1_0, ForecastTesterManager.TEST_PANEL_IHS_ROLLOUT_2013, ForecastTesterManager.TEST_PANEL_IHS_FROM_RPMS };
-  // private static final int[] TEST_PANELS = { ForecastTesterManager.TEST_PANEL_VDH };
-  private static final String TCH_FORECAST_TESTER_URL = "http://localhost:8181/ExternalTestServlet";
+  private static final ForecastTestPanel[] TEST_PANELS = { ForecastTestPanel.IHS_ROLLOUT_2013,
+      ForecastTestPanel.CDSI_TEST_CASES_V1_0, ForecastTestPanel.IHS_ROLLOUT_2013, ForecastTestPanel.IHS_FROM_RPMS };
+  // private static final ForecastTestPanel[] TEST_PANELS = {
+  // ForecastTestPanel.VDH };
+  private static final String TCH_FORECAST_TESTER_URL = "http://tchforecasttester.org/ft/ExternalTestServlet";
 
   private ForecastTesterManager forecastTesterManager = null;
 
@@ -1391,8 +1424,8 @@ public class CertifyRunner extends Thread
     int count = 0;
     forecastTesterManager = new ForecastTesterManager(TCH_FORECAST_TESTER_URL);
     try {
-      for (int testPanelId : TEST_PANELS) {
-        List<ForecastTestCase> forecastTestCaseList = forecastTesterManager.getForecastTestCaseList(testPanelId);
+      for (ForecastTestPanel testPanel : TEST_PANELS) {
+        List<ForecastTestCase> forecastTestCaseList = forecastTesterManager.getForecastTestCaseList(testPanel);
         for (ForecastTestCase forecastTestCase : forecastTestCaseList) {
           count++;
           TestCaseMessage testCaseMessage = new TestCaseMessage();
@@ -1409,8 +1442,10 @@ public class CertifyRunner extends Thread
             }
           }
 
+          testCaseMessage.setForecastTestPanel(testPanel);
           testCaseMessage.appendOriginalMessage(sb.toString());
-          testCaseMessage.setDescription(forecastTestCase.getCategoryName() + ": " + forecastTestCase.getDescription());
+          testCaseMessage.setDescription(testPanel.getLabel() + ": " + forecastTestCase.getCategoryName() + ": "
+              + forecastTestCase.getDescription());
           testCaseMessage.setTestCaseSet(testCaseSet);
           testCaseMessage.setTestCaseNumber(uniqueMRNBase + "F1." + count);
           testCaseMessage.setQuickTransformations(new String[] { "2.5.1",
@@ -1457,6 +1492,8 @@ public class CertifyRunner extends Thread
       e.printStackTrace();
       statusMessageList.add(sdf.format(new Date()) + " Unable to get forecast schedules because: " + e.getMessage());
     }
+
+    areaCount[SUITE_E_FORECAST_PREP][0] = statusCheckTestCaseForecastPrepList.size();
   }
 
   private void prepareExceptional() {
@@ -1576,6 +1613,7 @@ public class CertifyRunner extends Thread
     } catch (IOException ioe) {
       ioe.printStackTrace();
     }
+    areaCount[SUITE_D_EXCEPTIONAL][0] = statusCheckTestCaseExceptionalList.size();
   }
 
   private int createCertfiedMessageTestCaseMessage(Transformer transformer, int count, StringBuilder sb,
@@ -1751,6 +1789,7 @@ public class CertifyRunner extends Thread
       }
     }
     areaScore[SUITE_D_EXCEPTIONAL][0] = makeScore(testPass, statusCheckTestCaseExceptionalList.size());
+
   }
 
   private void updateForecastPrep() {
@@ -1782,6 +1821,7 @@ public class CertifyRunner extends Thread
       }
     }
     areaScore[SUITE_E_FORECAST_PREP][0] = makeScore(testPass, statusCheckTestCaseForecastPrepList.size());
+
   }
 
   private void queryBasic() {
@@ -1842,6 +1882,8 @@ public class CertifyRunner extends Thread
     }
     areaScore[SUITE_A_BASIC][1] = makeScore(testQueryPassRequired, testQueryCountRequired);
     areaScore[SUITE_A_BASIC][2] = makeScore(testQueryPassOptional, testQueryCountOptional);
+    areaCount[SUITE_A_BASIC][1] = testQueryCountRequired;
+    areaCount[SUITE_A_BASIC][2] = testQueryCountOptional;
   }
 
   private String prepareSendQueryMessage(TestCaseMessage queryTestCaseMessage) {
@@ -1950,6 +1992,8 @@ public class CertifyRunner extends Thread
     }
     areaScore[suite][1] = makeScore(testQueryPassRequired, testQueryCountRequired);
     areaScore[suite][2] = makeScore(testQueryPassOptional, testQueryCountOptional);
+    areaCount[suite][1] = testQueryCountRequired;
+    areaCount[suite][2] = testQueryCountOptional;
   }
 
   public void printResults(PrintWriter out) {
@@ -2423,6 +2467,30 @@ public class CertifyRunner extends Thread
       out.println("</table>");
       out.println("</br>");
     }
+
+    out.println("<h3>Test Counts</h3>");
+    out.println("<table border=\"1\" cellspacing=\"0\">");
+    out.println("  <tr>");
+    out.println("    <th>Area</th>");
+    out.println("    <th>Level 1</th>");
+    out.println("    <th>Level 2</th>");
+    out.println("    <th>Level 3</th>");
+    out.println("  </tr>");
+    for (int i = 0; i < SUITE_COUNT; i++) {
+      if (run[i]) {
+        out.println("  <tr>");
+        out.println("    <td>" + areaLabel[i] + "</td>");
+        for (int j = 0; j < 3; j++) {
+          if (areaCount[i][j] == -1) {
+            out.println("    <td>&nbps;</td>");
+          } else {
+            out.println("    <td>" + areaCount[i][j] + "</td>");
+          }
+        }
+      }
+    }
+    out.println("</table>");
+    out.println("</br>");
 
     int testNum = 0;
     if (areaProgress[SUITE_A_BASIC][0] > 0) {

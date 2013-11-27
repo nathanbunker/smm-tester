@@ -37,12 +37,12 @@ public class InstallServlet extends ClientServlet
       out.println("    <tr>");
       out.println("      <td>B.</td>");
       out.println("      <td><input type=\"checkbox\" name=\"\"/></td>");
-      out.println("      <td>Ensure that you have Java SE version 6.0 or later installed.</td>");
+      out.println("      <td>Ensure that you have Java SE version 6.0 (also displayed as 1.6) or later installed.</td>");
       out.println("    </tr>");
       out.println("    <tr>");
       out.println("      <td></td>");
       out.println("      <td></td>");
-      out.println("      <td>To confirm the version of Java installed on your system, follow these steps:<ul><li>Open a command window (in Windows click Start >> Run and type cmd, press enter) </li><li>Type <code>java -version</code> on the command line</li><li>Verify the version number displayed</li></ul></td>");
+      out.println("      <td>To confirm the version of Java installed on your system, follow these steps:<ul><li>Open a command window (in Windows click Start >> Run and type cmd, press enter) </li><li>Type <code>java -version</code> on the command line</li><li>Verify the version number displayed (remember that 1.6 indicates Java version 6.0, and 1.7 is Java 7.0) </li></ul></td>");
       out.println("    </tr>");
       out.println("    <tr>");
       out.println("      <td></td>");
@@ -57,7 +57,7 @@ public class InstallServlet extends ClientServlet
       out.println("    <tr>");
       out.println("      <td></td>");
       out.println("      <td></td>");
-      out.println("      <td><ul><li>Tomcat may be installed in any location on your local system.</li><li>Tomcat is an application that runs in the background.</li><li>In Windows, Tomcat can be started and stopped using the Services window.</li></ul></td>");
+      out.println("      <td><ul><li>Tomcat may be installed in any location on your local system.</li><li>Tomcat is an application that runs in the background.</li><li>When installing accept all the defaults. </li><li>In Windows, Tomcat can be started and stopped using the Services window.</li></ul></td>");
       out.println("    </tr>");
       out.println("    <tr>");
       out.println("      <td></td>");

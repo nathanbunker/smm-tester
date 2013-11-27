@@ -46,23 +46,17 @@ public class ForecastTesterManager
   private static final String FE_FINISHED_DATE = "forecastExpected.finishedDate";
   private static final String FE_VACCINE_CVX = "forecastExpected.vaccineCvx";
 
-  public static final int TEST_PANEL_TCH_INITIAL = 2;
-  public static final int TEST_PANEL_CDSI_TEST_CASES_V1_0 = 13;
-  public static final int TEST_PANEL_IHS_ROLLOUT_2013 = 18;
-  public static final int TEST_PANEL_IHS_FROM_RPMS = 12;
-  public static final int TEST_PANEL_VDH = 15;
-
   private String forecastTesterUrl = null;
 
   public ForecastTesterManager(String forecastTesterUrl) {
     this.forecastTesterUrl = forecastTesterUrl;
   }
 
-  public List<ForecastTestCase> getForecastTestCaseList(int testPanelId) throws IOException {
+  public List<ForecastTestCase> getForecastTestCaseList(ForecastTestPanel testPanel) throws IOException {
 
     List<ForecastTestCase> forecastTestCaseList = new ArrayList<ForecastTestCase>();
     HttpURLConnection urlConn;
-    URL url = new URL(forecastTesterUrl + "?testPanelId=" + testPanelId);
+    URL url = new URL(forecastTesterUrl + "?testPanelId=" + testPanel.getId());
 
     urlConn = (HttpURLConnection) url.openConnection();
     urlConn.setRequestMethod("GET");
