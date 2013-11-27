@@ -16,6 +16,7 @@ import org.immunizationsoftware.dqa.tester.Transformer.PatientType;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestCase;
+import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestPanel;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
 import org.immunizationsoftware.dqa.tester.manager.hl7.messages.ACK;
 import org.immunizationsoftware.dqa.tester.manager.hl7.messages.RSP;
@@ -241,6 +242,15 @@ public class TestCaseMessage
   private int testCaseId = 0;
   private boolean resultNotExpectedToConform = false;
   private ForecastTestCase forecastTestCase = null;
+  private ForecastTestPanel forecastTestPanel = null;
+
+  public ForecastTestPanel getForecastTestPanel() {
+    return forecastTestPanel;
+  }
+
+  public void setForecastTestPanel(ForecastTestPanel forecastTestPanel) {
+    this.forecastTestPanel = forecastTestPanel;
+  }
 
   public ForecastTestCase getForecastTestCase() {
     return forecastTestCase;
