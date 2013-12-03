@@ -360,6 +360,13 @@ public class CertifyRunner extends Thread
         }
 
         if (run[SUITE_D_EXCEPTIONAL]) {
+          
+          statusMessageList.add(sdf.format(new Date()) + " Prepare query for execeptional messages");
+          prepareQueryExeptional();
+          if (!keepRunning) {
+            status = STATUS_STOPPED;
+            return;
+          }
           statusMessageList.add(sdf.format(new Date()) + " Submit query for exceptional messages");
           query(SUITE_D_EXCEPTIONAL, statusCheckQueryTestCaseTolerantList);
           printReportToFile();
@@ -1913,6 +1920,21 @@ public class CertifyRunner extends Thread
     }
   }
 
+  private void prepareQueryExeptional() {
+    int count = 0;
+    for (TestCaseMessage testCaseMessage : statusCheckTestCaseExceptionalList) {
+      count++;
+      TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
+      queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
+      queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
+      queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText()));
+      queryTestCaseMessage.setTestCaseSet(testCaseSet);
+      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + "D3." + count);
+      statusCheckQueryTestCaseTolerantList.add(queryTestCaseMessage);
+      register(queryTestCaseMessage);
+    }
+  }
+
   private void prepareQueryForecastPrep() {
     int count = 0;
     for (TestCaseMessage testCaseMessage : statusCheckTestCaseForecastPrepList) {
@@ -1990,6 +2012,8 @@ public class CertifyRunner extends Thread
         return;
       }
     }
+    areaProgress[suite][1] = 100;
+    areaProgress[suite][2] = 100;
     areaScore[suite][1] = makeScore(testQueryPassRequired, testQueryCountRequired);
     areaScore[suite][2] = makeScore(testQueryPassOptional, testQueryCountOptional);
     areaCount[suite][1] = testQueryCountRequired;
