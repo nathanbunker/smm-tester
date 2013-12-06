@@ -78,12 +78,10 @@ public class CompareServlet extends ClientServlet
       } else {
         session.setAttribute(RSP_MESSAGE, rspMessage);
       }
-      if (vxuMessage == null)
-      {
+      if (vxuMessage == null) {
         vxuMessage = (String) session.getAttribute("message");
       }
-      if (vxuMessageSubmitted == null && rspMessage == null)
-      {
+      if (vxuMessageSubmitted == null && rspMessage == null) {
         showSubmissionChange = true;
         vxuMessageSubmitted = vxuMessage;
       }
@@ -108,7 +106,7 @@ public class CompareServlet extends ClientServlet
       out.println("        <tr>");
       out.println("          <td valign=\"top\">Original VXU</td>");
       out.println("          <td><textarea name=\"" + VXU_MESSAGE + "\" cols=\"70\" rows=\"10\" wrap=\"off\">"
-          + vxuMessage + "</textarea></td>");
+          + (vxuMessage == null ? "" : vxuMessage) + "</textarea></td>");
       out.println("        </tr>");
       if (rspMessage != null) {
         out.println("        <tr>");
@@ -118,12 +116,18 @@ public class CompareServlet extends ClientServlet
         out.println("        </tr>");
       } else if (vxuMessageSubmitted != null) {
         out.println("        <tr>");
-        out.println("          <td valign=\"top\">VXU Submitted</td>");
+        out.println("          <td valign=\"top\">Compare With</td>");
         out.println("          <td><textarea name=\"" + VXU_MESSAGE_SUBMITTED
             + "\" cols=\"70\" rows=\"10\" wrap=\"off\">" + vxuMessageSubmitted + "</textarea></td>");
         out.println("        </tr>");
         out.println("        <input type=\"hidden\" name=\"showSubmissionChange\" value=\"true\"/>");
-        		
+      } else {
+        out.println("        <tr>");
+        out.println("          <td valign=\"top\">Compare With</td>");
+        out.println("          <td><textarea name=\"" + VXU_MESSAGE_SUBMITTED
+            + "\" cols=\"70\" rows=\"10\" wrap=\"off\"></textarea></td>");
+        out.println("        </tr>");
+        out.println("        <input type=\"hidden\" name=\"showSubmissionChange\" value=\"true\"/>");
       }
       out.println("        <tr>");
       out.println("          <td colspan=\"2\" align=\"right\">");

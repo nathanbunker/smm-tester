@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.axis.AxisProperties;
+import org.immunizationsoftware.dqa.tester.Authenticate;
 import org.immunizationsoftware.dqa.tester.ClientServlet;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 
@@ -241,6 +242,14 @@ public class ManagerServlet extends ClientServlet
     if (softwareDirString != null && softwareDirString.length() > 0)
     {
       softwareDir = new File(softwareDirString);
+    }
+    
+    String adminUsername = getInitParameter("admin.username");
+    String adminPassword = getInitParameter("admin.password");
+    
+    if (adminUsername != null && !adminUsername.equals("") && adminPassword != null && !adminPassword.equals(""))
+    {
+      Authenticate.setupAdminUser(adminUsername, adminPassword);
     }
 
     ShutdownInterceptor shutdownInterceptor = new ShutdownInterceptor();
