@@ -78,6 +78,7 @@ public class CompareManager
     }
 
     public boolean isPass() {
+
       if (pass == null) {
         if (equivalents.size() > 0 && originalValue != null && returnedValue != null && !originalValue.equals("")
             && !returnedValue.equals("")) {
@@ -103,7 +104,7 @@ public class CompareManager
             }
           }
         } else {
-          if (returnedValue.equals("") && !allowedValuesMask.contains(originalValue)) {
+          if (allowedValuesMask.size() > 0 && returnedValue.equals("") && !allowedValuesMask.contains(originalValue)) {
             // if original value is non standard then don't expect the
             // non-standard value to come back
             pass = true;
@@ -148,10 +149,12 @@ public class CompareManager
     List<Comparison> comparisonList = new ArrayList<CompareManager.Comparison>();
     HL7Reader vxuReader = new HL7Reader(vxuMessage);
     HL7Reader rspReader = new HL7Reader(rspMessage);
+
     Comparison comparison;
 
     vxuReader.advanceToSegment("PID");
     rspReader.advanceToSegment("PID");
+
 
     comparison = new Comparison();
     comparison.setHl7FieldName("PID-3.1");
