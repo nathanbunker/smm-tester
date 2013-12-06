@@ -111,6 +111,13 @@ public class Authenticate {
       map.put(u.username, u);
   }
 
+    public static void setupAdminUser(String username, String password)
+    {
+      map = new HashMap<String, User>();
+      User u = new User(username, password);
+      u.setAdmin(true);
+      map.put(u.username, u);
+    }
     private static void addUser(String username, String password, String name, String email) {
         User u = new User(username, password, name, email);
         map.put(u.username, u);
@@ -153,9 +160,9 @@ public class Authenticate {
             map = new HashMap<String, User>();
             addUser("Apple", "ID3S81hs6R70tu8", "Rick Hall", "rphall@comcast.net");
             addUser("Apricot", "3fiBxjoUlr4MF5p", "Caleb Shoemaker", "caleb.shoe@gmail.com");
-            addUser("Avocado", "lC26HoJ5P2X3P7c", "Heather Yarde", "hya1@cdc.gov", true);
-            addUser("Banana", "TpN6s7tkSqSA68y", "Jennifer Wain", "jua7@cdc.gov", true);
-            addUser("Blackberry", "RI12y21m9a3616g", "Stuart Myerburg", "jyz0@cdc.gov", true);
+            addUser("Avocado", "lC26HoJ5P2X3P7c", "Heather Yarde", "hya1@cdc.gov");
+            addUser("Banana", "TpN6s7tkSqSA68y", "Jennifer Wain", "jua7@cdc.gov");
+            addUser("Blackberry", "RI12y21m9a3616g", "Stuart Myerburg", "jyz0@cdc.gov");
             addUser("Breadfruit", "RI12y21m9a3616g", "Cecile Town", "Cecile.Town@ihs.gov", true);
             addUser("Cherry", "411461FE814r2QN", "Gerry Bragg", "BraggG1@michigan.gov");
             addUser("Coconut", "U7F3Dfu1jt224Wq", "David Willhite", "willhited@michigan.gov");
@@ -176,14 +183,14 @@ public class Authenticate {
             addUser("Mafai", "LU0Z23LJlqW1bQR", "Nathan Bunker", "Nathan.Bunker@gmail.com", true);
             addUser("Mango", "6Y847F1EL2W55fr", "Tony Mack", "tmack1@health.nyc.gov");
             addUser("Mangosteen", "25O5rk7BB84k9cF", "Angel Aponte", "aaponte@health.nyc.gov");
-            addUser("Maprang", "17ExGM5j4CsB765", "Eric Larson", "vev5@cdc.gov", true);
+            addUser("Maprang", "17ExGM5j4CsB765", "Eric Larson", "vev5@cdc.gov");
             addUser("Olive", "y249n5rX60X47Ro", "Paul Groll", "GROLLP@michigan.gov");
             addUser("Orange", "MmUrGMw2B5bS772", "Rod Mach", "rmach@hiperlogic.com");
             addUser("Papaya", "54i627F29GEc21j");
             addUser("Peach", "y3vx68O3i2Eh7bs");
             addUser("Pear", "ZVmKNItmWxNr0U8");
             addUser("Pineapple", "Q1HkUKcCROr2gDN");
-            addUser("Plum", "2M7632L8Df011GQ", "Rob Savage", "hzv3@cdc.gov", true);
+            addUser("Plum", "2M7632L8Df011GQ", "Rob Savage", "hzv3@cdc.gov");
             addUser("Pomegranate", "aGWBac39r113uYB");
             addUser("Pomelo", "mR5nOH16HwQSW6e");
             addUser("Rambutan", "m62w2K9D73w9g6z");
@@ -192,7 +199,7 @@ public class Authenticate {
             addUser("Rose", "CqOvK7VKxqHCM4n");
             addUser("Roselle", "7OfpL5930T8h9TY");
             addUser("Santol", "5976g1D16kT1ZE1");
-            addUser("Sapodilla", "n9qehfE18WQefxo", "Tom Love", "Cimarronmi@aol.com", true);
+            addUser("Sapodilla", "n9qehfE18WQefxo", "Tom Love", "Cimarronmi@aol.com");
             addUser("Starfruit", "vu756uB60b573L2");
             addUser("Strawberry", "M67981M1wuIj9Tk");
             addUser("Tamarind", "IPkURqU7erHyEgW");

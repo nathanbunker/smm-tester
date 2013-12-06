@@ -24,6 +24,14 @@
       <param-value>/home/oisptorg/ois-pt.org/data/dist</param-value>
       <!-- /home/oisptorg/ois-pt.org/data/dist C:\data\work\product\smm\dist -->
     </init-param>
+    <init-param>
+      <param-name>admin.username</param-name>
+      <param-value></param-value>
+    </init-param>
+    <init-param>
+      <param-name>admin.password</param-name>
+      <param-value></param-value>
+    </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet>
