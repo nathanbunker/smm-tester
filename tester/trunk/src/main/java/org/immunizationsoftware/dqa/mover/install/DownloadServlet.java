@@ -52,11 +52,9 @@ public class DownloadServlet extends ClientServlet
       folderName = "";
     }
 
-    String softwareType = req.getParameter("softwareType");
-    if (softwareType == null) {
-      softwareType = "SMM";
-    }
-
+    
+    SoftwareType softwareType = getSoftwareType(req);
+    
     String tomcatHome = req.getParameter("tomcatHome");
     if (tomcatHome != null) {
       session.setAttribute("tomcatHome", tomcatHome);
@@ -80,7 +78,7 @@ public class DownloadServlet extends ClientServlet
       if (adminPassword == null) {
         adminPassword = "";
       }
-      if (softwareType.equals("Tester")) {
+      if (softwareType == SoftwareType.TESTER) {
         if (version == null || version.equals("")) {
           message = "Software Version is required";
         }
@@ -175,7 +173,7 @@ public class DownloadServlet extends ClientServlet
           zis.closeEntry();
           zis.close();
 
-          String warFilename = softwareType.equals("Tester") ? "tester.war" : "smm.war";
+          String warFilename = softwareType == SoftwareType.TESTER ? "tester.war" : "smm.war";
           resp.setContentType("application/x-zip");
           resp.setHeader("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(warFilename, "UTF-8")
               + "\"");
@@ -237,8 +235,8 @@ public class DownloadServlet extends ClientServlet
     Collections.sort(versionList);
 
     try {
-      if (softwareType.equals("Tester")) {
-        printHtmlHead(out, "4. Download SMM", req);
+      if (softwareType == SoftwareType.TESTER) {
+        printHtmlHead(out, softwareType, "4. Download Tester", req);
         out.println("<h2>Step 4: Download IIS HL7 Interface Tester</h2>");
         out.println("<form action=\"DownloadServlet\" method=\"GET\">");
         out.println("  <input type=\"hidden\" name=\"softwareType\" value=\"Tester\">");
@@ -292,7 +290,7 @@ public class DownloadServlet extends ClientServlet
         out.println("</form>");
         printHtmlFoot(out);
       } else {
-        printHtmlHead(out, "4. Download SMM", req);
+        printHtmlHead(out, softwareType, "4. Download SMM", req);
         out.println("<h2>Step 4: Download SMM</h2>");
         out.println("<form action=\"DownloadServlet\" method=\"GET\">");
         out.println("  <table class=\"boxed\">");

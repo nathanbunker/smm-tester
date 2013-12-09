@@ -18,8 +18,18 @@ import org.immunizationsoftware.dqa.SoftwareVersion;
 public class ClientServlet extends HttpServlet
 {
 
-  protected static void printHtmlHead(PrintWriter out, String title, HttpServletRequest request)
-  {
+  protected static SoftwareType getSoftwareType(HttpServletRequest request) {
+    String softwareType = request.getParameter("softwareType");
+    if (softwareType == null || softwareType.equalsIgnoreCase("SMM")) {
+      return SoftwareType.SMM;
+    } else if (softwareType.equalsIgnoreCase("TESTER")) {
+      return SoftwareType.TESTER;
+    }
+    return SoftwareType.SMM;
+  }
+
+  protected static void printHtmlHead(PrintWriter out, SoftwareType softwareType, String title,
+      HttpServletRequest request) {
     out.println("<html>");
     out.println("  <head>");
     out.println("    <title>" + title + "</title>");
@@ -42,45 +52,47 @@ public class ClientServlet extends HttpServlet
     out.println("    </script>");
     out.println("  </head>");
     out.println("  <body>");
-    out.println(makeMenu(request, title));
+    out.println(makeMenu(request, title, softwareType));
     String message = (String) request.getAttribute("message");
-    if (message != null)
-    {
+    if (message != null) {
       out.println("<p class=\"fail\">" + message + "</p>");
     }
 
   }
 
-  public static String makeMenu(HttpServletRequest request)
-  {
-    return makeMenu(request, "&nbsp;");
+  public static String makeMenu(HttpServletRequest request, SoftwareType softwareType) {
+    return makeMenu(request, "&nbsp;", softwareType);
   }
 
-  private static final String[][] MENU = { { "index.html", "Simple Message Mover" }, { "PrepareServlet", "1. Prepare" },
-      { "ConfigureServlet", "2. Configure" }, { "InstallServlet", "3. Install" }, { "DownloadServlet", "4. Download SMM" } };
+  private static final String[][] MENU_SMM = { { "index.html", "Simple Message Mover" },
+      { "PrepareServlet", "1. Prepare" }, { "ConfigureServlet", "2. Configure" }, { "InstallServlet", "3. Install" },
+      { "DownloadServlet", "4. Download SMM" } };
 
-  public static String makeMenu(HttpServletRequest request, String title)
-  {
+  private static final String[][] MENU_TESTER = { { "indexTester.html?", "IIS HL7 Tester" },
+      { "PrepareServlet?softwareType=Tester", "1. Prepare" },
+      { "ConfigureServlet?softwareType=Tester", "2. Configure" },
+      { "InstallServlet?softwareType=Tester", "3. Install" },
+      { "DownloadServlet?softwareType=Tester", "4. Download Tester" } };
+
+  public static String makeMenu(HttpServletRequest request, String title, SoftwareType softwareType) {
     StringBuilder result = new StringBuilder();
     result.append("    <table class=\"menu\"><tr><td>");
-    for (int i = 0; i < MENU.length; i++)
-    {
-      if (i > 0)
-      {
+    String[][] menu = softwareType == SoftwareType.TESTER ? MENU_TESTER : MENU_SMM;
+    for (int i = 0; i < menu.length; i++) {
+      if (i > 0) {
         // result.append(" &bull; ");
         result.append(" ");
       }
       String styleClass = "menuLink";
-      if (MENU[i][1].equals(title))
-      {
+      if (menu[i][1].equals(title)) {
         styleClass = "menuLinkSelected";
       }
       result.append("<a class=\"");
       result.append(styleClass);
       result.append("\" href=\"");
-      result.append(MENU[i][0]);
+      result.append(menu[i][0]);
       result.append("\">");
-      result.append(MENU[i][1]);
+      result.append(menu[i][1]);
       result.append("</a>");
 
     }
@@ -91,15 +103,15 @@ public class ClientServlet extends HttpServlet
     return result.toString();
   }
 
-  public static void printFooter(PrintWriter out)
-  {
-    out.println("    <p>Open Immunization Software - Immunization Registry Tester &amp; Simple Message Mover - Version " + SoftwareVersion.VERSION
-        + "<br>" + "For questions or support please contact <a href=\"http://openimmunizationsoftare.org/\">Nathan Bunker</a>.</p>");
+  public static void printFooter(PrintWriter out) {
+    out.println("    <p>Open Immunization Software - IIS HL7 Tester &amp; Simple Message Mover - Version "
+        + SoftwareVersion.VERSION
+        + "<br>"
+        + "For questions or support please contact <a href=\"http://openimmunizationsoftare.org/\">Nathan Bunker</a>.</p>");
 
   }
 
-  public static void printHtmlFoot(PrintWriter out)
-  {
+  public static void printHtmlFoot(PrintWriter out) {
     printFooter(out);
     out.println("  </body>");
     out.println("</html>");

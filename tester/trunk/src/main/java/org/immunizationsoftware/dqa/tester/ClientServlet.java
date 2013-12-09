@@ -111,7 +111,7 @@ public class ClientServlet extends HttpServlet
   }
 
   public static void printFooter(PrintWriter out) {
-    out.println("    <p>Open Immunization Software - Immunization Registry Tester &amp; Simple Message Mover - Version "
+    out.println("    <p>Open Immunization Software - IIS HL7 Tester &amp; Simple Message Mover - Version "
         + SoftwareVersion.VERSION
         + "<br>"
         + "For questions or support please contact <a href=\"http://openimmunizationsoftare.net\">Nathan Bunker</a>.</p>");
