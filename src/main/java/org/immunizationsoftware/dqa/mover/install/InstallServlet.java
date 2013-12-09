@@ -11,18 +11,21 @@ import javax.servlet.http.HttpSession;
 public class InstallServlet extends ClientServlet
 {
   @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
-  {
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     HttpSession session = req.getSession(true);
     String tomcatHome = (String) session.getAttribute("tomcatHome");
     resp.setContentType("text/html;charset=UTF-8");
     PrintWriter out = new PrintWriter(resp.getOutputStream());
-    try
-    {
-      printHtmlHead(out, "3. Install", req);
+    SoftwareType softwareType = getSoftwareType(req);
+
+    try {
+      printHtmlHead(out, softwareType, "3. Install", req);
       out.println("<h2>Step 3: Install</h2>");
       out.println("<p>The Simple Message Mover operates within a Java Servlet environment. The instructions below show you how to install Apache Tomcat, a commonly used Java Servlet environment, on a Windows system. </p>");
       out.println("<form action=\"DownloadServlet\" method=\"GET\">");
+      if (softwareType == SoftwareType.TESTER) {
+        out.println("  <input type=\"hidden\" name=\"softwareType\" value=\"Tester\">");
+      }
       out.println("  <table width=\"650\">");
       out.println("    <tr>");
       out.println("      <td>A.</td>");
@@ -72,14 +75,12 @@ public class InstallServlet extends ClientServlet
       out.println("</form>");
 
       printHtmlFoot(out);
-    } catch (Exception e)
-    {
+    } catch (Exception e) {
       e.printStackTrace();
       out.println("<p>Problem encountered: </p><pre>");
       e.printStackTrace(out);
       out.println("</pre>");
-    } finally
-    {
+    } finally {
       out.close();
     }
   }

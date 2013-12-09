@@ -44,7 +44,7 @@ public class HomeServlet extends ClientServlet
     try {
       printHtmlHead(out, MENU_HEADER_HOME, request);
       if (username == null) {
-        out.println("<h1>Immunization Registry Tester &amp; Simple Message Mover</h1>");
+        out.println("<h1>HL7 IIS Tester &amp; Simple Message Mover</h1>");
       } else {
         out.println("<h2>Primary Test Functions</h2>");
         out.println("<table border=\"1\" cellspacing=\"0\">");

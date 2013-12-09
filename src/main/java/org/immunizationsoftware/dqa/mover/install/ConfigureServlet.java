@@ -33,6 +33,9 @@ public class ConfigureServlet extends ClientServlet
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    
+    SoftwareType softwareType = getSoftwareType(req);
+
     HttpSession session = req.getSession(true);
     String folderName = req.getParameter(PrepareServlet.FOLDER_NAME);
     if (folderName != null) {
@@ -143,7 +146,7 @@ public class ConfigureServlet extends ClientServlet
     resp.setContentType("text/html;charset=UTF-8");
     PrintWriter out = new PrintWriter(resp.getOutputStream());
     try {
-      printHtmlHead(out, "2. Configure", req);
+      printHtmlHead(out, softwareType, "2. Configure", req);
 
       if (folderName != null) {
         cc.setFolderName(folderName);
@@ -155,7 +158,10 @@ public class ConfigureServlet extends ClientServlet
       out.println("<h2>Step 2: Configure</h2>");
       cc.printForm(out);
       out.println("<form method=\"GET\" action=\"InstallServlet\">");
-      out.println("    <p>After you have saved <code>smm.config.txt</code> you are ready for <input type=\"submit\" value=\"Step 3: Install\" name=\"action\"></p>");
+      if (softwareType == SoftwareType.TESTER) {
+        out.println("  <input type=\"hidden\" name=\"softwareType\" value=\"Tester\">");
+      }
+            out.println("    <p>After you have saved <code>smm.config.txt</code> you are ready for <input type=\"submit\" value=\"Step 3: Install\" name=\"action\"></p>");
       out.println("</form>");
 
       printHtmlFoot(out);

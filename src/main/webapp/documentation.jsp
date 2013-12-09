@@ -16,7 +16,7 @@
     </head>
     <body>
         <%=org.openimmunizationsoftware.pt.pt.servlet.ClientServlet.makeMenu(request, "Documentation")%>
-        <h1>OIS Immunization Registry Tester</h1>
+        <h1>OIS IIS HL7 Tester</h1>
 
         <h2>Contents</h2>
         <ul>
