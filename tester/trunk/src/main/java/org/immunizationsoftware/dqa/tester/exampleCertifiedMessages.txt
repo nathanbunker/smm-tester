@@ -7,3 +7,53 @@ PV1|1|R|||||AB2001434^BEATTY,CINDY||AG2016752^GOVERNO,NANCY R|AMB|||||||||325266
 ORC|RE||9999^CDC
 RXA|0|1|20110215|20110215|998^No vaccine administered^CVX|999||||||||||||||NA
 OBX|1|CE|59784-9^Disease with presumed immunity ^LN|1|38907003^Varicella infection^SCT||||||F
+
+-- Epic example
+MSH|^~\&|EHR|1138440005|SIIS|SIIS|20131114124736||VXU^V04^VXU_V04|1384454856951.1992|P|2.5.1|
+PID|||101722765^^^EHR^PI||MEGAN^SUSIE||20070408|F||2131-1^Other Race^HL70005|21578 MAIN ST^^HOUSTON^TX^77009^USA^P|||||||||||||N|
+NK1|1|MEGAN^PAVILIONTWO|MTH^Mother^HL70063|
+NK1|2|MEGAN^PAVILIONTWO|MTH^Mother^HL70063|
+NK1|4|MEGAN^PAVILIONTWO|MTH^Mother^HL70063|
+PV1||R|
+ORC|RE||V05X1.1^OIS|
+RXA|0|1|20110324|20110324|51^Hib-Hep B^CVX^90748^Hep B/Hib^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.2^OIS|
+RXA|0|1|20071120|20071120|17^Hib, NOS^CVX^90737^Hib--unspecified^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.3^OIS|
+RXA|0|1|20090504|20090504|17^Hib, NOS^CVX^90737^Hib--unspecified^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.4^OIS|
+RXA|0|1|20090601|20090601|49^Hib (PRP-OMP)^CVX^90647^Hib--PRP-OMP^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.5^OIS|
+RXA|0|1|20101220|20101220|17^Hib, NOS^CVX^90645^Hib--HbOC^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.6^OIS|
+RXA|0|1|20070604|20070604|45^Hep B, NOS^CVX^90731^Hep B - unspecified^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.7^OIS|
+RXA|0|1|20081001|20081001|45^Hep B, NOS^CVX^90731^Hep B - unspecified^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.8^OIS|
+RXA|0|1|20091022|20091022|45^Hep B, NOS^CVX^90731^Hep B - unspecified^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.9^OIS|
+RXA|0|1|20100705|20100705|45^Hep B, NOS^CVX^90731^Hep B - unspecified^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.10^OIS|
+RXA|0|1|20100802|20100802|45^Hep B, NOS^CVX^90731^Hep B - unspecified^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.11^OIS|
+RXA|0|1|20121001|20121001|45^Hep B, NOS^CVX^90731^Hep B - unspecified^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.12^OIS|
+RXA|0|1|20130506|20130506|45^Hep B, NOS^CVX^90731^Hep B - unspecified^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.13^OIS|
+RXA|0|1|20080820|20080820|44^Hep B, dialysis^CVX^90740^Hepatitis B--high risk^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.14^OIS|
+RXA|0|1|20100503|20100503|104^Hep A-Hep B^CVX^90636^Hep A/Hep B - Adult^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.15^OIS|
+RXA|0|1|20070504|20070504|85^Hep A, NOS^CVX^90730^Hep A 2 dose - Ped/Adol^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.16^OIS|
+RXA|0|1|20080407|20080407|85^Hep A, NOS^CVX^90730^Hep A 2 dose - Ped/Adol^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.17^OIS|
+RXA|0|1|20090304|20090304|85^Hep A, NOS^CVX^90730^Hep A 2 dose - Ped/Adol^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.18^OIS|
+RXA|0|1|20100112|20100112|85^Hep A, NOS^CVX^90730^Hep A 2 dose - Ped/Adol^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.19^OIS|
+RXA|0|1|20110208|20110208|85^Hep A, NOS^CVX^90730^Hep A 2 dose - Ped/Adol^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.20^OIS|
+RXA|0|1|20120501|20120501|85^Hep A, NOS^CVX^90730^Hep A 2 dose - Ped/Adol^C4|999|||01^Historical information - source unspecified^NIP001|
+ORC|RE||V05X1.21^OIS|
+RXA|0|1|20130325|20130325|85^Hep A, NOS^CVX^90730^Hep A 2 dose - Ped/Adol^C4|999|||01^Historical information - source unspecified^NIP001|
