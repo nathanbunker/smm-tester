@@ -155,7 +155,6 @@ public class CompareManager
     vxuReader.advanceToSegment("PID");
     rspReader.advanceToSegment("PID");
 
-
     comparison = new Comparison();
     comparison.setHl7FieldName("PID-3.1");
     comparison.setFieldLabel("MRN");
@@ -576,8 +575,13 @@ public class CompareManager
       }
       rspReader.resetPostion();
       while (rspReader.advanceToSegment("RXA")) {
-        if (rspReader.getValue(3).equals(adminDate) && rspReader.getValue(5).equals(cvxCode)) {
-          break;
+        String rspCvxCode = rspReader.getValue(5);
+        if (rspCvxCode.equals(cvxCode)) {
+          if (cvxCode.equals("998")) {
+            break;
+          } else if (rspReader.getValue(3).equals(adminDate)) {
+            break;
+          }
         }
       }
 
