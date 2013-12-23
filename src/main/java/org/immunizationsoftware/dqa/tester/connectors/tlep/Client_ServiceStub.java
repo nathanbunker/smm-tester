@@ -157,6 +157,8 @@ public class Client_ServiceStub extends org.apache.axis2.client.Stub implements 
 
     // Set the soap version
     _serviceClient.getOptions().setSoapVersionURI(org.apache.axiom.soap.SOAP12Constants.SOAP_ENVELOPE_NAMESPACE_URI);
+    
+    _serviceClient.getOptions().setTimeOutInMilliSeconds(2 * 60 * 1000);
 
   }
 
