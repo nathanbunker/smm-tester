@@ -177,11 +177,11 @@ public class AckAnalyzer
           int pos = 1;
           String[] values = null;
           while ((values = getFieldValues("ERR", pos, 4)) != null) {
-            if (values.length > 4) {
-              if (!values[4].equals("")) {
+            if (values.length > 0) {
+              if (!values[0].equals("")) {
                 noSeverity = false;
               }
-              if (values[4].equals("E")) {
+              if (values[0].equals("E")) {
                 positive = false;
                 break;
               }

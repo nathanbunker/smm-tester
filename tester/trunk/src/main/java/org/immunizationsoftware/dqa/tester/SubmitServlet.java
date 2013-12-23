@@ -84,8 +84,8 @@ public class SubmitServlet extends ClientServlet
         message = transformer.transform(connector, message);
       }
       message = cleanMessage(message);
-      String responseText = connector.submitMessage(message, debug);
       request.setAttribute("requestText", message);
+      String responseText = connector.submitMessage(message, debug);
       request.setAttribute("responseText", responseText);
     }
   }

@@ -53,7 +53,7 @@ public class Transformer
   private static final String REP_PAT_BOY_OR_GIRL = "[BOY_OR_GIRL]";
   private static final String REP_PAT_GIRL = "[GIRL]";
   private static final String REP_PAT_BOY = "[BOY]";
-
+  
   private static final String REP_CON_USERID = "[USERID]";
   private static final String REP_CON_PASSWORD = "[PASSWORD]";
   private static final String REP_CON_FACILITYID = "[FACILITYID]";
@@ -62,6 +62,7 @@ public class Transformer
 
   private static final String INSERT_SEGMENT = "insert segment ";
   private static final String REMOVE_SEGMENT = "remove segment ";
+  private static final String REMOVE_OBSERVATION = "remove observation ";
 
   private static final String CLEAN = "clean";
   private static final String CLEAN_NO_LAST_SLASH = "no last slash";
@@ -618,8 +619,19 @@ public class Transformer
   }
 
   private String addAdmin(String quickTransforms, String vaccineNumber, int count) {
-    quickTransforms += "ORC#" + vaccineNumber + "-3=[VAC" + count + "_ID]\n";
-    String front = "RXA#" + vaccineNumber;
+    String front = "ORC#" + vaccineNumber;
+    quickTransforms += front + "-3=[VAC" + count + "_ID]\n";
+    quickTransforms += front + "-10.1=I-23432\n";
+    quickTransforms += front + "-10.2=Burden\n";
+    quickTransforms += front + "-10.3=Donna\n";
+    quickTransforms += front + "-10.4=A\n";
+    quickTransforms += front + "-10.9=NIST-AA-1\n";
+    quickTransforms += front + "-12.1=57422\n";
+    quickTransforms += front + "-12.2=RADON\n";
+    quickTransforms += front + "-12.3=NICHOLAS\n";
+    quickTransforms += front + "-12.9=NIST-AA-1\n";
+    quickTransforms += front + "-12.10=L\n";
+    front = "RXA#" + vaccineNumber;
     quickTransforms += front + "-3=[VAC" + count + "_DATE]\n";
     quickTransforms += front + "-9.1=00\n";
     quickTransforms += front + "-9.2=Administered\n";
@@ -857,6 +869,34 @@ public class Transformer
                 }
               }
             }
+          } else if (line.toLowerCase().startsWith(REMOVE_OBSERVATION)) {
+            line = line.substring(REMOVE_OBSERVATION.length()).trim();
+            if (line.length() >= 3) {
+              int nextSpace = line.indexOf(" ");
+              if (nextSpace == -1) {
+                nextSpace = line.length();
+              }
+              String obsCode = line.substring(0, nextSpace);
+              line = line.substring(obsCode.length()).trim();
+
+              BufferedReader inResult = new BufferedReader(new StringReader(resultText));
+              resultText = "";
+              String lineResult;
+              while ((lineResult = inResult.readLine()) != null) {
+                lineResult = lineResult.trim();
+                if (lineResult.length() > 0) {
+                  if (lineResult.startsWith("OBX")) {
+                    String[] fields = lineResult.split("\\|");
+                    if (fields.length <= 3 || fields[3] == null || (!fields[3].equalsIgnoreCase(obsCode) && !fields[3].toLowerCase().startsWith(obsCode.toLowerCase() + "^"))) 
+                    {
+                      resultText += lineResult + "\r";
+                    }
+                  } else {
+                    resultText += lineResult + "\r";
+                  }
+                }
+              }
+            }
           } else if (line.toLowerCase().trim().startsWith(FIX)) {
             if (resultText.length() > 9) {
               if (line.toLowerCase().indexOf(FIX_ESCAPE) > 0) {
@@ -1014,6 +1054,7 @@ public class Transformer
     resultText = "";
     String lineResult;
     int repeatCount = 0;
+    String newValue = t.value;
     while ((lineResult = inResult.readLine()) != null) {
       lineResult = lineResult.trim();
       if (lineResult.length() > 0) {
@@ -1081,7 +1122,7 @@ public class Transformer
             }
             if (tildePos == -1) {
               while (count < t.fieldRepeat) {
-                t.value = "~" + t.value;
+                newValue = "~" + newValue;
                 count++;
               }
             }
@@ -1101,7 +1142,7 @@ public class Transformer
                 // there's no caret, so add it to value, keep same
                 // position
                 while (count < t.subfield) {
-                  t.value = "^" + t.value;
+                  newValue = "^" + newValue;
                   count++;
                 }
                 if (endPosTilde < endPosBar) {
@@ -1131,11 +1172,12 @@ public class Transformer
                 endPos = endPosCaret;
               }
               String lineNew = lineResult.substring(0, pos);
-              if (t.value.toUpperCase().startsWith("[MAP ")) {
+             
+              if (newValue.toUpperCase().startsWith("[MAP ")) {
                 String oldValue = lineResult.substring(pos, endPos);
-                mapValue(t, oldValue);
+                newValue = mapValue(t, oldValue);
               }
-              lineNew += t.value;
+              lineNew += newValue;
               lineNew += lineResult.substring(endPos);
               lineResult = lineNew;
             }
@@ -1302,7 +1344,7 @@ public class Transformer
     return t;
   }
 
-  private void mapValue(Transform t, String oldValue) {
+  private String mapValue(Transform t, String oldValue) {
     int mapPos = t.value.toUpperCase().indexOf("'" + oldValue.toUpperCase() + "'=>");
     if (mapPos == -1) {
       mapPos = t.value.toUpperCase().indexOf("DEFAULT=>");
@@ -1323,9 +1365,9 @@ public class Transformer
       if (newValue.endsWith("'")) {
         newValue = newValue.substring(0, newValue.length() - 1);
       }
-      t.value = newValue;
+      return newValue;
     } else {
-      t.value = oldValue;
+      return oldValue;
     }
   }
 
@@ -1342,6 +1384,9 @@ public class Transformer
       t.value = today;
     } else if (t.value.equalsIgnoreCase("[CONTROL_ID]")) {
       t.value = connector.getCurrentControlId();
+    } else if (t.value.toLowerCase().startsWith("[map") && t.value.endsWith("]"))
+    {
+      // do nothing
     } else if (t.value.startsWith("[") && t.value.endsWith("]")) {
       String v = t.value.substring(1, t.value.length() - 1);
       t.valueTransform = readHL7Reference(v, v.length());
