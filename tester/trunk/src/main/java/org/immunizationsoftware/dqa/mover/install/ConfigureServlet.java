@@ -33,7 +33,7 @@ public class ConfigureServlet extends ClientServlet
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    
+
     SoftwareType softwareType = getSoftwareType(req);
 
     HttpSession session = req.getSession(true);
@@ -161,7 +161,7 @@ public class ConfigureServlet extends ClientServlet
       if (softwareType == SoftwareType.TESTER) {
         out.println("  <input type=\"hidden\" name=\"softwareType\" value=\"Tester\">");
       }
-            out.println("    <p>After you have saved <code>smm.config.txt</code> you are ready for <input type=\"submit\" value=\"Step 3: Install\" name=\"action\"></p>");
+      out.println("    <p>After you have saved <code>smm.config.txt</code> you are ready for <input type=\"submit\" value=\"Step 3: Install\" name=\"action\"></p>");
       out.println("</form>");
 
       printHtmlFoot(out);
@@ -192,15 +192,17 @@ public class ConfigureServlet extends ClientServlet
             + "BTS-1=1\n" + "FTS-2=CR\n" + "BTS-2=CR\n" + "FHS-4=[USERID]\n" + "BHS-4=[USERID]\n");
       } else if (templateName.equals(TEMPLATE_ASIIS_PROD) || templateName.equals(TEMPLATE_ASIIS_TEST)) {
         HttpConnector httpConnector = (HttpConnector) connector;
-        httpConnector.setCustomTransformations("MSH-3=RPMS\n" + "MSH-4=[FACILITYID]\n" + "PV1-10=\n" + "fix ampersand\n");
+        httpConnector.setCustomTransformations("MSH-3=RPMS\n" + "MSH-4=[FACILITYID]\n" + "PV1-10=\n"
+            + "fix ampersand\n");
       } else if (templateName.equals(TEMPLATE_NV_WEBIZ_TESTING) || templateName.equals(TEMPLATE_NV_WEBIZ_PRODUCTION)) {
         HttpConnector httpConnector = (HttpConnector) connector;
         httpConnector.stripXML();
         httpConnector.setFieldName(HttpConnector.USERID, "userName");
         httpConnector.setFieldName(HttpConnector.PASSWORD, "password");
         httpConnector.setFieldName(HttpConnector.MESSAGEDATA, "flatWire");
-        httpConnector.setCustomTransformations("MSH-4=[OTHERID]\n" + "MSH-12=2.3.1" + "MSH-6=NV0000\n" + "NK1-2.7=L\n"
-            + "PID-11.7=P\n");
+        httpConnector.setCustomTransformations("MSH-4=[OTHERID]\n" + "MSH-6=NV0000\n" + "PID-6.7=M\n"
+            + "PID-22.3=[MAP 'CDCREC'=>'HL70189']\n" + "NK1-2.7=L\n" + "PID-11.7=P\n" + "ORC-3.2*=\n"
+            + "RXA-7*=[MAP 'mL'=>'ML']\n" + "RXA-7.3*=[MAP 'UCUM'=>'ISO+']\n" + "remove observation 30956-7\n");
         httpConnector.setAckType(AckAnalyzer.AckType.WEBIZ);
       }
     }
