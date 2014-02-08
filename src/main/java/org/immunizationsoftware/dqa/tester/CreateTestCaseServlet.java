@@ -282,14 +282,17 @@ public class CreateTestCaseServlet extends ClientServlet
             + "\"" + isChecked(PatientType.TODDLER, testCaseMessage.getPatientType()) + "/> Toddler");
         out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.TWEEN + "\""
             + isChecked(PatientType.TWEEN, testCaseMessage.getPatientType()) + "/> Tween <br/>");
-        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.TWO_MONTHS_OLD + "\""
+        out.println("                  <input type=\"radio\" name=\"patientType\" value=\""
+            + PatientType.TWO_MONTHS_OLD + "\""
             + isChecked(PatientType.TWO_MONTHS_OLD, testCaseMessage.getPatientType()) + "/> 2 Months ");
         out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.TWO_YEARS_OLD
             + "\"" + isChecked(PatientType.TWO_YEARS_OLD, testCaseMessage.getPatientType()) + "/> 2 Years <br/>");
-        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.FOUR_YEARS_OLD + "\""
+        out.println("                  <input type=\"radio\" name=\"patientType\" value=\""
+            + PatientType.FOUR_YEARS_OLD + "\""
             + isChecked(PatientType.FOUR_YEARS_OLD, testCaseMessage.getPatientType()) + "/> 4 Years ");
-        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.TWELVE_YEARS_OLD
-            + "\"" + isChecked(PatientType.TWELVE_YEARS_OLD, testCaseMessage.getPatientType()) + "/> 12 Years <br/>");
+        out.println("                  <input type=\"radio\" name=\"patientType\" value=\""
+            + PatientType.TWELVE_YEARS_OLD + "\""
+            + isChecked(PatientType.TWELVE_YEARS_OLD, testCaseMessage.getPatientType()) + "/> 12 Years <br/>");
         out.println("                  <div class=\"smallTitle\">Quick Transforms</div>");
         out.println("                  <input type=\"hidden\" name=\"settingQuickTransformations\" value=\"true\">");
         out.println("                  <input type=\"checkbox\" name=\"extra\" value=\"2.5.1\""
@@ -527,17 +530,29 @@ public class CreateTestCaseServlet extends ClientServlet
     return testMessageMap;
   }
 
+  protected static void saveForecastResults(TestCaseMessage testCaseMessage, HttpSession session, String results) {
+    if (testCaseMessage.getTestCaseNumber() != null && !testCaseMessage.getTestCaseNumber().equals("")) {
+      Authenticate.User user = (Authenticate.User) session.getAttribute("user");
+      if (user != null && user.hasSendData()) {
+        File testCaseDir = getOrCreateTestCaseDir(testCaseMessage, user);
+        File testCaseFile = new File(testCaseDir, "TC-" + testCaseMessage.getTestCaseNumber() + ".forecast-results.txt");
+        try {
+          PrintWriter out = new PrintWriter(new FileWriter(testCaseFile));
+          out.print(results);
+          out.close();
+        } catch (IOException ioe) {
+          ioe.printStackTrace();
+          // unable to save, continue as normal
+        }
+      }
+    }
+  }
+
   protected static void saveTestCase(TestCaseMessage testCaseMessage, HttpSession session) {
     if (testCaseMessage.getTestCaseNumber() != null && !testCaseMessage.getTestCaseNumber().equals("")) {
       Authenticate.User user = (Authenticate.User) session.getAttribute("user");
       if (user != null && user.hasSendData()) {
-        File testCaseDir = user.getSendData().getTestCaseDir();
-        if (!testCaseMessage.getTestCaseSet().equals("")) {
-          testCaseDir = new File(testCaseDir, testCaseMessage.getTestCaseSet());
-          if (!testCaseDir.exists()) {
-            testCaseDir.mkdir();
-          }
-        }
+        File testCaseDir = getOrCreateTestCaseDir(testCaseMessage, user);
         File testCaseFile = new File(testCaseDir, "TC-" + testCaseMessage.getTestCaseNumber() + ".txt");
         try {
           PrintWriter out = new PrintWriter(new FileWriter(testCaseFile));
@@ -568,17 +583,22 @@ public class CreateTestCaseServlet extends ClientServlet
     }
   }
 
+  public static File getOrCreateTestCaseDir(TestCaseMessage testCaseMessage, Authenticate.User user) {
+    File testCaseDir = user.getSendData().getTestCaseDir();
+    if (!testCaseMessage.getTestCaseSet().equals("")) {
+      testCaseDir = new File(testCaseDir, testCaseMessage.getTestCaseSet());
+      if (!testCaseDir.exists()) {
+        testCaseDir.mkdir();
+      }
+    }
+    return testCaseDir;
+  }
+
   public static File getTestCaseDir(TestCaseMessage testCaseMessage, HttpSession session) {
     if (testCaseMessage.getTestCaseNumber() != null && !testCaseMessage.getTestCaseNumber().equals("")) {
       Authenticate.User user = (Authenticate.User) session.getAttribute("user");
       if (user != null && user.hasSendData()) {
-        File testCaseDir = user.getSendData().getTestCaseDir();
-        if (!testCaseMessage.getTestCaseSet().equals("")) {
-          testCaseDir = new File(testCaseDir, testCaseMessage.getTestCaseSet());
-          if (!testCaseDir.exists()) {
-            testCaseDir.mkdir();
-          }
-        }
+        File testCaseDir = getOrCreateTestCaseDir(testCaseMessage, user);
         return testCaseDir;
       }
     }

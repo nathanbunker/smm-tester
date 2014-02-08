@@ -166,8 +166,9 @@ public class ForecastTesterManager
   private static final String POST_SOFTWARE_ID = "softwareId";
   private static final String POST_TEST_CASE_ID = "testCaseId";
 
-  public void reportForecastResults(ForecastTestCase forecastTestCase, String rspMessage, int softwareId)
+  public String reportForecastResults(ForecastTestCase forecastTestCase, String rspMessage, int softwareId)
       throws IOException {
+    StringBuilder submittedResults = new StringBuilder();
     List<ForecastActual> forecastActualList = readForecastActual(rspMessage);
 
     for (ForecastActual forecastActual : forecastActualList) {
@@ -213,10 +214,12 @@ public class ForecastTesterManager
       InputStreamReader input = null;
       input = new InputStreamReader(urlConn.getInputStream());
       BufferedReader in = new BufferedReader(input);
+      submittedResults.append(sb + "\n");
       if ((line = in.readLine()) != null) {
-        // should be OK
+        submittedResults.append(" + " + line + "\n");
       }
     }
+    return submittedResults.toString();
   }
 
   protected static List<ForecastActual> readForecastActual(String rspMessage) {

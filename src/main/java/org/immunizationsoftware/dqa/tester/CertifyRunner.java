@@ -208,19 +208,26 @@ public class CertifyRunner extends Thread
       uniqueMRNBase = "" + System.currentTimeMillis() % 1000000 + (uniqueMRNBaseInc++) + "-";
       willQuery = queryType != null && (queryType.equals(QUERY_TYPE_QBP) || queryType.equals(QUERY_TYPE_VXQ));
 
+      testCaseMessageBase = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+      testCaseMessageBase.setTestCaseSet(testCaseSet);
+      testCaseMessageBase.setTestCaseNumber(uniqueMRNBase + "BASE");
+
       testStarted = new Date();
 
-      statusMessageList.add(sdf.format(new Date()) + " Preparing basic messages");
-      prepareBasic();
+      if (run[SUITE_A_BASIC]) {
 
-      if (!keepRunning) {
-        status = STATUS_STOPPED;
-        return;
+        statusMessageList.add(sdf.format(new Date()) + " Preparing basic messages");
+        prepareBasic();
+
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          return;
+        }
+
+        statusMessageList.add(sdf.format(new Date()) + " Sending basic messages");
+        updateBasic();
+        printReportToFile();
       }
-
-      statusMessageList.add(sdf.format(new Date()) + " Sending basic messages");
-      updateBasic();
-      printReportToFile();
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
@@ -240,23 +247,21 @@ public class CertifyRunner extends Thread
 
       }
       if (run[SUITE_C_ADVANCED]) {
-        if (testCaseMessageBase != null) {
-          Map<Integer, List<Issue>> issueMap = new HashMap<Integer, List<Issue>>();
+        Map<Integer, List<Issue>> issueMap = new HashMap<Integer, List<Issue>>();
 
-          statusMessageList.add(sdf.format(new Date()) + " Preparing advanced messages");
-          prepareAdvanced(issueMap);
-          if (!keepRunning) {
-            status = STATUS_STOPPED;
-            return;
-          }
+        statusMessageList.add(sdf.format(new Date()) + " Preparing advanced messages");
+        prepareAdvanced(issueMap);
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          return;
+        }
 
-          statusMessageList.add(sdf.format(new Date()) + " Sending advanced messages");
-          updateAdvanced(issueMap);
-          printReportToFile();
-          if (!keepRunning) {
-            status = STATUS_STOPPED;
-            return;
-          }
+        statusMessageList.add(sdf.format(new Date()) + " Sending advanced messages");
+        updateAdvanced(issueMap);
+        printReportToFile();
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          return;
         }
       }
 
@@ -333,9 +338,11 @@ public class CertifyRunner extends Thread
           status = STATUS_STOPPED;
           return;
         }
-        statusMessageList.add(sdf.format(new Date()) + " Submit query for basic messages");
 
-        queryBasic();
+        if (run[SUITE_A_BASIC]) {
+          statusMessageList.add(sdf.format(new Date()) + " Submit query for basic messages");
+          queryBasic();
+        }
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
@@ -463,26 +470,26 @@ public class CertifyRunner extends Thread
   }
 
   public void printReportToFile() {
-    if (testCaseMessageBase != null) {
-      File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessageBase, session);
-      if (testCaseDir != null) {
-        statusMessageList.add(sdf.format(new Date()) + " Writing out final report");
-        File certificationReportFile = new File(testCaseDir, "IIS Testing Report.html");
-        try {
-          PrintWriter out = new PrintWriter(new FileWriter(certificationReportFile));
-          String title = "IIS Testing Report";
-          ClientServlet.printHtmlHeadForFile(out, title);
-          out.println("    <h3>IIS Testing Results for " + connector.getLabel() + "</h3>");
-          printResults(out);
-          out.println("    <h3>IIS Testing Details</h3>");
-          printProgressDetails(out, true);
-          ClientServlet.printHtmlFootForFile(out);
-          out.close();
-        } catch (IOException ioe) {
-          ioe.printStackTrace();
-          // unable to save, continue as normal
-        }
+
+    File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessageBase, session);
+    if (testCaseDir != null) {
+      statusMessageList.add(sdf.format(new Date()) + " Writing out final report");
+      File certificationReportFile = new File(testCaseDir, "IIS Testing Report.html");
+      try {
+        PrintWriter out = new PrintWriter(new FileWriter(certificationReportFile));
+        String title = "IIS Testing Report";
+        ClientServlet.printHtmlHeadForFile(out, title);
+        out.println("    <h3>IIS Testing Results for " + connector.getLabel() + "</h3>");
+        printResults(out);
+        out.println("    <h3>IIS Testing Details</h3>");
+        printProgressDetails(out, true);
+        ClientServlet.printHtmlFootForFile(out);
+        out.close();
+      } catch (IOException ioe) {
+        ioe.printStackTrace();
+        // unable to save, continue as normal
       }
+
     }
   }
 
@@ -571,7 +578,8 @@ public class CertifyRunner extends Thread
         count = 0;
         for (Issue issue : issueList) {
           count++;
-          TestCaseMessage testCaseMessage = new TestCaseMessage(testCaseMessageBase);
+
+          TestCaseMessage testCaseMessage = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
           testCaseMessage.setTestCaseSet(testCaseSet);
           testCaseMessage.setTestCaseNumber(uniqueMRNBase + "C" + priority + "." + paddWithZeros(count, 3));
           profileTestCaseLists[i].add(testCaseMessage);
@@ -670,9 +678,6 @@ public class CertifyRunner extends Thread
         totalUpdateTime += testRunner.getTotalRunTime();
         if (pass && !testCaseMessage.isMajorChangesMade()) {
           testPass++;
-          testCaseMessageBase = testCaseMessage;
-        } else {
-          testCaseMessageBase = null;
         }
         testCaseMessage.setErrorList(testRunner.getErrorList());
         printExampleMessage(testCaseMessage, "A Basic");
@@ -1290,26 +1295,33 @@ public class CertifyRunner extends Thread
       register(testCaseMessage);
     }
 
-//    certifyItems = certify.getCertifyItemList(Certify.FIELD_LANGUAGE_FULL);
-//    count = 0;
-//    masterCount++;
-//    {
-//      Certify.CertifyItem certifyItem = certifyItems.get((int) (System.currentTimeMillis() % certifyItems.size()));
-//      count++;
-//      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
-//      testCaseMessage.setDescription("Primary Language is " + certifyItem.getLabel()
-//          + " (Random value from CDC full set)");
-//      testCaseMessage.setTestCaseSet(testCaseSet);
-//      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
-//      testCaseMessage.appendCustomTransformation("PID-15.1=" + certifyItem.getCode());
-//      testCaseMessage.appendCustomTransformation("PID-15.2=" + certifyItem.getLabel());
-//      testCaseMessage.appendCustomTransformation("PID-15.3=" + certifyItem.getTable());
-//
-//      statusCheckTestCaseIntermediateList.add(testCaseMessage);
-//      transformer.transform(testCaseMessage);
-//      testCaseMessage.setAssertResult("Accept - *");
-//      register(testCaseMessage);
-//    }
+    // certifyItems = certify.getCertifyItemList(Certify.FIELD_LANGUAGE_FULL);
+    // count = 0;
+    // masterCount++;
+    // {
+    // Certify.CertifyItem certifyItem = certifyItems.get((int)
+    // (System.currentTimeMillis() % certifyItems.size()));
+    // count++;
+    // TestCaseMessage testCaseMessage =
+    // ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+    // testCaseMessage.setDescription("Primary Language is " +
+    // certifyItem.getLabel()
+    // + " (Random value from CDC full set)");
+    // testCaseMessage.setTestCaseSet(testCaseSet);
+    // testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" +
+    // makeTwoDigits(masterCount) + "." + count);
+    // testCaseMessage.appendCustomTransformation("PID-15.1=" +
+    // certifyItem.getCode());
+    // testCaseMessage.appendCustomTransformation("PID-15.2=" +
+    // certifyItem.getLabel());
+    // testCaseMessage.appendCustomTransformation("PID-15.3=" +
+    // certifyItem.getTable());
+    //
+    // statusCheckTestCaseIntermediateList.add(testCaseMessage);
+    // transformer.transform(testCaseMessage);
+    // testCaseMessage.setAssertResult("Accept - *");
+    // register(testCaseMessage);
+    // }
 
     certifyItems = certify.getCertifyItemList(Certify.FIELD_COMPLETION);
     count = 0;
@@ -1493,10 +1505,12 @@ public class CertifyRunner extends Thread
     // }
   }
 
-  private static final ForecastTestPanel[] TEST_PANELS = { ForecastTestPanel.IHS_ROLLOUT_2013,
-      ForecastTestPanel.CDSI_TEST_CASES_V1_0, ForecastTestPanel.IHS_ROLLOUT_2013, ForecastTestPanel.IHS_FROM_RPMS };
-  // private static final ForecastTestPanel[] TEST_PANELS = {
-  // ForecastTestPanel.VDH };
+  private List<ForecastTestPanel> forecastTestPanelList = new ArrayList<ForecastTestPanel>();
+
+  public void addForecastTestPanel(ForecastTestPanel forecastTestPanel) {
+    forecastTestPanelList.add(forecastTestPanel);
+  }
+
   private static final String TCH_FORECAST_TESTER_URL = "http://tchforecasttester.org/ft/ExternalTestServlet";
 
   private ForecastTesterManager forecastTesterManager = null;
@@ -1511,7 +1525,7 @@ public class CertifyRunner extends Thread
     int count = 0;
     forecastTesterManager = new ForecastTesterManager(TCH_FORECAST_TESTER_URL);
     try {
-      for (ForecastTestPanel testPanel : TEST_PANELS) {
+      for (ForecastTestPanel testPanel : forecastTestPanelList) {
         List<ForecastTestCase> forecastTestCaseList = forecastTesterManager.getForecastTestCaseList(testPanel);
         for (ForecastTestCase forecastTestCase : forecastTestCaseList) {
           count++;
@@ -1601,6 +1615,20 @@ public class CertifyRunner extends Thread
       register(testCaseMessage);
     }
 
+    {
+      SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssZ");
+      count++;
+      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+      testCaseMessage.appendCustomTransformation("RXA-3=" + sdf.format(new Date()));
+      testCaseMessage.setDescription("Tolerance Check: RXA-3 contains a time component");
+      testCaseMessage.setTestCaseSet(testCaseSet);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
+      statusCheckTestCaseExceptionalList.add(testCaseMessage);
+      transformer.transform(testCaseMessage);
+      testCaseMessage.setAssertResult("Accept - *");
+      register(testCaseMessage);
+    }
+    
     {
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
@@ -2074,8 +2102,9 @@ public class CertifyRunner extends Thread
         if (queryTestCaseMessage.getForecastTestCase() != null) {
           if (connector.getTchForecastTesterSoftwareId() > 0) {
             try {
-              forecastTesterManager.reportForecastResults(queryTestCaseMessage.getForecastTestCase(), rspMessage,
-                  connector.getTchForecastTesterSoftwareId());
+              String results = forecastTesterManager.reportForecastResults(queryTestCaseMessage.getForecastTestCase(),
+                  rspMessage, connector.getTchForecastTesterSoftwareId());
+              CreateTestCaseServlet.saveForecastResults(queryTestCaseMessage, session, results);
             } catch (Exception e) {
               e.printStackTrace();
             }
@@ -2108,52 +2137,54 @@ public class CertifyRunner extends Thread
     out.println("    <th>Level 2</th>");
     out.println("    <th>Level 3</th>");
     out.println("  </tr>");
-    out.println("  <tr>");
-    out.println("    <th><font size=\"+1\">Basic</font><br/><font size=\"-2\">IIS can accept updates from EHR</font></th>");
-    if (areaScore[SUITE_A_BASIC][0] >= 100) {
-      out.println("    <td class=\"pass\">All NIST 2014 scenarios are accepted. <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
-    } else if (areaScore[SUITE_A_BASIC][0] >= 0) {
-      out.println("    <td class=\"fail\">Not all NIST 2014 scenarios are accepted. (" + areaScore[SUITE_A_BASIC][0]
-          + "% accepted) <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
-    } else {
-      if (areaProgress[SUITE_A_BASIC][0] > -1) {
-        out.println("    <td>running now ... <br/>" + areaProgress[SUITE_A_BASIC][0] + "% complete</td>");
+    if (run[SUITE_A_BASIC]) {
+      out.println("  <tr>");
+      out.println("    <th><font size=\"+1\">Basic</font><br/><font size=\"-2\">IIS can accept updates from EHR</font></th>");
+      if (areaScore[SUITE_A_BASIC][0] >= 100) {
+        out.println("    <td class=\"pass\">All NIST 2014 scenarios are accepted. <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_A_BASIC][0] >= 0) {
+        out.println("    <td class=\"fail\">Not all NIST 2014 scenarios are accepted. (" + areaScore[SUITE_A_BASIC][0]
+            + "% accepted) <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
       } else {
-        out.println("    <td>updates not sent yet</td>");
-      }
-    }
-    if (areaScore[SUITE_A_BASIC][1] >= 100) {
-      out.println("    <td class=\"pass\">All required IIS core fields are supported.  <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
-    } else if (areaScore[SUITE_A_BASIC][1] >= 0) {
-      out.println("    <td class=\"fail\">Not all required IIS core fields are supported. ("
-          + areaScore[SUITE_A_BASIC][1]
-          + "% of tests passed) <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
-    } else {
-      if (areaProgress[SUITE_A_BASIC][1] > -1) {
-        out.println("    <td>running now ... <br/>" + areaProgress[SUITE_A_BASIC][1] + "% complete</td>");
-      } else {
-        if (willQuery) {
-          out.println("    <td>queries not sent yet</td>");
+        if (areaProgress[SUITE_A_BASIC][0] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_A_BASIC][0] + "% complete</td>");
         } else {
-          out.println("    <td>query tests not enabled</td>");
+          out.println("    <td>updates not sent yet</td>");
         }
       }
-    }
-    if (areaScore[SUITE_A_BASIC][2] >= 100) {
-      out.println("    <td class=\"pass\">All required and optional IIS core data were returned when queried. "
-          + "<font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
-    } else if (areaScore[SUITE_A_BASIC][2] >= 0) {
-      out.println("    <td class=\"fail\">Not all required or optional IIS core data were returned when queried ("
-          + areaScore[SUITE_A_BASIC][2]
-          + "% of fields returned) <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
-    } else {
-      if (areaProgress[SUITE_A_BASIC][2] > -1) {
-        out.println("    <td>running now ... <br/>" + areaProgress[SUITE_A_BASIC][2] + "% complete</td>");
+      if (areaScore[SUITE_A_BASIC][1] >= 100) {
+        out.println("    <td class=\"pass\">All required IIS core fields are supported.  <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_A_BASIC][1] >= 0) {
+        out.println("    <td class=\"fail\">Not all required IIS core fields are supported. ("
+            + areaScore[SUITE_A_BASIC][1]
+            + "% of tests passed) <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
       } else {
-        if (willQuery) {
-          out.println("    <td>queries not sent yet</td>");
+        if (areaProgress[SUITE_A_BASIC][1] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_A_BASIC][1] + "% complete</td>");
         } else {
-          out.println("    <td>query tests not enabled</td>");
+          if (willQuery) {
+            out.println("    <td>queries not sent yet</td>");
+          } else {
+            out.println("    <td>query tests not enabled</td>");
+          }
+        }
+      }
+      if (areaScore[SUITE_A_BASIC][2] >= 100) {
+        out.println("    <td class=\"pass\">All required and optional IIS core data were returned when queried. "
+            + "<font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_A_BASIC][2] >= 0) {
+        out.println("    <td class=\"fail\">Not all required or optional IIS core data were returned when queried ("
+            + areaScore[SUITE_A_BASIC][2]
+            + "% of fields returned) <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
+      } else {
+        if (areaProgress[SUITE_A_BASIC][2] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_A_BASIC][2] + "% complete</td>");
+        } else {
+          if (willQuery) {
+            out.println("    <td>queries not sent yet</td>");
+          } else {
+            out.println("    <td>query tests not enabled</td>");
+          }
         }
       }
     }
@@ -2464,7 +2495,7 @@ public class CertifyRunner extends Thread
     out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th>Basic Tests</th>");
-    out.println("    <td>Enabled</td>");
+    out.println("    <td>" + (run[SUITE_A_BASIC] ? "Enabled" : "Not Enabled") + "</td>");
     out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th>Intermediate Tests</th>");
@@ -2586,7 +2617,7 @@ public class CertifyRunner extends Thread
         out.println("    <td>" + areaLabel[i] + "</td>");
         for (int j = 0; j < 3; j++) {
           if (areaCount[i][j] == -1) {
-            out.println("    <td>&nbps;</td>");
+            out.println("    <td>&nbsp;</td>");
           } else {
             out.println("    <td>" + areaCount[i][j] + "</td>");
           }

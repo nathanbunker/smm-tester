@@ -6,7 +6,12 @@ package org.immunizationsoftware.dqa.tester;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -14,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestPanel;
 
 /**
  * 
@@ -61,6 +67,7 @@ public class CertifyServlet extends ClientServlet
         certifyRunner = new CertifyRunner(connectors.get(id - 1), session);
         certifyRunner.setQueryType(queryType);
         certifyRunner.setRun(true, CertifyRunner.SUITE_A_BASIC);
+        certifyRunner.setRun(request.getParameter("runA") != null, CertifyRunner.SUITE_A_BASIC);
         certifyRunner.setRun(request.getParameter("runB") != null, CertifyRunner.SUITE_B_INTERMEDIATE);
         certifyRunner.setRun(request.getParameter("runC") != null, CertifyRunner.SUITE_C_ADVANCED);
         certifyRunner.setRun(request.getParameter("runD") != null, CertifyRunner.SUITE_D_EXCEPTIONAL);
@@ -68,6 +75,17 @@ public class CertifyServlet extends ClientServlet
         certifyRunner.setRun(request.getParameter("runF") != null, CertifyRunner.SUITE_F_FORECAST);
         certifyRunner.setRun(request.getParameter("runH") != null, CertifyRunner.SUITE_H_CONFORMANCE);
         certifyRunner.setPauseBeforeQuerying(request.getParameter("pauseBeforeQuerying") != null);
+        if (certifyRunner.isRun(CertifyRunner.SUITE_E_FORECAST_PREP)) {
+          Map<Integer, ForecastTestPanel> forecastTestPanelIdMap = new HashMap<Integer, ForecastTestPanel>();
+          for (ForecastTestPanel forecastTestPanel : ForecastTestPanel.values()) {
+            forecastTestPanelIdMap.put(forecastTestPanel.getId(), forecastTestPanel);
+          }
+          for (String s : request.getParameterValues("forecastTestPanelId")) {
+            ForecastTestPanel forecastTestPanel = forecastTestPanelIdMap.get(Integer.parseInt(s));
+            certifyRunner.addForecastTestPanel(forecastTestPanel);
+          }
+        }
+
         session.setAttribute("certifyRunner", certifyRunner);
         certifyRunner.start();
       }
@@ -200,18 +218,13 @@ public class CertifyServlet extends ClientServlet
         out.println("            <input type=\"radio\" name=\"queryType\" value=\"Q\"> QBP");
         out.println("            <input type=\"radio\" name=\"queryType\" value=\"V\"> VXQ");
         out.println("            <input type=\"radio\" name=\"queryType\" value=\"N\" checked=\"true\"> None");
-        out.println("          </td>");
-        out.println("        </tr>");
-        out.println("        <tr>");
-        out.println("          <td></td>");
-        out.println("          <td>");
-        out.println("            <input type=\"checkbox\" name=\"pauseBeforeQuerying\" value=\"true\" checked=\"true\"/> Pause Before Querying");
+        out.println("            <input type=\"checkbox\" name=\"pauseBeforeQuerying\" value=\"true\"/> Pause");
         out.println("          </td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>Tests to Run</td>");
         out.println("          <td>");
-        out.println("            <input type=\"checkbox\" name=\"runA\" value=\"true\" checked=\"true\" disabled=\"disabled\"/> Basic");
+        out.println("            <input type=\"checkbox\" name=\"runA\" value=\"true\" checked=\"true\"/> Basic");
         out.println("          </td>");
         out.println("        </tr>");
         out.println("        <tr>");
@@ -236,6 +249,25 @@ public class CertifyServlet extends ClientServlet
         out.println("          <td></td>");
         out.println("          <td>");
         out.println("            <input type=\"checkbox\" name=\"runF\" value=\"true\"/> Forecasting");
+        List<ForecastTestPanel> forecastTestPanelList = Arrays.asList(ForecastTestPanel.values());
+        out.println("          </td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td></td>");
+        out.println("          <td>");
+        out.println("            <select multiple size=\"5\" name=\"forecastTestPanelId\">");
+        for (ForecastTestPanel forecastTestPanel : forecastTestPanelList) {
+          if (forecastTestPanel.isStandard()) {
+            out.println("              <option value=\"" + forecastTestPanel.getId() + "\" selected" + ">"
+                + forecastTestPanel.getLabel() + "</option>");
+          } else {
+            out.println("              <option value=\"" + forecastTestPanel.getId() + "\">"
+                + forecastTestPanel.getLabel() + "</option>");
+
+          }
+        }
+        out.println("            ");
+        out.println("            </select>");
         out.println("          </td>");
         out.println("        </tr>");
         out.println("        <tr>");
@@ -268,5 +300,4 @@ public class CertifyServlet extends ClientServlet
       out.close();
     }
   }
-
 }
