@@ -91,7 +91,7 @@ public class Certify
         int equals = line.indexOf("=");
         if (equals != -1) {
           String concept = line.substring(0, equals);
-          String[] values = line.substring(equals + 1).split("\\,");
+          String[] values = line.substring(equals + 1).split("\\^");
           List<String[]> valueList = conceptMap.get(concept);
           if (valueList == null) {
             valueList = new ArrayList<String[]>();
