@@ -53,7 +53,7 @@ public class Transformer
   private static final String REP_PAT_BOY_OR_GIRL = "[BOY_OR_GIRL]";
   private static final String REP_PAT_GIRL = "[GIRL]";
   private static final String REP_PAT_BOY = "[BOY]";
-  
+
   private static final String REP_CON_USERID = "[USERID]";
   private static final String REP_CON_PASSWORD = "[PASSWORD]";
   private static final String REP_CON_FACILITYID = "[FACILITYID]";
@@ -887,8 +887,10 @@ public class Transformer
                 if (lineResult.length() > 0) {
                   if (lineResult.startsWith("OBX")) {
                     String[] fields = lineResult.split("\\|");
-                    if (fields.length <= 3 || fields[3] == null || (!fields[3].equalsIgnoreCase(obsCode) && !fields[3].toLowerCase().startsWith(obsCode.toLowerCase() + "^"))) 
-                    {
+                    if (fields.length <= 3
+                        || fields[3] == null
+                        || (!fields[3].equalsIgnoreCase(obsCode) && !fields[3].toLowerCase().startsWith(
+                            obsCode.toLowerCase() + "^"))) {
                       resultText += lineResult + "\r";
                     }
                   } else {
@@ -1047,6 +1049,7 @@ public class Transformer
   }
 
   private String setValueInHL7(String resultText, Transform t) throws IOException {
+
     BufferedReader inResult = new BufferedReader(new StringReader(resultText));
     boolean foundBoundStart = false;
     boolean foundBoundEnd = false;
@@ -1055,6 +1058,7 @@ public class Transformer
     String lineResult;
     int repeatCount = 0;
     String newValue = t.value;
+    String prepend = "";
     while ((lineResult = inResult.readLine()) != null) {
       lineResult = lineResult.trim();
       if (lineResult.length() > 0) {
@@ -1122,7 +1126,7 @@ public class Transformer
             }
             if (tildePos == -1) {
               while (count < t.fieldRepeat) {
-                newValue = "~" + newValue;
+                prepend = "~" + prepend;
                 count++;
               }
             }
@@ -1142,7 +1146,7 @@ public class Transformer
                 // there's no caret, so add it to value, keep same
                 // position
                 while (count < t.subfield) {
-                  newValue = "^" + newValue;
+                  prepend = "^" + prepend;
                   count++;
                 }
                 if (endPosTilde < endPosBar) {
@@ -1172,12 +1176,14 @@ public class Transformer
                 endPos = endPosCaret;
               }
               String lineNew = lineResult.substring(0, pos);
-             
+
               if (newValue.toUpperCase().startsWith("[MAP ")) {
                 String oldValue = lineResult.substring(pos, endPos);
                 newValue = mapValue(t, oldValue);
               }
-              lineNew += newValue;
+              if (!newValue.equals("")) {
+                lineNew += prepend + newValue;
+              }
               lineNew += lineResult.substring(endPos);
               lineResult = lineNew;
             }
@@ -1371,8 +1377,8 @@ public class Transformer
     }
   }
 
-  private void doReplacements(PatientType patientType, Patient patient, String today, String now, String nowNoTimezone, Connector connector,
-      Transform t, String resultText) throws IOException {
+  private void doReplacements(PatientType patientType, Patient patient, String today, String now, String nowNoTimezone,
+      Connector connector, Transform t, String resultText) throws IOException {
     if (patientType != PatientType.NONE) {
       doPatientReplacements(patient, t);
     }
@@ -1384,8 +1390,7 @@ public class Transformer
       t.value = today;
     } else if (t.value.equalsIgnoreCase("[CONTROL_ID]")) {
       t.value = connector.getCurrentControlId();
-    } else if (t.value.toLowerCase().startsWith("[map") && t.value.endsWith("]"))
-    {
+    } else if (t.value.toLowerCase().startsWith("[map") && t.value.endsWith("]")) {
       // do nothing
     } else if (t.value.startsWith("[") && t.value.endsWith("]")) {
       String v = t.value.substring(1, t.value.length() - 1);
