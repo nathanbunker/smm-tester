@@ -4,6 +4,8 @@
  */
 package org.immunizationsoftware.dqa.tester;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
@@ -54,8 +56,7 @@ public class StressTestServlet extends ClientServlet
    * @throws IOException
    *           if an I/O error occurs
    */
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-  {
+  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
@@ -63,82 +64,68 @@ public class StressTestServlet extends ClientServlet
     String action = request.getParameter("action");
     String problem = null;
     List<StressRunner> stressRunnerList = getStressRunnerList(session);
-    if (username == null)
-    {
+    if (username == null) {
       response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
-    } else if (action.equals("Start"))
-    {
+    } else if (action.equals("Start")) {
 
       int id = 0;
       List<Connector> connectors = ConnectServlet.getConnectors(session);
-      if (connectors.size() == 1)
-      {
+      if (connectors.size() == 1) {
         id = 1;
-      } else
-      {
-        if (request.getParameter("id") != null && request.getParameter("id").length() > 0)
-        {
+      } else {
+        if (request.getParameter("id") != null && request.getParameter("id").length() > 0) {
           id = Integer.parseInt(request.getParameter("id"));
         }
       }
       session.setAttribute("id", id);
       boolean goodToQuery = true;
       Connector connector = null;
-      if (id > 0)
-      {
+      if (id > 0) {
         connector = SubmitServlet.getConnector(id, session);
       }
 
       String testCase = request.getParameter("source");
-      if (testCase == null || testCase.trim().length() == 0)
-      {
+      if (testCase == null || testCase.trim().length() == 0) {
         testCase = null;
       }
 
       List<TestCaseMessage> testCaseMessageList = null;
-      if (testCase == null || testCase.equals(""))
-      {
+      if (testCase == null || testCase.equals("")) {
         goodToQuery = false;
         problem = "Test case message not set, unable to run test. ";
-      } else
-      {
+      } else {
         testCaseMessageList = parseAndAddTestCases(testCase, session);
       }
 
       TestRunner testRunner = new TestRunner();
       TestCaseMessage testCaseMessageBase = null;
-      if (goodToQuery && testCaseMessageList.size() > 0)
-      {
+      if (goodToQuery && testCaseMessageList.size() > 0) {
         testCaseMessageBase = testCaseMessageList.get(0);
-        if (connector != null)
-        {
-          try
-          {
+        if (connector != null) {
+          try {
             testRunner.runTest(connector, testCaseMessageBase);
 
-          } catch (Exception e)
-          {
+          } catch (Exception e) {
             problem = "Unable to run test: " + e.getMessage();
           }
         }
 
-      } else if (testCaseMessageList.size() == 0)
-      {
+      } else if (testCaseMessageList.size() == 0) {
         goodToQuery = false;
         problem = "Unable to profile interface, Test Case Message size == 0 ";
       }
 
-      if (testCaseMessageBase != null)
-      {
+      if (testCaseMessageBase != null) {
         StressRunner stressRunner = new StressRunner();
+        stressRunner.setUser(user);
         stressRunner.setTestCaseMessage(testCaseMessageBase);
         stressRunner.setConnector(connector);
+        stressRunner.setPos(stressRunnerList.size());
         stressRunnerList.add(stressRunner);
         stressRunner.start();
       }
 
-    } else if (action.equals("Stop"))
-    {
+    } else if (action.equals("Stop")) {
       int pos = Integer.parseInt(request.getParameter("pos"));
       StressRunner stressRunner = stressRunnerList.get(pos);
       stressRunner.setKeepRunning(false);
@@ -146,16 +133,12 @@ public class StressTestServlet extends ClientServlet
     doGet(request, response, session, problem);
   }
 
-  protected static Set<String> setTestCaseNumberSelectedSet(HttpServletRequest request, HttpSession session)
-  {
+  protected static Set<String> setTestCaseNumberSelectedSet(HttpServletRequest request, HttpSession session) {
     Set<String> testCaseNumberSelectedSet = new HashSet<String>();
     String[] testCaseNumberSelected = request.getParameterValues("testCaseNumber");
-    if (testCaseNumberSelected != null)
-    {
-      for (String s : testCaseNumberSelected)
-      {
-        if (s != null && s.length() > 0)
-        {
+    if (testCaseNumberSelected != null) {
+      for (String s : testCaseNumberSelected) {
+        if (s != null && s.length() > 0) {
           testCaseNumberSelectedSet.add(s);
         }
       }
@@ -164,27 +147,22 @@ public class StressTestServlet extends ClientServlet
     return testCaseNumberSelectedSet;
   }
 
-  protected static List<TestCaseMessage> parseAndAddTestCases(String testCase, HttpSession session) throws ServletException
-  {
+  protected static List<TestCaseMessage> parseAndAddTestCases(String testCase, HttpSession session)
+      throws ServletException {
     List<TestCaseMessage> testCaseMessageList = null;
-    if (testCase == null)
-    {
+    if (testCase == null) {
       testCaseMessageList = new ArrayList<TestCaseMessage>();
-    } else
-    {
-      try
-      {
+    } else {
+      try {
         testCaseMessageList = TestCaseMessage.createTestCaseMessageList(testCase);
-      } catch (Exception e)
-      {
+      } catch (Exception e) {
         throw new ServletException("Unable to read test case messages", e);
       }
     }
     return testCaseMessageList;
   }
 
-  protected static void makeHideScript(PrintWriter out)
-  {
+  protected static void makeHideScript(PrintWriter out) {
     out.println("    <script>");
     out.println("      function toggleLayer(whichLayer) ");
     out.println("      {");
@@ -203,23 +181,17 @@ public class StressTestServlet extends ClientServlet
     out.println("    </script>");
   }
 
-  private static String readSubParts(Map<String, String> expectedStatusMap, NodeList nodes)
-  {
+  private static String readSubParts(Map<String, String> expectedStatusMap, NodeList nodes) {
     String testScript = null;
-    for (int i = 0; i < nodes.getLength(); i++)
-    {
+    for (int i = 0; i < nodes.getLength(); i++) {
       Node node = nodes.item(i);
-      if (node.getNodeType() == Node.ELEMENT_NODE && "report-template".equals(node.getNodeName()))
-      {
+      if (node.getNodeType() == Node.ELEMENT_NODE && "report-template".equals(node.getNodeName())) {
         nodes = nodes.item(i).getChildNodes();
-        for (i = 0; i < nodes.getLength(); i++)
-        {
+        for (i = 0; i < nodes.getLength(); i++) {
           node = nodes.item(i);
-          if ("base-profile".equals(node.getNodeName()))
-          {
+          if ("base-profile".equals(node.getNodeName())) {
             readExpectedIssues(expectedStatusMap, nodes.item(i).getChildNodes());
-          } else if ("test-case-script".equals(node.getNodeName()))
-          {
+          } else if ("test-case-script".equals(node.getNodeName())) {
             testScript = node.getTextContent();
           }
         }
@@ -229,27 +201,21 @@ public class StressTestServlet extends ClientServlet
     return testScript;
   }
 
-  private static void readExpectedIssues(Map<String, String> expectedStatusMap, NodeList nodes)
-  {
-    for (int i = 0; i < nodes.getLength(); i++)
-    {
+  private static void readExpectedIssues(Map<String, String> expectedStatusMap, NodeList nodes) {
+    for (int i = 0; i < nodes.getLength(); i++) {
       Node node = nodes.item(i);
-      if (node.getNodeType() == Node.ELEMENT_NODE)
-      {
+      if (node.getNodeType() == Node.ELEMENT_NODE) {
         NamedNodeMap map = node.getAttributes();
-        if ("potential-issue-status".equals(node.getNodeName()))
-        {
+        if ("potential-issue-status".equals(node.getNodeName())) {
           expectedStatusMap.put(safe(map.getNamedItem("issue")), safe(map.getNamedItem("actionCode")));
         }
       }
     }
   }
 
-  protected static void sortTestCaseMessageList(List<TestCaseMessage> testCaseMessageList)
-  {
+  protected static void sortTestCaseMessageList(List<TestCaseMessage> testCaseMessageList) {
     Collections.sort(testCaseMessageList, new Comparator<TestCaseMessage>() {
-      public int compare(TestCaseMessage o1, TestCaseMessage o2)
-      {
+      public int compare(TestCaseMessage o1, TestCaseMessage o2) {
         return o1.getTestCaseNumber().compareTo(o2.getTestCaseNumber());
       }
     });
@@ -271,35 +237,29 @@ public class StressTestServlet extends ClientServlet
    *           if an I/O error occurs
    */
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-  {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
-    if (username == null)
-    {
+    if (username == null) {
       response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
-    } else
-    {
+    } else {
       doGet(request, response, session, null);
     }
   }
 
-  private void doGet(HttpServletRequest request, HttpServletResponse response, HttpSession session, String problem) throws IOException
-  {
+  private void doGet(HttpServletRequest request, HttpServletResponse response, HttpSession session, String problem)
+      throws IOException {
     PrintWriter out = response.getWriter();
-    try
-    {
+    try {
       printHtmlHead(out, MENU_HEADER_HOME, request);
 
-      if (problem != null)
-      {
+      if (problem != null) {
         out.println("<p>" + problem + "</p>");
       }
 
       List<StressRunner> stressRunnerList = getStressRunnerList(session);
-      if (stressRunnerList.size() > 0)
-      {
+      if (stressRunnerList.size() > 0) {
         out.println("<h2>Stress Test Status</h2>");
         int pos = 0;
         out.println("<table class=\"boxed\">");
@@ -313,8 +273,7 @@ public class StressTestServlet extends ClientServlet
         out.println("    <th class=\"boxed\">Rate (ms)</th>");
         out.println("    <th class=\"boxed\">Action</th>");
         out.println("  </tr>");
-        for (StressRunner stressRunner : stressRunnerList)
-        {
+        for (StressRunner stressRunner : stressRunnerList) {
           out.println("<form action=\"StressTestServlet\" method=\"POST\">");
           out.println("  <tr>");
           out.println("    <td class=\"boxed\">" + (pos + 1) + "</td>");
@@ -337,40 +296,33 @@ public class StressTestServlet extends ClientServlet
       out.println("    <form action=\"StressTestServlet\" method=\"POST\">");
       out.println("      <table border=\"0\">");
       int id = 0;
-      if (request.getParameter("id") != null)
-      {
+      if (request.getParameter("id") != null) {
         id = Integer.parseInt(request.getParameter("id"));
       }
-      if (session.getAttribute("id") != null)
-      {
+      if (session.getAttribute("id") != null) {
         id = (Integer) session.getAttribute("id");
       }
       TestCaseMessage testCaseMessage = (TestCaseMessage) session.getAttribute("testCaseMessage");
-      if (testCaseMessage == null)
-      {
+      if (testCaseMessage == null) {
         testCaseMessage = new TestCaseMessage();
       }
       out.println("        <tr>");
       out.println("          <td>Service</td>");
       out.println("          <td>");
       List<Connector> connectors = ConnectServlet.getConnectors(session);
-      if (connectors.size() == 1)
-      {
+      if (connectors.size() == 1) {
         out.println("            " + connectors.get(0).getLabelDisplay());
         out.println("            <input type=\"hidden\" name=\"id\" value=\"1\"/>");
-      } else
-      {
+      } else {
         out.println("            <select name=\"id\">");
         out.println("              <option value=\"\">select</option>");
         int i = 0;
-        for (Connector connector : connectors)
-        {
+        for (Connector connector : connectors) {
           i++;
-          if (id == i)
-          {
-            out.println("              <option value=\"" + i + "\" selected=\"true\">" + connector.getLabelDisplay() + "</option>");
-          } else
-          {
+          if (id == i) {
+            out.println("              <option value=\"" + i + "\" selected=\"true\">" + connector.getLabelDisplay()
+                + "</option>");
+          } else {
             out.println("              <option value=\"" + i + "\">" + connector.getLabelDisplay() + "</option>");
           }
         }
@@ -380,7 +332,8 @@ public class StressTestServlet extends ClientServlet
       out.println("        </tr>");
       out.println("        <tr>");
       out.println("          <td>Test</td>");
-      out.println("          <td><textarea name=\"source\" cols=\"70\" rows=\"10\" wrap=\"off\">" + testCaseMessage.createText() + "</textarea></td>");
+      out.println("          <td><textarea name=\"source\" cols=\"70\" rows=\"10\" wrap=\"off\">"
+          + testCaseMessage.createText() + "</textarea></td>");
       out.println("        </tr>");
       out.println("        <tr>");
       out.println("          <td colspan=\"2\" align=\"right\">");
@@ -389,12 +342,10 @@ public class StressTestServlet extends ClientServlet
       out.println("        </tr>");
       out.println("      </table>");
       out.println("    </form>");
-      if (stressRunnerList.size() > 0)
-      {
+      if (stressRunnerList.size() > 0) {
         out.println("<h2>Stress Test Details</h2>");
         int pos = 0;
-        for (StressRunner stressRunner : stressRunnerList)
-        {
+        for (StressRunner stressRunner : stressRunnerList) {
           out.println("<h3>Tester " + (pos + 1) + "</h3>");
           out.println("<p>Last returned acknowledgement:</p>");
           out.println("<pre>");
@@ -408,32 +359,26 @@ public class StressTestServlet extends ClientServlet
         }
       }
       printHtmlFoot(out);
-    } finally
-    {
+    } finally {
       out.close();
     }
   }
 
-  private List<StressRunner> getStressRunnerList(HttpSession session)
-  {
+  private List<StressRunner> getStressRunnerList(HttpSession session) {
     List<StressRunner> stressRunnerList = (List<StressRunner>) session.getAttribute("stressRunnerList");
-    if (stressRunnerList == null)
-    {
+    if (stressRunnerList == null) {
       stressRunnerList = new ArrayList<StressTestServlet.StressRunner>();
       session.setAttribute("stressRunnerList", stressRunnerList);
     }
     return stressRunnerList;
   }
 
-  private static String safe(Node n)
-  {
-    if (n == null)
-    {
+  private static String safe(Node n) {
+    if (n == null) {
       return "";
     }
     String s = n.getNodeValue();
-    if (s == null)
-    {
+    if (s == null) {
       return "";
     }
     return s;
@@ -442,16 +387,13 @@ public class StressTestServlet extends ClientServlet
   public class StressRunnerList extends ArrayList<StressRunner> implements HttpSessionBindingListener
   {
 
-    public void valueBound(HttpSessionBindingEvent event)
-    {
+    public void valueBound(HttpSessionBindingEvent event) {
       // TODO Auto-generated method stub
 
     }
 
-    public void valueUnbound(HttpSessionBindingEvent event)
-    {
-      for (StressRunner stressRunner : this)
-      {
+    public void valueUnbound(HttpSessionBindingEvent event) {
+      for (StressRunner stressRunner : this) {
         stressRunner.setKeepRunning(false);
       }
     }
@@ -474,9 +416,18 @@ public class StressTestServlet extends ClientServlet
     private String lastResult = "";
     private StringBuilder log = new StringBuilder();
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
+    private Authenticate.User user = null;
+    private int pos = 0;
 
-    private void log(String message)
-    {
+    public void setPos(int pos) {
+      this.pos = pos;
+    }
+
+    public void setUser(Authenticate.User user) {
+      this.user = user;
+    }
+
+    private void log(String message) {
       String zeroPad = "00000" + count;
       zeroPad = zeroPad.substring(zeroPad.length() - 6);
       log.append(sdf.format(new Date()));
@@ -486,124 +437,101 @@ public class StressTestServlet extends ClientServlet
       log.append(message);
       log.append("\n");
     }
-    
-    public String getLog()
-    {
+
+    public String getLog() {
       return log.toString();
     }
 
-    public String getLastResult()
-    {
+    public String getLastResult() {
       return lastResult;
     }
 
-    public int getCountAccepted()
-    {
+    public int getCountAccepted() {
       return countAccepted;
     }
 
-    public int getCountException()
-    {
+    public int getCountException() {
       return countException;
     }
 
-    public int getCountErrored()
-    {
+    public int getCountErrored() {
       return countErrored;
     }
 
     private int countException = 0;
     private int countErrored = 0;
 
-    public long getMarkTime()
-    {
+    public long getMarkTime() {
       return markTime;
     }
 
-    public void setMarkTime(long markTime)
-    {
+    public void setMarkTime(long markTime) {
       this.markTime = markTime;
     }
 
-    public int getCount()
-    {
+    public int getCount() {
       return count;
     }
 
-    public void setCount(int count)
-    {
+    public void setCount(int count) {
       this.count = count;
     }
 
-    public double getRate()
-    {
+    public double getRate() {
       return rate;
     }
 
-    public void setRate(double rate)
-    {
+    public void setRate(double rate) {
       this.rate = rate;
     }
 
-    public long getStartTime()
-    {
+    public long getStartTime() {
       return startTime;
     }
 
-    public void setStartTime(long startTime)
-    {
+    public void setStartTime(long startTime) {
       this.startTime = startTime;
     }
 
-    public boolean isKeepRunning()
-    {
+    public boolean isKeepRunning() {
       return keepRunning;
     }
 
-    public void setKeepRunning(boolean keepRunning)
-    {
+    public void setKeepRunning(boolean keepRunning) {
       this.keepRunning = keepRunning;
     }
 
-    public String getStatus()
-    {
+    public String getStatus() {
       return status;
     }
 
-    public void setStatus(String status)
-    {
+    public void setStatus(String status) {
       this.status = status;
     }
 
     private boolean keepRunning = true;
 
-    public long getPause()
-    {
+    public long getPause() {
       return pause;
     }
 
-    public void setPause(long pause)
-    {
+    public void setPause(long pause) {
       this.pause = pause;
     }
 
-    public TestCaseMessage getTestCaseMessage()
-    {
+    public TestCaseMessage getTestCaseMessage() {
       return testCaseMessageBase;
     }
 
-    public void setTestCaseMessage(TestCaseMessage testCaseMessage)
-    {
+    public void setTestCaseMessage(TestCaseMessage testCaseMessage) {
       this.testCaseMessageBase = testCaseMessage;
     }
 
-    public Connector getConnector()
-    {
+    public Connector getConnector() {
       return connector;
     }
 
-    public void setConnector(Connector connector)
-    {
+    public void setConnector(Connector connector) {
       this.connector = connector;
     }
 
@@ -613,49 +541,69 @@ public class StressTestServlet extends ClientServlet
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
       log("Starting test runner");
+      try {
+        String filenameBase = (testCaseMessageBase == null ? "TCM" : testCaseMessageBase.getTestCaseNumber());
+        File generatedDir = user.getSendData().getGeneratedDir();
+        File file = new File(generatedDir, filenameBase + "-" + (pos + 1) + " Stress Messages.txt");
+        fileOut = new PrintWriter(new FileWriter(file));
+      } catch (IOException ioe) {
+        ioe.printStackTrace();
+      }
+
       startTime = System.currentTimeMillis();
       status = "RUNNING";
-      while (keepRunning)
-      {
+      while (keepRunning) {
         count++;
         log("Running test count " + count);
-        try
-        {
+        try {
           markTime = System.currentTimeMillis();
           TestCaseMessage testCaseMessage = new TestCaseMessage(testCaseMessageBase);
           transformer.transform(testCaseMessage);
           log("Submiting test message");
           testRunner.runTest(connector, testCaseMessage);
+          printToFile(testCaseMessage);
           lastResult = testRunner.getAckMessageText();
-          if (testRunner.isPassedTest())
-          {
+          if (testRunner.isPassedTest()) {
             log("Received positive acknowledgement");
             countAccepted++;
-          } else
-          {
+          } else {
             log("Received error acknowledgement");
             countErrored++;
           }
           long timeToQuery = System.currentTimeMillis() - markTime;
           log("Time to query = " + timeToQuery + "ms");
           rate = rate * 0.75 + timeToQuery * 0.25;
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
           log("Exception ocurred: " + e.getMessage());
           countException++;
           e.printStackTrace();
-          if (countException > 10)
-          {
+          if (countException > 10) {
             keepRunning = false;
           }
         }
         startTime = System.currentTimeMillis();
       }
+      if (fileOut != null) {
+        fileOut.close();
+      }
       status = "STOPPED";
       log("Test runner stopped");
+    }
+
+    private PrintWriter fileOut = null;
+
+    private void printToFile(TestCaseMessage testCaseMessage) {
+      if (fileOut != null) {
+        try {
+          fileOut.print(testCaseMessage.getMessageText());
+        } catch (Exception e) {
+          e.printStackTrace();
+          fileOut = null;
+        }
+
+      }
     }
   }
 }

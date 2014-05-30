@@ -424,7 +424,7 @@ public class ConnectionConfiguration
       out.println("  <tr class=\"boxed\">");
       out.println("    <th class=\"boxed\">" + facilityidLabel + "</th>");
       out.println("    <td class=\"boxed\"><input type=\"text\" name=\"" + FIELD_FACILITYID + "\" size=\"10\" value=\"" + facilityid + "\"></td>");
-      out.println("    <td class=\"boxed\">The time that the SMM is allowed to submit data to " + receiverName + " (use 24 hour time, HH:MM)</td>");
+      out.println("    <td class=\"boxed\">The identifier for the facility assigned by the receiver. </td>");
       out.println("  </tr>");
     } else
     {
@@ -438,7 +438,7 @@ public class ConnectionConfiguration
       out.println("      <input type=\"text\" name=\"" + FIELD_ENABLE_TIME_START + "\" size=\"5\" value=\"" + enableTimeStart + "\"> to ");
       out.println("      <input type=\"text\" name=\"" + FIELD_ENABLE_TIME_END + "\" size=\"5\" value=\"" + enableTimeEnd + "\">");
       out.println("    </td>");
-      out.println("    <td class=\"boxed\">The identifier for the facility assigned by the receiver. </td>");
+      out.println("    <td class=\"boxed\">The time that the SMM is allowed to submit data to " + receiverName + " (use 24 hour time, HH:MM)</td>");
       out.println("  </tr>");
     } 
     out.println("  <tr class=\"boxed\">");
