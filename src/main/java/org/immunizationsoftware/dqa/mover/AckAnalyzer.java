@@ -165,7 +165,18 @@ public class AckAnalyzer
           log("At least one MSA-1 field was found with a value of AE so message was rejected");
         }
       } else if (ackType.equals(AckType.WEBIZ)) {
-        positive = ackCode.equals("AA") || ackCode.equals("AE") && (ack.indexOf("Not processing order group") == -1);
+        if (ackCode.equals("AA")) {
+          positive = true;
+        } else if (ackCode.equals("AE")) {
+          positive = true;
+          if (ack.indexOf("Not processing order group") != -1) {
+            positive = false;
+          } else if (ack.indexOf("Application internal error") != -1) {
+            positive = false;
+          }
+        } else {
+          positive = false;
+        }
       } else {
         if (ackCode.equals("AA")) {
           positive = true;

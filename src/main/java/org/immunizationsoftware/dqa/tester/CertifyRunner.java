@@ -1628,7 +1628,7 @@ public class CertifyRunner extends Thread
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
     }
-    
+
     {
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
@@ -1636,6 +1636,19 @@ public class CertifyRunner extends Thread
           .appendCustomTransformation("RXA-5.2=This is a very long description for a vaccine, that normally you shouldn't expect to see, but since this field should not be read by the receiver it should cause no problem, furthermore HL7 allows this field to have up to 999 characters, which should not cause a problem to the receiver. Also this tests to verify that the receiver is not trying to verify the text of the vaccine. ");
       testCaseMessage
           .setDescription("Tolerance Check: Message includes description for vaccine that is extremely long");
+      testCaseMessage.setTestCaseSet(testCaseSet);
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
+      statusCheckTestCaseExceptionalList.add(testCaseMessage);
+      transformer.transform(testCaseMessage);
+      testCaseMessage.setAssertResult("Accept - *");
+      register(testCaseMessage);
+    }
+
+    {
+      count++;
+      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+      testCaseMessage.appendCustomTransformation("PID-3.4=LOCAL_FACILITY_ASSIGNED_ID");
+      testCaseMessage.setDescription("Tolerance Check: Patient identifier assigning authority is very long");
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
@@ -1953,7 +1966,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
       queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
       queryTestCaseMessage.setDescription("Query for " + testCaseMessage.getDescription());
-      queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText()));
+      queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + "A3." + count);
       statusCheckQueryTestCaseBasicList.add(queryTestCaseMessage);
@@ -2001,6 +2014,17 @@ public class CertifyRunner extends Thread
     areaCount[SUITE_A_BASIC][2] = testQueryCountOptional;
   }
 
+  public String convertToQuery(TestCaseMessage testCaseMessage) {
+    if (queryType.equals(QUERY_TYPE_QBP)) {
+      return QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText());
+    }
+    if (queryType.equals(QUERY_TYPE_VXQ)) {
+      return QueryConverter.convertVXUtoVXQ(testCaseMessage.getMessageText());
+    }
+    throw new IllegalArgumentException("Unable to convert query because query type '" + queryType
+        + "' is not recognized");
+  }
+
   private String prepareSendQueryMessage(TestCaseMessage queryTestCaseMessage) {
     String message = queryTestCaseMessage.getMessageText();
     if (!queryConnector.getCustomTransformations().equals("")) {
@@ -2020,7 +2044,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
       queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
       queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
-      queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText()));
+      queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + "BQ01." + count);
       statusCheckQueryTestCaseIntermediateList.add(queryTestCaseMessage);
@@ -2035,7 +2059,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
       queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
       queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
-      queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText()));
+      queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + "D3." + count);
       statusCheckQueryTestCaseTolerantList.add(queryTestCaseMessage);
@@ -2050,7 +2074,7 @@ public class CertifyRunner extends Thread
       TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
       queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
       queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
-      queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText()));
+      queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + "E3." + count);
       queryTestCaseMessage.setForecastTestCase(testCaseMessage.getForecastTestCase());

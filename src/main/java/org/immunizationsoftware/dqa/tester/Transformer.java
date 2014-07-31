@@ -63,6 +63,7 @@ public class Transformer
   private static final String INSERT_SEGMENT = "insert segment ";
   private static final String REMOVE_SEGMENT = "remove segment ";
   private static final String REMOVE_OBSERVATION = "remove observation ";
+  private static final String REMOVE_EMPTY_OBSERVATIONS = "remove empty observations";
 
   private static final String CLEAN = "clean";
   private static final String CLEAN_NO_LAST_SLASH = "no last slash";
@@ -899,6 +900,25 @@ public class Transformer
                 }
               }
             }
+          } else if (line.toLowerCase().startsWith(REMOVE_EMPTY_OBSERVATIONS)) {
+            BufferedReader inResult = new BufferedReader(new StringReader(resultText));
+            resultText = "";
+            String lineResult;
+            while ((lineResult = inResult.readLine()) != null) {
+              lineResult = lineResult.trim();
+              if (lineResult.length() > 0) {
+                if (lineResult.startsWith("OBX")) {
+                  String[] fields = lineResult.split("\\|");
+                  if (fields.length > 5 && fields[5] != null && !fields[5].startsWith("^")
+                      && !fields[5].startsWith("~") && !fields[5].equals("")) {
+                    resultText += lineResult + "\r";
+                  }
+                } else {
+                  resultText += lineResult + "\r";
+                }
+              }
+            }
+
           } else if (line.toLowerCase().trim().startsWith(FIX)) {
             if (resultText.length() > 9) {
               if (line.toLowerCase().indexOf(FIX_ESCAPE) > 0) {
@@ -1180,6 +1200,9 @@ public class Transformer
               if (newValue.toUpperCase().startsWith("[MAP ")) {
                 String oldValue = lineResult.substring(pos, endPos);
                 newValue = mapValue(t, oldValue);
+              } else if (newValue.toUpperCase().startsWith("[TRUNC")) {
+                String oldValue = lineResult.substring(pos, endPos);
+                newValue = truncate(lineResult, newValue, oldValue);
               }
               if (!newValue.equals("")) {
                 lineNew += prepend + newValue;
@@ -1193,6 +1216,28 @@ public class Transformer
       }
     }
     return resultText;
+  }
+
+  public String truncate(String lineResult, String newValue, String oldValue) {
+    int size = 0;
+    String s = newValue.substring("[TRUNC".length());
+    int endBracket = s.lastIndexOf("]");
+    if (endBracket != -1) {
+      s = s.substring(0, endBracket).trim();
+      if (s.length() > 0) {
+        try {
+          size = Integer.parseInt(s);
+        } catch (NumberFormatException nfe) {
+          // ignore
+          size = 0;
+        }
+      }
+    }
+    if (oldValue.length() < size) {
+      return oldValue;
+    } else {
+      return oldValue.substring(0, size);
+    }
   }
 
   private String getValueFromHL7(final String resultText, Transform t) throws IOException {
