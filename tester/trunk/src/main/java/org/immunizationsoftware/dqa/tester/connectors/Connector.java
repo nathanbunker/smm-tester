@@ -15,8 +15,10 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -42,7 +44,8 @@ public abstract class Connector
   protected static Connector addConnector(String label, String type, String url, String userid, String otherid,
       String facilityid, String password, String keyStorePassword, String enableTimeStart, String enableTimeEnd,
       AckAnalyzer.AckType ackType, TransferType transferType, List<String> fields, String customTransformations,
-      List<Connector> connectors, String purpose, int tchForecastTesterSoftwareId) throws Exception {
+      List<Connector> connectors, String purpose, int tchForecastTesterSoftwareId,
+      Set<String> queryResponseFieldsNotReturnedSet) throws Exception {
     if (!label.equals("") && !type.equals("")) {
       Connector connector = null;
       if (type.equals(ConnectorFactory.TYPE_SOAP)) {
@@ -71,6 +74,7 @@ public abstract class Connector
       connector.setEnableTimeStart(enableTimeStart);
       connector.setEnableTimeEnd(enableTimeEnd);
       connector.setTchForecastTesterSoftwareId(tchForecastTesterSoftwareId);
+      connector.setQueryResponseFieldsNotReturnedSet(queryResponseFieldsNotReturnedSet);
       connectors.add(connector);
       return connector;
     }
@@ -100,6 +104,16 @@ public abstract class Connector
   private AckAnalyzer.AckType ackType = AckAnalyzer.AckType.DEFAULT;
   private Map<String, Connector> otherConnectorMap = new HashMap<String, Connector>();
   private String purpose = "";
+  private Set<String> queryResponseFieldsNotReturnedSet = null;
+
+  public void setQueryResponseFieldsNotReturnedSet(Set<String> queryResponseFieldsNotReturnedSet) {
+    this.queryResponseFieldsNotReturnedSet = queryResponseFieldsNotReturnedSet;
+  }
+
+  public Set<String> getQueryResponseFieldsNotReturnedSet() {
+    return queryResponseFieldsNotReturnedSet;
+  }
+
   private int tchForecastTesterSoftwareId = 0;
 
   public int getTchForecastTesterSoftwareId() {
@@ -321,6 +335,18 @@ public abstract class Connector
     if (!enableTimeEnd.equals("")) {
       sb.append("Enable Time End: " + enableTimeEnd + "\n");
     }
+    if (queryResponseFieldsNotReturnedSet != null) {
+      sb.append("Query Response Fields Not Returned: ");
+      boolean first = true;
+      for (String value : queryResponseFieldsNotReturnedSet) {
+        if (!first) {
+          sb.append(", ");
+        }
+        sb.append(value);
+        first = false;
+      }
+      sb.append("\n");
+    }
     if (customTransformations != null && customTransformations.length() > 0) {
       sb.append("Custom Transformations: \n");
       try {
@@ -355,6 +381,7 @@ public abstract class Connector
     String keyStorePassword = "";
     String enableTimeStart = "";
     String enableTimeEnd = "";
+    Set<String> queryResponseFieldsNotReturnedSet = null;
     int tchForecastTesterSoftwareId = 0;
     TransferType transferType = TransferType.NEAR_REAL_TIME_LINK;
     AckAnalyzer.AckType ackType = AckAnalyzer.AckType.DEFAULT;
@@ -366,7 +393,8 @@ public abstract class Connector
       line = line.trim();
       if (line.startsWith("Connection")) {
         addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
-            enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose, tchForecastTesterSoftwareId);
+            enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose,
+            tchForecastTesterSoftwareId, queryResponseFieldsNotReturnedSet);
         label = "";
         purpose = "";
         type = "";
@@ -411,6 +439,17 @@ public abstract class Connector
         keyStorePassword = PasswordEncryptUtil.decrypt(readValue(line));
       } else if (line.startsWith("Cause Issues:")) {
         lastList = "CI";
+      } else if (line.startsWith("Query Response Fields Not Returned: ")) {
+        queryResponseFieldsNotReturnedSet = new HashSet<String>();
+        String[] values = readValue(line).split("\\,");
+        for (String value : values) {
+          if (value != null) {
+            value = value.trim();
+            if (value.length() > 0) {
+              queryResponseFieldsNotReturnedSet.add(value);
+            }
+          }
+        }
       } else if (line.startsWith("Custom Transformations:")) {
         lastList = "CT";
       } else if (line.startsWith("TCH Forecast Tester Software Id:")) {
@@ -429,7 +468,8 @@ public abstract class Connector
 
     }
     addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
-        enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose, tchForecastTesterSoftwareId);
+        enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose,
+        tchForecastTesterSoftwareId, queryResponseFieldsNotReturnedSet);
     return connectors;
   }
 

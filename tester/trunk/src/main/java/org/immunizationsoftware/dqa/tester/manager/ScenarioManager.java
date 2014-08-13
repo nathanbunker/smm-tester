@@ -24,8 +24,10 @@ public class ScenarioManager
   public static final String SCENARIO_4_R_CONSENTED_CHILD = "NIST MU2.4.r - Consented Child (replica)";
   public static final String SCENARIO_5_1_REFUSED_TODDLER = "NIST MU2.5.1 - Refused Toddler";
   public static final String SCENARIO_5_R_REFUSED_TODDLER = "NIST MU2.5.r - Refused Toddler (replica)";
+  public static final String SCENARIO_5_P_REFUSED_TODDLER = "NIST MU2.5.p - Refused Toddler (replica plus immunization)";
   public static final String SCENARIO_6_1_VARICELLA_HISTORY_CHILD = "NIST MU2.6.1 - Varicella History Child";
   public static final String SCENARIO_6_R_VARICELLA_HISTORY_CHILD = "NIST MU2.6.r - Varicella History Child (replica)";
+  public static final String SCENARIO_6_P_VARICELLA_HISTORY_CHILD = "NIST MU2.6.p - Varicella History Child (replica plus immunization)";
   public static final String SCENARIO_7_1_COMPLETE_RECORD = "NIST MU2.7.1 - Complete Record";
   public static final String SCENARIO_7_R_COMPLETE_RECORD = "NIST MU2.7.r - Complete Record (replica)";
   public static final String SCENARIO_ADD_DELETE = "Add and then Delete - Admin Child";
@@ -36,9 +38,9 @@ public class ScenarioManager
       SCENARIO_3_1_HISTORICAL_CHILD, SCENARIO_3_R_HISTORICAL_CHILD, SCENARIO_3_R_HISTORICAL_TWO_MONTHS_OLD,
       SCENARIO_3_R_HISTORICAL_TWO_YEARS_OLD, SCENARIO_3_R_HISTORICAL_FOUR_YEARS_OLD,
       SCENARIO_3_R_HISTORICAL_TWELVE_YEARS_OLD, SCENARIO_4_1_CONSENTED_CHILD, SCENARIO_4_R_CONSENTED_CHILD,
-      SCENARIO_5_1_REFUSED_TODDLER, SCENARIO_5_R_REFUSED_TODDLER, SCENARIO_6_1_VARICELLA_HISTORY_CHILD,
-      SCENARIO_6_R_VARICELLA_HISTORY_CHILD, SCENARIO_7_1_COMPLETE_RECORD, SCENARIO_7_R_COMPLETE_RECORD,
-      SCENARIO_ADD_DELETE };
+      SCENARIO_5_1_REFUSED_TODDLER, SCENARIO_5_R_REFUSED_TODDLER, SCENARIO_5_P_REFUSED_TODDLER,
+      SCENARIO_6_1_VARICELLA_HISTORY_CHILD, SCENARIO_6_R_VARICELLA_HISTORY_CHILD, SCENARIO_6_P_VARICELLA_HISTORY_CHILD, SCENARIO_7_1_COMPLETE_RECORD,
+      SCENARIO_7_R_COMPLETE_RECORD, SCENARIO_ADD_DELETE };
 
   public static TestCaseMessage createTestCaseMessage(String scenario) {
     TestCaseMessage testCaseMessage;
@@ -145,11 +147,27 @@ public class ScenarioManager
       quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY",
           "VAC1_NA" };
       customTransformations = "RXA-18.1=00\n" + "RXA-18.2=Parental Decision\n" + "RXA-18.3=NIP002\n" + "RXA-20=RE\n";
+    } else if (scenario.equals(SCENARIO_5_P_REFUSED_TODDLER)) {
+      description = "NIST IZ #5: Refused for Toddler (replica plus immunization)";
+      originalMessage = "MSH|\nPID|\nORC|\nRXA|\nORC|\nRXA|\nOBX|\nOBX|\nOBX|\nOBX|\n";
+      patientType = PatientType.TODDLER;
+      quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY",
+          "VAC1_NA", "VAC2_ADMIN" };
+      customTransformations = "RXA-18.1=00\n" + "RXA-18.2=Parental Decision\n" + "RXA-18.3=NIP002\n" + "RXA-20=RE\n";
     } else if (scenario.equals(SCENARIO_6_R_VARICELLA_HISTORY_CHILD)) {
       description = "NIST IZ #6: Varicella History for Child (replica)";
       originalMessage = "MSH|\nPID|\nORC|\nRXA|\nOBX|\n";
       quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY",
           "VAC1_NA" };
+      customTransformations = "RXA-5.1=998\n" + "RXA-5.2=No vaccine administered\n" + "RXA-5.1=998\n" + "OBX-1=1\n"
+          + "OBX-2=CE\n" + "OBX-3.1=59784-9\n" + "OBX-3.2=Disease with presumed immunity\n" + "OBX-3.3=LN\n"
+          + "OBX-4=1\n" + "OBX-5.1=38907003\n" + "OBX-5.2=Varicella infection\n" + "OBX-5.3=SCT\n" + "OBX-11=F\n";
+      patientType = PatientType.TWEEN;
+    } else if (scenario.equals(SCENARIO_6_P_VARICELLA_HISTORY_CHILD)) {
+      description = "NIST IZ #6: Varicella History for Child (replica plus immunization)";
+      originalMessage = "MSH|\nPID|\nORC|\nRXA|\nOBX|\nORC|\nRXA|\nOBX|\nOBX|\nOBX|\nOBX|\n";
+      quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY",
+          "VAC1_NA", "VAC2_ADMIN" };
       customTransformations = "RXA-5.1=998\n" + "RXA-5.2=No vaccine administered\n" + "RXA-5.1=998\n" + "OBX-1=1\n"
           + "OBX-2=CE\n" + "OBX-3.1=59784-9\n" + "OBX-3.2=Disease with presumed immunity\n" + "OBX-3.3=LN\n"
           + "OBX-4=1\n" + "OBX-5.1=38907003\n" + "OBX-5.2=Varicella infection\n" + "OBX-5.3=SCT\n" + "OBX-11=F\n";
