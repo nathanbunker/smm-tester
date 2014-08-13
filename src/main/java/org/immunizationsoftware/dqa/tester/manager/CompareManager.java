@@ -25,6 +25,15 @@ public class CompareManager
     private String returnedValue = "";
     private Boolean pass = null;
     private Boolean tested = null;
+    private boolean treatZerosSameAsOs = false;
+
+    public boolean isTreatZerosSameAsOs() {
+      return treatZerosSameAsOs;
+    }
+
+    public void setTreatZerosSameAsOs(boolean treatZerosSameAsOs) {
+      this.treatZerosSameAsOs = treatZerosSameAsOs;
+    }
 
     private Map<String, String> equivalents = new HashMap<String, String>();
     private Set<String> allowedValuesMask = new HashSet<String>();
@@ -33,7 +42,7 @@ public class CompareManager
       allowedValuesMask.add(s);
     }
 
-    public void registerEquivelant(String s1, String s2) {
+    public void registerEquivalent(String s1, String s2) {
       equivalents.put(s1.toUpperCase(), s2);
     }
 
@@ -80,17 +89,28 @@ public class CompareManager
     public boolean isPass() {
 
       if (pass == null) {
+        String ov = originalValue;
+        String rv = returnedValue;
+        if (treatZerosSameAsOs)
+        {
+          ov = originalValue.toUpperCase().replace('0', 'O');
+          rv = returnedValue.toUpperCase().replace('0', 'O');
+        }
         if (equivalents.size() > 0 && originalValue != null && returnedValue != null && !originalValue.equals("")
             && !returnedValue.equals("")) {
-          if (originalValue.equalsIgnoreCase(returnedValue)) {
+          if (ov.equalsIgnoreCase(rv)) {
             pass = true;
           } else {
             String otherValue = equivalents.get(originalValue);
-            if (otherValue != null && otherValue.equalsIgnoreCase(returnedValue)) {
+            if (treatZerosSameAsOs)
+            {
+              otherValue = otherValue.toUpperCase().replace('0', 'O');
+            }
+            if (otherValue != null && otherValue.equalsIgnoreCase(rv)) {
               pass = true;
             } else {
               otherValue = equivalents.get(returnedValue);
-              if (otherValue != null && originalValue.equals(otherValue)) {
+              if (otherValue != null && ov.equals(otherValue)) {
                 pass = true;
               } else {
                 if (!allowedValuesMask.contains(originalValue) && otherValue.equals("")) {
@@ -102,14 +122,14 @@ public class CompareManager
                 }
               }
             }
-          }
+          } 
         } else {
           if (allowedValuesMask.size() > 0 && returnedValue.equals("") && !allowedValuesMask.contains(originalValue)) {
             // if original value is non standard then don't expect the
             // non-standard value to come back
             pass = true;
           } else {
-            pass = originalValue != null && returnedValue != null && originalValue.equalsIgnoreCase(returnedValue);
+            pass = ov != null && rv != null && ov.equalsIgnoreCase(rv);
           }
         }
       }
@@ -281,16 +301,16 @@ public class CompareManager
     comparison.setOriginalValue(vxuReader.getValue(10));
     comparison.setReturnedValue(rspReader.getValue(10));
     comparison.setPriorityLevel(Comparison.PRIORITY_LEVEL_REQUIRED);
-    comparison.registerEquivelant("1002-5", "I");
-    comparison.registerEquivelant("2028-9", "A");
-    comparison.registerEquivelant("2076-8", "A");
-    comparison.registerEquivelant("2054-5", "B");
-    comparison.registerEquivelant("2106-3", "W");
-    comparison.registerEquivelant("2131-1", "O");
-    comparison.registerEquivelant("I", "1002-5");
-    comparison.registerEquivelant("B", "2054-5");
-    comparison.registerEquivelant("W", "2106-3");
-    comparison.registerEquivelant("U", "2131-1");
+    comparison.registerEquivalent("1002-5", "I");
+    comparison.registerEquivalent("2028-9", "A");
+    comparison.registerEquivalent("2076-8", "A");
+    comparison.registerEquivalent("2054-5", "B");
+    comparison.registerEquivalent("2106-3", "W");
+    comparison.registerEquivalent("2131-1", "O");
+    comparison.registerEquivalent("I", "1002-5");
+    comparison.registerEquivalent("B", "2054-5");
+    comparison.registerEquivalent("W", "2106-3");
+    comparison.registerEquivalent("U", "2131-1");
     comparison.registerAllowedValueMask("1002-5");
     comparison.registerAllowedValueMask("2028-9");
     comparison.registerAllowedValueMask("2076-8");
@@ -405,10 +425,10 @@ public class CompareManager
     comparison.setOriginalValue(vxuReader.getValue(22));
     comparison.setReturnedValue(rspReader.getValue(22));
     comparison.setPriorityLevel(Comparison.PRIORITY_LEVEL_REQUIRED);
-    comparison.registerEquivelant("2135-2", "H");
-    comparison.registerEquivelant("2186-5", "N");
-    comparison.registerEquivelant("H", "2135-2");
-    comparison.registerEquivelant("N", "2186-5");
+    comparison.registerEquivalent("2135-2", "H");
+    comparison.registerEquivalent("2186-5", "N");
+    comparison.registerEquivalent("H", "2135-2");
+    comparison.registerEquivalent("N", "2186-5");
     comparisonList.add(comparison);
 
     comparison = new Comparison();
@@ -604,15 +624,19 @@ public class CompareManager
 
         comparison = new Comparison();
         comparison.setHl7FieldName("RXA-6 #" + count);
-        comparison.setFieldLabel("Administered Amount");
+        comparison.setFieldLabel("Administered amount");
         comparison.setOriginalValue(vxuReader.getValue(6));
         comparison.setReturnedValue(rspReader.getValue(6));
         comparison.setPriorityLevel(Comparison.PRIORITY_LEVEL_OPTIONAL);
+        comparison.registerEquivalent("0.25", ".25");
+        comparison.registerEquivalent(".25", "0.25");
+        comparison.registerEquivalent("0.5", ".5");
+        comparison.registerEquivalent(".5", "0.5");
         comparisonList.add(comparison);
 
         comparison = new Comparison();
         comparison.setHl7FieldName("RXA-7 #" + count);
-        comparison.setFieldLabel("Administered Units");
+        comparison.setFieldLabel("Administered units");
         comparison.setOriginalValue(vxuReader.getValue(7));
         comparison.setReturnedValue(rspReader.getValue(7));
         comparison.setPriorityLevel(Comparison.PRIORITY_LEVEL_OPTIONAL);
@@ -648,6 +672,7 @@ public class CompareManager
         comparison.setOriginalValue(vxuReader.getValue(15));
         comparison.setReturnedValue(rspReader.getValue(15));
         comparison.setPriorityLevel(Comparison.PRIORITY_LEVEL_REQUIRED);
+        comparison.setTreatZerosSameAsOs(true);
         comparisonList.add(comparison);
 
         comparison = new Comparison();

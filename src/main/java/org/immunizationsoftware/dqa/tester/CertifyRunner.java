@@ -12,8 +12,8 @@ import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENAR
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_3_R_HISTORICAL_TWO_MONTHS_OLD;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_3_R_HISTORICAL_TWO_YEARS_OLD;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_4_R_CONSENTED_CHILD;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_5_R_REFUSED_TODDLER;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_6_R_VARICELLA_HISTORY_CHILD;
+import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_5_P_REFUSED_TODDLER;
+import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_6_P_VARICELLA_HISTORY_CHILD;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_7_R_COMPLETE_RECORD;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.createTestCaseMessage;
 
@@ -171,8 +171,8 @@ public class CertifyRunner extends Thread
   }
 
   private String[] statusCheckScenarios = { SCENARIO_1_R_ADMIN_CHILD, SCENARIO_2_R_ADMIN_ADULT,
-      SCENARIO_3_R_HISTORICAL_CHILD, SCENARIO_4_R_CONSENTED_CHILD, SCENARIO_5_R_REFUSED_TODDLER,
-      SCENARIO_6_R_VARICELLA_HISTORY_CHILD, SCENARIO_7_R_COMPLETE_RECORD };
+      SCENARIO_3_R_HISTORICAL_CHILD, SCENARIO_4_R_CONSENTED_CHILD, SCENARIO_5_P_REFUSED_TODDLER,
+      SCENARIO_6_P_VARICELLA_HISTORY_CHILD, SCENARIO_7_R_COMPLETE_RECORD };
 
   private List<TestCaseMessage>[] profileTestCaseLists = new ArrayList[3];
 
@@ -849,7 +849,7 @@ public class CertifyRunner extends Thread
 
     for (Certify.CertifyItem certifyItem : certifyItems) {
       count++;
-      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_6_R_VARICELLA_HISTORY_CHILD);
+      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_6_P_VARICELLA_HISTORY_CHILD);
       testCaseMessage.setDescription("History of Disease is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
@@ -886,7 +886,7 @@ public class CertifyRunner extends Thread
 
     for (Certify.CertifyItem certifyItem : certifyItems) {
       count++;
-      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_5_R_REFUSED_TODDLER);
+      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_5_P_REFUSED_TODDLER);
       testCaseMessage.setDescription("Refusal Reason is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
@@ -1334,11 +1334,11 @@ public class CertifyRunner extends Thread
       if (completionStatus.equals("CP") || completionStatus.equals("PA")) {
         testCaseMessage = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       } else if (completionStatus.equals("NA")) {
-        testCaseMessage = createTestCaseMessage(SCENARIO_5_R_REFUSED_TODDLER);
+        testCaseMessage = createTestCaseMessage(SCENARIO_5_P_REFUSED_TODDLER);
         testCaseMessage.appendCustomTransformation("RXA-5.1=998");
         testCaseMessage.appendCustomTransformation("RXA-5.2=Not administered");
       } else {
-        testCaseMessage = createTestCaseMessage(SCENARIO_5_R_REFUSED_TODDLER);
+        testCaseMessage = createTestCaseMessage(SCENARIO_5_P_REFUSED_TODDLER);
       }
 
       testCaseMessage.setDescription("Vaccination completion is " + certifyItem.getLabel());
@@ -1989,7 +1989,7 @@ public class CertifyRunner extends Thread
               testQueryCountRequired++;
             }
 
-            if (comparison.isPass()) {
+            if (comparison.isPass() || fieldNotSupported(comparison)) {
               testQueryPassOptional++;
               if (comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED) {
                 testQueryPassRequired++;
@@ -2113,7 +2113,7 @@ public class CertifyRunner extends Thread
               testQueryCountRequired++;
             }
 
-            if (comparison.isPass()) {
+            if (comparison.isPass() || fieldNotSupported(comparison)) {
               testQueryPassOptional++;
               if (comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED) {
                 testQueryPassRequired++;
@@ -2151,6 +2151,16 @@ public class CertifyRunner extends Thread
     areaScore[suite][2] = makeScore(testQueryPassOptional, testQueryCountOptional);
     areaCount[suite][1] = testQueryCountRequired;
     areaCount[suite][2] = testQueryCountOptional;
+  }
+
+  public boolean fieldNotSupported(CompareManager.Comparison comparison) {
+    return connector.getQueryResponseFieldsNotReturnedSet() != null
+        && connector.getQueryResponseFieldsNotReturnedSet().contains(comparison.getFieldLabel());
+  }
+
+  public boolean fieldSupported(CompareManager.Comparison comparison) {
+    return connector.getQueryResponseFieldsNotReturnedSet() == null
+        || !connector.getQueryResponseFieldsNotReturnedSet().contains(comparison.getFieldLabel());
   }
 
   public void printResults(PrintWriter out) {
@@ -2553,6 +2563,21 @@ public class CertifyRunner extends Thread
     out.println("    <th>Query Test Count</th>");
     out.println("    <td>" + totalQueryCount + "</td>");
     out.println("  </tr>");
+    if (connector.getQueryResponseFieldsNotReturnedSet() != null) {
+      out.println("  <tr>");
+      out.println("    <th>Query Fields Not Returned</th>");
+      out.print("    <td>");
+      boolean notFirst = false;
+      for (String value : connector.getQueryResponseFieldsNotReturnedSet()) {
+        if (notFirst) {
+          out.print(", ");
+        }
+        notFirst = true;
+        out.print(value);
+      }
+      out.println("</td>");
+      out.println("  </tr>");
+    }
     out.println("</table>");
 
     out.println("<p>IIS Test Log</p>");
@@ -2707,22 +2732,43 @@ public class CertifyRunner extends Thread
           {
             boolean hasRun = false;
             boolean hasPassed = true;
+            boolean hasUnsupported = false;
             if (testCaseMessage.getComparisonList() != null) {
               hasRun = true;
               for (CompareManager.Comparison comparison : testCaseMessage.getComparisonList()) {
                 if (comparison.isTested()
                     && comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED) {
                   if (!comparison.isPass()) {
-                    hasPassed = false;
-                    break;
+                    if (fieldSupported(comparison)) {
+                      hasPassed = false;
+                      break;
+                    } else {
+                      hasUnsupported = true;
+                    }
                   }
                 }
               }
             }
             if (hasPassed) {
-              out.println("    <td class=\"pass\">All required fields returned. "
-                  + makeCompareDetailsLink(testCaseMessage, toFile, false));
+              if (hasUnsupported) {
+                out.println("    <td class=\"pass\">All required fields returned except those not supported: ");
+                out.println("      <br/> <ul>");
+                for (CompareManager.Comparison comparison : testCaseMessage.getComparisonList()) {
+                  if (comparison.isTested()
+                      && comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED
+                      && !comparison.isPass() && fieldNotSupported(comparison)) {
+                    out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel()
+                        + "</li>");
+                  }
+                }
+                out.println("      </ul>");
+                out.println(makeCompareDetailsLink(testCaseMessage, toFile, false));
+              } else {
+                out.println("    <td class=\"pass\">All required fields returned. "
+                    + makeCompareDetailsLink(testCaseMessage, toFile, false));
+              }
               out.println(makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+              out.println("    </td>");
             } else if (hasRun) {
               out.println("    <td class=\"fail\">Required fields not returned:");
               out.println("      <ul>");
@@ -2730,9 +2776,13 @@ public class CertifyRunner extends Thread
                 if (comparison.isTested()
                     && comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED
                     && !comparison.isPass()) {
-
-                  out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel()
-                      + "</li>");
+                  if (fieldSupported(comparison)) {
+                    out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel()
+                        + "</li>");
+                  } else {
+                    out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel()
+                        + " (not expected to be returned in query)</li>");
+                  }
                 }
               }
               out.println("      </ul>");
@@ -3116,7 +3166,7 @@ public class CertifyRunner extends Thread
       passedAllOptional = true;
       for (CompareManager.Comparison comparison : testCaseMessage.getComparisonList()) {
         if (comparison.isTested() && comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL
-            && !comparison.isPass()) {
+            && !comparison.isPass() && !fieldNotSupported(comparison)) {
           passedAllOptional = false;
           break;
         }

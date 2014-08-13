@@ -1451,198 +1451,248 @@ public class Transformer
   }
 
   private void doConnectionReplacements(Connector connector, Transform t) {
-    if (t.value.equals(REP_CON_USERID)) {
-      t.value = connector.getUserid();
-    } else if (t.value.equals(REP_CON_FACILITYID)) {
-      t.value = connector.getFacilityid();
-    } else if (t.value.equals(REP_CON_PASSWORD)) {
-      t.value = connector.getPassword();
-    } else if (t.value.equals(REP_CON_FILENAME)) {
-      t.value = connector.getCurrentFilename();
-    } else if (t.value.equals(REP_CON_OTHERID)) {
-      t.value = connector.getOtherid();
+    int i = t.value.indexOf('[');
+    int j = i;
+    if (i >= 0) {
+      j = t.value.indexOf(']', i);
+    }
+    while (i >= 0 && j > i) {
+      j++;
+      String p1 = "";
+      if (i > 0) {
+        t.value.substring(0, i);
+      }
+      String p2 = t.value.substring(i, j);
+      String p3 = "";
+      if (j < t.value.length()) {
+        p3 = t.value.substring(j);
+      }
+      if (p2.equals(REP_CON_USERID)) {
+        p2 = connector.getUserid();
+      } else if (p2.equals(REP_CON_FACILITYID)) {
+        p2 = connector.getFacilityid();
+      } else if (p2.equals(REP_CON_PASSWORD)) {
+        p2 = connector.getPassword();
+      } else if (p2.equals(REP_CON_FILENAME)) {
+        p2 = connector.getCurrentFilename();
+      } else if (p2.equals(REP_CON_OTHERID)) {
+        p2 = connector.getOtherid();
+      } else {
+        p2 = "";
+      }
+      t.value = p1 + p2 + p3;
+      i = t.value.indexOf('[');
+      j = i;
+      if (i >= 0) {
+        j = t.value.indexOf(']', i);
+      }
     }
   }
 
   private void doPatientReplacements(Patient patient, Transform t) {
-    if (t.value.equals(REP_PAT_BOY)) {
-      t.value = patient.getBoyName();
-    } else if (t.value.equals(REP_PAT_GIRL)) {
-      t.value = patient.getGirlName();
-    } else if (t.value.equals(REP_PAT_BOY_OR_GIRL)) {
-      t.value = patient.getGender().equals("F") ? patient.getGirlName() : patient.getBoyName();
-    } else if (t.value.equals(REP_PAT_GENDER)) {
-      t.value = patient.getGender();
-    } else if (t.value.equals(REP_PAT_FATHER)) {
-      t.value = patient.getFatherName();
-    } else if (t.value.equals(REP_PAT_SUFFIX)) {
-      t.value = patient.getSuffix();
-    } else if (t.value.equals(REP_PAT_MOTHER)) {
-      t.value = patient.getMotherName();
-    } else if (t.value.equals(REP_PAT_MOTHER_MAIDEN)) {
-      t.value = patient.getMotherMaidenName();
-    } else if (t.value.equals(REP_PAT_DOB)) {
-      t.value = patient.getDates()[0];
-    } else if (t.value.equals(REP_PAT_BIRTH_MULTIPLE)) {
-      t.value = patient.getBirthCount() > 1 ? "Y" : "N";
-    } else if (t.value.equals(REP_PAT_BIRTH_ORDER)) {
-      t.value = "" + patient.getBirthCount();
-    } else if (t.value.equals(REP_PAT_MRN)) {
-      t.value = patient.getMedicalRecordNumber();
-    } else if (t.value.equals(REP_PAT_MEDICAID)) {
-      t.value = patient.getMedicaidNumber();
-    } else if (t.value.equals(REP_PAT_SSN)) {
-      t.value = patient.getSsn();
-    } else if (t.value.equals(REP_PAT_RACE)) {
-      t.value = patient.getRace()[0];
-    } else if (t.value.equals(REP_PAT_RACE_LABEL)) {
-      t.value = patient.getRace()[1];
-    } else if (t.value.equals(REP_PAT_ETHNICITY)) {
-      t.value = patient.getEthnicity()[0];
-    } else if (t.value.equals(REP_PAT_ETHNICITY_LABEL)) {
-      t.value = patient.getEthnicity()[1];
-    } else if (t.value.equals(REP_PAT_LANGUAGE)) {
-      t.value = patient.getLanguage()[0];
-    } else if (t.value.equals("[LANGUAGE_LABEL]")) {
-      t.value = patient.getLanguage()[1];
-    } else if (t.value.equals("[VFC]")) {
-      t.value = patient.getVfc()[0];
-    } else if (t.value.equals("[VFC_LABEL]")) {
-      t.value = patient.getVfc()[1];
-    } else if (t.value.equals("[LAST]")) {
-      t.value = patient.getLastName();
-    } else if (t.value.equals("[FUTURE]")) {
-      t.value = patient.getFuture();
-    } else if (t.value.equals("[LAST_DIFFERENT]")) {
-      t.value = patient.getDifferentLastName();
-    } else if (t.value.equals("[GIRL_MIDDLE]")) {
-      t.value = patient.getMiddleNameGirl();
-    } else if (t.value.equals("[BOY_MIDDLE]")) {
-      t.value = patient.getMiddleNameBoy();
-    } else if (t.value.equals("[BOY_OR_GIRL_MIDDLE]")) {
-      t.value = patient.getGender().equals("F") ? patient.getMiddleNameGirl() : patient.getMiddleNameBoy();
-    } else if (t.value.equals("[GIRL_MIDDLE_INITIAL]")) {
-      t.value = patient.getMiddleNameGirl().substring(0, 1);
-    } else if (t.value.equals("[BOY_MIDDLE_INITIAL]")) {
-      t.value = patient.getMiddleNameBoy().substring(0, 1);
-    } else if (t.value.equals("[VAC1_ID]")) {
-      t.value = patient.getMedicalRecordNumber() + ".1";
-    } else if (t.value.equals("[VAC2_ID]")) {
-      t.value = patient.getMedicalRecordNumber() + ".2";
-    } else if (t.value.equals("[VAC3_ID]")) {
-      t.value = patient.getMedicalRecordNumber() + ".3";
-    } else if (t.value.equals("[VAC1_DATE]")) {
-      t.value = patient.getDates()[1];
-    } else if (t.value.equals("[VAC2_DATE]")) {
-      t.value = patient.getDates()[2];
-    } else if (t.value.equals(REP_PAT_VAC3_DATE)) {
-      t.value = patient.getDates()[3];
-    } else if (t.value.equals("[VAC1_CVX]")) {
-      t.value = patient.getVaccine1()[VACCINE_CVX];
-    } else if (t.value.equals("[VAC1_CVX_LABEL]")) {
-      t.value = patient.getVaccine1()[VACCINE_NAME];
-    } else if (t.value.equals("[VAC1_LOT]")) {
-      t.value = patient.getVaccine1()[VACCINE_LOT];
-    } else if (t.value.equals("[VAC1_MVX]")) {
-      t.value = patient.getVaccine1()[VACCINE_MVX];
-    } else if (t.value.equals("[VAC1_MVX_LABEL]")) {
-      t.value = patient.getVaccine1()[VACCINE_MANUFACTURER];
-    } else if (t.value.equals("[VAC1_TRADE_NAME]")) {
-      t.value = patient.getVaccine1()[VACCINE_TRADE_NAME];
-    } else if (t.value.equals("[VAC1_AMOUNT]")) {
-      t.value = patient.getVaccine1()[VACCINE_AMOUNT];
-    } else if (t.value.equals("[VAC1_ROUTE]")) {
-      t.value = patient.getVaccine1()[VACCINE_ROUTE];
-    } else if (t.value.equals("[VAC1_SITE]")) {
-      t.value = patient.getVaccine1()[VACCINE_SITE];
-    } else if (t.value.equals("[VAC1_VIS_PUB_NAME]")) {
-      t.value = patient.getVaccine1()[VACCINE_VIS_PUB];
-    } else if (t.value.equals("[VAC1_VIS_PUB_CODE]")) {
-      t.value = patient.getVaccine1()[VACCINE_VIS_PUB_CODE];
-    } else if (t.value.equals("[VAC1_VIS_PUB_DATE]")) {
-      t.value = patient.getVaccine1()[VACCINE_VIS_PUB_DATE];
-    } else if (t.value.equals("[COMBO_VIS1_PUB_NAME]")) {
-      t.value = patient.getCombo()[VACCINE_VIS_PUB];
-    } else if (t.value.equals("[COMBO_VIS1_PUB_CODE]")) {
-      t.value = patient.getCombo()[VACCINE_VIS_PUB_CODE];
-    } else if (t.value.equals("[COMBO_VIS1_PUB_DATE]")) {
-      t.value = patient.getCombo()[VACCINE_VIS_PUB_DATE];
-    } else if (t.value.equals("[COMBO_VIS2_PUB_NAME]")) {
-      t.value = patient.getCombo()[VACCINE_VIS2_PUB];
-    } else if (t.value.equals("[COMBO_VIS2_PUB_CODE]")) {
-      t.value = patient.getCombo()[VACCINE_VIS2_PUB_CODE];
-    } else if (t.value.equals("[COMBO_VIS2_PUB_DATE]")) {
-      t.value = patient.getCombo()[VACCINE_VIS2_PUB_DATE];
-    } else if (t.value.equals("[COMBO_VIS3_PUB_NAME]")) {
-      t.value = patient.getCombo()[VACCINE_VIS3_PUB];
-    } else if (t.value.equals("[COMBO_VIS3_PUB_CODE]")) {
-      t.value = patient.getCombo()[VACCINE_VIS3_PUB_CODE];
-    } else if (t.value.equals("[COMBO_VIS3_PUB_DATE]")) {
-      t.value = patient.getCombo()[VACCINE_VIS3_PUB_DATE];
-    } else if (t.value.equals("[VAC2_CVX]")) {
-      t.value = patient.getVaccine2()[VACCINE_CVX];
-    } else if (t.value.equals("[VAC2_CVX_LABEL]")) {
-      t.value = patient.getVaccine2()[VACCINE_NAME];
-    } else if (t.value.equals("[VAC2_LOT]")) {
-      t.value = patient.getVaccine2()[VACCINE_LOT];
-    } else if (t.value.equals("[VAC2_MVX]")) {
-      t.value = patient.getVaccine2()[VACCINE_MVX];
-    } else if (t.value.equals("[VAC2_MVX_LABEL]")) {
-      t.value = patient.getVaccine2()[VACCINE_MANUFACTURER];
-    } else if (t.value.equals("[VAC2_TRADE_NAME]")) {
-      t.value = patient.getVaccine2()[VACCINE_TRADE_NAME];
-    } else if (t.value.equals("[VAC2_AMOUNT]")) {
-      t.value = patient.getVaccine2()[VACCINE_AMOUNT];
-    } else if (t.value.equals("[VAC1_ROUTE]")) {
-      t.value = patient.getVaccine2()[VACCINE_ROUTE];
-    } else if (t.value.equals("[VAC1_SITE]")) {
-      t.value = patient.getVaccine2()[VACCINE_SITE];
-    } else if (t.value.equals("[VAC2_VIS_PUB_NAME]")) {
-      t.value = patient.getVaccine2()[VACCINE_VIS_PUB];
-    } else if (t.value.equals("[VAC2_VIS_PUB_CODE]")) {
-      t.value = patient.getVaccine2()[VACCINE_VIS_PUB_CODE];
-    } else if (t.value.equals("[VAC2_VIS_PUB_DATE]")) {
-      t.value = patient.getVaccine2()[VACCINE_VIS_PUB_DATE];
-    } else if (t.value.equals("[VAC3_CVX]")) {
-      t.value = patient.getVaccine3()[0];
-    } else if (t.value.equals("[VAC3_CVX_LABEL]")) {
-      t.value = patient.getVaccine3()[1];
-    } else if (t.value.equals("[VAC3_LOT]")) {
-      t.value = patient.getVaccine3()[2];
-    } else if (t.value.equals("[VAC3_MVX]")) {
-      t.value = patient.getVaccine3()[3];
-    } else if (t.value.equals("[VAC3_MVX_LABEL]")) {
-      t.value = patient.getVaccine3()[4];
-    } else if (t.value.equals("[VAC3_TRADE_NAME]")) {
-      t.value = patient.getVaccine3()[VACCINE_TRADE_NAME];
-    } else if (t.value.equals("[VAC3_AMOUNT]")) {
-      t.value = patient.getVaccine3()[VACCINE_AMOUNT];
-    } else if (t.value.equals("[VAC3_ROUTE]")) {
-      t.value = patient.getVaccine3()[VACCINE_ROUTE];
-    } else if (t.value.equals("[VAC3_SITE]")) {
-      t.value = patient.getVaccine3()[VACCINE_SITE];
-    } else if (t.value.equals("[VAC3_VIS_PUB_NAME]")) {
-      t.value = patient.getVaccine3()[VACCINE_VIS_PUB];
-    } else if (t.value.equals("[VAC3_VIS_PUB_CODE]")) {
-      t.value = patient.getVaccine3()[VACCINE_VIS_PUB_CODE];
-    } else if (t.value.equals("[VAC3_VIS_PUB_DATE]")) {
-      t.value = patient.getVaccine3()[VACCINE_VIS_PUB_DATE];
-    } else if (t.value.equals("[CITY]")) {
-      t.value = patient.getCity();
-    } else if (t.value.equals("[STREET]")) {
-      t.value = patient.getStreet();
-    } else if (t.value.equals("[STATE]")) {
-      t.value = patient.getState();
-    } else if (t.value.equals("[ZIP]")) {
-      t.value = patient.getZip();
-    } else if (t.value.equals(REP_PAT_PHONE)) {
-      t.value = patient.getPhone();
-    } else if (t.value.equals(REP_PAT_PHONE_AREA)) {
-      t.value = patient.getPhoneArea();
-    } else if (t.value.equals(REP_PAT_PHONE_LOCAL)) {
-      t.value = patient.getPhoneLocal();
-    } else if (t.value.equals(REP_PAT_VAC3_DATE)) {
-      t.value = patient.getDates()[3];
+    int i = t.value.indexOf('[');
+    int j = i;
+    if (i >= 0) {
+      j = t.value.indexOf(']', i);
+    }
+    while (i >= 0 && j > i) {
+      j++;
+      String p1 = "";
+      if (i > 0) {
+        t.value.substring(0, i);
+      }
+      String p2 = t.value.substring(i, j);
+      String p3 = "";
+      if (j < t.value.length()) {
+        p3 = t.value.substring(j);
+      }
+      if (p2.equals(REP_PAT_BOY)) {
+        p2 = patient.getBoyName();
+      } else if (p2.equals(REP_PAT_GIRL)) {
+        p2 = patient.getGirlName();
+      } else if (p2.equals(REP_PAT_BOY_OR_GIRL)) {
+        p2 = patient.getGender().equals("F") ? patient.getGirlName() : patient.getBoyName();
+      } else if (p2.equals(REP_PAT_GENDER)) {
+        p2 = patient.getGender();
+      } else if (p2.equals(REP_PAT_FATHER)) {
+        p2 = patient.getFatherName();
+      } else if (p2.equals(REP_PAT_SUFFIX)) {
+        p2 = patient.getSuffix();
+      } else if (p2.equals(REP_PAT_MOTHER)) {
+        p2 = patient.getMotherName();
+      } else if (p2.equals(REP_PAT_MOTHER_MAIDEN)) {
+        p2 = patient.getMotherMaidenName();
+      } else if (p2.equals(REP_PAT_DOB)) {
+        p2 = patient.getDates()[0];
+      } else if (p2.equals(REP_PAT_BIRTH_MULTIPLE)) {
+        p2 = patient.getBirthCount() > 1 ? "Y" : "N";
+      } else if (p2.equals(REP_PAT_BIRTH_ORDER)) {
+        p2 = "" + patient.getBirthCount();
+      } else if (p2.equals(REP_PAT_MRN)) {
+        p2 = patient.getMedicalRecordNumber();
+      } else if (p2.equals(REP_PAT_MEDICAID)) {
+        p2 = patient.getMedicaidNumber();
+      } else if (p2.equals(REP_PAT_SSN)) {
+        p2 = patient.getSsn();
+      } else if (p2.equals(REP_PAT_RACE)) {
+        p2 = patient.getRace()[0];
+      } else if (p2.equals(REP_PAT_RACE_LABEL)) {
+        p2 = patient.getRace()[1];
+      } else if (p2.equals(REP_PAT_ETHNICITY)) {
+        p2 = patient.getEthnicity()[0];
+      } else if (p2.equals(REP_PAT_ETHNICITY_LABEL)) {
+        p2 = patient.getEthnicity()[1];
+      } else if (p2.equals(REP_PAT_LANGUAGE)) {
+        p2 = patient.getLanguage()[0];
+      } else if (p2.equals("[LANGUAGE_LABEL]")) {
+        p2 = patient.getLanguage()[1];
+      } else if (p2.equals("[VFC]")) {
+        p2 = patient.getVfc()[0];
+      } else if (p2.equals("[VFC_LABEL]")) {
+        p2 = patient.getVfc()[1];
+      } else if (p2.equals("[LAST]")) {
+        p2 = patient.getLastName();
+      } else if (p2.equals("[FUTURE]")) {
+        p2 = patient.getFuture();
+      } else if (p2.equals("[LAST_DIFFERENT]")) {
+        p2 = patient.getDifferentLastName();
+      } else if (p2.equals("[GIRL_MIDDLE]")) {
+        p2 = patient.getMiddleNameGirl();
+      } else if (p2.equals("[BOY_MIDDLE]")) {
+        p2 = patient.getMiddleNameBoy();
+      } else if (p2.equals("[BOY_OR_GIRL_MIDDLE]")) {
+        p2 = patient.getGender().equals("F") ? patient.getMiddleNameGirl() : patient.getMiddleNameBoy();
+      } else if (p2.equals("[GIRL_MIDDLE_INITIAL]")) {
+        p2 = patient.getMiddleNameGirl().substring(0, 1);
+      } else if (p2.equals("[BOY_MIDDLE_INITIAL]")) {
+        p2 = patient.getMiddleNameBoy().substring(0, 1);
+      } else if (p2.equals("[VAC1_ID]")) {
+        p2 = patient.getMedicalRecordNumber() + ".1";
+      } else if (p2.equals("[VAC2_ID]")) {
+        p2 = patient.getMedicalRecordNumber() + ".2";
+      } else if (p2.equals("[VAC3_ID]")) {
+        p2 = patient.getMedicalRecordNumber() + ".3";
+      } else if (p2.equals("[VAC1_DATE]")) {
+        p2 = patient.getDates()[1];
+      } else if (p2.equals("[VAC2_DATE]")) {
+        p2 = patient.getDates()[2];
+      } else if (p2.equals(REP_PAT_VAC3_DATE)) {
+        p2 = patient.getDates()[3];
+      } else if (p2.equals("[VAC1_CVX]")) {
+        p2 = patient.getVaccine1()[VACCINE_CVX];
+      } else if (p2.equals("[VAC1_CVX_LABEL]")) {
+        p2 = patient.getVaccine1()[VACCINE_NAME];
+      } else if (p2.equals("[VAC1_LOT]")) {
+        p2 = patient.getVaccine1()[VACCINE_LOT];
+      } else if (p2.equals("[VAC1_MVX]")) {
+        p2 = patient.getVaccine1()[VACCINE_MVX];
+      } else if (p2.equals("[VAC1_MVX_LABEL]")) {
+        p2 = patient.getVaccine1()[VACCINE_MANUFACTURER];
+      } else if (p2.equals("[VAC1_TRADE_NAME]")) {
+        p2 = patient.getVaccine1()[VACCINE_TRADE_NAME];
+      } else if (p2.equals("[VAC1_AMOUNT]")) {
+        p2 = patient.getVaccine1()[VACCINE_AMOUNT];
+      } else if (p2.equals("[VAC1_ROUTE]")) {
+        p2 = patient.getVaccine1()[VACCINE_ROUTE];
+      } else if (p2.equals("[VAC1_SITE]")) {
+        p2 = patient.getVaccine1()[VACCINE_SITE];
+      } else if (p2.equals("[VAC1_VIS_PUB_NAME]")) {
+        p2 = patient.getVaccine1()[VACCINE_VIS_PUB];
+      } else if (p2.equals("[VAC1_VIS_PUB_CODE]")) {
+        p2 = patient.getVaccine1()[VACCINE_VIS_PUB_CODE];
+      } else if (p2.equals("[VAC1_VIS_PUB_DATE]")) {
+        p2 = patient.getVaccine1()[VACCINE_VIS_PUB_DATE];
+      } else if (p2.equals("[COMBO_VIS1_PUB_NAME]")) {
+        p2 = patient.getCombo()[VACCINE_VIS_PUB];
+      } else if (p2.equals("[COMBO_VIS1_PUB_CODE]")) {
+        p2 = patient.getCombo()[VACCINE_VIS_PUB_CODE];
+      } else if (p2.equals("[COMBO_VIS1_PUB_DATE]")) {
+        p2 = patient.getCombo()[VACCINE_VIS_PUB_DATE];
+      } else if (p2.equals("[COMBO_VIS2_PUB_NAME]")) {
+        p2 = patient.getCombo()[VACCINE_VIS2_PUB];
+      } else if (p2.equals("[COMBO_VIS2_PUB_CODE]")) {
+        p2 = patient.getCombo()[VACCINE_VIS2_PUB_CODE];
+      } else if (p2.equals("[COMBO_VIS2_PUB_DATE]")) {
+        p2 = patient.getCombo()[VACCINE_VIS2_PUB_DATE];
+      } else if (p2.equals("[COMBO_VIS3_PUB_NAME]")) {
+        p2 = patient.getCombo()[VACCINE_VIS3_PUB];
+      } else if (p2.equals("[COMBO_VIS3_PUB_CODE]")) {
+        p2 = patient.getCombo()[VACCINE_VIS3_PUB_CODE];
+      } else if (p2.equals("[COMBO_VIS3_PUB_DATE]")) {
+        p2 = patient.getCombo()[VACCINE_VIS3_PUB_DATE];
+      } else if (p2.equals("[VAC2_CVX]")) {
+        p2 = patient.getVaccine2()[VACCINE_CVX];
+      } else if (p2.equals("[VAC2_CVX_LABEL]")) {
+        p2 = patient.getVaccine2()[VACCINE_NAME];
+      } else if (p2.equals("[VAC2_LOT]")) {
+        p2 = patient.getVaccine2()[VACCINE_LOT];
+      } else if (p2.equals("[VAC2_MVX]")) {
+        p2 = patient.getVaccine2()[VACCINE_MVX];
+      } else if (p2.equals("[VAC2_MVX_LABEL]")) {
+        p2 = patient.getVaccine2()[VACCINE_MANUFACTURER];
+      } else if (p2.equals("[VAC2_TRADE_NAME]")) {
+        p2 = patient.getVaccine2()[VACCINE_TRADE_NAME];
+      } else if (p2.equals("[VAC2_AMOUNT]")) {
+        p2 = patient.getVaccine2()[VACCINE_AMOUNT];
+      } else if (p2.equals("[VAC1_ROUTE]")) {
+        p2 = patient.getVaccine2()[VACCINE_ROUTE];
+      } else if (p2.equals("[VAC1_SITE]")) {
+        p2 = patient.getVaccine2()[VACCINE_SITE];
+      } else if (p2.equals("[VAC2_VIS_PUB_NAME]")) {
+        p2 = patient.getVaccine2()[VACCINE_VIS_PUB];
+      } else if (p2.equals("[VAC2_VIS_PUB_CODE]")) {
+        p2 = patient.getVaccine2()[VACCINE_VIS_PUB_CODE];
+      } else if (p2.equals("[VAC2_VIS_PUB_DATE]")) {
+        p2 = patient.getVaccine2()[VACCINE_VIS_PUB_DATE];
+      } else if (p2.equals("[VAC3_CVX]")) {
+        p2 = patient.getVaccine3()[0];
+      } else if (p2.equals("[VAC3_CVX_LABEL]")) {
+        p2 = patient.getVaccine3()[1];
+      } else if (p2.equals("[VAC3_LOT]")) {
+        p2 = patient.getVaccine3()[2];
+      } else if (p2.equals("[VAC3_MVX]")) {
+        p2 = patient.getVaccine3()[3];
+      } else if (p2.equals("[VAC3_MVX_LABEL]")) {
+        p2 = patient.getVaccine3()[4];
+      } else if (p2.equals("[VAC3_TRADE_NAME]")) {
+        p2 = patient.getVaccine3()[VACCINE_TRADE_NAME];
+      } else if (p2.equals("[VAC3_AMOUNT]")) {
+        p2 = patient.getVaccine3()[VACCINE_AMOUNT];
+      } else if (p2.equals("[VAC3_ROUTE]")) {
+        p2 = patient.getVaccine3()[VACCINE_ROUTE];
+      } else if (p2.equals("[VAC3_SITE]")) {
+        p2 = patient.getVaccine3()[VACCINE_SITE];
+      } else if (p2.equals("[VAC3_VIS_PUB_NAME]")) {
+        p2 = patient.getVaccine3()[VACCINE_VIS_PUB];
+      } else if (p2.equals("[VAC3_VIS_PUB_CODE]")) {
+        p2 = patient.getVaccine3()[VACCINE_VIS_PUB_CODE];
+      } else if (p2.equals("[VAC3_VIS_PUB_DATE]")) {
+        p2 = patient.getVaccine3()[VACCINE_VIS_PUB_DATE];
+      } else if (p2.equals("[CITY]")) {
+        p2 = patient.getCity();
+      } else if (p2.equals("[STREET]")) {
+        p2 = patient.getStreet();
+      } else if (p2.equals("[STATE]")) {
+        p2 = patient.getState();
+      } else if (p2.equals("[ZIP]")) {
+        p2 = patient.getZip();
+      } else if (p2.equals(REP_PAT_PHONE)) {
+        p2 = patient.getPhone();
+      } else if (p2.equals(REP_PAT_PHONE_AREA)) {
+        p2 = patient.getPhoneArea();
+      } else if (p2.equals(REP_PAT_PHONE_LOCAL)) {
+        p2 = patient.getPhoneLocal();
+      } else if (p2.equals(REP_PAT_VAC3_DATE)) {
+        p2 = patient.getDates()[3];
+      } else {
+        p2 = "";
+      }
+      t.value = p1 + p2 + p3;
+      i = t.value.indexOf('[');
+      j = i;
+      if (i >= 0) {
+        j = t.value.indexOf(']', i);
+      }
     }
   }
 
