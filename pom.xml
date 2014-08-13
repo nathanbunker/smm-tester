@@ -3,9 +3,8 @@
   <groupId>org.immunizationsoftware.dqa</groupId>
   <artifactId>tester</artifactId>
   <packaging>war</packaging>
-  <version>1.30</version>
-  <!-- TODO project name -->
-  <name>quickstart</name>
+  <version>1.31</version>
+  <name>IIS HL7 Tester and Simple Message Mover</name>
   <description></description>
   <!-- TODO <organization> <name>company name</name> <url>company url</url> </organization> -->
   <licenses>
