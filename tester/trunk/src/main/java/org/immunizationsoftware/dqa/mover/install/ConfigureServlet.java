@@ -23,14 +23,18 @@ public class ConfigureServlet extends ClientServlet
   public static final String TEMPLATE_DEFAULT_POST = "Default POST";
   public static final String TEMPLATE_ASIIS_PROD = "ASIIS Production";
   public static final String TEMPLATE_ASIIS_TEST = "ASIIS Test";
+  public static final String TEMPLATE_MT_IMMTRAX_TEST = "MT imMTrax Test";
+  public static final String TEMPLATE_MT_IMMTRAX_PRODUCTION = "MT imMTrax Production";
   public static final String TEMPLATE_NMSIIS_RAW_PROD = "NMSIIS Raw Production";
   public static final String TEMPLATE_NMSIIS_RAW_UAT = "NMSIIS Raw UAT";
   public static final String TEMPLATE_NV_WEBIZ_PRODUCTION = "NV WebIZ Production";
   public static final String TEMPLATE_NV_WEBIZ_TESTING = "NV WebIZ Testing";
+  public static final String TEMPLATE_WA_IIS_TESTING = "WA IIS Testing";
+  public static final String TEMPLATE_WA_IIS_PRODUCTION = "WA IIS Production";
 
   public static final String[] TEMPLATES = { TEMPLATE_DEFAULT_SOAP, TEMPLATE_DEFAULT_POST, TEMPLATE_ASIIS_PROD,
-      TEMPLATE_ASIIS_TEST, TEMPLATE_NMSIIS_RAW_PROD, TEMPLATE_NMSIIS_RAW_UAT, TEMPLATE_NV_WEBIZ_TESTING,
-      TEMPLATE_NV_WEBIZ_PRODUCTION };
+      TEMPLATE_ASIIS_TEST, TEMPLATE_MT_IMMTRAX_TEST, TEMPLATE_MT_IMMTRAX_PRODUCTION, TEMPLATE_NMSIIS_RAW_PROD, TEMPLATE_NMSIIS_RAW_UAT, TEMPLATE_NV_WEBIZ_TESTING,
+      TEMPLATE_NV_WEBIZ_PRODUCTION, TEMPLATE_WA_IIS_TESTING, TEMPLATE_WA_IIS_PRODUCTION };
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -209,7 +213,7 @@ public class ConfigureServlet extends ClientServlet
             + "RXR-2.1*=[MAP 'LI'=>'LLFA']\n" + "remove observation 30956-7\n" + "remove empty observations\n");
         httpConnector.setAckType(AckAnalyzer.AckType.WEBIZ);
         httpConnector.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
-      }
+      } 
     }
   }
 
@@ -291,6 +295,46 @@ public class ConfigureServlet extends ClientServlet
         cc.setOtheridShow(true);
         cc.setOtheridRequired(true);
         cc.setReceiverName("NV WebIZ");
+      } else if (templateName.equals(TEMPLATE_WA_IIS_TESTING)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("https://test-fortress.wa.gov/doh/cpir/iweb/HL7Server");
+        cc.setFacilityidShow(false);
+        cc.setTypeShow(false);
+        cc.setInstructions("Contact WA IIS to obtain username and password. ");
+        cc.setReceiverName("WA IIS");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setFacilityidRequired(false);
+      } else if (templateName.equals(TEMPLATE_WA_IIS_PRODUCTION)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("https://fortress.wa.gov/doh/cpir/iweb/HL7Server");
+        cc.setFacilityidShow(false);
+        cc.setTypeShow(false);
+        cc.setInstructions("Contact WA IIS to obtain username and password. ");
+        cc.setReceiverName("WA IIS");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setFacilityidRequired(false);
+      }else if (templateName.equals(TEMPLATE_MT_IMMTRAX_TEST)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("https://ejs-test.hhs.mt.gov:8443/phchub/HL7Server");
+        cc.setFacilityidShow(false);
+        cc.setTypeShow(false);
+        cc.setInstructions("Contact MT imMTrax to obtain username and password. ");
+        cc.setReceiverName("MT imMTrax");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setFacilityidRequired(false);
+      } else if (templateName.equals(TEMPLATE_MT_IMMTRAX_PRODUCTION)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("https://ejs.hhs.mt.gov:8443/phchub/HL7Server");
+        cc.setFacilityidShow(false);
+        cc.setTypeShow(false);
+        cc.setInstructions("Contact  MT imMTrax to obtain username and password. ");
+        cc.setReceiverName("MT imMTrax");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setFacilityidRequired(false);
       }
     } else {
       cc.setInstructions("This is the default configuration with no preset values. If you would like specific instruction based on the system you are working to connect with, please return to Step 1: Prepare and follow the instructions. ");

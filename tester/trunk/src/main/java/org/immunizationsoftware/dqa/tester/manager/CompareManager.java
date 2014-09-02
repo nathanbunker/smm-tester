@@ -113,7 +113,7 @@ public class CompareManager
               if (otherValue != null && ov.equals(otherValue)) {
                 pass = true;
               } else {
-                if (!allowedValuesMask.contains(originalValue) && otherValue.equals("")) {
+                if (otherValue != null && !allowedValuesMask.contains(originalValue) && otherValue.equals("")) {
                   // if original value is non standard then don't expect the
                   // non-standard value to come back
                   pass = true;

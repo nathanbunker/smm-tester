@@ -717,6 +717,9 @@ public class Transformer
       }
       SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
       String today = sdf.format(new Date());
+      Calendar tomorrowCalendar = Calendar.getInstance();
+      tomorrowCalendar.add(Calendar.DAY_OF_MONTH, -1);
+      String tomorrow = sdf.format(tomorrowCalendar.getTime());
       sdf = new SimpleDateFormat("yyyyMMddHHmmssZ");
       String now = sdf.format(new Date());
       sdf = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -1037,7 +1040,7 @@ public class Transformer
                   t.segmentRepeat = i;
                 }
                 handleSometimes(t);
-                doReplacements(patientType, patient, today, now, nowNoTimezone, connector, t, resultText);
+                doReplacements(patientType, patient, today, now, tomorrow, nowNoTimezone, connector, t, resultText);
                 resultText = setValueInHL7(resultText, t);
               }
             }
@@ -1422,7 +1425,7 @@ public class Transformer
     }
   }
 
-  private void doReplacements(PatientType patientType, Patient patient, String today, String now, String nowNoTimezone,
+  private void doReplacements(PatientType patientType, Patient patient, String today, String now, String tomorrow, String nowNoTimezone,
       Connector connector, Transform t, String resultText) throws IOException {
     if (patientType != PatientType.NONE) {
       doPatientReplacements(patient, t);
@@ -1477,11 +1480,10 @@ public class Transformer
         p2 = connector.getCurrentFilename();
       } else if (p2.equals(REP_CON_OTHERID)) {
         p2 = connector.getOtherid();
-      } else {
-        p2 = "";
       }
+      j = p1.length() + p2.length();
       t.value = p1 + p2 + p3;
-      i = t.value.indexOf('[');
+      i = t.value.indexOf('[', j);
       j = i;
       if (i >= 0) {
         j = t.value.indexOf(']', i);
@@ -1684,11 +1686,10 @@ public class Transformer
         p2 = patient.getPhoneLocal();
       } else if (p2.equals(REP_PAT_VAC3_DATE)) {
         p2 = patient.getDates()[3];
-      } else {
-        p2 = "";
       }
+      j = p1.length() + p2.length();
       t.value = p1 + p2 + p3;
-      i = t.value.indexOf('[');
+      i = t.value.indexOf('[', j);
       j = i;
       if (i >= 0) {
         j = t.value.indexOf(']', i);
