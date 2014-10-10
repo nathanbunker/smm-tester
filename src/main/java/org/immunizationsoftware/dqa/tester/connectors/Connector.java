@@ -45,7 +45,7 @@ public abstract class Connector
       String facilityid, String password, String keyStorePassword, String enableTimeStart, String enableTimeEnd,
       AckAnalyzer.AckType ackType, TransferType transferType, List<String> fields, String customTransformations,
       List<Connector> connectors, String purpose, int tchForecastTesterSoftwareId,
-      Set<String> queryResponseFieldsNotReturnedSet) throws Exception {
+      Set<String> queryResponseFieldsNotReturnedSet, Map<String, String> scenarioTransformationsMap) throws Exception {
     if (!label.equals("") && !type.equals("")) {
       Connector connector = null;
       if (type.equals(ConnectorFactory.TYPE_SOAP)) {
@@ -75,7 +75,9 @@ public abstract class Connector
       connector.setEnableTimeEnd(enableTimeEnd);
       connector.setTchForecastTesterSoftwareId(tchForecastTesterSoftwareId);
       connector.setQueryResponseFieldsNotReturnedSet(queryResponseFieldsNotReturnedSet);
+      connector.setScenarioTransformationsMap(scenarioTransformationsMap);
       connectors.add(connector);
+      
       return connector;
     }
     return null;
@@ -105,6 +107,15 @@ public abstract class Connector
   private Map<String, Connector> otherConnectorMap = new HashMap<String, Connector>();
   private String purpose = "";
   private Set<String> queryResponseFieldsNotReturnedSet = null;
+  private Map<String, String> scenarioTransformationsMap = new HashMap<String, String>();
+
+  public void setScenarioTransformationsMap(Map<String, String> scenarioTransformationsMap) {
+    this.scenarioTransformationsMap = scenarioTransformationsMap;
+  }
+
+  public Map<String, String> getScenarioTransformationsMap() {
+    return scenarioTransformationsMap;
+  }
 
   public void setQueryResponseFieldsNotReturnedSet(Set<String> queryResponseFieldsNotReturnedSet) {
     this.queryResponseFieldsNotReturnedSet = queryResponseFieldsNotReturnedSet;
@@ -349,20 +360,28 @@ public abstract class Connector
     }
     if (customTransformations != null && customTransformations.length() > 0) {
       sb.append("Custom Transformations: \n");
-      try {
-        BufferedReader inTransform = new BufferedReader(new StringReader(customTransformations));
-        String line;
-        while ((line = inTransform.readLine()) != null) {
-          line = line.trim();
-          sb.append(" + " + line + "\n");
-        }
-      } catch (IOException ioe) {
-        // IOException not expected when reading a string
-        throw new RuntimeException("Exception while reading string", ioe);
-      }
+      printTransformString(sb, customTransformations);
+    }
+    for (String scenarioTransformName : scenarioTransformationsMap.keySet()) {
+      sb.append("Scenario Transform for " + scenarioTransformName + ": \n");
+      printTransformString(sb, scenarioTransformationsMap.get(scenarioTransformName));
     }
     makeScriptAdditions(sb);
     return sb.toString();
+  }
+
+  public void printTransformString(StringBuilder sb, String transformString) {
+    try {
+      BufferedReader inTransform = new BufferedReader(new StringReader(transformString));
+      String line;
+      while ((line = inTransform.readLine()) != null) {
+        line = line.trim();
+        sb.append(" + " + line + "\n");
+      }
+    } catch (IOException ioe) {
+      // IOException not expected when reading a string
+      throw new RuntimeException("Exception while reading string", ioe);
+    }
   }
 
   protected abstract void makeScriptAdditions(StringBuilder sb);
@@ -382,6 +401,7 @@ public abstract class Connector
     String enableTimeStart = "";
     String enableTimeEnd = "";
     Set<String> queryResponseFieldsNotReturnedSet = null;
+    Map<String, String> scenarioTransformationsMap = new HashMap<String, String>();
     int tchForecastTesterSoftwareId = 0;
     TransferType transferType = TransferType.NEAR_REAL_TIME_LINK;
     AckAnalyzer.AckType ackType = AckAnalyzer.AckType.DEFAULT;
@@ -394,7 +414,7 @@ public abstract class Connector
       if (line.startsWith("Connection")) {
         addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
             enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose,
-            tchForecastTesterSoftwareId, queryResponseFieldsNotReturnedSet);
+            tchForecastTesterSoftwareId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap);
         label = "";
         purpose = "";
         type = "";
@@ -452,6 +472,12 @@ public abstract class Connector
         }
       } else if (line.startsWith("Custom Transformations:")) {
         lastList = "CT";
+      } else if (line.startsWith("Scenario Transform for ")) {
+        int endPos = line.lastIndexOf(':');
+        if (endPos == -1) {
+          endPos = line.length();
+        } 
+        lastList = line.substring("Scenario Transform for ".length(), endPos).trim();
       } else if (line.startsWith("TCH Forecast Tester Software Id:")) {
         try {
           tchForecastTesterSoftwareId = Integer.parseInt(readValue(line));
@@ -459,8 +485,17 @@ public abstract class Connector
           // ignore, can't read
         }
       } else if (line.startsWith("+")) {
+        String ctLine = line.substring(1).trim() + "\n";
         if (lastList.equals("CT")) {
-          customTransformations += line.substring(1).trim() + "\n";
+          customTransformations += ctLine;
+        } else {
+          String transform = scenarioTransformationsMap.get(lastList);
+          if (transform == null) {
+            transform = ctLine;
+          } else {
+            transform += ctLine;
+          }
+          scenarioTransformationsMap.put(lastList, transform);
         }
       } else {
         fields.add(line);
@@ -469,7 +504,7 @@ public abstract class Connector
     }
     addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
         enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose,
-        tchForecastTesterSoftwareId, queryResponseFieldsNotReturnedSet);
+        tchForecastTesterSoftwareId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap);
     return connectors;
   }
 

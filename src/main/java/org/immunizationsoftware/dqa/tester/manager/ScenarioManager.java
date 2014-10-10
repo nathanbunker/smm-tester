@@ -31,6 +31,7 @@ public class ScenarioManager
   public static final String SCENARIO_7_1_COMPLETE_RECORD = "NIST MU2.7.1 - Complete Record";
   public static final String SCENARIO_7_R_COMPLETE_RECORD = "NIST MU2.7.r - Complete Record (replica)";
   public static final String SCENARIO_ADD_DELETE = "Add and then Delete - Admin Child";
+  public static final String SCENARIO_MCIR_MPI = "MCIR MPI Test";
 
   public static final String[] SCENARIOS = { SCENARIO_BLANK, SCENARIO_1_1_ADMIN_CHILD, SCENARIO_1_R_ADMIN_CHILD,
       SCENARIO_1_R_ADMIN_TWO_MONTHS_OLD, SCENARIO_1_R_ADMIN_TWO_YEARS_OLD, SCENARIO_1_R_ADMIN_FOUR_YEARS_OLD,
@@ -40,11 +41,12 @@ public class ScenarioManager
       SCENARIO_3_R_HISTORICAL_TWELVE_YEARS_OLD, SCENARIO_4_1_CONSENTED_CHILD, SCENARIO_4_R_CONSENTED_CHILD,
       SCENARIO_5_1_REFUSED_TODDLER, SCENARIO_5_R_REFUSED_TODDLER, SCENARIO_5_P_REFUSED_TODDLER,
       SCENARIO_6_1_VARICELLA_HISTORY_CHILD, SCENARIO_6_R_VARICELLA_HISTORY_CHILD, SCENARIO_6_P_VARICELLA_HISTORY_CHILD, SCENARIO_7_1_COMPLETE_RECORD,
-      SCENARIO_7_R_COMPLETE_RECORD, SCENARIO_ADD_DELETE };
+      SCENARIO_7_R_COMPLETE_RECORD, SCENARIO_ADD_DELETE, SCENARIO_MCIR_MPI };
 
   public static TestCaseMessage createTestCaseMessage(String scenario) {
     TestCaseMessage testCaseMessage;
     testCaseMessage = new TestCaseMessage();
+    testCaseMessage.setScenario(scenario);
     String originalMessage = "";
     String customTransformations = "";
     String description = "";
@@ -267,6 +269,12 @@ public class ScenarioManager
           + "OBX|9|TS|29768-9^Date vaccine information statement published^LN|4|20111108||||||F\n"
           + "OBX|10|TS|29769-7^Date vaccine information statement presented^LN|4|20120816||||||F\n";
       quickTransformations = new String[] {};
+      patientType = PatientType.TODDLER;
+    } else if (scenario.equals(SCENARIO_MCIR_MPI)) {
+      description = "MCIR MPI Test";
+      originalMessage = "MSH|\nPID|\n";
+      quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "MOTHER", "RACE",
+          "ETHNICITY" };
       patientType = PatientType.TODDLER;
     }
 

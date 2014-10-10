@@ -15,6 +15,7 @@ public class Patient {
     private String medicalRecordNumber = "";
     private String medicaidNumber = "";
     private String ssn = "";
+    private String wic = "";
     private String boyName = "";
     private String girlName = "";
     private String motherName = "";
@@ -46,6 +47,14 @@ public class Patient {
     private String phone = "";
     private int birthCount = 0;
     private String future = "";
+
+    public String getWic() {
+      return wic;
+    }
+
+    public void setWic(String wic) {
+      this.wic = wic;
+    }
 
     public String getSsn()
     {

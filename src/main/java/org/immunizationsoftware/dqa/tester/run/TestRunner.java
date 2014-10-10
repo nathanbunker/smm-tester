@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.immunizationsoftware.dqa.mover.AckAnalyzer;
 import org.immunizationsoftware.dqa.tester.TestCaseMessage;
+import org.immunizationsoftware.dqa.tester.Transform;
 import org.immunizationsoftware.dqa.tester.Transformer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
@@ -103,13 +104,8 @@ public class TestRunner
     passedTest = false;
     ackMessageText = null;
 
-    String message = testCaseMessage.getMessageText();
-    if (!connector.getCustomTransformations().equals("")) {
-      Transformer transformer = new Transformer();
-      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-      connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
-      message = transformer.transform(connector, message);
-    }
+    String message = Transformer.transform(connector, testCaseMessage);
+    
     testCaseMessage.setMessageTextSent(message);
 
     startTime = System.currentTimeMillis();
@@ -245,4 +241,6 @@ public class TestRunner
 
     return passedTest;
   }
+
+  
 }
