@@ -31,9 +31,12 @@ public class ConfigureServlet extends ClientServlet
   public static final String TEMPLATE_NV_WEBIZ_TESTING = "NV WebIZ Testing";
   public static final String TEMPLATE_WA_IIS_TESTING = "WA IIS Testing";
   public static final String TEMPLATE_WA_IIS_PRODUCTION = "WA IIS Production";
+  public static final String TEMPLATE_VACTRAK_TESTING = "AK VacTrAK Testing";
+  public static final String TEMPLATE_VACTRAK_PRODUCTION = "AK VacTrAK Production";
 
-  public static final String[] TEMPLATES = { TEMPLATE_DEFAULT_SOAP, TEMPLATE_DEFAULT_POST, TEMPLATE_ASIIS_PROD,
-      TEMPLATE_ASIIS_TEST, TEMPLATE_MT_IMMTRAX_TEST, TEMPLATE_MT_IMMTRAX_PRODUCTION, TEMPLATE_NMSIIS_RAW_PROD, TEMPLATE_NMSIIS_RAW_UAT, TEMPLATE_NV_WEBIZ_TESTING,
+  public static final String[] TEMPLATES = { TEMPLATE_DEFAULT_SOAP, TEMPLATE_DEFAULT_POST, TEMPLATE_VACTRAK_TESTING,
+      TEMPLATE_VACTRAK_PRODUCTION, TEMPLATE_ASIIS_PROD, TEMPLATE_ASIIS_TEST, TEMPLATE_MT_IMMTRAX_TEST,
+      TEMPLATE_MT_IMMTRAX_PRODUCTION, TEMPLATE_NMSIIS_RAW_PROD, TEMPLATE_NMSIIS_RAW_UAT, TEMPLATE_NV_WEBIZ_TESTING,
       TEMPLATE_NV_WEBIZ_PRODUCTION, TEMPLATE_WA_IIS_TESTING, TEMPLATE_WA_IIS_PRODUCTION };
 
   @Override
@@ -213,7 +216,7 @@ public class ConfigureServlet extends ClientServlet
             + "RXR-2.1*=[MAP 'LI'=>'LLFA']\n" + "remove observation 30956-7\n" + "remove empty observations\n");
         httpConnector.setAckType(AckAnalyzer.AckType.WEBIZ);
         httpConnector.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
-      } 
+      }
     }
   }
 
@@ -315,7 +318,27 @@ public class ConfigureServlet extends ClientServlet
         cc.setUseridRequired(true);
         cc.setPasswordRequired(true);
         cc.setFacilityidRequired(false);
-      }else if (templateName.equals(TEMPLATE_MT_IMMTRAX_TEST)) {
+      } else if (templateName.equals(TEMPLATE_VACTRAK_TESTING)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("https://vactrakihub.alaska.gov/ihubtst/HL7Server");
+        cc.setFacilityidShow(false);
+        cc.setTypeShow(false);
+        cc.setInstructions("Contact AK VacTrAK to obtain username and password. ");
+        cc.setReceiverName("AK VacTrAK");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setFacilityidRequired(false);
+      } else if (templateName.equals(TEMPLATE_VACTRAK_PRODUCTION)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("https://vactrakihub.alaska.gov/ihubtst/HL7Server");
+        cc.setFacilityidShow(false);
+        cc.setTypeShow(false);
+        cc.setInstructions("Contact AK VacTrAK to obtain username and password. ");
+        cc.setReceiverName("AK VacTrAK");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setFacilityidRequired(false);
+      } else if (templateName.equals(TEMPLATE_MT_IMMTRAX_TEST)) {
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setUrl("https://ejs-test.hhs.mt.gov:8443/phchub/HL7Server");
         cc.setFacilityidShow(false);

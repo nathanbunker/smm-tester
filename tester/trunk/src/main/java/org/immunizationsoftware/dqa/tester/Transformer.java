@@ -41,6 +41,7 @@ public class Transformer
   private static final String REP_PAT_RACE = "[RACE]";
   private static final String REP_PAT_SSN = "[SSN]";
   private static final String REP_PAT_MRN = "[MRN]";
+  private static final String REP_PAT_WIC = "[WIC]";
   private static final String REP_PAT_MEDICAID = "[MEDICAID]";
   private static final String REP_PAT_BIRTH_ORDER = "[BIRTH_ORDER]";
   private static final String REP_PAT_BIRTH_MULTIPLE = "[BIRTH_MULTIPLE]";
@@ -353,7 +354,45 @@ public class Transformer
       }
     }
 
-    String transforms = quickTransforms + "\n" + connector.getCustomTransformations() + "\n";
+    String transforms = quickTransforms + "\n";
+    if (!connector.getCustomTransformations().equals("")) {
+      transforms += connector.getCustomTransformations() + "\n";
+    }
+    return transform(messageText, transforms, PatientType.NONE, connector);
+  }
+  
+  public static String transform(Connector connector, TestCaseMessage testCaseMessage) {
+    String message = testCaseMessage.getMessageText();
+    String scenarioTransforms = connector.getScenarioTransformationsMap().get(testCaseMessage.getScenario());
+    if (!connector.getCustomTransformations().equals("") || scenarioTransforms != null) {
+      Transformer transformer = new Transformer();
+      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+      connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
+      message = transformer.transform(connector, message, scenarioTransforms);
+    }
+    return message;
+  }
+
+  public String transform(Connector connector, String messageText, String scenarioTransformations) {
+    String quickTransforms = "";
+
+    if (connector.getQuickTransformations() != null) {
+      for (String extra : connector.getQuickTransformations()) {
+        if (extra.equals("2.5.1")) {
+          quickTransforms += "MSH-12=2.5.1\n";
+        } else if (extra.equals("2.3.1")) {
+          quickTransforms += "MSH-12=2.3.1\n";
+        }
+      }
+    }
+    String transforms = quickTransforms + "\n";
+    if (!connector.getCustomTransformations().equals("")) {
+      transforms += connector.getCustomTransformations() + "\n";
+    }
+    if (scenarioTransformations != null) {
+      transforms += scenarioTransformations;
+    }
+
     return transform(messageText, transforms, PatientType.NONE, connector);
   }
 
@@ -1425,8 +1464,8 @@ public class Transformer
     }
   }
 
-  private void doReplacements(PatientType patientType, Patient patient, String today, String now, String tomorrow, String nowNoTimezone,
-      Connector connector, Transform t, String resultText) throws IOException {
+  private void doReplacements(PatientType patientType, Patient patient, String today, String now, String tomorrow,
+      String nowNoTimezone, Connector connector, Transform t, String resultText) throws IOException {
     if (patientType != PatientType.NONE) {
       doPatientReplacements(patient, t);
     }
@@ -1534,6 +1573,8 @@ public class Transformer
         p2 = patient.getMedicalRecordNumber();
       } else if (p2.equals(REP_PAT_MEDICAID)) {
         p2 = patient.getMedicaidNumber();
+      } else if (p2.equals(REP_PAT_WIC)) {
+        p2 = patient.getWic();
       } else if (p2.equals(REP_PAT_SSN)) {
         p2 = patient.getSsn();
       } else if (p2.equals(REP_PAT_RACE)) {
@@ -1710,6 +1751,9 @@ public class Transformer
     patient.setSsn("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
         + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
     patient.setMedicaidNumber("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
+        + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
+        + random.nextInt(10) + random.nextInt(10));
+    patient.setWic("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
         + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
     patient.setBoyName(getValue("BOY"));
     patient.setGirlName(getValue("GIRL"));

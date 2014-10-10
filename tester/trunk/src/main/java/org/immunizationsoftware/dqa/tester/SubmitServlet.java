@@ -77,11 +77,18 @@ public class SubmitServlet extends ClientServlet
       Connector connector = getConnector(id, session);
       String message = request.getParameter("message");
 
-      if (transform && !connector.getCustomTransformations().equals("")) {
-        Transformer transformer = new Transformer();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-        connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
-        message = transformer.transform(connector, message);
+      if (transform) {
+        TestCaseMessage testCaseMessage = (TestCaseMessage) session.getAttribute("testCaseMessage");
+        String scenarioTransforms = null;
+        if (testCaseMessage != null) {
+          scenarioTransforms = connector.getScenarioTransformationsMap().get(testCaseMessage.getScenario());
+        }
+        if (!connector.getCustomTransformations().equals("") || scenarioTransforms != null) {
+          Transformer transformer = new Transformer();
+          SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+          connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
+          message = transformer.transform(connector, message, scenarioTransforms);
+        }
       }
       message = cleanMessage(message);
       request.setAttribute("requestText", message);
