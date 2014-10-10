@@ -42,6 +42,7 @@ public class TestCaseMessage
   private static final String CAUSE_ISSUES = "Cause Issues:";
   private static final String COMMENT = "Comment:";
   private static final String PATIENT_TYPE = "Patient Type:";
+  private static final String SCENARIO = "Scenario:";
 
   protected static int createTestCase(TestCaseMessage testCaseMessage, StringBuffer message, int number,
       List<TestCaseMessage> testCaseMessageList) {
@@ -243,6 +244,15 @@ public class TestCaseMessage
   private boolean resultNotExpectedToConform = false;
   private ForecastTestCase forecastTestCase = null;
   private ForecastTestPanel forecastTestPanel = null;
+  private String scenario = "";
+
+  public String getScenario() {
+    return scenario;
+  }
+
+  public void setScenario(String scenario) {
+    this.scenario = scenario;
+  }
 
   public ForecastTestPanel getForecastTestPanel() {
     return forecastTestPanel;
@@ -414,6 +424,7 @@ public class TestCaseMessage
     this.actualResultAckMessage = copy.actualResultAckMessage;
     this.patientType = copy.patientType;
     this.actualResponseMessage = copy.actualResponseMessage;
+    this.scenario = copy.scenario;
   }
 
   public void merge(TestCaseMessage updated) {
@@ -464,6 +475,9 @@ public class TestCaseMessage
     }
     if (!updated.getActualResultAckType().equals("")) {
       actualResultAckType = updated.getActualResultAckType();
+    }
+    if (!updated.getScenario().equals("")) {
+      scenario = updated.getScenario();
     }
   }
 
@@ -697,6 +711,8 @@ public class TestCaseMessage
             testCaseMessage.setDescription(readValue(line));
           } else if (line.startsWith(PATIENT_TYPE)) {
             testCaseMessage.setPatientType(PatientType.valueOf(readValue(line)));
+          } else if (line.startsWith(SCENARIO)) {
+            testCaseMessage.setPatientType(PatientType.valueOf(readValue(line)));
           } else if (line.startsWith(TEST_CASE_SET)) {
             testCaseMessage.setTestCaseSet(readValue(line));
           } else if (line.startsWith(EXPECTED_RESULT)) {
@@ -846,6 +862,9 @@ public class TestCaseMessage
         }
       }
       stringOut.println(PATIENT_TYPE + " " + patientType);
+      if (!scenario.equals("")) {
+        stringOut.println(SCENARIO + " " + scenario);
+      }
       stringOut.println("--------------------------------------------------------------------------------");
       stringOut.print(messageText);
     } catch (Exception ioe) {

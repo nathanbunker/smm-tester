@@ -27,6 +27,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -2026,15 +2027,7 @@ public class CertifyRunner extends Thread
   }
 
   private String prepareSendQueryMessage(TestCaseMessage queryTestCaseMessage) {
-    String message = queryTestCaseMessage.getMessageText();
-    if (!queryConnector.getCustomTransformations().equals("")) {
-      Transformer transformer = new Transformer();
-      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-      queryConnector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
-      message = transformer.transform(queryConnector, message);
-    }
-    queryTestCaseMessage.setMessageTextSent(message);
-    return message;
+    return Transformer.transform(queryConnector, queryTestCaseMessage);
   }
 
   private void prepareQueryIntermediate() {
@@ -2617,14 +2610,27 @@ public class CertifyRunner extends Thread
     out.println("    <th>Ack Type</th>");
     out.println("    <td>" + connector.getAckType() + "</td>");
     out.println("  </tr>");
-    if (!connector.getCustomTransformations().equals("")) {
-      out.println("  <tr>");
-      out.println("    <th>Transformations</th>");
-      out.println("    <td><pre>" + connector.getCustomTransformations() + "</pre></td>");
-      out.println("  </tr>");
-    }
     out.println("</table>");
-    out.println("</br>");
+
+    if (!connector.getCustomTransformations().equals("") || connector.getScenarioTransformationsMap().size() > 0) {
+      out.println("<h3>Custom Transformations</h3>");
+      out.println("<table border=\"1\" cellspacing=\"0\">");
+      if (!connector.getCustomTransformations().equals("")) {
+        out.println("  <tr>");
+        out.println("    <th>Overall</th>");
+        out.println("    <td><pre>" + connector.getCustomTransformations() + "</pre></td>");
+        out.println("  </tr>");
+      }
+      List<String> scenarioList = new ArrayList<String>(connector.getScenarioTransformationsMap().keySet());
+      Collections.sort(scenarioList);
+      for (String scenario : scenarioList) {
+        out.println("  <tr>");
+        out.println("    <th>" + scenario + "</th>");
+        out.println("    <td><pre>" + connector.getCustomTransformations() + "</pre></td>");
+        out.println("  </tr>");
+      }
+      out.println("</table>");
+    }
 
     if (queryConnector != connector) {
       out.println("<p>The connection information for performing queries is different than for the updates. This is to either accomodate "

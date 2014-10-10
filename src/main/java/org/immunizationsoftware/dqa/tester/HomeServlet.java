@@ -87,6 +87,10 @@ public class HomeServlet extends ClientServlet
           out.println("  </tr>");
         }
         out.println("  <tr>");
+        out.println("    <td><a href=\"GenerateDataServlet\">Generate Data</a></td>");
+        out.println("    <td>Create sample messages </td>");
+        out.println("  </tr>");
+        out.println("  <tr>");
         out.println("    <td><a href=\"ConformanceServlet\">Conformance</a></td>");
         out.println("    <td>Verify HL7 Message, Segment or Field for conformance </td>");
         out.println("  </tr>");

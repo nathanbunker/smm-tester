@@ -136,6 +136,7 @@ public class TestCaseMessageViewerServlet extends ClientServlet
       out.println("<h3>Message Actually Sent</h3>");
       out.println("<p>The final message message sent was different than the request, local transformations were applied. "
           + "These are specified in the connection settings of the connector that was used to run this test. </p>");
+      
       out.println("<pre>" + testCaseMessage.getMessageTextSent() + "</pre>");
 
       List<CompareManager.Comparison> comparisonList = CompareManager.compareMessages(testCaseMessage.getMessageText(),
