@@ -2614,22 +2614,16 @@ public class CertifyRunner extends Thread
 
     if (!connector.getCustomTransformations().equals("") || connector.getScenarioTransformationsMap().size() > 0) {
       out.println("<h3>Custom Transformations</h3>");
-      out.println("<table border=\"1\" cellspacing=\"0\">");
       if (!connector.getCustomTransformations().equals("")) {
-        out.println("  <tr>");
-        out.println("    <th>Overall</th>");
-        out.println("    <td><pre>" + connector.getCustomTransformations() + "</pre></td>");
-        out.println("  </tr>");
+        out.println("  <h4>Overall</h4>");
+        out.println("  <pre>" + connector.getCustomTransformations() + "</pre>");
       }
       List<String> scenarioList = new ArrayList<String>(connector.getScenarioTransformationsMap().keySet());
       Collections.sort(scenarioList);
       for (String scenario : scenarioList) {
-        out.println("  <tr>");
-        out.println("    <th>" + scenario + "</th>");
-        out.println("    <td><pre>" + connector.getCustomTransformations() + "</pre></td>");
-        out.println("  </tr>");
+        out.println("  <h4>" + scenario + "</h4>");
+        out.println("  <pre>" + connector.getScenarioTransformationsMap().get(scenario) + "</pre>");
       }
-      out.println("</table>");
     }
 
     if (queryConnector != connector) {
