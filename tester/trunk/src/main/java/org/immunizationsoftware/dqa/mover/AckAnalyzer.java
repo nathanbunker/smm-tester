@@ -107,10 +107,11 @@ public class AckAnalyzer
     this.ackType = ackType;
     this.errorFileOut = errorFileOut;
 
-    convertToSegments(ack);
+    ack = convertToSegments(ack);
+    String ackUpperCase = ack.toUpperCase();
 
     boolean isNotAck = false;
-    if (ack == null) {
+    if (ack.length() == 0) {
       isNotAck = true;
       log("Returned result is not an acknowledgement message: no acknowledgement message returned");
     } else if (!ack.startsWith("MSH|")) {
@@ -139,11 +140,18 @@ public class AckAnalyzer
       ackCode = getFieldValue("MSA", 1);
 
       if (ackType.equals(AckType.NMSIIS)) {
-        setupProblem = ack.indexOf("|BAD MESSAGE|") != -1 || ack.indexOf("File Rejected.") != -1;
+        setupProblem = ackUpperCase.indexOf("|BAD MESSAGE|") != -1 || ackUpperCase.indexOf("FILE REJECTED") != -1;
         if (setupProblem) {
           log("Setup problem found, message contains phrase |BAD MESSAGE| or File Rejected.");
         }
-        boolean recordNotRejected = ack.indexOf("Record Rejected") == -1 && ack.indexOf("Message Rejected") == -1;
+        int recordRejectedPos = ackUpperCase.indexOf("RECORD REJECTED");
+        int messageRejectedPos = ackUpperCase.indexOf("MESSAGE REJECTED");
+        int warningRxaPos1 = ackUpperCase.indexOf("WARNING:  RXA #");
+        int warningRxaPos2 = -1;
+        if (warningRxaPos1 > -1) {
+          warningRxaPos2 = ackUpperCase.indexOf(" IGNORED - REQUIRED FIELD RXA-");
+        }
+        boolean recordNotRejected = recordRejectedPos == -1 && messageRejectedPos == -1 && warningRxaPos2 == -1;
         if (!recordNotRejected) {
           log("Record was rejected, message contains phrase Record Rejected");
         }
@@ -208,19 +216,27 @@ public class AckAnalyzer
     }
   }
 
-  private void convertToSegments(String ack) {
+  private String convertToSegments(String ack) {
+    StringBuilder ackActual = new StringBuilder();
     segments = new ArrayList<String>();
     if (ack != null) {
       BufferedReader in = new BufferedReader(new StringReader(ack));
       String line;
       try {
         while ((line = in.readLine()) != null) {
-          segments.add(line);
+          if (line.startsWith("FHS") || line.startsWith("BHS") || line.startsWith("BTS") || line.startsWith("FTS")) {
+            // ignore these lines
+          } else {
+            segments.add(line);
+            ackActual.append(line);
+            ackActual.append("\r");
+          }
         }
       } catch (IOException ioe) {
         ioe.printStackTrace();
       }
     }
+    return ackActual.toString();
   }
 
   private boolean hasSegment(String segmentName) {

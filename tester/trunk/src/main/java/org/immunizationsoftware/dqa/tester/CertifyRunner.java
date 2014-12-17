@@ -1266,9 +1266,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.setDescription("County Code is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
-      testCaseMessage.appendCustomTransformation("PID-11.4=" + certifyItem.getTable());
-      testCaseMessage.appendCustomTransformation("PID-11.7=" + certifyItem.getLabel());
-      testCaseMessage.appendCustomTransformation("PID-11.9=" + certifyItem.getCode());
+      testCaseMessage.appendCustomTransformation("PID-11.4=" + certifyItem.getTable()); 
+      testCaseMessage.appendCustomTransformation("PID-11.9=" + certifyItem.getCode());  
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
