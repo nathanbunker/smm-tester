@@ -240,9 +240,9 @@ public class TestTransformer
       + "ORC|RE|49340-232101|19980302-49340-232101152165^CHINLE HOSP||IP|||||1234567890^HORNBUCKLE^CLAUDE^ALBEE^^^||1234567890^HORNBUCKLE^CLAUDE^ALBEE^^^|||||^^^CHINLE HOSP\r"
       + "RXA|0|1|19980302091900|19980302091900|10^IPV^CVX|.5|ML^ML^ISO+||00^NEW IMMUNIZATION RECORD^NIP001|1234567890^HORNBUCKLE^CLAUDE|^^^CHINLE HOSP||||A1060-2|20091026|PMC^SANOFI PASTEUR^MVX|||CP|A|19980302091900\r";
 
-  private static final String TEST_NMSIIS_1_RESULT = "FHS|^~\\&||IHS2||NMSIIS|20120731085717|CR|HL7.251.batch.txt||CI809903|\r"
-      + "BHS|^~\\&||IHS2||NMSIIS|20120731085717|CR|||CI809903|\r"
-      + "MSH|^~\\&||IHS2||NMSIIS|20120731085717||VXU^V04^VXU_V04|CI809903|P|2.5.1|||AL|AL|\r"
+  private static final String TEST_NMSIIS_1_RESULT = "FHS|^~\\&|RPMS|IHS2||NMSIIS|20120731085717|CR|HL7.251.batch.txt||CI809903|\r"
+      + "BHS|^~\\&|RPMS|IHS2||NMSIIS|20120731085717||||CI809903|\r"
+      + "MSH|^~\\&|RPMS|||NMSIIS|20120731085717||VXU^V04^VXU_V04|CI809903|P|2.5.1|||AL|AL|\r"
       + "PID|1||232101152165^^^CHINLE HOSP^MR~258723162^^^^SS~646047356^^^^MA||LOSSIAH^JENNY^FAY^^^|SPARKS^DORIS^GORE^^^|19970501|F||1002-5^AMERICAN INDIAN OR ALASKA NATIVE^HL70005|238 GOOSECREEK RD^^ANYCITY^NC^28719^^P||^PRN^PH^^^555^555186|^WPN^PH^^^^||||||||2186-5^NOT HISPANIC OR LATINO^HL70006||N\r"
       + "PD1|||232101^CHINLE HOSP||||||||||20120720|||A\r"
       + "NK1|1|LOSSIAH^KRISTI^LYNN^^^|MTH^MOTHER^HL70063||||\r"
@@ -252,6 +252,133 @@ public class TestTransformer
       + "ORC|RE|49340-232101|19980302-49340-232101152165^CHINLE HOSP||IP|||||1234567890^HORNBUCKLE^CLAUDE^ALBEE^^^||1234567890^HORNBUCKLE^CLAUDE^ALBEE^^^|||||^^^CHINLE HOSP\r"
       + "RXA|0|1|19980302091900|19980302091900|10^IPV^CVX|.5|ML^ML^ISO+||00^NEW IMMUNIZATION RECORD^NIP001|1234567890^HORNBUCKLE^CLAUDE|^^^CHINLE HOSP||||A1060-2|20091026|PMC^SANOFI PASTEUR^MVX|||CP|A|19980302091900\r"
       + "BTS|1|CR|\r" + "FTS|1|CR|\r";
+
+  private static final String TEST_NMSIIS_CHILD_1 = "MSH|^~\\&|||||20141205054808-0700||VXU^V04^VXU_V04|6882330-A1.2.8238|P|2.5.1|\r"
+      + "PID|1||6882330-A1.2^^^OIS-TEST^MR||Durbin^Payge^Stefanie^^^^L|SMITH^KRISTI|20071202|F||2106-3^White^HL70005|18 Isdal Ln^^Casco Township^MI^48064^USA^P||^PRN^PH^^^810^4927434|||||||||2186-5^not Hispanic or Latino^CDCREC|\r"
+      + "NK1|1|LOSSIAH^KRISTI^LYNN^^^|MTH^MOTHER^HL70063||||\r"
+      + "ORC|RE||N89X3.3^OIS|||||||I-23432^Burden^Donna^A^^^^^NIST-AA-1||57422^RADON^NICHOLAS^^^^^^NIST-AA-1^L|\r"
+      + "RXA|0|1|20141205||52^Hep A^CVX|0.5|mL^milliliters^UCUM||00^Administered^NIP001||||||Y11VA||SKB^GlaxoSmithKline^MVX||||A|\r"
+      + "OBX|1|CE|64994-7^Vaccine funding program eligibility category^LN|1|V02^VFC eligible - Medicaid/Medicaid Managed Care^HL70064||||||F|||20141205|||VXC40^Eligibility captured at the immunization level^CDCPHINVS|\r"
+      + "OBX|2|CE|30956-7^Vaccine Type^LN|2|85^Hepatitis A^CVX||||||F|\r"
+      + "OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20111025||||||F|\r"
+      + "OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20141205||||||F|\r";
+
+  private static final String TEST_NMSIIS_CHILD_1_RESULT = "FHS|^~\\&|RPMS|IHS2||NMSIIS|20141205054808-0700|CR|HL7.251.batch.txt||6882330-A1.2.8238|\r"
+      + "BHS|^~\\&|RPMS|IHS2||NMSIIS|20141205054808-0700||||6882330-A1.2.8238|\r"
+      + "MSH|^~\\&|RPMS|||NMSIIS|20141205054808-0700||VXU^V04^VXU_V04|6882330-A1.2.8238|P|2.5.1|\r"
+      + "PID|1||6882330-A1.2^^^OIS-TEST^MR||Durbin^Payge^Stefanie^^^^L|SMITH^KRISTI|20071202|F||2106-3^White^HL70005|18 Isdal Ln^^Casco Township^MI^48064^USA^P||^PRN^PH^^^810^4927434|||||||||2186-5^not Hispanic or Latino^CDCREC|\r"
+      + "NK1|1|LOSSIAH^KRISTI^LYNN^^^|MTH^MOTHER^HL70063||||\r"
+      + "IN1|1|\r"
+      + "IN2|\r"
+      + "ORC|RE||N89X3.3^OIS|||||||I-23432^Burden^Donna^A^^^^^NIST-AA-1||57422^RADON^NICHOLAS^^^^^^NIST-AA-1^L|\r"
+      + "RXA|0|1|20141205||52^Hep A^CVX|0.5|mL^milliliters^UCUM||00^Administered^NIP001||||||Y11VA||SKB^GlaxoSmithKline^MVX||||A|\r"
+      + "OBX|1|CE|64994-7^Vaccine funding program eligibility category^LN|1|V02^VFC eligible - Medicaid/Medicaid Managed Care^HL70064||||||F|||20141205|||VXC40^Eligibility captured at the immunization level^CDCPHINVS|\r"
+      + "OBX|2|CE|30956-7^Vaccine Type^LN|2|85^Hepatitis A^CVX||||||F|\r"
+      + "OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20111025||||||F|\r"
+      + "OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20141205||||||F|\r"
+      + "BTS|1|CR|\r"
+      + "FTS|1|CR|\r";
+
+  private static final String TEST_NMSIIS_CHILD_2 = "MSH|^~\\&|||||20141205054808-0700||VXU^V04^VXU_V04|6882330-A1.2.8238|P|2.5.1|\r"
+      + "PID|1||6882330-A1.2^^^OIS-TEST^MR||Durbin^Payge^Stefanie^^^^L|SMITH^KRISTI^STOWE|20071202|F||2106-3^White^HL70005|18 Isdal Ln^^Casco Township^MI^48064^USA^P||^PRN^PH^^^810^4927434|||||||||2186-5^not Hispanic or Latino^CDCREC|\r"
+      + "NK1|1|LOSSIAH^KRISTI^LYNN^^^|MTH^MOTHER^HL70063||||\r"
+      + "ORC|RE||N89X3.3^OIS|||||||I-23432^Burden^Donna^A^^^^^NIST-AA-1||57422^RADON^NICHOLAS^^^^^^NIST-AA-1^L|\r"
+      + "RXA|0|1|20141205||52^Hep A^CVX|0.5|mL^milliliters^UCUM||00^Administered^NIP001||||||Y11VA||SKB^GlaxoSmithKline^MVX||||A|\r"
+      + "OBX|1|CE|64994-7^Vaccine funding program eligibility category^LN|1|V02^VFC eligible - Medicaid/Medicaid Managed Care^HL70064||||||F|||20141205|||VXC40^Eligibility captured at the immunization level^CDCPHINVS|\r"
+      + "OBX|2|CE|30956-7^Vaccine Type^LN|2|85^Hepatitis A^CVX||||||F|\r"
+      + "OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20111025||||||F|\r"
+      + "OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20141205||||||F|\r";
+
+  private static final String TEST_NMSIIS_CHILD_2_RESULT = "FHS|^~\\&|RPMS|IHS2||NMSIIS|20141205054808-0700|CR|HL7.251.batch.txt||6882330-A1.2.8238|\r"
+      + "BHS|^~\\&|RPMS|IHS2||NMSIIS|20141205054808-0700||||6882330-A1.2.8238|\r"
+      + "MSH|^~\\&|RPMS|||NMSIIS|20141205054808-0700||VXU^V04^VXU_V04|6882330-A1.2.8238|P|2.5.1|\r"
+      + "PID|1||6882330-A1.2^^^OIS-TEST^MR||Durbin^Payge^Stefanie^^^^L|SMITH^KRISTI^STOWE|20071202|F||2106-3^White^HL70005|18 Isdal Ln^^Casco Township^MI^48064^USA^P||^PRN^PH^^^810^4927434|||||||||2186-5^not Hispanic or Latino^CDCREC|\r"
+      + "NK1|1|LOSSIAH^KRISTI^LYNN^^^|MTH^MOTHER^HL70063||||\r"
+      + "IN1|1|\r"
+      + "IN2|\r"
+      + "ORC|RE||N89X3.3^OIS|||||||I-23432^Burden^Donna^A^^^^^NIST-AA-1||57422^RADON^NICHOLAS^^^^^^NIST-AA-1^L|\r"
+      + "RXA|0|1|20141205||52^Hep A^CVX|0.5|mL^milliliters^UCUM||00^Administered^NIP001||||||Y11VA||SKB^GlaxoSmithKline^MVX||||A|\r"
+      + "OBX|1|CE|64994-7^Vaccine funding program eligibility category^LN|1|V02^VFC eligible - Medicaid/Medicaid Managed Care^HL70064||||||F|||20141205|||VXC40^Eligibility captured at the immunization level^CDCPHINVS|\r"
+      + "OBX|2|CE|30956-7^Vaccine Type^LN|2|85^Hepatitis A^CVX||||||F|\r"
+      + "OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20111025||||||F|\r"
+      + "OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20141205||||||F|\r"
+      + "BTS|1|CR|\r"
+      + "FTS|1|CR|\r";
+
+  private static final String TEST_NMSIIS_CHILD_3 = "MSH|^~\\&|TEST EHR APPLICATION|X68||NIST TEST IZ REG|20130730091054|ASD123|VXU^V04^VXU_V04|-1140235900.5074|P|2.5.1|||AL|AL|\r"
+      + "PID|1||M28U38^^^DEMO HOSP^MR~720808646^^^SSA^SS||Clinton^Annamaria^^^^^L^^^^^|Dundy^Alex^STOWE^^^|20010615|F||1002-5^AMERICAN INDIAN OR ALASKA NATIVE^HL70005|44 Swanwick St^^ANYCITY^NC^28719^USA^L||^PRN^PH^^^989^8451877|^PRN^PH^^^555^9992224||||||||2186-5^NOT HISPANIC OR LATINO^CDCREC||N\r"
+      + "PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|N|20071105|||A|20071105|20071105\r"
+      + "NK1|1|Clinton^Alex^CHESBIE^^^^L|MTH^MOTHER^HL70063|^^^^^USA^L|||NOK^NEXT OF KIN^99IHS\r"
+      + "PV1|1|R|||||AB2001434^BEATTY,CINDY||AG2016752^GOVERNO,NANCY R|AMB|||||||||3252667|V01^20100115||||||||||||||||||||||||20100115\r"
+      + "ORC|RE||9999^CDC\r"
+      + "RXA|0|1|20110215|20110215|998^No vaccine administered^CVX|999||||||||||||||NA\r"
+      + "OBX|1|CE|59784-9^Disease with presumed immunity ^LN|1|38907003^Varicella infection^SCT||||||F\r";
+  private static final String TEST_NMSIIS_CHILD_3_RESULT = "FHS|^~\\&|RPMS|IHS2||NMSIIS|20130730091054|CR|HL7.251.batch.txt||-1140235900.5074|\r"
+      + "BHS|^~\\&|RPMS|IHS2||NMSIIS|20130730091054||||-1140235900.5074|\r"
+      + "MSH|^~\\&|RPMS|||NMSIIS|20130730091054|ASD123|VXU^V04^VXU_V04|-1140235900.5074|P|2.5.1|||AL|AL|\r"
+      + "PID|1||M28U38^^^DEMO HOSP^MR~720808646^^^SSA^SS||Clinton^Annamaria^^^^^L^^^^^|Dundy^Alex^STOWE^^^|20010615|F||1002-5^AMERICAN INDIAN OR ALASKA NATIVE^HL70005|44 Swanwick St^^ANYCITY^NC^28719^USA^L||^PRN^PH^^^989^8451877|^PRN^PH^^^555^9992224||||||||2186-5^NOT HISPANIC OR LATINO^CDCREC||N\r"
+      + "PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|N|20071105|||A|20071105|20071105\r"
+      + "NK1|1|Clinton^Alex^CHESBIE^^^^L|MTH^MOTHER^HL70063|^^^^^USA^L|||NOK^NEXT OF KIN^99IHS\r"
+      + "PV1|1|R|||||AB2001434^BEATTY,CINDY||AG2016752^GOVERNO,NANCY R|AMB|||||||||3252667|V01^20100115||||||||||||||||||||||||20100115\r"
+      + "IN1|1|\r"
+      + "IN2|\r"
+      + "ORC|RE||9999^CDC\r"
+      + "RXA|0|1|20110215|20110215|998^No vaccine administered^CVX|999||||||||||||||NA\r"
+      + "OBX|1|CE|59784-9^Disease with presumed immunity ^LN|1|38907003^Varicella infection^SCT||||||F\r"
+      + "BTS|1|CR|\r"
+      + "FTS|1|CR|\r";
+
+  private static final String TEST_NMSIIS_ADULT_1 = "MSH|^~\\&|||||20141205054808-0700||VXU^V04^VXU_V04|6882330-A1.2.8238|P|2.5.1|\r"
+      + "PID|1||6882330-A1.2^^^OIS-TEST^MR||Durbin^Payge^Stefanie^^^^L|SMITH^|19471202|F||2106-3^White^HL70005|18 Isdal Ln^^Casco Township^MI^48064^USA^P||^PRN^PH^^^810^4927434|||||||||2186-5^not Hispanic or Latino^CDCREC|\r"
+      + "NK1|1|LOSSIAH^KRISTI^LYNN^^^|MTH^MOTHER^HL70063||||\r"
+      + "ORC|RE||N89X3.3^OIS|||||||I-23432^Burden^Donna^A^^^^^NIST-AA-1||57422^RADON^NICHOLAS^^^^^^NIST-AA-1^L|\r"
+      + "RXA|0|1|20141205||52^Hep A^CVX|0.5|mL^milliliters^UCUM||00^Administered^NIP001||||||Y11VA||SKB^GlaxoSmithKline^MVX||||A|\r"
+      + "OBX|1|CE|64994-7^Vaccine funding program eligibility category^LN|1|V02^VFC eligible - Medicaid/Medicaid Managed Care^HL70064||||||F|||20141205|||VXC40^Eligibility captured at the immunization level^CDCPHINVS|\r"
+      + "OBX|2|CE|30956-7^Vaccine Type^LN|2|85^Hepatitis A^CVX||||||F|\r"
+      + "OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20111025||||||F|\r"
+      + "OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20141205||||||F|\r";
+
+  private static final String TEST_NMSIIS_ADULT_1_RESULT = "FHS|^~\\&|RPMS|IHS2||NMSIIS|20141205054808-0700|CR|HL7.251.batch.txt||6882330-A1.2.8238|\r"
+      + "BHS|^~\\&|RPMS|IHS2||NMSIIS|20141205054808-0700||||6882330-A1.2.8238|\r"
+      + "MSH|^~\\&|RPMS|||NMSIIS|20141205054808-0700||VXU^V04^VXU_V04|6882330-A1.2.8238|P|2.5.1|\r"
+      + "PID|1||6882330-A1.2^^^OIS-TEST^MR||Durbin^Payge^Stefanie^^^^L|SMITH^KRISTI|19471202|F||2106-3^White^HL70005|18 Isdal Ln^^Casco Township^MI^48064^USA^P||^PRN^PH^^^810^4927434|||||||||2186-5^not Hispanic or Latino^CDCREC|\r"
+      + "NK1|1|LOSSIAH^KRISTI^LYNN^^^|MTH^MOTHER^HL70063||||\r"
+      + "IN1|1|\r"
+      + "IN2|\r"
+      + "ORC|RE||N89X3.3^OIS|||||||I-23432^Burden^Donna^A^^^^^NIST-AA-1||57422^RADON^NICHOLAS^^^^^^NIST-AA-1^L|\r"
+      + "RXA|0|1|20141205||52^Hep A^CVX|0.5|mL^milliliters^UCUM||00^Administered^NIP001||||||Y11VA||SKB^GlaxoSmithKline^MVX||||A|\r"
+      + "OBX|2|CE|30956-7^Vaccine Type^LN|2|85^Hepatitis A^CVX||||||F|\r"
+      + "OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20111025||||||F|\r"
+      + "OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20141205||||||F|\r"
+      + "BTS|1|CR|\r"
+      + "FTS|1|CR|\r";
+
+  private static final String TEST_NMSIIS_ADULT_2 = "MSH|^~\\&|||||20141205054808-0700||VXU^V04^VXU_V04|6882330-A1.2.8238|P|2.5.1|\r"
+      + "PID|1||6882330-A1.2^^^OIS-TEST^MR||Durbin^Payge^Stefanie^^^^L|SMITH^|19471202|F||2106-3^White^HL70005|18 Isdal Ln^^Casco Township^MI^48064^USA^P||^PRN^PH^^^810^4927434|||||||||2186-5^not Hispanic or Latino^CDCREC|\r"
+      + "NK1|1|LOSSIAH^KRISTI^LYNN^^^|MTH^MOTHER^HL70063||||\r"
+      + "IN1|1|\r"
+      + "IN2|\r"
+      + "ORC|RE||N89X3.3^OIS|||||||I-23432^Burden^Donna^A^^^^^NIST-AA-1||57422^RADON^NICHOLAS^^^^^^NIST-AA-1^L|\r"
+      + "RXA|0|1|20141205||52^Hep A^CVX|0.5|mL^milliliters^UCUM||00^Administered^NIP001||||||Y11VA||SKB^GlaxoSmithKline^MVX||||A|\r"
+      + "OBX|1|CE|64994-7^Vaccine funding program eligibility category^LN|1|V02^VFC eligible - Medicaid/Medicaid Managed Care^HL70064||||||F|||20141205|||VXC40^Eligibility captured at the immunization level^CDCPHINVS|\r"
+      + "OBX|2|CE|30956-7^Vaccine Type^LN|2|85^Hepatitis A^CVX||||||F|\r"
+      + "OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20111025||||||F|\r"
+      + "OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20141205||||||F|\r";
+
+  private static final String TEST_NMSIIS_ADULT_2_RESULT = "FHS|^~\\&|RPMS|IHS2||NMSIIS|20141205054808-0700|CR|HL7.251.batch.txt||6882330-A1.2.8238|\r"
+      + "BHS|^~\\&|RPMS|IHS2||NMSIIS|20141205054808-0700||||6882330-A1.2.8238|\r"
+      + "MSH|^~\\&|RPMS|||NMSIIS|20141205054808-0700||VXU^V04^VXU_V04|6882330-A1.2.8238|P|2.5.1|\r"
+      + "PID|1||6882330-A1.2^^^OIS-TEST^MR||Durbin^Payge^Stefanie^^^^L|SMITH^KRISTI|19471202|F||2106-3^White^HL70005|18 Isdal Ln^^Casco Township^MI^48064^USA^P||^PRN^PH^^^810^4927434|||||||||2186-5^not Hispanic or Latino^CDCREC|\r"
+      + "NK1|1|LOSSIAH^KRISTI^LYNN^^^|MTH^MOTHER^HL70063||||\r"
+      + "IN1|1|\r"
+      + "IN2|\r"
+      + "ORC|RE||N89X3.3^OIS|||||||I-23432^Burden^Donna^A^^^^^NIST-AA-1||57422^RADON^NICHOLAS^^^^^^NIST-AA-1^L|\r"
+      + "RXA|0|1|20141205||52^Hep A^CVX|0.5|mL^milliliters^UCUM||00^Administered^NIP001||||||Y11VA||SKB^GlaxoSmithKline^MVX||||A|\r"
+      + "OBX|2|CE|30956-7^Vaccine Type^LN|2|85^Hepatitis A^CVX||||||F|\r"
+      + "OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20111025||||||F|\r"
+      + "OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20141205||||||F|\r"
+      + "BTS|1|CR|\r"
+      + "FTS|1|CR|\r";
 
   private static final String TEST_ASIIS_1 = "MSH|^~\\&|||||20130820070412||VXU^V04^VXU_V04|Q43B1|P|2.5.1|\r"
       + "PID|1||Q43B1^^^OIS-TEST^MR||Richardson^Carmelo^F^^^^L|Lamar^Galatea|20130216|M|||1 Eastland Pl^^Portage^MI^49081^USA^P||^PRN^PH^^^269^7293157|\r"
@@ -285,16 +412,33 @@ public class TestTransformer
     Connector connector = ConnectorFactory.getConnector(ConnectorFactory.TYPE_POST, "Test", "");
     String messageText = "";
 
-    messageText = TEST_NMSIIS_1;
-    connector.setCustomTransformations("MSH-4=[USERID]\n" + "MSH-6=NMSIIS\n" + "insert segment BHS first\n"
-        + "insert segment BTS last\n" + "insert segment FHS first\n" + "insert segment FTS last\n" + "FHS-8=CR\n"
-        + "BHS-8=CR\n" + "FHS-9=[FILENAME]\n" + "FTS-1=1\n" + "BTS-1=1\n" + "FTS-2=CR\n" + "BTS-2=CR\n"
-        + "insert segment IN1 before ORC\n" + "insert segment IN2 after IN1\n" + "IN1-1=1\n");
+    connector.setCustomTransformations("MSH-3=RPMS\n" + "MSH-4=[OTHERID]\n" + "MSH-6=NMSIIS\n"
+        + "insert segment BHS first\n" + "insert segment BTS last\n" + "insert segment FHS first\n"
+        + "insert segment FTS last\n" + "FHS-8=CR\n" + "BSH-8=CR\n" + "FHS-9=[FILENAME]\n" + "FTS-1=1\n" + "BTS-1=1\n"
+        + "FTS-2=CR\n" + "BTS-2=CR\n" + "FHS-4=[USERID]\n" + "BHS-4=[USERID]\n"
+        + "insert segment IN1 before ORC if missing\n" + "insert segment IN2 after IN1 if missing\n" + "IN1-1=1\n"
+        + "fix missing mother maiden first\n" + "remove observation 64994-7 if 18+\n");
     connector.setCurrentFilename("HL7.251.batch.txt");
     connector.setCurrentControlId("CI809903");
     connector.setUserid("IHS2");
-    messageText = transformer.transform(connector, messageText);
+
+    messageText = transformer.transform(connector, TEST_NMSIIS_1);
     assertEquals(TEST_NMSIIS_1_RESULT, messageText);
+
+    messageText = transformer.transform(connector, TEST_NMSIIS_CHILD_1);
+    assertEquals(TEST_NMSIIS_CHILD_1_RESULT, messageText);
+
+    messageText = transformer.transform(connector, TEST_NMSIIS_CHILD_2);
+    assertEquals(TEST_NMSIIS_CHILD_2_RESULT, messageText);
+
+    messageText = transformer.transform(connector, TEST_NMSIIS_CHILD_3);
+    assertEquals(TEST_NMSIIS_CHILD_3_RESULT, messageText);
+
+    messageText = transformer.transform(connector, TEST_NMSIIS_ADULT_1);
+    assertEquals(TEST_NMSIIS_ADULT_1_RESULT, messageText);
+
+    messageText = transformer.transform(connector, TEST_NMSIIS_ADULT_2);
+    assertEquals(TEST_NMSIIS_ADULT_2_RESULT, messageText);
   }
 
   @Test
@@ -308,4 +452,5 @@ public class TestTransformer
     messageText = transformer.transform(connector, messageText);
     assertEquals(TEST_ASIIS_1_RESULT, messageText);
   }
+
 }
