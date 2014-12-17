@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.tester.Transformer.PatientType;
+import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
 import org.immunizationsoftware.dqa.tester.manager.ScenarioManager;
 
 /**
@@ -214,6 +215,17 @@ public class GenerateDataServlet extends ClientServlet
         out.print(testCaseMessageChange.getMessageText());
       }
       out.println("</pre>");
+
+      out.println("<h2>QBP's for Sample Data</h2>");
+      out.println("<pre>");
+
+      for (TestCaseMessage testCaseMessage : testCaseMessageList) {
+        String qbpMessage = QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText());
+        out.print(qbpMessage);
+      }
+      out.println("</pre>");
+
+
       printHtmlFoot(out);
     } finally {
       out.close();
