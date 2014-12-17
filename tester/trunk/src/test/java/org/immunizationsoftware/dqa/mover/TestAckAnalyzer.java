@@ -17,7 +17,8 @@ public class TestAckAnalyzer
   private static final String CA_ACK_NEG = "MSH|^~\\&|CAIR|CAIR||X68|20130215155934||ACK^V04^ACK|NIST-IZ-016.00|P|2.5.1|||ER\r"
       + "MSA|AE|NIST-IZ-016.00\r" + "ERR||RXA^5|^Invalid vaccine code: CVX code: 998, Admin Date: 2/15/2011|E\r";
 
-  private static final String CO_ACK_POS = "MSH|^~\\&|CIIS|CDPHE|||20130221090016||ACK|2013022109001679|D|2.5.1\r" + "MSA|AA\r";
+  private static final String CO_ACK_POS = "MSH|^~\\&|CIIS|CDPHE|||20130221090016||ACK|2013022109001679|D|2.5.1\r"
+      + "MSA|AA\r";
 
   private static final String IL_ACK_POS = "MSH|^~\\&||ICARE|TEST||20130313162758||ACK^V04^ACK_V04|3352136|P|2.5.1|||||||||\r"
       + "MSA|AA|NIST-IZ-001.00|Message had been sent to queue for updates.\r" + "ERR|||0|I\r";
@@ -25,7 +26,7 @@ public class TestAckAnalyzer
   private static final String KY_ACK_POS = "MSH|^~\\&|KYIR|CDP^5555500001|Test EHR Application|Test^5555500001^DNS|20130312102854||ACK^V04^ACK|ANIST-IZ-001.00|P|2.5.1|\r"
       + "MSA|AA|NIST-IZ-001.00|\r";
 
-  private static final String NM_ACK_POS = "MSH|^~\\&|NMSIIS2.2|NMSIIS||908|20130108125954.660||ACK|NIST-IZ-001.00|P|2.5.1\r"
+  private static final String NM_ACK_POS_1 = "MSH|^~\\&|NMSIIS2.2|NMSIIS||908|20130108125954.660||ACK|NIST-IZ-001.00|P|2.5.1\r"
       + "MSA|AA|NIST-IZ-001.00|INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\r"
       + "ERR||OBX^2^3^0|204^Unknown key identifier^HL70357\r"
       + "MSA|AA|NIST-IZ-001.00|INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\r"
@@ -39,11 +40,27 @@ public class TestAckAnalyzer
       + "MSA|AA|NIST-IZ-001.00|Informational Message - Invalid insurance coverage for clients age sent for new administered immunization.  Please verify insurance.\r"
       + "ERR|||^^HL70357\r";
 
+  private static final String NM_ACK_POS_2 = "FHS|^~\\&|NMSIIS2.9|NMSIIS||DEFAULT2|20141105135222.495||164004.response||6847500-A1.1.4750\r"
+      + "BHS|^~\\&|NMSIIS2.9|NMSIIS||DEFAULT2|20141105135222.495||||6847500-A1.1.4750\r"
+      + "MSH|^~\\&|NMSIIS2.9|NMSIIS||DEFAULT2|20141105135222.505||ACK|6847500-A1.1.4750|P|2.5.1\r"
+      + "MSA|AA|6847500-A1.1.4750|WARNING:    Inaccurate or missing observation value.  No value stored. See New Mexico HL 7 specifications. Table:  NM001 [W.207.23]\r"
+      + "ERR||OBX^2^3^0|204^Unknown key identifier^HL70357\r"
+      + "MSA|AA|6847500-A1.1.4750|WARNING:    Inaccurate or missing observation value.  No value stored. See New Mexico HL 7 specifications. Table:  NM001 [W.207.23]\r"
+      + "ERR||OBX^3^3^0|204^Unknown key identifier^HL70357\r"
+      + "MSA|AA|6847500-A1.1.4750|WARNING:    Inaccurate or missing observation value.  No value stored. See New Mexico HL 7 specifications. Table:  NM001 [W.207.23]\r"
+      + "ERR||OBX^4^3^0|204^Unknown key identifier^HL70357\r"
+      + "MSA|AA|6847500-A1.1.4750|WARNING:   No insurance verification date sent for new administered immunization.  Please verify insurance. See New Mexico HL 7 specifications. IN1-29  [W.207.43]\r"
+      + "ERR|||^^HL70357\r" + "BTS|1\r" + "FTS|1\r";
+
   private static final String NM_ACK_NEG = "MSH|^~\\&|NMSIIS2.2|NMSIIS||908|20130110100349.301||ACK|NIST-IZ-016.00|P|2.5.1\r"
-      + "MSA|AA|NIST-IZ-016.00|INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\n" + "ERR||OBX^1^3^0|204^Unknown key identifier^HL70357\n"
-      + "MSA|AA|NIST-IZ-016.00|Record Rejected. 998 is an invalid CVX code\n" + "ERR||RXA^1^5^1^1|103^Table value not found^HL70357\n"
-      + "MSA|AA|NIST-IZ-016.00|Record rejected. All immunizations invalid.\n" + "ERR||MSH^1^0|100^Segment sequence error^HL70357\n"
-      + "MSA|AA|NIST-IZ-016.00|Informational Message - If supplied, MSH 6 must match constraint listed in spec.\n" + "ERR||MSH^1|102^^HL70357\n";
+      + "MSA|AA|NIST-IZ-016.00|INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\n"
+      + "ERR||OBX^1^3^0|204^Unknown key identifier^HL70357\n"
+      + "MSA|AA|NIST-IZ-016.00|Record Rejected. 998 is an invalid CVX code\n"
+      + "ERR||RXA^1^5^1^1|103^Table value not found^HL70357\n"
+      + "MSA|AA|NIST-IZ-016.00|Record rejected. All immunizations invalid.\n"
+      + "ERR||MSH^1^0|100^Segment sequence error^HL70357\n"
+      + "MSA|AA|NIST-IZ-016.00|Informational Message - If supplied, MSH 6 must match constraint listed in spec.\n"
+      + "ERR||MSH^1|102^^HL70357\n";
 
   private static final String NV_ACK_POS = "MSH|^~\\&|IZ Registry^1.3.6.1.4.1.26279.1.1.20090930^L|NV0000^DBO^L|Test EHR Application|NV2201|20130124115205||ACK|20130124NV0000520548|P|2.3.1||||||||\r"
       + "MSA|AA|NIST-IZ-001.00|VXU processed.|||";
@@ -59,8 +76,7 @@ public class TestAckAnalyzer
       + "ERR|||^^HL70357\r";
 
   @Test
-  public void testAckAnalyzer()
-  {
+  public void testAckAnalyzer() {
     AckAnalyzer ackAnalyzer;
 
     ackAnalyzer = new AckAnalyzer(AZ_ACK_POS);
@@ -93,7 +109,12 @@ public class TestAckAnalyzer
     assertTrue(ackAnalyzer.isPositive());
     assertEquals("AA", ackAnalyzer.getAckCode());
 
-    ackAnalyzer = new AckAnalyzer(NM_ACK_POS, AckAnalyzer.AckType.NMSIIS, null);
+    ackAnalyzer = new AckAnalyzer(NM_ACK_POS_1, AckAnalyzer.AckType.NMSIIS, null);
+    assertTrue(ackAnalyzer.isAckMessage());
+    assertTrue(ackAnalyzer.isPositive());
+    assertEquals("AA", ackAnalyzer.getAckCode());
+
+    ackAnalyzer = new AckAnalyzer(NM_ACK_POS_2, AckAnalyzer.AckType.NMSIIS, null);
     assertTrue(ackAnalyzer.isAckMessage());
     assertTrue(ackAnalyzer.isPositive());
     assertEquals("AA", ackAnalyzer.getAckCode());
