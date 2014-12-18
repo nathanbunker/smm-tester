@@ -325,8 +325,7 @@ public class TestTransformer
       + "ORC|RE||9999^CDC\r"
       + "RXA|0|1|20110215|20110215|998^No vaccine administered^CVX|999||||||||||||||NA\r"
       + "OBX|1|CE|59784-9^Disease with presumed immunity ^LN|1|38907003^Varicella infection^SCT||||||F\r"
-      + "BTS|1|CR|\r"
-      + "FTS|1|CR|\r";
+      + "BTS|1|CR|\r" + "FTS|1|CR|\r";
 
   private static final String TEST_NMSIIS_ADULT_1 = "MSH|^~\\&|||||20141205054808-0700||VXU^V04^VXU_V04|6882330-A1.2.8238|P|2.5.1|\r"
       + "PID|1||6882330-A1.2^^^OIS-TEST^MR||Durbin^Payge^Stefanie^^^^L|SMITH^|19471202|F||2106-3^White^HL70005|18 Isdal Ln^^Casco Township^MI^48064^USA^P||^PRN^PH^^^810^4927434|||||||||2186-5^not Hispanic or Latino^CDCREC|\r"
@@ -406,6 +405,38 @@ public class TestTransformer
       + "ORC|RE||Q43B1.3^OIS|\r"
       + "RXA|0|1|20130820|20130820|20^DTaP^CVX|0.5|mL^milliliters^UCUM||00^Administered^NIP001||||||O4134EX||PMC^sanofi pasteur^MVX||||A|\r";
 
+  private static final String TEST_NMSIIS_PROBLEM_1 = "MSH|^~\\&|RPMS|2011 DEMO HOSPITAL|||20140721165517||VXU^V04^VXU_V04|IHS-3908655|P|2.5.1|||AL|AL|\r"
+      + "PID|1||232101263762^^^2011 DEMO HOSPITAL^MR||SNOW^MADELYNN^AINSLEY^^^^L^^^^^|LAM^^^^^|20070706|F||2131-1^OTHER RACE^HL70005|32 PRESCOTT STREET AVE^^WARWICK^MA^02452^USA^L||^PRN^PH^^^657^5558563|||||||||^UNKNOWN^CDCREC||N\r"
+      + "PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|||||A|20140715|20140715\r"
+      + "NK1|1|^^^^^^L|GRD^GUARDIAN^HL70063|^^^^^USA^L|||NOK^NEXT OF KIN^99IHS\r"
+      + "PV1|1|R|||||||||||||||||3733037|V04^20120514||||||||||||||||||||||||20120514\r"
+      + "ORC|RE|183892-232101^IHS|20110601-183892-232101263762^2011 DEMO HOSPITAL||IP|||||^TOWN^CECILE^^^^^^^L|||||||^^^2011 DEMO HOSPITAL\r"
+      + "RXA|0|1|20110601|20110601|141^INFLUENZA [TIV], SEASONAL, INJ^CVX|999|mL^MilliLiters^UCUM||01^HISTORICAL INFORMATION - SOURCE UNSPECIFIED^NIP001||^^^2011 DEMO||||U3562CA|20110630|PMC^SANOFI PASTEUR^MVX|||CP|A|20110601\r"
+      + "RXR|IM^INTRADERMAL^HL70162|LI^Left Lower Forearm^HL70163\r"
+      + "OBX|1|CE|64994-7^funding eligibility for immunization^LN|1|V04^Am Indian/AK Native^HL70064||||||F|||20110601|||VXC40^per immunization^CDCPHINVS\r"
+      + "OBX|2|CE|30956-7^vaccine type^LN|2|88^INFLUENZA, NOS^CVX||||||F\r"
+      + "OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20120702||||||F\r"
+      + "OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20110601||||||F\r";
+  
+  private static final String TEST_NMSIIS_PROBLEM_1_RESULT = "FHS|^~\\&|RPMS|IHS2||NMSIIS|20140721165517|CR|HL7.251.batch.txt||IHS-3908655|\r" +
+"BHS|^~\\&|RPMS|IHS2||NMSIIS|20140721165517||||IHS-3908655|\r" +
+"MSH|^~\\&|RPMS|||NMSIIS|20140721165517||VXU^V04^VXU_V04|IHS-3908655|P|2.5.1|||AL|AL|\r" +
+"PID|1||232101263762^^^2011 DEMO HOSPITAL^MR||SNOW^MADELYNN^AINSLEY^^^^L^^^^^|^^^^^|20070706|F||2131-1^OTHER RACE^HL70005|32 PRESCOTT STREET AVE^^WARWICK^MA^02452^USA^L||^PRN^PH^^^657^5558563|||||||||^UNKNOWN^CDCREC||N\r" +
+"PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|||||A|20140715|20140715\r" +
+"NK1|1|^^^^^^L|GRD^GUARDIAN^HL70063|^^^^^USA^L|||NOK^NEXT OF KIN^99IHS\r" +
+"PV1|1|R|||||||||||||||||3733037|V04^20120514||||||||||||||||||||||||20120514\r" +
+"IN1|1|\r" +
+"IN2|\r" +
+"ORC|RE|183892-232101^IHS|20110601-183892-232101263762^2011 DEMO HOSPITAL||IP|||||^TOWN^CECILE^^^^^^^L|||||||^^^2011 DEMO HOSPITAL\r" +
+"RXA|0|1|20110601|20110601|141^INFLUENZA [TIV], SEASONAL, INJ^CVX|999|mL^MilliLiters^UCUM||01^HISTORICAL INFORMATION - SOURCE UNSPECIFIED^NIP001||^^^2011 DEMO||||U3562CA|20110630|PMC^SANOFI PASTEUR^MVX|||CP|A|20110601\r" +
+"RXR|IM^INTRADERMAL^HL70162|LI^Left Lower Forearm^HL70163\r" +
+"OBX|1|CE|64994-7^funding eligibility for immunization^LN|1|V04^Am Indian/AK Native^HL70064||||||F|||20110601|||VXC40^per immunization^CDCPHINVS\r" +
+"OBX|2|CE|30956-7^vaccine type^LN|2|88^INFLUENZA, NOS^CVX||||||F\r" +
+"OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20120702||||||F\r" +
+"OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20110601||||||F\r" +
+"BTS|1|CR|\r" +
+"FTS|1|CR|\r";
+
   @Test
   public void testNMSIIS() throws Exception {
     Transformer transformer = new Transformer();
@@ -439,6 +470,9 @@ public class TestTransformer
 
     messageText = transformer.transform(connector, TEST_NMSIIS_ADULT_2);
     assertEquals(TEST_NMSIIS_ADULT_2_RESULT, messageText);
+    
+    messageText = transformer.transform(connector, TEST_NMSIIS_PROBLEM_1);
+    assertEquals(TEST_NMSIIS_PROBLEM_1_RESULT, messageText);
   }
 
   @Test

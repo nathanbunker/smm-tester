@@ -1515,7 +1515,7 @@ public class Transformer
         }
       }
     }
-    return resultText;
+    return "";
   }
 
   private boolean hasSegment(String segmentName, final String resultText) throws IOException {
