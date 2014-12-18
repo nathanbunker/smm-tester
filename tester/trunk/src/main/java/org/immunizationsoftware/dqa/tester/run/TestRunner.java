@@ -106,11 +106,14 @@ public class TestRunner
 
     String message = Transformer.transform(connector, testCaseMessage);
     
+    System.out.println("-->  +  transformed");
     testCaseMessage.setMessageTextSent(message);
 
     startTime = System.currentTimeMillis();
     ackMessageText = connector.submitMessage(message, false);
     endTime = System.currentTimeMillis();
+
+    System.out.println("-->  +  received response");
 
     errorList = new ArrayList<Error>();
     if (!testCaseMessage.getAssertResult().equalsIgnoreCase("")) {
