@@ -325,7 +325,7 @@ public class SendData extends Thread
   public void incErrorCount() {
     errorCount++;
   }
-
+  
   private int retryCount = 0;
   private static final long SEC = 1000;
   private static final long MIN = 60 * SEC;
@@ -869,7 +869,7 @@ public class SendData extends Thread
     return generatedDir;
   }
 
-  private File getTestDir() {
+  public File getTestDir() {
     File testDir = new File(rootDir, TEST_FOLDER);
     if (!testDir.exists()) {
       testDir.mkdir();

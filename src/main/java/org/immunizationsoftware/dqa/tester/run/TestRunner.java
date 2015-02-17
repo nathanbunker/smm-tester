@@ -46,7 +46,7 @@ public class TestRunner
 
   }
 
-  private static final String ACTUAL_RESULT_STATUS_FAIL = "FAIL";
+  public static final String ACTUAL_RESULT_STATUS_FAIL = "FAIL";
   public static final String ACTUAL_RESULT_STATUS_PASS = "PASS";
   private String ackMessageText = null;
   private boolean passedTest = false;

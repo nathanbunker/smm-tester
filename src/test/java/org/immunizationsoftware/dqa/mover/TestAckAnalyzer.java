@@ -74,6 +74,15 @@ public class TestAckAnalyzer
       + "ERR||OBX^4^3^0|204^Unknown key identifier^HL70357\r"
       + "MSA|AR|NIST-IZ-001.00|System Vaccine Lot information not available. The incoming immunization that this system retained may be identified by the following characteristics -> Vaccination Date: 08142012 CVX Code:140 Lot Number:Z0860BB.\r"
       + "ERR|||^^HL70357\r";
+  
+  private static final String TEST_01 = "MSH|^~\\&|MCIR|MCIR||[DEFAULT=>'TEST']|20150211070501-0700||ACK^V04^VXU_V04|20150211070501-0700.1|P|2.5.1|\r"
++"SFT|OIS|1.09.00|DQA||\r"
++"MSA|AA|4904500-I.001.493|\r"
++"ERR|||101^Required field missing^HL70357|W|^^^DQA0051^HL7 PV1 segment is missing^HL70533|||HL7 PV1 segment is missing|\r"
++"ERR|||101^Required field missing^HL70357|W|^^^DQA0051^HL7 PV1 segment is missing^HL70533|||HL7 PV1 segment is missing|\r"
++"ERR||ORC^1^2^1|101^Required field missing^HL70357|W|^^^DQA0387^Vaccination placer order number is missing^HL70533|||Vaccination placer order number is missing|\r"
++"ERR||RXA^1^11.4^1|101^Required field missing^HL70357|W|^^^DQA0314^Vaccination facility id is missing^HL70533|||Vaccination facility id is missing|\r"
++"ERR|||0^Message accepted^HL70357|I||||Message accepted with 1 vaccination|\r";
 
   @Test
   public void testAckAnalyzer() {
@@ -133,6 +142,12 @@ public class TestAckAnalyzer
     assertTrue(ackAnalyzer.isAckMessage());
     assertTrue(ackAnalyzer.isPositive());
     assertEquals("AR", ackAnalyzer.getAckCode());
+    
+    ackAnalyzer = new AckAnalyzer(TEST_01,  AckAnalyzer.AckType.DEFAULT);
+    assertTrue(ackAnalyzer.isAckMessage());
+    assertTrue(ackAnalyzer.isPositive());
+    assertEquals("AA", ackAnalyzer.getAckCode());
+
   }
 
 }

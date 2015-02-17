@@ -74,6 +74,7 @@ public class CertifyServlet extends ClientServlet
         certifyRunner.setRun(request.getParameter("runF") != null, CertifyRunner.SUITE_E_FORECAST_PREP);
         certifyRunner.setRun(request.getParameter("runF") != null, CertifyRunner.SUITE_F_FORECAST);
         certifyRunner.setRun(request.getParameter("runH") != null, CertifyRunner.SUITE_H_CONFORMANCE);
+        certifyRunner.setRun(request.getParameter("runI") != null, CertifyRunner.SUITE_I_PROFILING);
         certifyRunner.setPauseBeforeQuerying(request.getParameter("pauseBeforeQuerying") != null);
         if (certifyRunner.isRun(CertifyRunner.SUITE_E_FORECAST_PREP)) {
           Map<Integer, ForecastTestPanel> forecastTestPanelIdMap = new HashMap<Integer, ForecastTestPanel>();
@@ -84,6 +85,9 @@ public class CertifyServlet extends ClientServlet
             ForecastTestPanel forecastTestPanel = forecastTestPanelIdMap.get(Integer.parseInt(s));
             certifyRunner.addForecastTestPanel(forecastTestPanel);
           }
+        }
+        if (certifyRunner.isRun(CertifyRunner.SUITE_I_PROFILING)) {
+          
         }
 
         session.setAttribute("certifyRunner", certifyRunner);
@@ -242,6 +246,17 @@ public class CertifyServlet extends ClientServlet
         out.println("        <tr>");
         out.println("          <td></td>");
         out.println("          <td>");
+        out.println("            <input type=\"checkbox\" name=\"runI\" value=\"true\"/> Profiling");
+        out.println("          </td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td></td>");
+        out.println("          <td>");
+        out.println("            <textarea row=\"5\" cols=\"30\" name=\"profilingTemplate\"></textarea>");
+        out.println("          </td>");
+        out.println("        </tr>");        out.println("        <tr>");
+        out.println("          <td></td>");
+        out.println("          <td>");
         out.println("            <input type=\"checkbox\" name=\"runD\" value=\"true\"/> Exceptional");
         out.println("          </td>");
         out.println("        </tr>");
@@ -263,7 +278,6 @@ public class CertifyServlet extends ClientServlet
           } else {
             out.println("              <option value=\"" + forecastTestPanel.getId() + "\">"
                 + forecastTestPanel.getLabel() + "</option>");
-
           }
         }
         out.println("            ");
@@ -282,6 +296,7 @@ public class CertifyServlet extends ClientServlet
         out.println("            <input type=\"checkbox\" name=\"runH\" value=\"true\" checked=\"true\"/> Conformance");
         out.println("          </td>");
         out.println("        </tr>");
+
         out.println("        <tr>");
         out.println("          <td></td>");
         out.println("          <td colspan=\"2\" align=\"right\">");

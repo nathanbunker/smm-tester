@@ -117,13 +117,11 @@ public class TestCaseMessageViewerServlet extends ClientServlet
       out.println("<p>The following custom transformations applied to original message:</p>");
       out.println("<pre>" + testCaseMessage.getCustomTransformations() + "</pre>");
     }
-    if (testCaseMessage.getCauseIssues() != null && !testCaseMessage.getCauseIssues().equals(""))
-    {
+    if (testCaseMessage.getCauseIssues() != null && !testCaseMessage.getCauseIssues().equals("")) {
       out.println("<p>The following issues were introduced in to this message:</p>");
       out.println("<pre>" + testCaseMessage.getCauseIssues() + "</pre>");
     }
-    if (testCaseMessage.getCauseIssueTransforms() != null && !testCaseMessage.getCauseIssueTransforms().equals(""))
-    {
+    if (testCaseMessage.getCauseIssueTransforms() != null && !testCaseMessage.getCauseIssueTransforms().equals("")) {
       out.println("<p>The issues above resulted in these transformations:</p>");
       out.println("<pre>" + testCaseMessage.getCauseIssueTransforms() + "</pre>");
     }
@@ -136,7 +134,7 @@ public class TestCaseMessageViewerServlet extends ClientServlet
       out.println("<h3>Message Actually Sent</h3>");
       out.println("<p>The final message message sent was different than the request, local transformations were applied. "
           + "These are specified in the connection settings of the connector that was used to run this test. </p>");
-      
+
       out.println("<pre>" + testCaseMessage.getMessageTextSent() + "</pre>");
 
       List<CompareManager.Comparison> comparisonList = CompareManager.compareMessages(testCaseMessage.getMessageText(),
@@ -191,7 +189,16 @@ public class TestCaseMessageViewerServlet extends ClientServlet
     out.println("<table>");
     out.println("  <tr>");
     out.println("    <th>Assert Result</th>");
-    out.println("    <td>" + testCaseMessage.getAssertResult() + "</td>");
+    if (testCaseMessage.getAssertResult().equals("")) {
+      if (testCaseMessage.getAssertResultText().equals("")) {
+        out.println("    <td>" + testCaseMessage.getAssertResultStatus() + "</td>");
+      } else {
+        out.println("    <td>" + testCaseMessage.getAssertResultStatus() + " - "
+            + testCaseMessage.getAssertResultText() + "</td>");
+      }
+    } else {
+      out.println("    <td>" + testCaseMessage.getAssertResult() + "</td>");
+    }
     out.println("  </tr>");
     if (testCaseMessage.getCauseIssues() != null && !testCaseMessage.getCauseIssues().equals("")) {
       out.println("  <tr>");
@@ -240,9 +247,7 @@ public class TestCaseMessageViewerServlet extends ClientServlet
         out.println("<p>Message does not conform</p>");
       }
       ConformanceServlet.printConformanceIssues(out, actualResponseMessageComponent.getConformanceIssueList());
-    }
-    else
-    {
+    } else {
       out.println("<p>No analysis performed</p>");
     }
   }
