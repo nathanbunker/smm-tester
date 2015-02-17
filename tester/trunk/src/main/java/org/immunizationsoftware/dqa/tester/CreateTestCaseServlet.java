@@ -594,6 +594,17 @@ public class CreateTestCaseServlet extends ClientServlet
     return testCaseDir;
   }
 
+  public static File getProfileFile(Authenticate.User user) {
+    File testCaseDir = user.getSendData().getTestDir();
+    if (testCaseDir != null) {
+      File profileFile = new File(testCaseDir, "profile.csv");
+      if (profileFile.exists()) {
+        return profileFile;
+      }
+    }
+    return null;
+  }
+
   public static File getTestCaseDir(TestCaseMessage testCaseMessage, HttpSession session) {
     if (testCaseMessage.getTestCaseNumber() != null && !testCaseMessage.getTestCaseNumber().equals("")) {
       Authenticate.User user = (Authenticate.User) session.getAttribute("user");

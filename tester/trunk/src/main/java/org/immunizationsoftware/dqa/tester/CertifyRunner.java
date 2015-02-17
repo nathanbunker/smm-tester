@@ -17,12 +17,16 @@ import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENAR
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_7_R_COMPLETE_RECORD;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.createTestCaseMessage;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -66,6 +70,12 @@ public class CertifyRunner extends Thread
   private boolean keepRunning = true;
   private TestCaseMessage testCaseMessageBase = null;
 
+  private void logStatus(String status) {
+    synchronized (statusMessageList) {
+      statusMessageList.add(sdf.format(new Date()) + " " + status);
+    }
+  }
+
   public static final int SUITE_A_BASIC = 0;
   public static final int SUITE_B_INTERMEDIATE = 1;
   public static final int SUITE_C_ADVANCED = 2;
@@ -74,7 +84,8 @@ public class CertifyRunner extends Thread
   public static final int SUITE_F_FORECAST = 5;
   public static final int SUITE_G_PERFORMANCE = 6;
   public static final int SUITE_H_CONFORMANCE = 7;
-  public static final int SUITE_COUNT = 8;
+  public static final int SUITE_I_PROFILING = 8;
+  public static final int SUITE_COUNT = 9;
 
   private boolean run[] = new boolean[SUITE_COUNT];
   private int[][] areaScore = new int[SUITE_COUNT][3];
@@ -102,6 +113,143 @@ public class CertifyRunner extends Thread
     areaLabel[SUITE_F_FORECAST] = "Forecast";
     areaLabel[SUITE_G_PERFORMANCE] = "Performance";
     areaLabel[SUITE_H_CONFORMANCE] = "Conformance";
+    areaLabel[SUITE_I_PROFILING] = "Profiling";
+
+  }
+
+  private static enum Usage {
+    R, RE, O, X, RE_OR_O;
+    public String getDescription() {
+      switch (this) {
+      case R:
+        return "Required";
+      case RE:
+        return "Required, but may be empty";
+      case O:
+        return "Optional";
+      case X:
+        return "Not Supported";
+      case RE_OR_O:
+        return "Required, but may be empty or Optional";
+      default:
+        return toString();
+      }
+    }
+  }
+
+  private static class ProfileLine
+  {
+    private String field = "";
+    private String description = "";
+    private Usage usage = Usage.O;
+    private String codeTable = "";
+    private String comment = "";
+    private List<String> allowedValues = new ArrayList<String>();
+    private Usage usageDetected = Usage.O;
+    private TestCaseMessage testCaseMessagePresent = null;
+    private TestCaseMessage testCaseMessageAbsent = null;
+    private boolean passed = false;
+    private boolean hasRun = false;
+
+    public boolean isPassed() {
+      return passed;
+    }
+
+    public void setPassed(boolean passed) {
+      this.passed = passed;
+    }
+
+    public boolean isHasRun() {
+      return hasRun;
+    }
+
+    public void setHasRun(boolean hasRun) {
+      this.hasRun = hasRun;
+    }
+
+    public TestCaseMessage getTestCaseMessagePresent() {
+      return testCaseMessagePresent;
+    }
+
+    public void setTestCaseMessagePresent(TestCaseMessage testCaseMessagePresent) {
+      this.testCaseMessagePresent = testCaseMessagePresent;
+    }
+
+    public TestCaseMessage getTestCaseMessageAbsent() {
+      return testCaseMessageAbsent;
+    }
+
+    public void setTestCaseMessageAbsent(TestCaseMessage testCaseMessageAbsent) {
+      this.testCaseMessageAbsent = testCaseMessageAbsent;
+    }
+
+    public Usage getUsageDetected() {
+      return usageDetected;
+    }
+
+    public void setUsageDetected(Usage usageDetected) {
+      this.usageDetected = usageDetected;
+    }
+
+    public String getField() {
+      return field;
+    }
+
+    public void setField(String field) {
+      this.field = field;
+    }
+
+    public String getDescription() {
+      return description;
+    }
+
+    public void setDescription(String description) {
+      this.description = description;
+    }
+
+    public Usage getUsage() {
+      return usage;
+    }
+
+    public void setUsage(Usage usage) {
+      this.usage = usage;
+    }
+
+    public void setUsage(String usageString) {
+      if (usageString == null) {
+        this.usage = Usage.O;
+      } else if (usageString.equalsIgnoreCase("R")) {
+        this.usage = Usage.R;
+      } else if (usageString.equalsIgnoreCase("RE")) {
+        this.usage = Usage.RE;
+      } else if (usageString.equalsIgnoreCase("O")) {
+        this.usage = Usage.O;
+      } else if (usageString.equalsIgnoreCase("X")) {
+        this.usage = Usage.X;
+      } else {
+        this.usage = Usage.O;
+      }
+    }
+
+    public String getCodeTable() {
+      return codeTable;
+    }
+
+    public void setCodeTable(String codeTable) {
+      this.codeTable = codeTable;
+    }
+
+    public String getComment() {
+      return comment;
+    }
+
+    public void setComment(String comment) {
+      this.comment = comment;
+    }
+
+    public List<String> getAllowedValues() {
+      return allowedValues;
+    }
 
   }
 
@@ -154,6 +302,8 @@ public class CertifyRunner extends Thread
   private List<TestCaseMessage> ackAnalysisList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> rspAnalysisList = new ArrayList<TestCaseMessage>();
 
+  List<ProfileLine> profileLineList = null;
+
   private void register(TestCaseMessage tcm) {
     tcm.setTestCaseId(statusCheckTestCaseList.size());
     statusCheckTestCaseList.add(tcm);
@@ -193,7 +343,7 @@ public class CertifyRunner extends Thread
 
     sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     statusMessageList = new ArrayList<String>();
-    statusMessageList.add(sdf.format(new Date()) + " IIS Tester Initialized");
+    logStatus("IIS Tester Initialized");
   }
 
   private static int uniqueMRNBaseInc = 0;
@@ -217,7 +367,7 @@ public class CertifyRunner extends Thread
 
       if (run[SUITE_A_BASIC]) {
 
-        statusMessageList.add(sdf.format(new Date()) + " Preparing basic messages");
+        logStatus("Preparing basic messages");
         prepareBasic();
 
         if (!keepRunning) {
@@ -225,7 +375,7 @@ public class CertifyRunner extends Thread
           return;
         }
 
-        statusMessageList.add(sdf.format(new Date()) + " Sending basic messages");
+        logStatus("Sending basic messages");
         updateBasic();
         printReportToFile();
       }
@@ -235,10 +385,10 @@ public class CertifyRunner extends Thread
       }
       if (run[SUITE_B_INTERMEDIATE]) {
 
-        statusMessageList.add(sdf.format(new Date()) + " Preparing intermediate");
+        logStatus("Preparing intermediate");
         prepareIntermediate();
 
-        statusMessageList.add(sdf.format(new Date()) + " Sending intermediate messages");
+        logStatus("Sending intermediate messages");
         updateIntermediate();
         printReportToFile();
         if (!keepRunning) {
@@ -250,14 +400,14 @@ public class CertifyRunner extends Thread
       if (run[SUITE_C_ADVANCED]) {
         Map<Integer, List<Issue>> issueMap = new HashMap<Integer, List<Issue>>();
 
-        statusMessageList.add(sdf.format(new Date()) + " Preparing advanced messages");
+        logStatus("Preparing advanced messages");
         prepareAdvanced(issueMap);
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
         }
 
-        statusMessageList.add(sdf.format(new Date()) + " Sending advanced messages");
+        logStatus("Sending advanced messages");
         updateAdvanced(issueMap);
         printReportToFile();
         if (!keepRunning) {
@@ -266,11 +416,29 @@ public class CertifyRunner extends Thread
         }
       }
 
+      if (run[SUITE_I_PROFILING]) {
+        logStatus("Preparing profiling");
+
+        File profileFile = CreateTestCaseServlet.getProfileFile((Authenticate.User) session.getAttribute("user"));
+        if (profileFile == null) {
+          logStatus("Profile not found");
+        } else {
+          profileLineList = readProfileLines(profileFile);
+          logStatus("Found " + profileLineList.size() + " of profile lines to test");
+          updateProfiling(profileLineList);
+          printReportToFile();
+          if (!keepRunning) {
+            status = STATUS_STOPPED;
+            return;
+          }
+        }
+      }
+
       if (run[SUITE_D_EXCEPTIONAL]) {
-        statusMessageList.add(sdf.format(new Date()) + " Preparing exceptional messages");
+        logStatus("Preparing exceptional messages");
         prepareExceptional();
 
-        statusMessageList.add(sdf.format(new Date()) + " Sending exceptional messages");
+        logStatus("Sending exceptional messages");
         updateExceptional();
         printReportToFile();
         if (!keepRunning) {
@@ -280,10 +448,10 @@ public class CertifyRunner extends Thread
       }
 
       if (run[SUITE_E_FORECAST_PREP]) {
-        statusMessageList.add(sdf.format(new Date()) + " Preparing forecast prep messages");
+        logStatus("Preparing forecast prep messages");
         prepareForecastPrep();
 
-        statusMessageList.add(sdf.format(new Date()) + " Sending forecast prep messages");
+        logStatus("Sending forecast prep messages");
         updateForecastPrep();
         printReportToFile();
         if (!keepRunning) {
@@ -299,14 +467,14 @@ public class CertifyRunner extends Thread
       }
       if (run[SUITE_H_CONFORMANCE]) {
 
-        statusMessageList.add(sdf.format(new Date()) + " Prepare for format analysis of update messages");
+        logStatus("Prepare for format analysis of update messages");
         prepareFormatUpdateAnalysis();
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
         }
 
-        statusMessageList.add(sdf.format(new Date()) + " Analyze format updates");
+        logStatus("Analyze format updates");
         analyzeFormatUpdates();
         printReportToFile();
         if (!keepRunning) {
@@ -318,7 +486,7 @@ public class CertifyRunner extends Thread
       if (willQuery) {
 
         if (pauseBeforeQuerying) {
-          statusMessageList.add(sdf.format(new Date()) + " Paused, waiting to start query process");
+          logStatus("Paused, waiting to start query process");
           status = STATUS_PAUSED;
           int maxWait = 0;
           while (pauseBeforeQuerying && keepRunning && maxWait < (60 * 10)) {
@@ -331,7 +499,7 @@ public class CertifyRunner extends Thread
             }
             maxWait++;
           }
-          statusMessageList.add(sdf.format(new Date()) + " Begin query process");
+          logStatus("Begin query process");
           status = STATUS_STARTED;
         }
 
@@ -341,7 +509,7 @@ public class CertifyRunner extends Thread
         }
 
         if (run[SUITE_A_BASIC]) {
-          statusMessageList.add(sdf.format(new Date()) + " Submit query for basic messages");
+          logStatus("Submit query for basic messages");
           queryBasic();
         }
         if (!keepRunning) {
@@ -351,14 +519,14 @@ public class CertifyRunner extends Thread
 
         if (run[SUITE_B_INTERMEDIATE]) {
 
-          statusMessageList.add(sdf.format(new Date()) + " Prepare query for intermediate messages");
+          logStatus("Prepare query for intermediate messages");
           prepareQueryIntermediate();
           if (!keepRunning) {
             status = STATUS_STOPPED;
             return;
           }
 
-          statusMessageList.add(sdf.format(new Date()) + " Submit query for intermediate messages");
+          logStatus("Submit query for intermediate messages");
           query(SUITE_B_INTERMEDIATE, statusCheckQueryTestCaseIntermediateList);
           printReportToFile();
           if (!keepRunning) {
@@ -369,13 +537,13 @@ public class CertifyRunner extends Thread
 
         if (run[SUITE_D_EXCEPTIONAL]) {
 
-          statusMessageList.add(sdf.format(new Date()) + " Prepare query for execeptional messages");
+          logStatus("Prepare query for execeptional messages");
           prepareQueryExeptional();
           if (!keepRunning) {
             status = STATUS_STOPPED;
             return;
           }
-          statusMessageList.add(sdf.format(new Date()) + " Submit query for exceptional messages");
+          logStatus("Submit query for exceptional messages");
           query(SUITE_D_EXCEPTIONAL, statusCheckQueryTestCaseTolerantList);
           printReportToFile();
           if (!keepRunning) {
@@ -386,14 +554,14 @@ public class CertifyRunner extends Thread
 
         if (run[SUITE_E_FORECAST_PREP]) {
 
-          statusMessageList.add(sdf.format(new Date()) + " Prepare query for forecast prep messages");
+          logStatus("Prepare query for forecast prep messages");
           prepareQueryForecastPrep();
           if (!keepRunning) {
             status = STATUS_STOPPED;
             return;
           }
 
-          statusMessageList.add(sdf.format(new Date()) + " Submit query for forecast prep messages");
+          logStatus("Submit query for forecast prep messages");
           query(SUITE_E_FORECAST_PREP, statusCheckQueryTestCaseForecastPrepList);
 
           printReportToFile();
@@ -410,14 +578,14 @@ public class CertifyRunner extends Thread
         }
 
         if (run[SUITE_H_CONFORMANCE]) {
-          statusMessageList.add(sdf.format(new Date()) + " Prepare for format analysis of queries");
+          logStatus("Prepare for format analysis of queries");
           prepareFormatQueryAnalysis();
           if (!keepRunning) {
             status = STATUS_STOPPED;
             return;
           }
 
-          statusMessageList.add(sdf.format(new Date()) + " Analyze format of query messages");
+          logStatus("Analyze format of query messages");
           analyzeFormatQueries();
         }
 
@@ -433,25 +601,106 @@ public class CertifyRunner extends Thread
       t.printStackTrace();
       exception = t;
       status = STATUS_STOPPED;
-      statusMessageList.add(sdf.format(new Date()) + " Exception ocurred: " + exception.getMessage());
+      logStatus("Exception ocurred: " + exception.getMessage());
     } finally {
       if (status != STATUS_STOPPED) {
         status = STATUS_COMPLETED;
       } else {
-        statusMessageList.add(sdf.format(new Date()) + " Process stopped by user");
+        logStatus("Process stopped by user");
       }
       for (PrintWriter exampleOut : exampleOutSet.values()) {
         exampleOut.close();
       }
-      statusMessageList.add(sdf.format(new Date()) + " IIS Test Finished");
+      logStatus("IIS Test Finished");
     }
+  }
+
+  public List<ProfileLine> readProfileLines(File profileFile) throws FileNotFoundException, IOException {
+    List<ProfileLine> profileLineList;
+    profileLineList = new ArrayList<CertifyRunner.ProfileLine>();
+    BufferedReader in = new BufferedReader(new FileReader(profileFile));
+    String line = in.readLine();
+    List<String> valueList = readValuesFromCsv(line);
+    int posField = findPosition("Field", valueList);
+    int posDescription = findPosition("Description", valueList);
+    int posUsage = findPosition("Usage", valueList);
+    int posCodeTable = findPosition("HL7 Code Table", valueList);
+    int posComment = findPosition("Comment", valueList);
+    int posValues = findPosition("Values", valueList);
+    while ((line = in.readLine()) != null) {
+      valueList = readValuesFromCsv(line);
+      ProfileLine profileLine = new ProfileLine();
+      profileLine.setField(readValue(posField, valueList));
+      profileLine.setDescription(readValue(posDescription, valueList));
+      profileLine.setUsage(readValue(posUsage, valueList));
+      profileLine.setCodeTable(readValue(posCodeTable, valueList));
+      profileLine.setComment(readValue(posComment, valueList));
+      String allowedValue = readValue(posValues, valueList);
+      int pos = 0;
+      while (!allowedValue.equals("")) {
+        profileLine.getAllowedValues().add(allowedValue);
+        pos++;
+        allowedValue = readValue(posValues + pos, valueList);
+      }
+      profileLineList.add(profileLine);
+    }
+    in.close();
+    return profileLineList;
+  }
+
+  private String readValue(int pos, List<String> valueList) {
+    if (valueList.size() > pos) {
+      return valueList.get(pos);
+    }
+    return "";
+  }
+
+  private int findPosition(String headerName, List<String> valueList) {
+    int pos = 0;
+    for (String value : valueList) {
+      if (value.equalsIgnoreCase(headerName)) {
+        return pos;
+      }
+      pos++;
+    }
+    return -1;
+  }
+
+  private List<String> readValuesFromCsv(String line) {
+    ArrayList<String> valueList = new ArrayList<String>();
+    String value = "";
+    boolean inQuote = false;
+    for (int i = 0; i < line.length(); i++) {
+      char curr = line.charAt(i);
+      char peak = (i + 1) < line.length() ? line.charAt(i + 1) : 0;
+      if (curr == '"') {
+        if (inQuote) {
+          if (peak == '"') {
+            continue;
+          } else {
+            value += curr;
+          }
+        } else if (value.length() > 0) {
+          value += curr;
+        } else {
+          inQuote = true;
+        }
+      } else if (curr == ',' && !inQuote) {
+        valueList.add(value.trim());
+        value = "";
+      } else {
+        value += curr;
+      }
+    }
+    valueList.add(value.trim());
+    return valueList;
   }
 
   public PrintWriter setupExampleFile(String name, TestCaseMessage testCaseMessage) {
     if (testCaseMessage != null) {
       File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessage, session);
       if (testCaseDir != null) {
-        statusMessageList.add(sdf.format(new Date()) + " Saving example");
+        logStatus("Saving example");
         File exampleFile;
         if (testCaseMessage.getForecastTestPanel() != null) {
           exampleFile = new File(testCaseDir, "Example Messages " + name + ""
@@ -463,7 +712,7 @@ public class CertifyRunner extends Thread
           return new PrintWriter(exampleFile);
         } catch (IOException ioe) {
           ioe.printStackTrace();
-          statusMessageList.add(sdf.format(new Date()) + " Unable to write examples out: " + ioe);
+          logStatus("Unable to write examples out: " + ioe);
         }
       }
     }
@@ -474,7 +723,7 @@ public class CertifyRunner extends Thread
 
     File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessageBase, session);
     if (testCaseDir != null) {
-      statusMessageList.add(sdf.format(new Date()) + " Writing out final report");
+      logStatus("Writing out final report");
       File certificationReportFile = new File(testCaseDir, "IIS Testing Report.html");
       try {
         PrintWriter out = new PrintWriter(new FileWriter(certificationReportFile));
@@ -618,6 +867,442 @@ public class CertifyRunner extends Thread
       areaProgress[SUITE_C_ADVANCED][i] = 100;
 
     }
+  }
+
+  private static final String FIELD_MSH_4 = "MSH-4";
+  private static final String FIELD_MSH_6 = "MSH-6";
+  private static final String FIELD_MSH_7 = "MSH-7";
+  private static final String FIELD_MSH_9 = "MSH-9";
+  private static final String FIELD_MSH_10 = "MSH-10";
+  private static final String FIELD_MSH_11 = "MSH-11";
+  private static final String FIELD_MSH_12 = "MSH-12";
+  private static final String FIELD_MSH_16 = "MSH-16";
+  private static final String FIELD_PID_3 = "PID-3";
+  private static final String FIELD_PID_3_1 = "PID-3.1";
+  private static final String FIELD_PID_3_7 = "PID-3.7";
+  private static final String FIELD_PID_5 = "PID-5";
+  private static final String FIELD_PID_6 = "PID-6";
+  private static final String FIELD_PID_7 = "PID-7";
+  private static final String FIELD_PID_8 = "PID-8";
+  private static final String FIELD_PID_10 = "PID-10";
+  private static final String FIELD_PID_11 = "PID-11";
+  private static final String FIELD_PID_13 = "PID-13";
+  private static final String FIELD_PID_15 = "PID-15";
+  private static final String FIELD_PID_22 = "PID-22";
+  private static final String FIELD_PID_24 = "PID-24";
+  private static final String FIELD_PD1_3 = "PD1-3";
+  private static final String FIELD_PD1_4 = "PD1-4";
+  private static final String FIELD_PD1_11 = "PD1-11";
+  private static final String FIELD_PD1_12 = "PD1-12";
+  private static final String FIELD_PD1_13 = "PD1-13";
+  private static final String FIELD_NK1_2 = "NK1-2";
+  private static final String FIELD_NK1_3 = "NK1-3";
+  private static final String FIELD_PV1_20 = "PV1-20";
+  private static final String FIELD_ORC_1 = "ORC-1";
+  private static final String FIELD_ORC_2 = "ORC-2";
+  private static final String FIELD_ORC_3 = "ORC-3";
+  private static final String FIELD_ORC_10 = "ORC-10";
+  private static final String FIELD_ORC_12 = "ORC-12";
+  private static final String FIELD_ADMIN_RXA_3 = "ADMIN RXA-3";
+  private static final String FIELD_ADMIN_RXA_5 = "ADMIN RXA-5";
+  private static final String FIELD_ADMIN_RXA_6 = "ADMIN RXA-6";
+  private static final String FIELD_ADMIN_RXA_7 = "ADMIN RXA-7";
+  private static final String FIELD_ADMIN_RXA_9 = "ADMIN RXA-9";
+  private static final String FIELD_ADMIN_RXA_10 = "ADMIN RXA-10";
+  private static final String FIELD_ADMIN_RXA_11 = "ADMIN RXA-11";
+  private static final String FIELD_ADMIN_RXA_15 = "ADMIN RXA-15";
+  private static final String FIELD_ADMIN_RXA_16 = "ADMIN RXA-16";
+  private static final String FIELD_ADMIN_RXA_17 = "ADMIN RXA-17";
+  private static final String FIELD_ADMIN_RXA_20 = "ADMIN RXA-20";
+  private static final String FIELD_ADMIN_RXA_21 = "ADMIN RXA-21";
+  private static final String FIELD_ADMIN_RXR_1 = "ADMIN RXR-1";
+  private static final String FIELD_ADMIN_RXR_2 = "ADMIN RXR-2";
+  private static final String FIELD_ADMIN_OBX_1 = "ADMIN OBX-1";
+  private static final String FIELD_ADMIN_OBX_2 = "ADMIN OBX-2";
+  private static final String FIELD_ADMIN_OBX_3 = "ADMIN OBX-3";
+  private static final String FIELD_ADMIN_OBX_4 = "ADMIN OBX-4";
+  private static final String FIELD_ADMIN_OBX_5 = "ADMIN OBX-5";
+  private static final String FIELD_ADMIN_OBX_11 = "ADMIN OBX-11";
+  private static final String FIELD_ADMIN_OBX_14 = "ADMIN OBX-14";
+  private static final String FIELD_HIST_RXA_3 = "HIST RXA-3";
+  private static final String FIELD_HIST_RXA_5 = "HIST RXA-5";
+  private static final String FIELD_HIST_RXA_6 = "HIST RXA-6";
+  private static final String FIELD_HIST_RXA_7 = "HIST RXA-7";
+  private static final String FIELD_HIST_RXA_9 = "HIST RXA-9";
+  private static final String FIELD_HIST_RXA_10 = "HIST RXA-10";
+  private static final String FIELD_HIST_RXA_11 = "HIST RXA-11";
+  private static final String FIELD_HIST_RXA_15 = "HIST RXA-15";
+  private static final String FIELD_HIST_RXA_16 = "HIST RXA-16";
+  private static final String FIELD_HIST_RXA_17 = "HIST RXA-17";
+  private static final String FIELD_HIST_RXA_20 = "HIST RXA-20";
+  private static final String FIELD_HIST_RXA_21 = "HIST RXA-21";
+  private static final String FIELD_HIST_RXR_1 = "HIST RXR-1";
+  private static final String FIELD_HIST_RXR_2 = "HIST RXR-2";
+  private static final String FIELD_HIST_OBX_1 = "HIST OBX-1";
+  private static final String FIELD_HIST_OBX_2 = "HIST OBX-2";
+  private static final String FIELD_HIST_OBX_3 = "HIST OBX-3";
+  private static final String FIELD_HIST_OBX_4 = "HIST OBX-4";
+  private static final String FIELD_HIST_OBX_5 = "HIST OBX-5";
+  private static final String FIELD_HIST_OBX_11 = "HIST OBX-11";
+  private static final String FIELD_HIST_OBX_14 = "HIST OBX-14";
+
+  private TestCaseMessage getPresentTestCase(ProfileLine profileLine, int count, Transformer transformer) {
+    String field = profileLine.getField().toUpperCase();
+    TestCaseMessage testCaseMessage = null;
+    String customTransformation = null;
+    if (field.equals(FIELD_MSH_4)) {
+      customTransformation = "MSH-4=[MAP DEFAULT=>'TEST']";
+    } else if (field.equals(FIELD_MSH_6)) {
+      customTransformation = "MSH-6=[MAP DEFAULT=>'TEST']";
+    } else if (field.equals(FIELD_MSH_7)) {
+      // nothing to do, message should always have date
+    } else if (field.equals(FIELD_MSH_9)) {
+      // nothing to do
+    } else if (field.equals(FIELD_MSH_10)) {
+      // nothing to do
+    } else if (field.equals(FIELD_MSH_11)) {
+      customTransformation = "MSH-11=[MAP DEFAULT=>'T']";
+    } else if (field.equals(FIELD_MSH_12)) {
+      customTransformation = "MSH-12=[MAP DEFAULT=>'2.5.1']";
+    } else if (field.equals(FIELD_MSH_16)) {
+      customTransformation = "MSH-16=[MAP DEFAULT=>'AL']";
+    } else if (field.equals(FIELD_PID_3)) {
+      // should always have this
+    } else if (field.equals(FIELD_PID_3_1)) {
+      // should always have this
+    } else if (field.equals(FIELD_PID_3_7)) {
+      // should always have this
+    } else if (field.equals(FIELD_PID_5)) {
+      // should always have this
+    } else if (field.equals(FIELD_PID_6)) {
+      // should always have this
+    } else if (field.equals(FIELD_PID_7)) {
+      // should always have this
+    } else if (field.equals(FIELD_PID_8)) {
+      // should always have this
+    } else if (field.equals(FIELD_PID_10)) {
+      // should always have this
+    } else if (field.equals(FIELD_PID_11)) {
+    } else if (field.equals(FIELD_PID_13)) {
+    } else if (field.equals(FIELD_PID_15)) {
+    } else if (field.equals(FIELD_PID_22)) {
+    } else if (field.equals(FIELD_PID_24)) {
+    } else if (field.equals(FIELD_PD1_3)) {
+    } else if (field.equals(FIELD_PD1_4)) {
+    } else if (field.equals(FIELD_PD1_11)) {
+    } else if (field.equals(FIELD_PD1_12)) {
+    } else if (field.equals(FIELD_PD1_13)) {
+    } else if (field.equals(FIELD_NK1_2)) {
+    } else if (field.equals(FIELD_NK1_3)) {
+    } else if (field.equals(FIELD_PV1_20)) {
+    } else if (field.equals(FIELD_ORC_1)) {
+    } else if (field.equals(FIELD_ORC_2)) {
+    } else if (field.equals(FIELD_ORC_3)) {
+    } else if (field.equals(FIELD_ORC_10)) {
+    } else if (field.equals(FIELD_ORC_12)) {
+    } else if (field.equals(FIELD_ADMIN_RXA_3)) {
+    } else if (field.equals(FIELD_ADMIN_RXA_5)) {
+    } else if (field.equals(FIELD_ADMIN_RXA_6)) {
+    } else if (field.equals(FIELD_ADMIN_RXA_7)) {
+    } else if (field.equals(FIELD_ADMIN_RXA_9)) {
+    } else if (field.equals(FIELD_ADMIN_RXA_10)) {
+    } else if (field.equals(FIELD_ADMIN_RXA_11)) {
+    } else if (field.equals(FIELD_ADMIN_RXA_15)) {
+    } else if (field.equals(FIELD_ADMIN_RXA_16)) {
+    } else if (field.equals(FIELD_ADMIN_RXA_17)) {
+    } else if (field.equals(FIELD_ADMIN_RXA_20)) {
+    } else if (field.equals(FIELD_ADMIN_RXA_21)) {
+    } else if (field.equals(FIELD_ADMIN_RXR_1)) {
+    } else if (field.equals(FIELD_ADMIN_RXR_2)) {
+    } else if (field.equals(FIELD_ADMIN_OBX_1)) {
+    } else if (field.equals(FIELD_ADMIN_OBX_2)) {
+    } else if (field.equals(FIELD_ADMIN_OBX_3)) {
+    } else if (field.equals(FIELD_ADMIN_OBX_4)) {
+    } else if (field.equals(FIELD_ADMIN_OBX_5)) {
+    } else if (field.equals(FIELD_ADMIN_OBX_11)) {
+    } else if (field.equals(FIELD_ADMIN_OBX_14)) {
+    } else if (field.equals(FIELD_HIST_RXA_3)) {
+    } else if (field.equals(FIELD_HIST_RXA_5)) {
+    } else if (field.equals(FIELD_HIST_RXA_6)) {
+    } else if (field.equals(FIELD_HIST_RXA_7)) {
+    } else if (field.equals(FIELD_HIST_RXA_9)) {
+    } else if (field.equals(FIELD_HIST_RXA_10)) {
+    } else if (field.equals(FIELD_HIST_RXA_11)) {
+    } else if (field.equals(FIELD_HIST_RXA_15)) {
+    } else if (field.equals(FIELD_HIST_RXA_16)) {
+    } else if (field.equals(FIELD_HIST_RXA_17)) {
+    } else if (field.equals(FIELD_HIST_RXA_20)) {
+    } else if (field.equals(FIELD_HIST_RXA_21)) {
+    } else if (field.equals(FIELD_HIST_RXR_1)) {
+    } else if (field.equals(FIELD_HIST_RXR_2)) {
+    } else if (field.equals(FIELD_HIST_OBX_1)) {
+    } else if (field.equals(FIELD_HIST_OBX_2)) {
+    } else if (field.equals(FIELD_HIST_OBX_3)) {
+    } else if (field.equals(FIELD_HIST_OBX_4)) {
+    } else if (field.equals(FIELD_HIST_OBX_5)) {
+    } else if (field.equals(FIELD_HIST_OBX_11)) {
+    } else if (field.equals(FIELD_HIST_OBX_14)) {
+    }
+
+    if (testCaseMessage == null) {
+      testCaseMessage = createTestCaseMessage(SCENARIO_7_R_COMPLETE_RECORD);
+    }
+
+    testCaseMessage.setTestCaseSet(testCaseSet);
+    testCaseMessage.setTestCaseNumber(uniqueMRNBase + "I." + paddWithZeros(count, 3));
+    testCaseMessage.setDescription("Field " + field + " is present");
+    if (customTransformation != null) {
+      testCaseMessage.appendCustomTransformation(customTransformation);
+    }
+    transformer.transform(testCaseMessage);
+    register(testCaseMessage);
+    if (profileLine.getUsage() == Usage.R) {
+      testCaseMessage.setAssertResult("Accept - *");
+    } else if (profileLine.getUsage() == Usage.X) {
+      testCaseMessage.setAssertResult("Error - *");
+    } else {
+      testCaseMessage.setAssertResult("Accept - *");
+    }
+    return testCaseMessage;
+  }
+
+  private TestCaseMessage getAbsentTestCase(ProfileLine profileLine, int count, Transformer transformer) {
+    String field = profileLine.getField().toUpperCase();
+    TestCaseMessage testCaseMessage = null;
+    String customTransformation = null;
+    if (field.equals(FIELD_MSH_4)) {
+      customTransformation = "MSH-4=";
+    } else if (field.equals(FIELD_MSH_6)) {
+      customTransformation = "MSH-6=";
+    } else if (field.equals(FIELD_MSH_7)) {
+      customTransformation = "MSH-7=";
+    } else if (field.equals(FIELD_MSH_9)) {
+      customTransformation = "MSH-9.1=";
+      customTransformation += "MSH-9.2=";
+      customTransformation += "MSH-9.3=";
+    } else if (field.equals(FIELD_MSH_10)) {
+      customTransformation = "MSH-10=";
+    } else if (field.equals(FIELD_MSH_11)) {
+      customTransformation = "MSH-11=";
+    } else if (field.equals(FIELD_MSH_12)) {
+      customTransformation = "MSH-12=";
+    } else if (field.equals(FIELD_MSH_16)) {
+      customTransformation = "MSH-16=";
+    } else if (field.equals(FIELD_PID_3)) {
+      customTransformation = "PID-3.1=";
+      customTransformation += "PID-3.4=";
+      customTransformation += "PID-3.5=";
+    } else if (field.equals(FIELD_PID_3_1)) {
+      customTransformation = "PID-3.1=";
+    } else if (field.equals(FIELD_PID_3_7)) {
+      customTransformation = "PID-3.7=";
+    } else if (field.equals(FIELD_PID_5)) {
+      customTransformation = "PID-5.1=\n";
+      customTransformation += "PID-5.2=\n";
+      customTransformation += "PID-5.7=";
+    } else if (field.equals(FIELD_PID_6)) {
+      customTransformation = "PID-6.1=\n";
+      customTransformation = "PID-6.2=\n";
+      customTransformation = "PID-6.7=";
+    } else if (field.equals(FIELD_PID_7)) {
+      customTransformation = "PID-7=";
+    } else if (field.equals(FIELD_PID_8)) {
+      customTransformation = "PID-6.2=";
+    } else if (field.equals(FIELD_PID_10)) {
+      customTransformation = "PID-10.1=\n";
+      customTransformation += "PID-10.2=\n";
+      customTransformation += "PID-10.3=";
+    } else if (field.equals(FIELD_PID_11)) {
+      customTransformation = "PID-11.1=\n";
+      customTransformation += "PID-11.2=\n";
+      customTransformation += "PID-11.3=\n";
+      customTransformation += "PID-11.4=\n";
+      customTransformation += "PID-11.5=\n";
+      customTransformation += "PID-11.6=\n";
+      customTransformation += "PID-11.7=";
+    } else if (field.equals(FIELD_PID_13)) {
+      customTransformation = "PID-13.1=\n";
+      customTransformation += "PID-13.2=\n";
+      customTransformation += "PID-13.3=\n";
+      customTransformation += "PID-13.6=\n";
+      customTransformation += "PID-13.7=";
+    } else if (field.equals(FIELD_PID_15)) {
+      customTransformation = "PID-15.1=\n";
+      customTransformation += "PID-15.2=\n";
+      customTransformation += "PID-15.3=";
+    } else if (field.equals(FIELD_PID_22)) {
+      customTransformation = "PID-22.1=\n";
+      customTransformation += "PID-22.2=\n";
+      customTransformation += "PID-22.3=";
+    } else if (field.equals(FIELD_PID_24)) {
+      customTransformation = "PID-24=";
+    } else if (field.equals(FIELD_PD1_3)) {
+    } else if (field.equals(FIELD_PD1_4)) {
+    } else if (field.equals(FIELD_PD1_11)) {
+    } else if (field.equals(FIELD_PD1_12)) {
+    } else if (field.equals(FIELD_PD1_13)) {
+    } else if (field.equals(FIELD_NK1_2)) {
+      customTransformation = "NK1.2.1=\n";
+      customTransformation += "NK1.2.2=\n";
+      customTransformation += "NK1.2.7=";
+    } else if (field.equals(FIELD_NK1_3)) {
+      customTransformation = "NK1.3.1=\n";
+      customTransformation += "NK1.3.2=\n";
+      customTransformation += "NK1.3.3=";
+    } else if (field.equals(FIELD_PV1_20)) {
+    } else if (field.equals(FIELD_ORC_1)) {
+    } else if (field.equals(FIELD_ORC_2)) {
+    } else if (field.equals(FIELD_ORC_3)) {
+    } else if (field.equals(FIELD_ORC_10)) {
+    } else if (field.equals(FIELD_ORC_12)) {
+    } else if (field.equals(FIELD_ADMIN_RXA_3)) {
+      customTransformation = "RXA-3=";
+    } else if (field.equals(FIELD_ADMIN_RXA_5)) {
+      customTransformation = "RXA-5.1=\n";
+      customTransformation += "RXA-5.2=\n";
+      customTransformation += "RXA-5.3=";
+    } else if (field.equals(FIELD_ADMIN_RXA_6)) {
+      customTransformation = "RXA-6=999";
+      customTransformation += "RXA-7=";
+    } else if (field.equals(FIELD_ADMIN_RXA_7)) {
+      customTransformation = "RXA-7=";
+    } else if (field.equals(FIELD_ADMIN_RXA_9)) {
+      customTransformation = "RXA-9.1=";
+    } else if (field.equals(FIELD_ADMIN_RXA_10)) {
+      customTransformation = "RXA-10.1=\n";
+      customTransformation += "RXA-10.2=\n";
+      customTransformation += "RXA-10.3=\n";
+      customTransformation += "RXA-10.4=\n";
+      customTransformation += "RXA-10.10=";
+    } else if (field.equals(FIELD_ADMIN_RXA_11)) {
+      customTransformation = "RXA-11.1=\n";
+      customTransformation += "RXA-11.4=";
+    } else if (field.equals(FIELD_ADMIN_RXA_15)) {
+      customTransformation = "RXA-15=";
+    } else if (field.equals(FIELD_ADMIN_RXA_16)) {
+      customTransformation = "RXA-16=";
+    } else if (field.equals(FIELD_ADMIN_RXA_17)) {
+      customTransformation = "RXA-17.1=\n";
+      customTransformation += "RXA-17.2=\n";
+      customTransformation += "RXA-17.3=";
+    } else if (field.equals(FIELD_ADMIN_RXA_20)) {
+      customTransformation = "RXA-20=";
+    } else if (field.equals(FIELD_ADMIN_RXA_21)) {
+      customTransformation = "RXA-21=";
+    } else if (field.equals(FIELD_ADMIN_RXR_1)) {
+      customTransformation = "RXR-1.1=\n";
+      customTransformation += "RXR-1.2=\n";
+      customTransformation += "RXR-1.3=\n";
+    } else if (field.equals(FIELD_ADMIN_RXR_2)) {
+      customTransformation = "RXR-2.1=\n";
+      customTransformation += "RXR-2.2=\n";
+      customTransformation += "RXR-2.3=\n";
+    } else if (field.equals(FIELD_ADMIN_OBX_1)) {
+    } else if (field.equals(FIELD_ADMIN_OBX_2)) {
+    } else if (field.equals(FIELD_ADMIN_OBX_3)) {
+    } else if (field.equals(FIELD_ADMIN_OBX_4)) {
+    } else if (field.equals(FIELD_ADMIN_OBX_5)) {
+    } else if (field.equals(FIELD_ADMIN_OBX_11)) {
+    } else if (field.equals(FIELD_ADMIN_OBX_14)) {
+    } else if (field.equals(FIELD_HIST_RXA_3)) {
+    } else if (field.equals(FIELD_HIST_RXA_5)) {
+    } else if (field.equals(FIELD_HIST_RXA_6)) {
+    } else if (field.equals(FIELD_HIST_RXA_7)) {
+    } else if (field.equals(FIELD_HIST_RXA_9)) {
+    } else if (field.equals(FIELD_HIST_RXA_10)) {
+    } else if (field.equals(FIELD_HIST_RXA_11)) {
+    } else if (field.equals(FIELD_HIST_RXA_15)) {
+    } else if (field.equals(FIELD_HIST_RXA_16)) {
+    } else if (field.equals(FIELD_HIST_RXA_17)) {
+    } else if (field.equals(FIELD_HIST_RXA_20)) {
+    } else if (field.equals(FIELD_HIST_RXA_21)) {
+    } else if (field.equals(FIELD_HIST_RXR_1)) {
+    } else if (field.equals(FIELD_HIST_RXR_2)) {
+    } else if (field.equals(FIELD_HIST_OBX_1)) {
+    } else if (field.equals(FIELD_HIST_OBX_2)) {
+    } else if (field.equals(FIELD_HIST_OBX_3)) {
+    } else if (field.equals(FIELD_HIST_OBX_4)) {
+    } else if (field.equals(FIELD_HIST_OBX_5)) {
+    } else if (field.equals(FIELD_HIST_OBX_11)) {
+    } else if (field.equals(FIELD_HIST_OBX_14)) {
+    } else {
+      customTransformation = "SFT-5=CHANGES NOT FOUND FOR '" + field + "'";
+    }
+
+    if (testCaseMessage == null) {
+      testCaseMessage = createTestCaseMessage(SCENARIO_7_R_COMPLETE_RECORD);
+    }
+
+    testCaseMessage.setTestCaseSet(testCaseSet);
+    testCaseMessage.setTestCaseNumber(uniqueMRNBase + "I." + paddWithZeros(count, 3));
+    testCaseMessage.setDescription("Field " + field + " is absent");
+    if (customTransformation != null) {
+      testCaseMessage.appendCustomTransformation(customTransformation);
+    }
+    transformer.transform(testCaseMessage);
+    register(testCaseMessage);
+    if (profileLine.getUsage() == Usage.R) {
+      testCaseMessage.setAssertResult("Error - *");
+    } else if (profileLine.getUsage() == Usage.X) {
+      testCaseMessage.setAssertResult("Accept - *");
+    } else {
+      testCaseMessage.setAssertResult("Accept - *");
+    }
+    return testCaseMessage;
+  }
+
+  private void updateProfiling(List<ProfileLine> profileLineList) {
+
+    TestRunner testRunner = new TestRunner();
+    Transformer transformer = new Transformer();
+    int count;
+    int countPass = 0;
+    count = 0;
+    for (ProfileLine profileLine : profileLineList) {
+      count++;
+
+      TestCaseMessage testCaseMessagePresent = getPresentTestCase(profileLine, count, transformer);
+      TestCaseMessage testCaseMessageAbsent = getAbsentTestCase(profileLine, count, transformer);
+      profileLine.setTestCaseMessageAbsent(testCaseMessageAbsent);
+      profileLine.setTestCaseMessagePresent(testCaseMessagePresent);
+      try {
+        testRunner.runTest(connector, testCaseMessagePresent);
+        totalUpdateCount++;
+        totalUpdateTime += testRunner.getTotalRunTime();
+        testRunner.runTest(connector, testCaseMessageAbsent);
+        totalUpdateCount++;
+        totalUpdateTime += testRunner.getTotalRunTime();
+        if (testCaseMessagePresent.isAccepted() && !testCaseMessageAbsent.isAccepted()) {
+          profileLine.setUsageDetected(Usage.R);
+        } else if (!testCaseMessagePresent.isAccepted() && testCaseMessageAbsent.isAccepted()) {
+          profileLine.setUsageDetected(Usage.X);
+        } else {
+          profileLine.setUsageDetected(Usage.RE_OR_O);
+        }
+        if (testCaseMessagePresent.isPassedTest() && testCaseMessageAbsent.isPassedTest()) {
+          countPass++;
+          profileLine.setPassed(true);
+        }
+        profileLine.setHasRun(true);
+        printExampleMessage(testCaseMessagePresent, "I Profiling");
+        printExampleMessage(testCaseMessageAbsent, "I Profiling");
+      } catch (Throwable t) {
+        testCaseMessagePresent.setException(t);
+      }
+      testCaseMessagePresent.setHasRun(true);
+      CreateTestCaseServlet.saveTestCase(testCaseMessagePresent, session);
+      testCaseMessageAbsent.setHasRun(true);
+      CreateTestCaseServlet.saveTestCase(testCaseMessageAbsent, session);
+      areaProgress[SUITE_I_PROFILING][0] = makeScore(count, profileLineList.size());
+      if (!keepRunning) {
+        status = STATUS_STOPPED;
+        return;
+      }
+    }
+    areaScore[SUITE_I_PROFILING][0] = makeScore(countPass, profileLineList.size());
+    areaCount[SUITE_I_PROFILING][0] = profileLineList.size();
+
+    areaProgress[SUITE_I_PROFILING][0] = 100;
   }
 
   private void prepareAdvanced(Map<Integer, List<Issue>> issueMap) {
@@ -1266,8 +1951,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.setDescription("County Code is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
-      testCaseMessage.appendCustomTransformation("PID-11.4=" + certifyItem.getTable()); 
-      testCaseMessage.appendCustomTransformation("PID-11.9=" + certifyItem.getCode());  
+      testCaseMessage.appendCustomTransformation("PID-11.4=" + certifyItem.getTable());
+      testCaseMessage.appendCustomTransformation("PID-11.9=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
@@ -1506,9 +2191,25 @@ public class CertifyRunner extends Thread
   }
 
   private List<ForecastTestPanel> forecastTestPanelList = new ArrayList<ForecastTestPanel>();
+  private Map<String, String> profilingTemplateMap = new HashMap<String, String>();
 
   public void addForecastTestPanel(ForecastTestPanel forecastTestPanel) {
     forecastTestPanelList.add(forecastTestPanel);
+  }
+
+  public void setProfilingTemplate(String profilingTemplate) {
+    BufferedReader in = new BufferedReader(new StringReader(profilingTemplate));
+    String line;
+    try {
+      while ((line = in.readLine()) != null) {
+        int pos = line.indexOf("=");
+        if (pos > 0) {
+          profilingTemplateMap.put(line.substring(0, pos).toUpperCase(), line.substring(pos + 1).toUpperCase());
+        }
+      }
+    } catch (IOException ioe) {
+      // ignore
+    }
   }
 
   private static final String TCH_FORECAST_TESTER_URL = "http://tchforecasttester.org/ft/ExternalTestServlet";
@@ -1591,7 +2292,7 @@ public class CertifyRunner extends Thread
       }
     } catch (Exception e) {
       e.printStackTrace();
-      statusMessageList.add(sdf.format(new Date()) + " Unable to get forecast schedules because: " + e.getMessage());
+      logStatus("Unable to get forecast schedules because: " + e.getMessage());
     }
 
     areaCount[SUITE_E_FORECAST_PREP][0] = statusCheckTestCaseForecastPrepList.size();
@@ -2317,6 +3018,28 @@ public class CertifyRunner extends Thread
       }
       out.println("  </tr>");
     }
+
+    if (run[SUITE_I_PROFILING]) {
+      out.println("  <tr>");
+      out.println("    <th><font size=\"+1\">Profiling</font><br/><font size=\"-2\">IIS meets own requirements</font></th>");
+      if (areaScore[SUITE_I_PROFILING][0] >= 100) {
+        out.println("    <td class=\"pass\">All requirements are confirmed "
+            + "<font size=\"-1\"><a href=\"#areaILevel1\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_I_PROFILING][0] >= 0) {
+        out.println("    <td class=\"fail\">Not all requirements are confirmed (" + areaScore[SUITE_I_PROFILING][0]
+            + "% requirements confirmed) " + "<font size=\"-1\"><a href=\"#areaDLevel1\">(details)</a></font></td>");
+      } else {
+        if (areaProgress[SUITE_I_PROFILING][0] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_I_PROFILING][0] + "% complete</td>");
+        } else {
+          out.println("    <td>updates not sent yet</td>");
+        }
+      }
+      out.println("    <td>not defined</td>");
+      out.println("    <td>not defined</td>");
+      out.println("  </tr>");
+    }
+
     if (run[SUITE_D_EXCEPTIONAL]) {
       out.println("  <tr>");
       out.println("    <th><font size=\"+1\">Exceptional</font><br/><font size=\"-2\">IIS can allow for minor differences</font></th>");
@@ -2515,10 +3238,12 @@ public class CertifyRunner extends Thread
     out.println("    <th>Test Status</th>");
     out.println("    <td>" + status + "</td>");
     out.println("  </tr>");
-    out.println("  <tr>");
-    out.println("    <th>Currently</th>");
-    out.println("    <td>" + statusMessageList.get(statusMessageList.size() - 1) + "</td>");
-    out.println("  </tr>");
+    synchronized (statusMessageList) {
+      out.println("  <tr>");
+      out.println("    <th>Currently</th>");
+      out.println("    <td>" + statusMessageList.get(statusMessageList.size() - 1) + "</td>");
+      out.println("  </tr>");
+    }
     out.println("  <tr>");
     out.println("    <th>Basic Tests</th>");
     out.println("    <td>" + (run[SUITE_A_BASIC] ? "Enabled" : "Not Enabled") + "</td>");
@@ -2530,6 +3255,10 @@ public class CertifyRunner extends Thread
     out.println("  <tr>");
     out.println("    <th>Advanced Tests</th>");
     out.println("    <td>" + (run[SUITE_C_ADVANCED] ? "Enabled" : "Not Enabled") + "</td>");
+    out.println("  </tr>");
+    out.println("  <tr>");
+    out.println("    <th>Profiling Tests</th>");
+    out.println("    <td>" + (run[SUITE_I_PROFILING] ? "Enabled" : "Not Enabled") + "</td>");
     out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th>Exceptional Tests</th>");
@@ -2573,11 +3302,13 @@ public class CertifyRunner extends Thread
     out.println("</table>");
 
     out.println("<p>IIS Test Log</p>");
-    out.println("<pre>");
-    for (String statusMessage : statusMessageList) {
-      out.println(statusMessage);
+    synchronized (statusMessageList) {
+      out.println("<pre>");
+      for (String statusMessage : statusMessageList) {
+        out.println(statusMessage);
+      }
+      out.println("</pre>");
     }
-    out.println("</pre>");
 
     if (exception != null) {
       out.println("<p>Exception occurred during processing. Unable to complete analysis as expected. </p>");
@@ -2977,6 +3708,34 @@ public class CertifyRunner extends Thread
       out.println("</table>");
       out.println("</br>");
     }
+    if (areaProgress[SUITE_I_PROFILING][0] > 0) {
+      out.println("<h2>Basic Interoperability Tests</h2>");
+      out.println("<h2>Profiling Tests</h2>");
+      out.println("<p><b>Purpose</b>: Test to see if the IIS is consistent with interface specification. </p>");
+      out.println("<p><b>Requirements</b>: IIS should implement interface consistent with its own requirements. </p>");
+      out.println("<ul>");
+      out.println("  <li>Level 1: IIS must respond to updates consistent with its interface specification. </li>");
+      out.println("  <li>Level 2: Not yet defined.</li>");
+      out.println("  <li>Level 3: Not yet defined.</li>");
+      out.println("</ul>");
+
+      out.println("<div id=\"areaILevel1\"/>");
+      out.println("<table border=\"1\" cellspacing=\"0\">");
+      out.println("  <tr>");
+      out.println("    <th>Field</th>");
+      out.println("    <th>Description</th>");
+      out.println("    <th>Usage Expected</th>");
+      out.println("    <th>Usage Detected</th>");
+      out.println("    <th>Status</th>");
+      out.println("    <th>Field Present</th>");
+      out.println("    <th>Field Absent</th>");
+      out.println("  </tr>");
+      for (ProfileLine profileLine : profileLineList) {
+        printProfileLine(out, toFile, profileLine);
+      }
+      out.println("</table>");
+      out.println("</br>");
+    }
 
     if (areaProgress[SUITE_D_EXCEPTIONAL][0] > 0) {
       out.println("<h2>Exceptional Interoperability Tests</h2>");
@@ -3249,6 +4008,52 @@ public class CertifyRunner extends Thread
     out.println("  </tr>");
   }
 
+  public void printProfileLine(PrintWriter out, boolean toFile, ProfileLine profileLine) {
+
+    String profileLineClassText = "nottested";
+    boolean profileLinePassed = profileLine.isPassed();
+    if (profileLine.isHasRun()) {
+      profileLineClassText = profileLinePassed ? "pass" : "fail";
+    }
+
+    out.println("  <tr>");
+    out.println("    <td class=\"" + profileLineClassText + "\">" + profileLine.getField() + "</td>");
+    out.println("    <td class=\"" + profileLineClassText + "\">" + profileLine.getDescription() + "</td>");
+    out.println("    <td class=\"" + profileLineClassText + "\">" + profileLine.getUsage().getDescription() + "</td>");
+    out.println("    <td class=\"" + profileLineClassText + "\">" + profileLine.getUsageDetected().getDescription()
+        + "</td>");
+    if (profileLinePassed) {
+      out.println("    <td class=\"" + profileLineClassText + "\">Confirmed</td>");
+    } else if (profileLine.isHasRun()) {
+      out.println("    <td class=\"" + profileLineClassText + "\">Inconsistent</td>");
+    } else {
+      out.println("    <td class=\"" + profileLineClassText + "\"></td>");
+
+    }
+
+    printTestMessageCell(out, toFile, profileLine.getTestCaseMessagePresent());
+    printTestMessageCell(out, toFile, profileLine.getTestCaseMessageAbsent());
+    out.println("  </tr>");
+  }
+
+  public void printTestMessageCell(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage) {
+    String classText = "nottested";
+    boolean testPassed = false;
+    if (testCaseMessage != null && testCaseMessage.isHasRun()) {
+      testPassed = testCaseMessage.getActualResultStatus().equals(TestRunner.ACTUAL_RESULT_STATUS_PASS);
+      classText = testPassed ? "pass" : "fail";
+      if (testPassed) {
+        out.println("    <td class=\"" + classText + "\">Test passed. "
+            + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+      } else {
+        out.println("    <td class=\"" + classText + "\">Test failed. "
+            + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+      }
+    } else {
+      out.println("    <td class=\"" + classText + "\">not run yet</td>");
+    }
+  }
+
   private int makeScore(int num, int denom) {
     return (int) (100.0 * num / denom);
   }
@@ -3295,4 +4100,5 @@ public class CertifyRunner extends Thread
       }
     }
   }
+
 }
