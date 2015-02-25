@@ -50,50 +50,39 @@ public class ManagerServlet extends ClientServlet
   private static String supportCenterCode = "";
   private static ShutdownInterceptor shutdownInterceptor;
   private static File softwareDir = null;
-  
-  public static File getSoftwareDir()
-  {
+
+  public static File getSoftwareDir() {
     return softwareDir;
   }
 
-  public static String getStableSystemId()
-  {
+  public static String getStableSystemId() {
     return stableSystemId;
   }
 
-  public static void setStableSystemId(String stableSystemId)
-  {
+  public static void setStableSystemId(String stableSystemId) {
     ManagerServlet.stableSystemId = stableSystemId;
   }
 
-  public static String getSupportCenterUrl()
-  {
+  public static String getSupportCenterUrl() {
     return supportCenterUrl;
   }
 
-  public static void setSupportCenterUrl(String supportCenterUrl)
-  {
+  public static void setSupportCenterUrl(String supportCenterUrl) {
     ManagerServlet.supportCenterUrl = supportCenterUrl;
   }
 
-  public static String getSupportCenterCode()
-  {
+  public static String getSupportCenterCode() {
     return supportCenterCode;
   }
 
-  public static void setSupportCenterCode(String supportCenterCode)
-  {
+  public static void setSupportCenterCode(String supportCenterCode) {
     ManagerServlet.supportCenterCode = supportCenterCode;
   }
 
-  public static SendData authenticateSendData(String label, int sendDataId)
-  {
-    for (SendData sendData : sendDataSet)
-    {
-      if (sendData.getConnector() != null)
-      {
-        if (sendData.getConnector().getLabel().equalsIgnoreCase(label) && sendData.getRandomId() == sendDataId)
-        {
+  public static SendData authenticateSendData(String label, int sendDataId) {
+    for (SendData sendData : sendDataSet) {
+      if (sendData.getConnector() != null) {
+        if (sendData.getConnector().getLabel().equalsIgnoreCase(label) && sendData.getRandomId() == sendDataId) {
           return sendData;
         }
       }
@@ -101,52 +90,42 @@ public class ManagerServlet extends ClientServlet
     return null;
   }
 
-  public static boolean isRegisteredFolder(File folder)
-  {
+  public static boolean isRegisteredFolder(File folder) {
     return registeredFolders.contains(folder);
   }
 
-  public static long getCheckInterval()
-  {
+  public static long getCheckInterval() {
     return checkInterval;
   }
 
-  public static Set<SendData> getSendDataSet()
-  {
+  public static Set<SendData> getSendDataSet() {
     return sendDataSet;
   }
 
-  public static String getRandomId()
-  {
+  public static String getRandomId() {
     return randomId;
   }
 
-  public static Date getStartDate()
-  {
+  public static Date getStartDate() {
     return startDate;
   }
 
-  public static String getInstanceSystemId()
-  {
+  public static String getInstanceSystemId() {
     return instanceSystemId;
   }
 
-  public static InetAddress getLocalHostIp()
-  {
+  public static InetAddress getLocalHostIp() {
     return localHostIp;
   }
 
-  public static byte[] getLocalHostMac()
-  {
+  public static byte[] getLocalHostMac() {
     return localHostMac;
   }
 
-  protected static void registerFolder(File folder)
-  {
+  protected static void registerFolder(File folder) {
     SendData sendData = new SendData(folder);
     sendDataSet.add(sendData);
-    synchronized (sendDataMap)
-    {
+    synchronized (sendDataMap) {
       sendData.setInternalId(nextSendDataInternalId);
       sendDataMap.put(nextSendDataInternalId, sendData);
       nextSendDataInternalId++;
@@ -154,17 +133,14 @@ public class ManagerServlet extends ClientServlet
     sendData.start();
   }
 
-  public static SendData getSendData(int internalId)
-  {
+  public static SendData getSendData(int internalId) {
     return sendDataMap.get(internalId);
   }
 
-  public static List<SendData> getSendDataList()
-  {
+  public static List<SendData> getSendDataList() {
     ArrayList<SendData> sendDataList = new ArrayList<SendData>(sendDataMap.values());
     Collections.sort(sendDataList, new Comparator<SendData>() {
-      public int compare(SendData o1, SendData o2)
-      {
+      public int compare(SendData o1, SendData o2) {
         return o1.getRootDir().getName().compareTo(o2.getRootDir().getName());
       }
     });
@@ -179,20 +155,16 @@ public class ManagerServlet extends ClientServlet
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void init() throws ServletException
-  {
+  public void init() throws ServletException {
     super.init();
-    synchronized (sendDataSet)
-    {
-      if (folderScanner == null)
-      {
+    synchronized (sendDataSet) {
+      if (folderScanner == null) {
         initializeManagerSettings();
       }
     }
   }
 
-  private void initializeManagerSettings()
-  {
+  private void initializeManagerSettings() {
     {
       // Set a unique system id by combining start time, a random 4 digit
       // number, the local ip, and the mac address
@@ -207,115 +179,111 @@ public class ManagerServlet extends ClientServlet
     }
     String scanStartFolders = getInitParameter("scan.start.folders");
     System.out.println("SMM Initializing Manager Servlet");
-    if (scanStartFolders != null)
-    {
+    if (scanStartFolders != null) {
       String[] scanStartFolderNames = scanStartFolders.split("\\;");
       List<File> foldersToScan = new ArrayList<File>();
-      for (String scanStartFolderName : scanStartFolderNames)
-      {
-        if (scanStartFolderName != null)
-        {
+      for (String scanStartFolderName : scanStartFolderNames) {
+        if (scanStartFolderName != null) {
           scanStartFolderName = scanStartFolderName.trim();
-          if (scanStartFolderName.length() > 0)
-          {
+          if (scanStartFolderName.length() > 0) {
             System.out.println("SMM Looking for folder " + scanStartFolderName);
             File scanStartFile = new File(scanStartFolderName);
-            if (scanStartFile.exists() && scanStartFile.isDirectory())
-            {
+            if (scanStartFile.exists() && scanStartFile.isDirectory()) {
               System.out.println("SMM fold exists, adding to scan directory");
               foldersToScan.add(scanStartFile);
             }
           }
         }
       }
-      if (scanStartFolders.length() > 0)
-      {
+      if (scanStartFolders.length() > 0) {
         folderScanner = new FolderScanner(foldersToScan);
         folderScanner.start();
       }
     }
     supportCenterUrl = getInitParameter("support_center.url");
     supportCenterCode = getInitParameter("support_center.code");
-    
+
     String softwareDirString = getInitParameter("software.dir");
-    if (softwareDirString != null && softwareDirString.length() > 0)
-    {
+    if (softwareDirString != null && softwareDirString.length() > 0) {
       softwareDir = new File(softwareDirString);
     }
-    
+
     String adminUsername = getInitParameter("admin.username");
     String adminPassword = getInitParameter("admin.password");
-    
-    if (adminUsername != null && !adminUsername.equals("") && adminPassword != null && !adminPassword.equals(""))
-    {
+
+    if (adminUsername != null && !adminUsername.equals("") && adminPassword != null && !adminPassword.equals("")) {
       Authenticate.setupAdminUser(adminUsername, adminPassword);
+    }
+
+    String keyStore = getInitParameter("keyStore");
+    if (keyStore != null && keyStore.length() > 0) {
+      String keyStorePassword = getInitParameter("keyStorePassword");
+      File file = new File(keyStore);
+      if (file.exists() && file.isFile()) {
+        try {
+          System.setProperty("javax.net.ssl.keyStore", file.getCanonicalPath());
+          System.setProperty("javax.net.ssl.keyStorePassword", keyStorePassword);
+          System.out.println("Set keystore to be: " + file.getCanonicalPath());
+        } catch (IOException ioe) {
+          System.err.println("Unable to setup keystore: " + ioe.getMessage());
+          ioe.printStackTrace();
+        }
+      } else {
+        System.out.println("Keystore file not found: " + keyStore);
+      }
     }
 
     ShutdownInterceptor shutdownInterceptor = new ShutdownInterceptor();
     Runtime.getRuntime().addShutdownHook(shutdownInterceptor);
   }
 
-  protected static String doHash(String valueIn)
-  {
+  protected static String doHash(String valueIn) {
     String valueOut = null;
-    try
-    {
+    try {
       MessageDigest md = MessageDigest.getInstance("MD5");
       byte[] hashed = md.digest(valueIn.getBytes());
       valueOut = "";
-      for (byte b : hashed)
-      {
+      for (byte b : hashed) {
         valueOut += String.format("%02X", b);
       }
-    } catch (NoSuchAlgorithmException nsae)
-    {
+    } catch (NoSuchAlgorithmException nsae) {
       valueOut = valueIn;
     }
     return valueOut;
   }
 
-  private static String getIpMacAddress()
-  {
+  private static String getIpMacAddress() {
     StringBuilder sb = new StringBuilder();
-    try
-    {
+    try {
       localHostIp = InetAddress.getLocalHost();
       sb.append(":ip");
       sb.append(localHostIp.getHostAddress());
       NetworkInterface network = NetworkInterface.getByInetAddress(localHostIp);
       localHostMac = network.getHardwareAddress();
       sb.append(":mac");
-      for (int i = 0; i < localHostMac.length; i++)
-      {
+      for (int i = 0; i < localHostMac.length; i++) {
         sb.append(String.format("%02X%s", localHostMac[i], (i < localHostMac.length - 1) ? "-" : ""));
       }
-    } catch (UnknownHostException e)
-    {
+    } catch (UnknownHostException e) {
       sb.append(":ip{UnknownHostException:" + e.getMessage() + "}");
-    } catch (SocketException e)
-    {
+    } catch (SocketException e) {
       sb.append(":ip{SocketException:" + e.getMessage() + "}");
-    } catch (Exception e)
-    {
+    } catch (Exception e) {
       sb.append(":ip{Exception:" + e.getMessage() + "}");
     }
     return sb.toString();
   }
 
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-  {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     PrintWriter out = response.getWriter();
-    try
-    {
+    try {
       printHtmlHead(out, "Simple Message Mover", request);
       out.println("<h1>Simple Message Mover</h1>");
-      if (folderScanner != null)
-      {
+      if (folderScanner != null) {
         out.println("<h3>Automatic Data Folder Scanning</h3>");
-        if (folderScanner.isScanning())
-        {
+        if (folderScanner.isScanning()) {
           out.println("<p><font color=\"red\">Scanner is currently looking for data folders.</font></p>");
         }
         out.println("<p>Scan status: " + folderScanner.getScanningStatus() + "</p>");
@@ -328,15 +296,12 @@ public class ManagerServlet extends ClientServlet
       out.println("    <th>Status</th>");
       out.println("    <th>Folder</th>");
       out.println("  </tr>");
-      for (SendData sendData : sendDataSet)
-      {
+      for (SendData sendData : sendDataSet) {
         out.println("  <tr>");
         Connector connector = sendData.getConnector();
-        if (connector != null)
-        {
+        if (connector != null) {
           out.println("    <td>" + connector.getLabelDisplay() + "</td>");
-        } else
-        {
+        } else {
           out.println("    <td>-</td>");
         }
         out.println("    <td>" + sendData.getScanStatus() + "</td>");
@@ -345,15 +310,13 @@ public class ManagerServlet extends ClientServlet
       }
       out.println("</table>");
       printHtmlFoot(out);
-    } finally
-    {
+    } finally {
       out.close();
     }
   }
 
   @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
-  {
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     // TODO Auto-generated method stub
     super.doPost(req, resp);
   }

@@ -12,18 +12,15 @@ public class FolderScanner extends Thread
   private boolean scanning = false;
   private boolean keepRunning = true;
 
-  public List<File> getFoldersToScan()
-  {
+  public List<File> getFoldersToScan() {
     return foldersToScan;
   }
 
-  public String getScanningStatus()
-  {
+  public String getScanningStatus() {
     return scanningStatus;
   }
 
-  public boolean isScanning()
-  {
+  public boolean isScanning() {
     return scanning;
   }
 
@@ -31,35 +28,27 @@ public class FolderScanner extends Thread
     this.foldersToScan = foldersToScan;
   }
 
-  public void setFoldersToScan(List<File> foldersToScan)
-  {
+  public void setFoldersToScan(List<File> foldersToScan) {
     this.foldersToScan = foldersToScan;
   }
 
   @Override
-  public void run()
-  {
-   // while (keepRunning)
+  public void run() {
+    // while (keepRunning)
     {
-      try
-      {
+      try {
         log("Scan started");
-        for (File folderToScan : foldersToScan)
-        {
+        for (File folderToScan : foldersToScan) {
           search(folderToScan, true);
         }
         log("Scan completed");
-      } catch (Throwable t)
-      {
+      } catch (Throwable t) {
         t.printStackTrace();
       }
-      synchronized (scanningStatus)
-      {
-        try
-        {
+      synchronized (scanningStatus) {
+        try {
           scanningStatus.wait(SCAN_PAUSE);
-        } catch (InterruptedException ie)
-        {
+        } catch (InterruptedException ie) {
           // continue
         }
       }
@@ -67,51 +56,40 @@ public class FolderScanner extends Thread
     }
   }
 
-  private void log(String status)
-  {
+  private void log(String status) {
     scanningStatus = status;
     System.out.println("SMM Folder Scan: " + scanningStatus);
   }
 
-  private void search(File folder, boolean starting)
-  {
-    if (!starting)
-    {
-      for (File startingFolder : foldersToScan)
-      {
-        if (folder.equals(startingFolder))
-        {
+  private void search(File folder, boolean starting) {
+    if (!starting) {
+      for (File startingFolder : foldersToScan) {
+        if (folder.equals(startingFolder)) {
           // Folder already in scanning tree, skipping
           return;
         }
       }
     }
-    if (ManagerServlet.isRegisteredFolder(folder))
-    {
+    if (ManagerServlet.isRegisteredFolder(folder)) {
       // already found, don't look here again
       return;
     }
     log("Looking in folder " + folder.getAbsolutePath());
     File configFile = new File(folder, "smm.config.txt");
-    if (configFile.exists() && configFile.isFile() && configFile.canRead())
-    {
+    if (configFile.exists() && configFile.isFile() && configFile.canRead()) {
       // This is a data directory!
       log("Found SMM configuration file in this folder: " + folder.getAbsolutePath());
       ManagerServlet.registerFolder(folder);
-    } else
-    {
+    } else {
       // not a data directory, but perhaps children are
       File[] subFolders = folder.listFiles(new FileFilter() {
 
-        public boolean accept(File file)
-        {
+        public boolean accept(File file) {
           return file.isDirectory();
         }
       });
-      if (subFolders != null)
-      {
-        for (File subFolder : subFolders)
-        {
+      if (subFolders != null) {
+        for (File subFolder : subFolders) {
           search(subFolder, false);
         }
       }

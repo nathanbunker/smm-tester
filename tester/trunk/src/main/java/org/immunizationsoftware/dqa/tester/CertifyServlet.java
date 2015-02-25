@@ -87,7 +87,7 @@ public class CertifyServlet extends ClientServlet
           }
         }
         if (certifyRunner.isRun(CertifyRunner.SUITE_I_PROFILING)) {
-          
+          certifyRunner.setProfilingComparison(request.getParameter("profilingComparison"));
         }
 
         session.setAttribute("certifyRunner", certifyRunner);
@@ -219,57 +219,53 @@ public class CertifyServlet extends ClientServlet
         out.println("        <tr>");
         out.println("          <td>Query Type</td>");
         out.println("          <td>");
+        out.println("            <input type=\"radio\" name=\"queryType\" value=\"N\" checked=\"true\"> None");
         out.println("            <input type=\"radio\" name=\"queryType\" value=\"Q\"> QBP");
         out.println("            <input type=\"radio\" name=\"queryType\" value=\"V\"> VXQ");
-        out.println("            <input type=\"radio\" name=\"queryType\" value=\"N\" checked=\"true\"> None");
         out.println("            <input type=\"checkbox\" name=\"pauseBeforeQuerying\" value=\"true\"/> Pause");
         out.println("          </td>");
         out.println("        </tr>");
         out.println("        <tr>");
-        out.println("          <td>Tests to Run</td>");
+        out.println("          <td colspan=\"2\">Tests to Run</td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
         out.println("          <td>");
         out.println("            <input type=\"checkbox\" name=\"runA\" value=\"true\" checked=\"true\"/> Basic");
         out.println("          </td>");
+        out.println("          <td></td>");
         out.println("        </tr>");
         out.println("        <tr>");
-        out.println("          <td></td>");
         out.println("          <td>");
         out.println("            <input type=\"checkbox\" name=\"runB\" value=\"true\"/> Intermediate");
         out.println("          </td>");
+        out.println("          <td></td>");
         out.println("        </tr>");
         out.println("        <tr>");
-        out.println("          <td></td>");
         out.println("          <td>");
         out.println("            <input type=\"checkbox\" name=\"runC\" value=\"true\"/> Advanced");
         out.println("          </td>");
+        out.println("          <td></td>");
         out.println("        </tr>");
         out.println("        <tr>");
-        out.println("          <td></td>");
-        out.println("          <td>");
+        out.println("          <td valign=\"top\">");
         out.println("            <input type=\"checkbox\" name=\"runI\" value=\"true\"/> Profiling");
         out.println("          </td>");
+        out.println("          <td>Comparison Mapping<br/>");
+        out.println("            <textarea row=\"5\" cols=\"30\" name=\"profilingComparison\"></textarea>");
+        out.println("          </td>");
         out.println("        </tr>");
         out.println("        <tr>");
-        out.println("          <td></td>");
-        out.println("          <td>");
-        out.println("            <textarea row=\"5\" cols=\"30\" name=\"profilingTemplate\"></textarea>");
-        out.println("          </td>");
-        out.println("        </tr>");        out.println("        <tr>");
-        out.println("          <td></td>");
         out.println("          <td>");
         out.println("            <input type=\"checkbox\" name=\"runD\" value=\"true\"/> Exceptional");
         out.println("          </td>");
+        out.println("          <td></td>");
         out.println("        </tr>");
         out.println("        <tr>");
-        out.println("          <td></td>");
-        out.println("          <td>");
+        out.println("          <td valign=\"top\">");
         out.println("            <input type=\"checkbox\" name=\"runF\" value=\"true\"/> Forecasting");
         List<ForecastTestPanel> forecastTestPanelList = Arrays.asList(ForecastTestPanel.values());
         out.println("          </td>");
-        out.println("        </tr>");
-        out.println("        <tr>");
-        out.println("          <td></td>");
-        out.println("          <td>");
+        out.println("          <td>TCH Forecaster Test Panel<br/>");
         out.println("            <select multiple size=\"5\" name=\"forecastTestPanelId\">");
         for (ForecastTestPanel forecastTestPanel : forecastTestPanelList) {
           if (forecastTestPanel.isStandard()) {
@@ -285,18 +281,17 @@ public class CertifyServlet extends ClientServlet
         out.println("          </td>");
         out.println("        </tr>");
         out.println("        <tr>");
-        out.println("          <td></td>");
         out.println("          <td>");
         out.println("            <input type=\"checkbox\" name=\"runG\" value=\"true\" checked=\"true\" disabled=\"disabled\"/> Performance");
         out.println("          </td>");
+        out.println("          <td></td>");
         out.println("        </tr>");
         out.println("        <tr>");
-        out.println("          <td></td>");
         out.println("          <td>");
         out.println("            <input type=\"checkbox\" name=\"runH\" value=\"true\" checked=\"true\"/> Conformance");
         out.println("          </td>");
+        out.println("          <td></td>");
         out.println("        </tr>");
-
         out.println("        <tr>");
         out.println("          <td></td>");
         out.println("          <td colspan=\"2\" align=\"right\">");

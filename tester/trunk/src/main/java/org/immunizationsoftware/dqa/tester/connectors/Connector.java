@@ -383,7 +383,7 @@ public abstract class Connector
       throw new RuntimeException("Exception while reading string", ioe);
     }
   }
-
+  
   protected abstract void makeScriptAdditions(StringBuilder sb);
 
   public static List<Connector> makeConnectors(String script) throws Exception {
