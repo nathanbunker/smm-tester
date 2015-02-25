@@ -5,15 +5,23 @@
 package org.immunizationsoftware.dqa.tester;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocketFactory;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,6 +29,7 @@ import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.mover.AckAnalyzer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.connectors.HttpConnector.AuthenticationMethod;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
@@ -239,6 +248,40 @@ public class SubmitServlet extends ClientServlet
           out.println("<p><a href=\"CompareServlet\">Compare response with original VXU</a></p>");
         }
       }
+
+      boolean showWSDL = request.getParameter("showWSDL") != null;
+      if (showWSDL && id != 0) {
+        out.println("<h3>WSDL</h3>");
+        out.println("<pre>");
+        Connector connector = getConnector(id, session);
+        try {
+          HttpURLConnection urlConn;
+          InputStreamReader input = null;
+          URL url = new URL(connector.getUrl());
+
+          urlConn = (HttpURLConnection) url.openConnection();
+          urlConn.setRequestMethod("GET");
+          urlConn.setDoInput(true);
+          urlConn.setUseCaches(false);
+
+          input = new InputStreamReader(urlConn.getInputStream());
+          BufferedReader in = new BufferedReader(input);
+          boolean escape = !urlConn.getContentType().startsWith("text/html");
+          String line;
+          while ((line = in.readLine()) != null) {
+            if (escape) {
+              out.println(escapeHTML(line));
+            } else {
+              out.println(line);
+            }
+          }
+          input.close();
+        } catch (IOException e) {
+          e.printStackTrace(out);
+        }
+        out.println("</pre>");
+      }
+
       out.println("  <div class=\"help\">");
       out.println("  <h2>How To Use This Page</h2>");
       out.println("  <p>This page supports a simple test of the connectivity to another system. "
@@ -293,6 +336,10 @@ public class SubmitServlet extends ClientServlet
     out.println("        <tr>");
     out.println("          <td>Debug</td>");
     out.println("          <td><input type=\"checkbox\" name=\"debug\" value=\"true\" /></td>");
+    out.println("        </tr>");
+    out.println("        <tr>");
+    out.println("          <td>Show WSDL</td>");
+    out.println("          <td><input type=\"checkbox\" name=\"showWSDL\" value=\"true\" /></td>");
     out.println("        </tr>");
     out.println("        <tr>");
     out.println("          <td colspan=\"2\" align=\"right\">");
@@ -381,5 +428,9 @@ public class SubmitServlet extends ClientServlet
 
     return message;
 
+  }
+
+  private static String escapeHTML(String line) {
+    return line.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
   }
 }

@@ -12,6 +12,14 @@
       <param-value>/home/oisptorg/ois-pt.org/data/tester;c:\Export\;c:\data\Dropbox (Personal)\work\product\smm</param-value>
     </init-param>
     <init-param>
+      <param-name>keyStore</param-name>
+      <param-value>C:\data\Dropbox (Personal)\work\product\smm\data\cair.jks</param-value>
+    </init-param>
+    <init-param>
+      <param-name>keyStorePassword</param-name>
+      <param-value>C@ir2015</param-value>
+    </init-param>
+    <init-param>
       <param-name>support_center.code</param-name>
       <param-value>general</param-value>
     </init-param>
@@ -41,6 +49,10 @@
   <servlet>
     <servlet-name>GenerateDataServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.tester.GenerateDataServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>ModifyMessageServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.tester.ModifyMessageServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>CertifyServlet</servlet-name>
@@ -217,6 +229,10 @@
   <servlet-mapping>
     <servlet-name>smm.install.PrepareServlet</servlet-name>
     <url-pattern>/install/PrepareServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>ModifyMessageServlet</servlet-name>
+    <url-pattern>/ModifyMessageServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>smm.install.InstallServlet</servlet-name>

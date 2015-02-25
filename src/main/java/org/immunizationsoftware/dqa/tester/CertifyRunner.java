@@ -15,9 +15,9 @@ import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENAR
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_5_P_REFUSED_TODDLER;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_6_P_VARICELLA_HISTORY_CHILD;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_7_R_COMPLETE_RECORD;
+import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_FULL_RECORD_FOR_PROFILING;
 import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.createTestCaseMessage;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -137,6 +137,22 @@ public class CertifyRunner extends Thread
     }
   }
 
+  private static Usage readUsage(String usageString) {
+    if (usageString == null) {
+      return Usage.O;
+    } else if (usageString.equalsIgnoreCase("R")) {
+      return Usage.R;
+    } else if (usageString.equalsIgnoreCase("RE")) {
+      return Usage.RE;
+    } else if (usageString.equalsIgnoreCase("O")) {
+      return Usage.O;
+    } else if (usageString.equalsIgnoreCase("X")) {
+      return Usage.X;
+    } else {
+      return Usage.O;
+    }
+  }
+
   private static class ProfileLine
   {
     private String field = "";
@@ -216,19 +232,7 @@ public class CertifyRunner extends Thread
     }
 
     public void setUsage(String usageString) {
-      if (usageString == null) {
-        this.usage = Usage.O;
-      } else if (usageString.equalsIgnoreCase("R")) {
-        this.usage = Usage.R;
-      } else if (usageString.equalsIgnoreCase("RE")) {
-        this.usage = Usage.RE;
-      } else if (usageString.equalsIgnoreCase("O")) {
-        this.usage = Usage.O;
-      } else if (usageString.equalsIgnoreCase("X")) {
-        this.usage = Usage.X;
-      } else {
-        this.usage = Usage.O;
-      }
+      this.usage = readUsage(usageString);
     }
 
     public String getCodeTable() {
@@ -419,13 +423,35 @@ public class CertifyRunner extends Thread
       if (run[SUITE_I_PROFILING]) {
         logStatus("Preparing profiling");
 
+        TestCaseMessage tcmFull = createTestCaseMessage(SCENARIO_FULL_RECORD_FOR_PROFILING);
+        {
+          Transformer transformer = new Transformer();
+          tcmFull.setTestCaseSet(testCaseSet);
+          tcmFull.setTestCaseNumber(uniqueMRNBase + "I." + paddWithZeros(0, 3));
+          tcmFull.setDescription("Full Record");
+          transformer.transform(tcmFull);
+          register(tcmFull);
+          tcmFull.setAssertResult("Accept - *");
+
+          TestRunner testRunner = new TestRunner();
+          testRunner.runTest(connector, tcmFull);
+          totalUpdateTime += testRunner.getTotalRunTime();
+          totalUpdateCount++;
+
+          if (tcmFull.isPassedTest()) {
+            logStatus("Full record for profiling was accepted, profiling of all fields can begin");
+          } else {
+            logStatus("Full record for profiling was NOT accepted, profiling of all fields can not be conducted");
+          }
+        }
+
         File profileFile = CreateTestCaseServlet.getProfileFile((Authenticate.User) session.getAttribute("user"));
         if (profileFile == null) {
           logStatus("Profile not found");
         } else {
           profileLineList = readProfileLines(profileFile);
           logStatus("Found " + profileLineList.size() + " of profile lines to test");
-          updateProfiling(profileLineList);
+          updateProfiling(profileLineList, tcmFull);
           printReportToFile();
           if (!keepRunning) {
             status = STATUS_STOPPED;
@@ -898,6 +924,7 @@ public class CertifyRunner extends Thread
   private static final String FIELD_NK1_2 = "NK1-2";
   private static final String FIELD_NK1_3 = "NK1-3";
   private static final String FIELD_PV1_20 = "PV1-20";
+  private static final String FIELD_PV1_20_2 = "PV1-20.2";
   private static final String FIELD_ORC_1 = "ORC-1";
   private static final String FIELD_ORC_2 = "ORC-2";
   private static final String FIELD_ORC_3 = "ORC-3";
@@ -949,52 +976,113 @@ public class CertifyRunner extends Thread
   private TestCaseMessage getPresentTestCase(ProfileLine profileLine, int count, Transformer transformer) {
     String field = profileLine.getField().toUpperCase();
     TestCaseMessage testCaseMessage = null;
-    String customTransformation = null;
+    if (testCaseMessage == null) {
+      testCaseMessage = createTestCaseMessage(SCENARIO_FULL_RECORD_FOR_PROFILING);
+    }
+    testCaseMessage.setHasIssue(false);
     if (field.equals(FIELD_MSH_4)) {
-      customTransformation = "MSH-4=[MAP DEFAULT=>'TEST']";
+      testCaseMessage.appendCustomTransformation("MSH-4=[MAP DEFAULT=>'TEST']");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_6)) {
-      customTransformation = "MSH-6=[MAP DEFAULT=>'TEST']";
+      testCaseMessage.appendCustomTransformation("MSH-6=[MAP DEFAULT=>'TEST']");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_7)) {
       // nothing to do, message should always have date
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_9)) {
       // nothing to do
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_10)) {
       // nothing to do
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_11)) {
-      customTransformation = "MSH-11=[MAP DEFAULT=>'T']";
+      testCaseMessage.appendCustomTransformation("MSH-11=[MAP DEFAULT=>'T']");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_12)) {
-      customTransformation = "MSH-12=[MAP DEFAULT=>'2.5.1']";
+      testCaseMessage.appendCustomTransformation("MSH-12=[MAP DEFAULT=>'2.5.1']");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_16)) {
-      customTransformation = "MSH-16=[MAP DEFAULT=>'AL']";
+      testCaseMessage.appendCustomTransformation("MSH-16=[MAP DEFAULT=>'AL']");
     } else if (field.equals(FIELD_PID_3)) {
       // should always have this
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_3_1)) {
       // should always have this
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_3_7)) {
       // should always have this
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_5)) {
       // should always have this
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_6)) {
       // should always have this
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_7)) {
       // should always have this
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_8)) {
       // should always have this
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_10)) {
       // should always have this
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_11)) {
+      // should always have this
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_13)) {
+      // should always have this
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_15)) {
+      testCaseMessage.appendCustomTransformation("PID-15=[LANGUAGE]");
+      testCaseMessage.appendCustomTransformation("PID-15.2=[LANGUAGE_LABEL]");
+      testCaseMessage.appendCustomTransformation("PID-15.3=HL70296");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_22)) {
+      // should always have this
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_24)) {
+      testCaseMessage.appendCustomTransformation("PID-24=Y");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_3)) {
+      testCaseMessage.appendCustomTransformation("insert segment PD1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PD1-3.3=[MAP DEFAULT=>'TEST']");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_4)) {
+      testCaseMessage.appendCustomTransformation("insert segment PD1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PD1-4.2=Burden");
+      testCaseMessage.appendCustomTransformation("PD1-4.3=Donna");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_11)) {
+      testCaseMessage.appendCustomTransformation("insert segment PD1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PD1-11.1=02");
+      testCaseMessage.appendCustomTransformation("PD1-11.2=Reminder/recall - any method");
+      testCaseMessage.appendCustomTransformation("PD1-11.3=HL70215");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_12)) {
+      testCaseMessage.appendCustomTransformation("insert segment PD1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PD1-12=N");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_13)) {
+      testCaseMessage.appendCustomTransformation("insert segment PD1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PD1-12=N");
+      testCaseMessage.appendCustomTransformation("PD1-13=[VAC1_DATE]");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_NK1_2)) {
+      // should already have this
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_NK1_3)) {
+      // should already have this
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PV1_20)) {
+      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PV1-20=[VFC]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_20_2)) {
+      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PV1-20=[VFC]");
+      testCaseMessage.appendCustomTransformation("PV1-20.2=[VAC1_DATE]");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ORC_1)) {
     } else if (field.equals(FIELD_ORC_2)) {
     } else if (field.equals(FIELD_ORC_3)) {
@@ -1007,6 +1095,8 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_ADMIN_RXA_9)) {
     } else if (field.equals(FIELD_ADMIN_RXA_10)) {
     } else if (field.equals(FIELD_ADMIN_RXA_11)) {
+      testCaseMessage.appendCustomTransformation("RXA-11.4=[MAP DEFAULT=>'TEST']");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_15)) {
     } else if (field.equals(FIELD_ADMIN_RXA_16)) {
     } else if (field.equals(FIELD_ADMIN_RXA_17)) {
@@ -1042,18 +1132,13 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_HIST_OBX_5)) {
     } else if (field.equals(FIELD_HIST_OBX_11)) {
     } else if (field.equals(FIELD_HIST_OBX_14)) {
-    }
-
-    if (testCaseMessage == null) {
-      testCaseMessage = createTestCaseMessage(SCENARIO_7_R_COMPLETE_RECORD);
+    } else {
+      testCaseMessage.appendCustomTransformation("SFT-5=CHANGES NOT FOUND FOR '" + field + "'");
     }
 
     testCaseMessage.setTestCaseSet(testCaseSet);
     testCaseMessage.setTestCaseNumber(uniqueMRNBase + "I." + paddWithZeros(count, 3));
     testCaseMessage.setDescription("Field " + field + " is present");
-    if (customTransformation != null) {
-      testCaseMessage.appendCustomTransformation(customTransformation);
-    }
     transformer.transform(testCaseMessage);
     register(testCaseMessage);
     if (profileLine.getUsage() == Usage.R) {
@@ -1069,86 +1154,112 @@ public class CertifyRunner extends Thread
   private TestCaseMessage getAbsentTestCase(ProfileLine profileLine, int count, Transformer transformer) {
     String field = profileLine.getField().toUpperCase();
     TestCaseMessage testCaseMessage = null;
-    String customTransformation = null;
+    if (testCaseMessage == null) {
+      testCaseMessage = createTestCaseMessage(SCENARIO_FULL_RECORD_FOR_PROFILING);
+    }
+    testCaseMessage.setHasIssue(false);
     if (field.equals(FIELD_MSH_4)) {
-      customTransformation = "MSH-4=";
+      testCaseMessage.appendCustomTransformation("MSH-4=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_6)) {
-      customTransformation = "MSH-6=";
+      testCaseMessage.appendCustomTransformation("MSH-6=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_7)) {
-      customTransformation = "MSH-7=";
+      testCaseMessage.appendCustomTransformation("MSH-7=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_9)) {
-      customTransformation = "MSH-9.1=";
-      customTransformation += "MSH-9.2=";
-      customTransformation += "MSH-9.3=";
+      testCaseMessage.appendCustomTransformation("MSH-9.1=");
+      testCaseMessage.appendCustomTransformation("MSH-9.2=");
+      testCaseMessage.appendCustomTransformation("MSH-9.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_10)) {
-      customTransformation = "MSH-10=";
+      testCaseMessage.appendCustomTransformation("MSH-10=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_11)) {
-      customTransformation = "MSH-11=";
+      testCaseMessage.appendCustomTransformation("MSH-11=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_12)) {
-      customTransformation = "MSH-12=";
+      testCaseMessage.appendCustomTransformation("MSH-12=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_16)) {
-      customTransformation = "MSH-16=";
+      testCaseMessage.appendCustomTransformation("MSH-16=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_3)) {
-      customTransformation = "PID-3.1=";
-      customTransformation += "PID-3.4=";
-      customTransformation += "PID-3.5=";
+      testCaseMessage.appendCustomTransformation("PID-3.1=");
+      testCaseMessage.appendCustomTransformation("PID-3.4=");
+      testCaseMessage.appendCustomTransformation("PID-3.5=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_3_1)) {
-      customTransformation = "PID-3.1=";
+      testCaseMessage.appendCustomTransformation("PID-3.1=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_3_7)) {
-      customTransformation = "PID-3.7=";
+      testCaseMessage.appendCustomTransformation("PID-3.7=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_5)) {
-      customTransformation = "PID-5.1=\n";
-      customTransformation += "PID-5.2=\n";
-      customTransformation += "PID-5.7=";
+      testCaseMessage.appendCustomTransformation("PID-5.1=");
+      testCaseMessage.appendCustomTransformation("PID-5.2=");
+      testCaseMessage.appendCustomTransformation("PID-5.7=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_6)) {
-      customTransformation = "PID-6.1=\n";
-      customTransformation = "PID-6.2=\n";
-      customTransformation = "PID-6.7=";
+      testCaseMessage.appendCustomTransformation("PID-6.1=");
+      testCaseMessage.appendCustomTransformation("PID-6.2=");
+      testCaseMessage.appendCustomTransformation("PID-6.7=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_7)) {
-      customTransformation = "PID-7=";
+      testCaseMessage.appendCustomTransformation("PID-7=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_8)) {
-      customTransformation = "PID-6.2=";
+      testCaseMessage.appendCustomTransformation("PID-6.2=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_10)) {
-      customTransformation = "PID-10.1=\n";
-      customTransformation += "PID-10.2=\n";
-      customTransformation += "PID-10.3=";
+      testCaseMessage.appendCustomTransformation("PID-10.1=");
+      testCaseMessage.appendCustomTransformation("PID-10.2=");
+      testCaseMessage.appendCustomTransformation("PID-10.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_11)) {
-      customTransformation = "PID-11.1=\n";
-      customTransformation += "PID-11.2=\n";
-      customTransformation += "PID-11.3=\n";
-      customTransformation += "PID-11.4=\n";
-      customTransformation += "PID-11.5=\n";
-      customTransformation += "PID-11.6=\n";
-      customTransformation += "PID-11.7=";
+      testCaseMessage.appendCustomTransformation("PID-11.1=");
+      testCaseMessage.appendCustomTransformation("PID-11.2=");
+      testCaseMessage.appendCustomTransformation("PID-11.3=");
+      testCaseMessage.appendCustomTransformation("PID-11.4=");
+      testCaseMessage.appendCustomTransformation("PID-11.5=");
+      testCaseMessage.appendCustomTransformation("PID-11.6=");
+      testCaseMessage.appendCustomTransformation("PID-11.7=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_13)) {
-      customTransformation = "PID-13.1=\n";
-      customTransformation += "PID-13.2=\n";
-      customTransformation += "PID-13.3=\n";
-      customTransformation += "PID-13.6=\n";
-      customTransformation += "PID-13.7=";
+      testCaseMessage.appendCustomTransformation("PID-13.1=");
+      testCaseMessage.appendCustomTransformation("PID-13.2=");
+      testCaseMessage.appendCustomTransformation("PID-13.3=");
+      testCaseMessage.appendCustomTransformation("PID-13.6=");
+      testCaseMessage.appendCustomTransformation("PID-13.7=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_15)) {
-      customTransformation = "PID-15.1=\n";
-      customTransformation += "PID-15.2=\n";
-      customTransformation += "PID-15.3=";
+      testCaseMessage.appendCustomTransformation("PID-15.1=");
+      testCaseMessage.appendCustomTransformation("PID-15.2=");
+      testCaseMessage.appendCustomTransformation("PID-15.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_22)) {
-      customTransformation = "PID-22.1=\n";
-      customTransformation += "PID-22.2=\n";
-      customTransformation += "PID-22.3=";
+      testCaseMessage.appendCustomTransformation("PID-22.1=");
+      testCaseMessage.appendCustomTransformation("PID-22.2=");
+      testCaseMessage.appendCustomTransformation("PID-22.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_24)) {
-      customTransformation = "PID-24=";
+      testCaseMessage.appendCustomTransformation("PID-24=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_3)) {
     } else if (field.equals(FIELD_PD1_4)) {
     } else if (field.equals(FIELD_PD1_11)) {
     } else if (field.equals(FIELD_PD1_12)) {
     } else if (field.equals(FIELD_PD1_13)) {
     } else if (field.equals(FIELD_NK1_2)) {
-      customTransformation = "NK1.2.1=\n";
-      customTransformation += "NK1.2.2=\n";
-      customTransformation += "NK1.2.7=";
+      testCaseMessage.appendCustomTransformation("NK1.2.1=");
+      testCaseMessage.appendCustomTransformation("NK1.2.2=");
+      testCaseMessage.appendCustomTransformation("NK1.2.7=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_NK1_3)) {
-      customTransformation = "NK1.3.1=\n";
-      customTransformation += "NK1.3.2=\n";
-      customTransformation += "NK1.3.3=";
+      testCaseMessage.appendCustomTransformation("NK1.3.1=");
+      testCaseMessage.appendCustomTransformation("NK1.3.2=");
+      testCaseMessage.appendCustomTransformation("NK1.3.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PV1_20)) {
     } else if (field.equals(FIELD_ORC_1)) {
     } else if (field.equals(FIELD_ORC_2)) {
@@ -1156,68 +1267,146 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_ORC_10)) {
     } else if (field.equals(FIELD_ORC_12)) {
     } else if (field.equals(FIELD_ADMIN_RXA_3)) {
-      customTransformation = "RXA-3=";
+      testCaseMessage.appendCustomTransformation("RXA-3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_5)) {
-      customTransformation = "RXA-5.1=\n";
-      customTransformation += "RXA-5.2=\n";
-      customTransformation += "RXA-5.3=";
+      testCaseMessage.appendCustomTransformation("RXA-5.1=");
+      testCaseMessage.appendCustomTransformation("RXA-5.2=");
+      testCaseMessage.appendCustomTransformation("RXA-5.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_6)) {
-      customTransformation = "RXA-6=999";
-      customTransformation += "RXA-7=";
+      testCaseMessage.appendCustomTransformation("RXA-6=999");
+      testCaseMessage.appendCustomTransformation("RXA-7=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_7)) {
-      customTransformation = "RXA-7=";
+      testCaseMessage.appendCustomTransformation("RXA-7=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_9)) {
-      customTransformation = "RXA-9.1=";
+      testCaseMessage.appendCustomTransformation("RXA-9.1=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_10)) {
-      customTransformation = "RXA-10.1=\n";
-      customTransformation += "RXA-10.2=\n";
-      customTransformation += "RXA-10.3=\n";
-      customTransformation += "RXA-10.4=\n";
-      customTransformation += "RXA-10.10=";
+      testCaseMessage.appendCustomTransformation("RXA-10.1=");
+      testCaseMessage.appendCustomTransformation("RXA-10.2=");
+      testCaseMessage.appendCustomTransformation("RXA-10.3=");
+      testCaseMessage.appendCustomTransformation("RXA-10.4=");
+      testCaseMessage.appendCustomTransformation("RXA-10.10=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_11)) {
-      customTransformation = "RXA-11.1=\n";
-      customTransformation += "RXA-11.4=";
+      testCaseMessage.appendCustomTransformation("RXA-11.1=");
+      testCaseMessage.appendCustomTransformation("RXA-11.4=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_15)) {
-      customTransformation = "RXA-15=";
+      testCaseMessage.appendCustomTransformation("RXA-15=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_16)) {
-      customTransformation = "RXA-16=";
+      testCaseMessage.appendCustomTransformation("RXA-16=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_17)) {
-      customTransformation = "RXA-17.1=\n";
-      customTransformation += "RXA-17.2=\n";
-      customTransformation += "RXA-17.3=";
+      testCaseMessage.appendCustomTransformation("RXA-17.1=");
+      testCaseMessage.appendCustomTransformation("RXA-17.2=");
+      testCaseMessage.appendCustomTransformation("RXA-17.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_20)) {
-      customTransformation = "RXA-20=";
+      testCaseMessage.appendCustomTransformation("RXA-20=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_21)) {
-      customTransformation = "RXA-21=";
+      testCaseMessage.appendCustomTransformation("RXA-21=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXR_1)) {
-      customTransformation = "RXR-1.1=\n";
-      customTransformation += "RXR-1.2=\n";
-      customTransformation += "RXR-1.3=\n";
+      testCaseMessage.appendCustomTransformation("RXR-1.1=");
+      testCaseMessage.appendCustomTransformation("RXR-1.2=");
+      testCaseMessage.appendCustomTransformation("RXR-1.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXR_2)) {
-      customTransformation = "RXR-2.1=\n";
-      customTransformation += "RXR-2.2=\n";
-      customTransformation += "RXR-2.3=\n";
+      testCaseMessage.appendCustomTransformation("RXR-2.1=");
+      testCaseMessage.appendCustomTransformation("RXR-2.2=");
+      testCaseMessage.appendCustomTransformation("RXR-2.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_OBX_1)) {
+      testCaseMessage.appendCustomTransformation("OBX-1=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_OBX_2)) {
+      testCaseMessage.appendCustomTransformation("OBX-2=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_OBX_3)) {
+      testCaseMessage.appendCustomTransformation("OBX-3.1=");
+      testCaseMessage.appendCustomTransformation("OBX-3.2=");
+      testCaseMessage.appendCustomTransformation("OBX-3.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_OBX_4)) {
+      testCaseMessage.appendCustomTransformation("OBX#3-4.1=");
+      testCaseMessage.appendCustomTransformation("OBX#3-4.2=");
+      testCaseMessage.appendCustomTransformation("OBX#3-4.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_OBX_5)) {
+      testCaseMessage.appendCustomTransformation("OBX-5.1=");
+      testCaseMessage.appendCustomTransformation("OBX-5.2=");
+      testCaseMessage.appendCustomTransformation("OBX-5.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_OBX_11)) {
+      testCaseMessage.appendCustomTransformation("OBX-11*=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_OBX_14)) {
+      testCaseMessage.appendCustomTransformation("OBX-14*=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_3)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_5)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-5.1=");
+      testCaseMessage.appendCustomTransformation("RXA#2-5.2=");
+      testCaseMessage.appendCustomTransformation("RXA#2-5.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_6)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-6=");
+      testCaseMessage.appendCustomTransformation("RXA#2-7.1=");
+      testCaseMessage.appendCustomTransformation("RXA#2-7.2=");
+      testCaseMessage.appendCustomTransformation("RXA#2-7.3==");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_7)) {
+      testCaseMessage.appendCustomTransformation("RXA-7.1=");
+      testCaseMessage.appendCustomTransformation("RXA-7.2=");
+      testCaseMessage.appendCustomTransformation("RXA-7.3==");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_9)) {
+      testCaseMessage.appendCustomTransformation("RXA-9.1=");
+      testCaseMessage.appendCustomTransformation("RXA-9.2=");
+      testCaseMessage.appendCustomTransformation("RXA-9.3==");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_10)) {
+      testCaseMessage.appendCustomTransformation("RXA-10.2=");
+      testCaseMessage.appendCustomTransformation("RXA-10.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_11)) {
+      testCaseMessage.appendCustomTransformation("RXA-11.4=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_15)) {
+      testCaseMessage.appendCustomTransformation("RXA-15=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_16)) {
+      testCaseMessage.appendCustomTransformation("RXA-16=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_17)) {
+      testCaseMessage.appendCustomTransformation("RXA-17.1=");
+      testCaseMessage.appendCustomTransformation("RXA-17.2=");
+      testCaseMessage.appendCustomTransformation("RXA-17.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_20)) {
+      testCaseMessage.appendCustomTransformation("RXA-20=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_21)) {
+      testCaseMessage.appendCustomTransformation("RXA-21=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXR_1)) {
+      testCaseMessage.appendCustomTransformation("RXR-1.1=");
+      testCaseMessage.appendCustomTransformation("RXR-1.2=");
+      testCaseMessage.appendCustomTransformation("RXR-1.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXR_2)) {
+      testCaseMessage.appendCustomTransformation("RXR-2.1=");
+      testCaseMessage.appendCustomTransformation("RXR-2.2=");
+      testCaseMessage.appendCustomTransformation("RXR-2.3=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_OBX_1)) {
     } else if (field.equals(FIELD_HIST_OBX_2)) {
     } else if (field.equals(FIELD_HIST_OBX_3)) {
@@ -1226,19 +1415,12 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_HIST_OBX_11)) {
     } else if (field.equals(FIELD_HIST_OBX_14)) {
     } else {
-      customTransformation = "SFT-5=CHANGES NOT FOUND FOR '" + field + "'";
-    }
-
-    if (testCaseMessage == null) {
-      testCaseMessage = createTestCaseMessage(SCENARIO_7_R_COMPLETE_RECORD);
+      testCaseMessage.appendCustomTransformation("SFT-5=CHANGES NOT FOUND FOR '" + field + "'");
     }
 
     testCaseMessage.setTestCaseSet(testCaseSet);
     testCaseMessage.setTestCaseNumber(uniqueMRNBase + "I." + paddWithZeros(count, 3));
     testCaseMessage.setDescription("Field " + field + " is absent");
-    if (customTransformation != null) {
-      testCaseMessage.appendCustomTransformation(customTransformation);
-    }
     transformer.transform(testCaseMessage);
     register(testCaseMessage);
     if (profileLine.getUsage() == Usage.R) {
@@ -1251,7 +1433,7 @@ public class CertifyRunner extends Thread
     return testCaseMessage;
   }
 
-  private void updateProfiling(List<ProfileLine> profileLineList) {
+  private void updateProfiling(List<ProfileLine> profileLineList, TestCaseMessage tcmFull) {
 
     TestRunner testRunner = new TestRunner();
     Transformer transformer = new Transformer();
@@ -1263,27 +1445,36 @@ public class CertifyRunner extends Thread
 
       TestCaseMessage testCaseMessagePresent = getPresentTestCase(profileLine, count, transformer);
       TestCaseMessage testCaseMessageAbsent = getAbsentTestCase(profileLine, count, transformer);
+      if (testCaseMessagePresent.getCustomTransformations().equals("")) {
+        testCaseMessagePresent = tcmFull;
+      }
       profileLine.setTestCaseMessageAbsent(testCaseMessageAbsent);
       profileLine.setTestCaseMessagePresent(testCaseMessagePresent);
       try {
-        testRunner.runTest(connector, testCaseMessagePresent);
-        totalUpdateCount++;
-        totalUpdateTime += testRunner.getTotalRunTime();
-        testRunner.runTest(connector, testCaseMessageAbsent);
-        totalUpdateCount++;
-        totalUpdateTime += testRunner.getTotalRunTime();
-        if (testCaseMessagePresent.isAccepted() && !testCaseMessageAbsent.isAccepted()) {
-          profileLine.setUsageDetected(Usage.R);
-        } else if (!testCaseMessagePresent.isAccepted() && testCaseMessageAbsent.isAccepted()) {
-          profileLine.setUsageDetected(Usage.X);
+        if (testCaseMessagePresent != tcmFull) {
+          testRunner.runTest(connector, testCaseMessagePresent);
+          totalUpdateTime += testRunner.getTotalRunTime();
+          totalUpdateCount++;
+        }
+        if (testCaseMessageAbsent.hasIssue()) {
+          testRunner.runTest(connector, testCaseMessageAbsent);
+          totalUpdateCount++;
+          totalUpdateTime += testRunner.getTotalRunTime();
+          if (testCaseMessagePresent.isAccepted() && !testCaseMessageAbsent.isAccepted()) {
+            profileLine.setUsageDetected(Usage.R);
+          } else if (!testCaseMessagePresent.isAccepted() && testCaseMessageAbsent.isAccepted()) {
+            profileLine.setUsageDetected(Usage.X);
+          } else {
+            profileLine.setUsageDetected(Usage.RE_OR_O);
+          }
+          if (testCaseMessagePresent.isPassedTest() && testCaseMessageAbsent.isPassedTest()) {
+            countPass++;
+            profileLine.setPassed(true);
+          }
+          profileLine.setHasRun(true);
         } else {
-          profileLine.setUsageDetected(Usage.RE_OR_O);
+          profileLine.setHasRun(false);
         }
-        if (testCaseMessagePresent.isPassedTest() && testCaseMessageAbsent.isPassedTest()) {
-          countPass++;
-          profileLine.setPassed(true);
-        }
-        profileLine.setHasRun(true);
         printExampleMessage(testCaseMessagePresent, "I Profiling");
         printExampleMessage(testCaseMessageAbsent, "I Profiling");
       } catch (Throwable t) {
@@ -2191,20 +2382,21 @@ public class CertifyRunner extends Thread
   }
 
   private List<ForecastTestPanel> forecastTestPanelList = new ArrayList<ForecastTestPanel>();
-  private Map<String, String> profilingTemplateMap = new HashMap<String, String>();
+  private Map<String, Usage> profilingComparisonMap = new HashMap<String, Usage>();
 
   public void addForecastTestPanel(ForecastTestPanel forecastTestPanel) {
     forecastTestPanelList.add(forecastTestPanel);
   }
 
-  public void setProfilingTemplate(String profilingTemplate) {
+  public void setProfilingComparison(String profilingTemplate) {
     BufferedReader in = new BufferedReader(new StringReader(profilingTemplate));
     String line;
     try {
       while ((line = in.readLine()) != null) {
         int pos = line.indexOf("=");
         if (pos > 0) {
-          profilingTemplateMap.put(line.substring(0, pos).toUpperCase(), line.substring(pos + 1).toUpperCase());
+          profilingComparisonMap.put(line.substring(0, pos).toUpperCase(), readUsage(line.substring(pos + 1)
+              .toUpperCase()));
         }
       }
     } catch (IOException ioe) {
@@ -3709,14 +3901,13 @@ public class CertifyRunner extends Thread
       out.println("</br>");
     }
     if (areaProgress[SUITE_I_PROFILING][0] > 0) {
-      out.println("<h2>Basic Interoperability Tests</h2>");
       out.println("<h2>Profiling Tests</h2>");
       out.println("<p><b>Purpose</b>: Test to see if the IIS is consistent with interface specification. </p>");
       out.println("<p><b>Requirements</b>: IIS should implement interface consistent with its own requirements. </p>");
       out.println("<ul>");
       out.println("  <li>Level 1: IIS must respond to updates consistent with its interface specification. </li>");
       out.println("  <li>Level 2: Not yet defined.</li>");
-      out.println("  <li>Level 3: Not yet defined.</li>");
+      out.println("  <li>Level 3: Support IIS has for comparison system. </li>");
       out.println("</ul>");
 
       out.println("<div id=\"areaILevel1\"/>");
@@ -3734,6 +3925,21 @@ public class CertifyRunner extends Thread
         printProfileLine(out, toFile, profileLine);
       }
       out.println("</table>");
+      if (profilingComparisonMap.size() > 0) {
+        out.println("<h3>Comparison</h3>");
+        out.println("<table border=\"1\" cellspacing=\"0\">");
+        out.println("  <tr>");
+        out.println("    <th>Field</th>");
+        out.println("    <th>Description</th>");
+        out.println("    <th>Usage Comparison</th>");
+        out.println("    <th>Usage Expected</th>");
+        out.println("    <th>Comment</th>");
+        out.println("  </tr>");
+        for (ProfileLine profileLine : profileLineList) {
+          printProfileLineComparison(out, toFile, profileLine);
+        }
+        out.println("</table>");
+      }
       out.println("</br>");
     }
 
@@ -4026,13 +4232,118 @@ public class CertifyRunner extends Thread
       out.println("    <td class=\"" + profileLineClassText + "\">Confirmed</td>");
     } else if (profileLine.isHasRun()) {
       out.println("    <td class=\"" + profileLineClassText + "\">Inconsistent</td>");
+    } else if (profileLine.getTestCaseMessageAbsent() != null && !profileLine.getTestCaseMessageAbsent().isHasRun()) {
+      out.println("    <td class=\"" + profileLineClassText + "\">Unable to Compare</td>");
     } else {
       out.println("    <td class=\"" + profileLineClassText + "\"></td>");
 
     }
 
     printTestMessageCell(out, toFile, profileLine.getTestCaseMessagePresent());
-    printTestMessageCell(out, toFile, profileLine.getTestCaseMessageAbsent());
+    if (profileLine.getTestCaseMessageAbsent() != null && profileLine.getTestCaseMessageAbsent().isHasRun()) {
+      printTestMessageCell(out, toFile, profileLine.getTestCaseMessageAbsent());
+    } else {
+      out.println("    <td class=\"" + profileLineClassText + "\">Not Run</td>");
+    }
+    out.println("  </tr>");
+  }
+
+  public void printProfileLineComparison(PrintWriter out, boolean toFile, ProfileLine profileLine) {
+
+    Usage comparisonUsage = profilingComparisonMap.get(profileLine.getField().toUpperCase());
+
+    out.println("  <tr>");
+    out.println("    <td class=\"pass\">" + profileLine.getField() + "</td>");
+    out.println("    <td class=\"pass\">" + profileLine.getDescription() + "</td>");
+    if (comparisonUsage == null) {
+      out.println("    <td class=\"fail\">Not Defined</td>");
+    } else {
+      out.println("    <td class=\"pass\">" + comparisonUsage.getDescription() + "</td>");
+    }
+
+    String comment = "";
+    String usageClass;
+    Usage usage = profileLine.getUsage();
+    if (comparisonUsage == null) {
+      usageClass = "fail";
+    } else if (usage == Usage.R) {
+      if (comparisonUsage == Usage.R) {
+        usageClass = "pass";
+      } else if (comparisonUsage == Usage.RE) {
+        usageClass = "pass";
+        comment = "Compatible when field populated";
+      } else if (comparisonUsage == Usage.RE_OR_O) {
+        usageClass = "fail";
+        comment = "Compatible when field populated";
+      } else if (comparisonUsage == Usage.O) {
+        usageClass = "fail";
+      } else if (comparisonUsage == Usage.X) {
+        usageClass = "fail";
+      } else {
+        usageClass = "fail";
+      }
+    } else if (usage == Usage.RE) {
+      if (comparisonUsage == Usage.R) {
+        usageClass = "pass";
+      } else if (comparisonUsage == Usage.RE) {
+        usageClass = "pass";
+      } else if (comparisonUsage == Usage.RE_OR_O) {
+        usageClass = "pass";
+        comment = "Compatible if field supported";
+      } else if (comparisonUsage == Usage.O) {
+        usageClass = "fail";
+      } else if (comparisonUsage == Usage.X) {
+        usageClass = "fail";
+      } else {
+        usageClass = "fail";
+      }
+    } else if (usage == Usage.RE_OR_O) {
+      if (comparisonUsage == Usage.R) {
+        usageClass = "pass";
+      } else if (comparisonUsage == Usage.RE) {
+        usageClass = "pass";
+      } else if (comparisonUsage == Usage.RE_OR_O) {
+        usageClass = "pass";
+      } else if (comparisonUsage == Usage.O) {
+        usageClass = "pass";
+      } else if (comparisonUsage == Usage.X) {
+        usageClass = "fail";
+      } else {
+        usageClass = "fail";
+      }
+    } else if (usage == Usage.O) {
+      if (comparisonUsage == Usage.R) {
+        usageClass = "pass";
+      } else if (comparisonUsage == Usage.RE) {
+        usageClass = "pass";
+      } else if (comparisonUsage == Usage.RE_OR_O) {
+        usageClass = "pass";
+      } else if (comparisonUsage == Usage.O) {
+        usageClass = "pass";
+      } else if (comparisonUsage == Usage.X) {
+        usageClass = "fail";
+      } else {
+        usageClass = "fail";
+      }
+    } else if (usage == Usage.X) {
+      if (comparisonUsage == Usage.R) {
+        usageClass = "fail";
+      } else if (comparisonUsage == Usage.RE) {
+        usageClass = "fail";
+      } else if (comparisonUsage == Usage.RE_OR_O) {
+        usageClass = "fail";
+      } else if (comparisonUsage == Usage.O) {
+        usageClass = "fail";
+      } else if (comparisonUsage == Usage.X) {
+        usageClass = "pass";
+      } else {
+        usageClass = "fail";
+      }
+    } else {
+      usageClass = "fail";
+    }
+    out.println("    <td class=\"" + usageClass + "\">" + profileLine.getUsage().getDescription() + "</td>");
+    out.println("    <td class=\"" + usageClass + "\">" + comment + "</td>");
     out.println("  </tr>");
   }
 

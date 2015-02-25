@@ -30,6 +30,7 @@ public class ScenarioManager
   public static final String SCENARIO_6_P_VARICELLA_HISTORY_CHILD = "NIST MU2.6.p - Varicella History Child (replica plus immunization)";
   public static final String SCENARIO_7_1_COMPLETE_RECORD = "NIST MU2.7.1 - Complete Record";
   public static final String SCENARIO_7_R_COMPLETE_RECORD = "NIST MU2.7.r - Complete Record (replica)";
+  public static final String SCENARIO_FULL_RECORD_FOR_PROFILING = "Full Record for Profiling";
   public static final String SCENARIO_ADD_DELETE = "Add and then Delete - Admin Child";
   public static final String SCENARIO_MCIR_MPI = "MCIR MPI Test";
 
@@ -41,7 +42,7 @@ public class ScenarioManager
       SCENARIO_3_R_HISTORICAL_TWELVE_YEARS_OLD, SCENARIO_4_1_CONSENTED_CHILD, SCENARIO_4_R_CONSENTED_CHILD,
       SCENARIO_5_1_REFUSED_TODDLER, SCENARIO_5_R_REFUSED_TODDLER, SCENARIO_5_P_REFUSED_TODDLER,
       SCENARIO_6_1_VARICELLA_HISTORY_CHILD, SCENARIO_6_R_VARICELLA_HISTORY_CHILD, SCENARIO_6_P_VARICELLA_HISTORY_CHILD,
-      SCENARIO_7_1_COMPLETE_RECORD, SCENARIO_7_R_COMPLETE_RECORD, SCENARIO_ADD_DELETE, SCENARIO_MCIR_MPI };
+      SCENARIO_7_1_COMPLETE_RECORD, SCENARIO_7_R_COMPLETE_RECORD, SCENARIO_FULL_RECORD_FOR_PROFILING, SCENARIO_ADD_DELETE, SCENARIO_MCIR_MPI };
 
   public static TestCaseMessage createTestCaseMessage(String scenario) {
     TestCaseMessage testCaseMessage;
@@ -180,6 +181,13 @@ public class ScenarioManager
       quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY",
           "VAC1_ADMIN", "VAC2_HIST", "VAC3_ADMIN" };
       patientType = PatientType.TODDLER;
+    } else if (scenario.equals(SCENARIO_FULL_RECORD_FOR_PROFILING)) {
+      description = "Full Record for Profiling";
+      originalMessage = "MSH|\nPID|\nNK1|\nORC|\nRXA|\nRXR|\nOBX|\nOBX|\nOBX|\nOBX|\nORC|\nRXA|\nORC|\nRXA|\nRXR|\nOBX|\nOBX|\nOBX|\nOBX|\n";
+      quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "MOTHER", "RACE", "ETHNICITY",
+          "VAC1_ADMIN", "VAC2_HIST", "VAC3_ADMIN" };
+      patientType = PatientType.TODDLER;
+      customTransformations = "RXA-10.2=Burden\nRXA-10.3=Donna\nRXA-16=[FUTURE]\nRXA#3-16=[FUTURE]\nRXA*-20=CP\n";
     } else if (scenario.equals(SCENARIO_1_1_ADMIN_CHILD)) {
       description = "NIST IZ #1.1: Administered for Child";
       originalMessage = "MSH|^~\\&|Test EHR Application|X68||NIST Test Iz Reg|201207010822||VXU^V04^VXU_V04|NIST-IZ-001.00|P|2.5.1|||AL|ER\n"
