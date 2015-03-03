@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.immunizationsoftware.dqa.tester;
+package org.immunizationsoftware.dqa.transform;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,7 +12,6 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.immunizationsoftware.dqa.tester.Transformer.PatientType;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestCase;
@@ -229,7 +228,7 @@ public class TestCaseMessage
   private String actualResultAckType = "";
   private String actualResultAckMessage = "";
   private String actualMessageResponseType = "";
-  private Transformer.PatientType patientType = Transformer.PatientType.ANY_CHILD;
+  private PatientType patientType = PatientType.ANY_CHILD;
   private boolean hasIssue = false;
   private Throwable exception = null;
   private String actualResponseMessage = "";
@@ -382,11 +381,11 @@ public class TestCaseMessage
     this.exception = exception;
   }
 
-  public Transformer.PatientType getPatientType() {
+  public PatientType getPatientType() {
     return patientType;
   }
 
-  public void setPatientType(Transformer.PatientType patientType) {
+  public void setPatientType(PatientType patientType) {
     this.patientType = patientType;
   }
 

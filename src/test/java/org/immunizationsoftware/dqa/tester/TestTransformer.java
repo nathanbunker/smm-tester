@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.connectors.ConnectorFactory;
+import org.immunizationsoftware.dqa.transform.Transformer;
 import org.junit.Test;
 
 public class TestTransformer

@@ -12,6 +12,7 @@ import javax.servlet.http.HttpSession;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
+import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 
 public class TestCaseMessageViewerServlet extends ClientServlet
 {

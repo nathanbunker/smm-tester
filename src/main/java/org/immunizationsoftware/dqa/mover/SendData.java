@@ -19,8 +19,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-import org.immunizationsoftware.dqa.tester.Transformer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.transform.Transformer;
 
 public class SendData extends Thread
 {

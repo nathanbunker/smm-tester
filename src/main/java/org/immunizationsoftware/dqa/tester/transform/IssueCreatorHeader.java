@@ -6,7 +6,7 @@ package org.immunizationsoftware.dqa.tester.transform;
 
 import java.util.Arrays;
 
-import org.immunizationsoftware.dqa.tester.TestCaseMessage;
+import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 
 /**
  * 

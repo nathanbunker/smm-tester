@@ -8,7 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 
-import org.immunizationsoftware.dqa.tester.TestCaseMessage;
+import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 
 /**
  * 

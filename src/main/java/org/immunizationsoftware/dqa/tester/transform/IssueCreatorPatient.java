@@ -4,7 +4,7 @@
  */
 package org.immunizationsoftware.dqa.tester.transform;
 
-import org.immunizationsoftware.dqa.tester.TestCaseMessage;
+import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 
 /**
  * 

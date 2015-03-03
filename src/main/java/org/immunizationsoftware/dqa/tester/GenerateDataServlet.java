@@ -4,7 +4,7 @@
  */
 package org.immunizationsoftware.dqa.tester;
 
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_MCIR_MPI;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_MCIR_MPI;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -17,9 +17,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.immunizationsoftware.dqa.tester.Transformer.PatientType;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
-import org.immunizationsoftware.dqa.tester.manager.ScenarioManager;
+import org.immunizationsoftware.dqa.transform.PatientType;
+import org.immunizationsoftware.dqa.transform.ScenarioManager;
+import org.immunizationsoftware.dqa.transform.TestCaseMessage;
+import org.immunizationsoftware.dqa.transform.Transformer;
 
 /**
  * 

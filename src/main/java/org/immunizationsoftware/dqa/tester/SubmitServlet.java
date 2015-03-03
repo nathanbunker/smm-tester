@@ -34,6 +34,8 @@ import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7ComponentManager;
+import org.immunizationsoftware.dqa.transform.TestCaseMessage;
+import org.immunizationsoftware.dqa.transform.Transformer;
 
 /**
  * 

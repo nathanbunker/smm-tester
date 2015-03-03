@@ -23,6 +23,7 @@ import javax.servlet.http.HttpSession;
 import org.immunizationsoftware.dqa.tester.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
+import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 
 /**
  *
