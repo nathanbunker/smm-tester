@@ -14,7 +14,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.immunizationsoftware.dqa.tester.manager.ScenarioManager;
+import org.immunizationsoftware.dqa.transform.PatientType;
+import org.immunizationsoftware.dqa.transform.ScenarioManager;
+import org.immunizationsoftware.dqa.transform.TestCaseMessage;
+import org.immunizationsoftware.dqa.transform.Transformer;
 
 /**
  * 
@@ -152,7 +155,7 @@ public class ModifyMessageServlet extends ClientServlet
           if (lineUpper.startsWith(COMMAND_SET_CONTEXT)) {
             // ignore for now, immunization by default
           } else if (lineUpper.startsWith(COMMAND_SET_PATIENT_TYPE)) {
-            Transformer.PatientType patientType = Transformer.PatientType.valueOf(lineUpper.substring(
+            PatientType patientType = PatientType.valueOf(lineUpper.substring(
                 COMMAND_SET_PATIENT_TYPE.length()).trim());
             testCaseMessage.setPatientType(patientType);
           }

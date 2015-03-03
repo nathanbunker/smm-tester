@@ -58,6 +58,8 @@ public abstract class Connector
         connector = new EnvisionConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_OR_SOAP)) {
         connector = new ORConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_CA_SOAP)) {
+        connector = new CASoapConnector(label, url);
       } else {
         connector = new HttpConnector(label, url);
       }

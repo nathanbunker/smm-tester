@@ -4,7 +4,7 @@
  */
 package org.immunizationsoftware.dqa.tester.transform;
 
-import org.immunizationsoftware.dqa.tester.Transformer.PatientType;
+import org.immunizationsoftware.dqa.transform.PatientType;
 
 /**
  *

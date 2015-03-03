@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.immunizationsoftware.dqa.tester;
+package org.immunizationsoftware.dqa.transform;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -156,9 +156,7 @@ public class Transformer
     return alsoHas;
   }
 
-  public enum PatientType {
-    ANY_CHILD, TWO_MONTHS_OLD, TWO_YEARS_OLD, FOUR_YEARS_OLD, TWELVE_YEARS_OLD, BABY, TODDLER, TWEEN, ADULT, NONE
-  };
+
 
   protected PatientType createDates(String[] dates, PatientType type) {
     {

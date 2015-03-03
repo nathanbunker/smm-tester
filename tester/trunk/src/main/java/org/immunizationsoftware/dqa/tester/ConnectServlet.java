@@ -28,6 +28,7 @@ import org.immunizationsoftware.dqa.tester.connectors.HISoapConnector;
 import org.immunizationsoftware.dqa.tester.connectors.HttpConnector;
 import org.immunizationsoftware.dqa.tester.connectors.NMSoapConnector;
 import org.immunizationsoftware.dqa.tester.connectors.SoapConnector;
+import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 
 /**
  * 

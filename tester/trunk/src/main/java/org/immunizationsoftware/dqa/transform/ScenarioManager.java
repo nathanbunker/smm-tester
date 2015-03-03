@@ -1,7 +1,5 @@
-package org.immunizationsoftware.dqa.tester.manager;
+package org.immunizationsoftware.dqa.transform;
 
-import org.immunizationsoftware.dqa.tester.TestCaseMessage;
-import org.immunizationsoftware.dqa.tester.Transformer.PatientType;
 
 public class ScenarioManager
 {

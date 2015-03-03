@@ -1,22 +1,22 @@
 package org.immunizationsoftware.dqa.tester;
 
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_1_R_ADMIN_CHILD;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_1_R_ADMIN_FOUR_YEARS_OLD;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_1_R_ADMIN_TWELVE_YEARS_OLD;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_1_R_ADMIN_TWO_MONTHS_OLD;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_1_R_ADMIN_TWO_YEARS_OLD;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_2_R_ADMIN_ADULT;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_3_R_HISTORICAL_CHILD;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_3_R_HISTORICAL_FOUR_YEARS_OLD;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_3_R_HISTORICAL_TWELVE_YEARS_OLD;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_3_R_HISTORICAL_TWO_MONTHS_OLD;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_3_R_HISTORICAL_TWO_YEARS_OLD;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_4_R_CONSENTED_CHILD;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_5_P_REFUSED_TODDLER;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_6_P_VARICELLA_HISTORY_CHILD;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_7_R_COMPLETE_RECORD;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.SCENARIO_FULL_RECORD_FOR_PROFILING;
-import static org.immunizationsoftware.dqa.tester.manager.ScenarioManager.createTestCaseMessage;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_1_R_ADMIN_CHILD;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_1_R_ADMIN_FOUR_YEARS_OLD;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_1_R_ADMIN_TWELVE_YEARS_OLD;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_1_R_ADMIN_TWO_MONTHS_OLD;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_1_R_ADMIN_TWO_YEARS_OLD;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_2_R_ADMIN_ADULT;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_3_R_HISTORICAL_CHILD;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_3_R_HISTORICAL_FOUR_YEARS_OLD;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_3_R_HISTORICAL_TWELVE_YEARS_OLD;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_3_R_HISTORICAL_TWO_MONTHS_OLD;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_3_R_HISTORICAL_TWO_YEARS_OLD;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_4_R_CONSENTED_CHILD;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_5_P_REFUSED_TODDLER;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_6_P_VARICELLA_HISTORY_CHILD;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_7_R_COMPLETE_RECORD;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_FULL_RECORD_FOR_PROFILING;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.createTestCaseMessage;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -43,7 +43,6 @@ import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
-import org.immunizationsoftware.dqa.tester.manager.ScenarioManager;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestCase;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestEvent;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestPanel;
@@ -51,6 +50,9 @@ import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTesterManage
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 import org.immunizationsoftware.dqa.tester.transform.Issue;
+import org.immunizationsoftware.dqa.transform.ScenarioManager;
+import org.immunizationsoftware.dqa.transform.TestCaseMessage;
+import org.immunizationsoftware.dqa.transform.Transformer;
 
 public class CertifyRunner extends Thread
 {

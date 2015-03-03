@@ -16,6 +16,7 @@ import javax.servlet.http.HttpSession;
 import org.immunizationsoftware.dqa.tester.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager.Comparison;
+import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 
 /**
  * 

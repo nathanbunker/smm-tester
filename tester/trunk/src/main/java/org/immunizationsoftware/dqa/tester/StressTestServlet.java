@@ -27,6 +27,8 @@ import javax.servlet.http.HttpSessionBindingListener;
 
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
+import org.immunizationsoftware.dqa.transform.TestCaseMessage;
+import org.immunizationsoftware.dqa.transform.Transformer;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;

@@ -5,7 +5,6 @@
 package org.immunizationsoftware.dqa.tester;
 
 import java.io.BufferedReader;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -26,8 +25,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.mover.SendData;
-import org.immunizationsoftware.dqa.tester.Transformer.PatientType;
-import org.immunizationsoftware.dqa.tester.manager.ScenarioManager;
+import org.immunizationsoftware.dqa.transform.PatientType;
+import org.immunizationsoftware.dqa.transform.ScenarioManager;
+import org.immunizationsoftware.dqa.transform.TestCaseMessage;
+import org.immunizationsoftware.dqa.transform.Transformer;
 
 /**
  * 
