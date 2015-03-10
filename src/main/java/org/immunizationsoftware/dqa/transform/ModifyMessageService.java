@@ -25,7 +25,7 @@ public class ModifyMessageService
   public static final String COMMAND_SET = "SET ";
   public static final String COMMAND_SELECT = "SELECT ";
 
-  protected void transform(ModifyMessageRequest request) {
+  public void transform(ModifyMessageRequest request) {
 
     String script = request.getTransformScript();
     Transformer transformer = new Transformer();
