@@ -10,10 +10,9 @@ public class ConnectorFactory
   public static final String TYPE_ENVISION_SOAP = "Envision SOAP";
   public static final String TYPE_OR_SOAP = "OR ALERT SOAP";
   public static final String TYPE_CA_SOAP = "CA SOAP";
-  public static final String TYPE_CA_SOAP2 = "CA SOAP2";
 
   public static final String[][] TYPES = { { TYPE_SOAP, "SOAP" }, { TYPE_POST, "POST" }, { TYPE_CA_SOAP, "CA SOAP" },
-      { TYPE_CA_SOAP2, "CA SOAP2" }, { TYPE_NM_SOAP, "NM SOAP" }, { TYPE_ENVISION_SOAP, "Envision SOAP" },
+      { TYPE_NM_SOAP, "NM SOAP" }, { TYPE_ENVISION_SOAP, "Envision SOAP" },
       { TYPE_HI_SOAP, "HI SOAP (same standard as SOAP)" } };
 
   public static Connector getConnector(String type, String label, String url) throws Exception {
@@ -32,8 +31,6 @@ public class ConnectorFactory
       connector = new ORConnector(label, url);
     } else if (type.equals(TYPE_CA_SOAP)) {
       connector = new CASoapConnector(label, url);
-    } else if (type.equals(TYPE_CA_SOAP2)) {
-      connector = new CASoap2Connector(label, url);
     }
     return connector;
   }

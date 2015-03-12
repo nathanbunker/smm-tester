@@ -13,15 +13,20 @@ import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-import java.security.cert.X509Certificate;
 
 /**
  * 
@@ -275,21 +280,23 @@ public class HttpConnector extends Connector
   protected SSLSocketFactory setupSSLSocketFactory(boolean debug, StringBuilder debugLog) {
     SSLSocketFactory factory = null;
 
-    if (getKeyStore() != null) {
+    KeyStore keyStore = getKeyStore();
+    if (keyStore != null) {
       if (debug) {
         debugLog.append("Key store defined, looking to load it for use on this connection \r");
       }
       try {
-        SSLContext context = SSLContext.getInstance("TLS");
+        
+        String algorithm = KeyManagerFactory.getDefaultAlgorithm();
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithm);
+        
+        kmf.init(keyStore, getKeyStorePassword().toCharArray());
+        
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        tmf.init(getKeyStore());
+        tmf.init(keyStore);
         X509TrustManager defaultTrustManager = (X509TrustManager) tmf.getTrustManagers()[0];
         if (debug) {
-          debugLog.append("Trusted certificates: \r");
-          for (X509Certificate cert : defaultTrustManager.getAcceptedIssuers()) {
-            String certStr = "S:" + cert.getSubjectDN().getName() + " I:" + cert.getIssuerDN().getName();
-            debugLog.append(" + " + certStr + " \r");
-          }
+          doDebug(debugLog, keyStore, defaultTrustManager);
         }
         
         TrustManager[] trustAllCerts = new TrustManager[] { 
@@ -306,9 +313,8 @@ public class HttpConnector extends Connector
             } 
         }; 
         
-        SavingTrustManager tm = new SavingTrustManager(defaultTrustManager);
-        // context.init(null, new TrustManager[] { tm }, null);
-        context.init(null, trustAllCerts, null);
+        SSLContext context = SSLContext.getInstance("TLS");
+        context.init(kmf.getKeyManagers(), trustAllCerts, null);
         factory = context.getSocketFactory();
         if (debug) {
           debugLog.append("Key store loaded \r");
@@ -325,6 +331,23 @@ public class HttpConnector extends Connector
       }
     }
     return factory;
+  }
+
+  public void doDebug(StringBuilder debugLog, KeyStore keyStore, X509TrustManager defaultTrustManager)
+      throws KeyStoreException {
+    debugLog.append("Trusted certificates: \r");
+    for (X509Certificate cert : defaultTrustManager.getAcceptedIssuers()) {
+      String certStr = "S:" + cert.getSubjectDN().getName() + " I:" + cert.getIssuerDN().getName();
+      debugLog.append(" + " + certStr + " \r");
+    }
+    Enumeration enumeration = keyStore.aliases();
+    while (enumeration.hasMoreElements())
+    {
+      String alias = (String) enumeration.nextElement();
+      debugLog.append(" - " + alias);
+      Certificate certificate = keyStore.getCertificate(alias);
+      debugLog.append(certificate.toString());
+    }
   }
 
   @Override
