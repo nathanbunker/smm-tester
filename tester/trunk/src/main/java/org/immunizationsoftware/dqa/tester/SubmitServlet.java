@@ -32,6 +32,7 @@ import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.connectors.HttpConnector.AuthenticationMethod;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
+import org.immunizationsoftware.dqa.tester.manager.TestCaseMessageManager;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7ComponentManager;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
@@ -201,7 +202,8 @@ public class SubmitServlet extends ClientServlet
             }
             out.println("<h3>" + title + "</h3>");
             out.print("<pre>");
-            out.print(responseText);
+            System.out.println(responseText);
+            out.print(responseText.replace("<", "&lt;").replace(">", "&gt;"));
             out.println("</pre>");
           }
           String requestText = (String) request.getAttribute("requestText");
@@ -370,7 +372,7 @@ public class SubmitServlet extends ClientServlet
     String text = tcm.createText();
     out.print(text);
     try {
-      List<TestCaseMessage> tcmList = TestCaseMessage.createTestCaseMessageList(text);
+      List<TestCaseMessage> tcmList = TestCaseMessageManager.createTestCaseMessageList(text);
       for (TestCaseMessage tcmIt : tcmList) {
         out.print(tcmIt.createText());
       }

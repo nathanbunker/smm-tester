@@ -10,9 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
+import org.immunizationsoftware.dqa.tester.manager.TestCaseMessageManager;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
-import org.immunizationsoftware.dqa.tester.run.TestRunner;
+import org.immunizationsoftware.dqa.transform.Comparison;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
+import org.immunizationsoftware.dqa.transform.TestError;
 
 public class TestCaseMessageViewerServlet extends ClientServlet
 {
@@ -138,13 +140,13 @@ public class TestCaseMessageViewerServlet extends ClientServlet
 
       out.println("<pre>" + testCaseMessage.getMessageTextSent() + "</pre>");
 
-      List<CompareManager.Comparison> comparisonList = CompareManager.compareMessages(testCaseMessage.getMessageText(),
+      List<Comparison> comparisonList = CompareManager.compareMessages(testCaseMessage.getMessageText(),
           testCaseMessage.getMessageTextSent());
       if (comparisonList.size() > 0) {
         boolean foundImportantChanges = false;
-        for (CompareManager.Comparison comparison : comparisonList) {
+        for (Comparison comparison : comparisonList) {
           if (comparison.isTested() && !comparison.isPass()
-              && comparison.getPriorityLevel() <= CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL) {
+              && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
             foundImportantChanges = true;
             break;
           }
@@ -220,9 +222,9 @@ public class TestCaseMessageViewerServlet extends ClientServlet
     out.println("    <th>Test Result Status</th>");
     out.println("    <td>" + testCaseMessage.getActualResultStatus() + "</td>");
     out.println("  </tr>");
-    List<TestRunner.Error> errorList = testCaseMessage.getErrorList();
+    List<TestError> errorList = testCaseMessage.getErrorList();
     if (errorList != null) {
-      for (TestRunner.Error error : errorList) {
+      for (TestError error : errorList) {
         out.println("  <tr>");
         out.println("    <td>" + error.getErrorType() + "</td>");
         out.println("    <td>" + error.getDescription() + "</td>");
@@ -238,7 +240,7 @@ public class TestCaseMessageViewerServlet extends ClientServlet
       CompareServlet.printComparison(testCaseMessage.getComparisonList(), out);
     }
 
-    HL7Component actualResponseMessageComponent = testCaseMessage.createHL7Component();
+    HL7Component actualResponseMessageComponent = TestCaseMessageManager.createHL7Component(testCaseMessage);
 
     out.println("<h3>HL7 Analysis of Message</h3>");
     if (actualResponseMessageComponent != null) {

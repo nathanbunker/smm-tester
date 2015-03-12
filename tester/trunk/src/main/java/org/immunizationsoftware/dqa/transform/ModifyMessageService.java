@@ -17,7 +17,10 @@ import java.util.Arrays;
 public class ModifyMessageService
 {
 
-  public static final String COMMAND_ADD_QUICK_TRANSFORMS = "QUICK TRANSFORMS";
+  private static final String COMMAND_QUICK_TRANSFORMS = "QUICK TRANSFORMS";
+  private static final String COMMAND_QUICK_TRANSFORM = "QUICK TRANSFORM";
+  private static final String COMMAND_QUICK_TRANFORM = "QUICK TRANFORM";
+  private static final String COMMAND_QUICK_TRANFORMS = "QUICK TRANFORMS";
   public static final String COMMAND_SET_PATIENT_TYPE = "PATIENT TYPE";
   public static final String COMMAND_SET_CONTEXT = "CONTEXT ";
   public static final String COMMAND_SELECT_SCENARIO = "SCENARIO ";
@@ -58,7 +61,17 @@ public class ModifyMessageService
         } else if (lineUpper.startsWith(COMMAND_ADD)) {
           line = line.substring(COMMAND_ADD.length()).trim();
           lineUpper = line.toUpperCase();
-          if (lineUpper.startsWith(COMMAND_ADD_QUICK_TRANSFORMS)) {
+          String quickTransform = null;
+          if (lineUpper.startsWith(COMMAND_QUICK_TRANSFORMS)) {
+            quickTransform = COMMAND_QUICK_TRANSFORMS;
+          } else if (lineUpper.startsWith(COMMAND_QUICK_TRANSFORM)) {
+            quickTransform = COMMAND_QUICK_TRANSFORM;
+          } else if (lineUpper.startsWith(COMMAND_QUICK_TRANFORMS)) {
+            quickTransform = COMMAND_QUICK_TRANFORMS;
+          } else if (lineUpper.startsWith(COMMAND_QUICK_TRANFORM)) {
+            quickTransform = COMMAND_QUICK_TRANFORM;
+          }  
+          if (quickTransform != null) {
             String[] qt;
             String[] qtOriginal = testCaseMessage.getQuickTransformations();
             if (qtOriginal == null) {
@@ -66,7 +79,7 @@ public class ModifyMessageService
             } else {
               qt = Arrays.copyOf(qtOriginal, qtOriginal.length + 1);
             }
-            qt[qt.length - 1] = lineUpper.substring(COMMAND_ADD_QUICK_TRANSFORMS.length()).trim();
+            qt[qt.length - 1] = lineUpper.substring(quickTransform.length()).trim();
             testCaseMessage.setQuickTransformations(qt);
           }
         } else {

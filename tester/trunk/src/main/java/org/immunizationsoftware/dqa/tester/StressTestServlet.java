@@ -26,6 +26,7 @@ import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.manager.TestCaseMessageManager;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 import org.immunizationsoftware.dqa.transform.Transformer;
@@ -156,7 +157,7 @@ public class StressTestServlet extends ClientServlet
       testCaseMessageList = new ArrayList<TestCaseMessage>();
     } else {
       try {
-        testCaseMessageList = TestCaseMessage.createTestCaseMessageList(testCase);
+        testCaseMessageList = TestCaseMessageManager.createTestCaseMessageList(testCase);
       } catch (Exception e) {
         throw new ServletException("Unable to read test case messages", e);
       }
