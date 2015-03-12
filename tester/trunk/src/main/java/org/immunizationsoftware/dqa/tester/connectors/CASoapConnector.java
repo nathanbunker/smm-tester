@@ -18,11 +18,6 @@ import java.util.List;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
-import org.immunizationsoftware.dqa.tester.connectors.ca.Client_ServiceStub;
-import org.immunizationsoftware.dqa.tester.connectors.ca.Client_ServiceStub.ConnectivityTest;
-import org.immunizationsoftware.dqa.tester.connectors.ca.Client_ServiceStub.ConnectivityTestRequestType;
-import org.immunizationsoftware.dqa.tester.connectors.ca.Client_ServiceStub.ConnectivityTestResponse;
-
 /**
  * 
  * @author nathan
@@ -44,9 +39,6 @@ public class CASoapConnector extends HttpConnector
     String result = "";
     try {
       result = sendRequest(message, cc, debug);
-      System.out.println("--> RESPONSE");
-      System.out.println(result);
-
     } catch (Exception e) {
       return "Unable to relay message, received this error: " + e.getMessage();
     }
@@ -93,25 +85,22 @@ public class CASoapConnector extends HttpConnector
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       urlConn.setUseCaches(false);
-      urlConn.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
-      urlConn.setRequestProperty("SOAPAction", "urn:cdc:iisb:2011");
-      urlConn.setRequestProperty("action", "urn:cdc:iisb:2011");
+      urlConn.setRequestProperty("Content-Type", "text/xml;charset=UTF-8");
+      urlConn.setRequestProperty("SOAPAction", "\"urn:cdc:iisb:2011:submitSingleMessage\"");
       printout = new DataOutputStream(urlConn.getOutputStream());
       StringWriter stringWriter = new StringWriter();
       PrintWriter out = new PrintWriter(stringWriter);
       // out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-      out.println("<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:urn=\"urn:cdc:iisb:2011\">");
+      out.println("<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:cdc:iisb:2011\">");
       out.println("  <soap:Header/>");
       out.println("    <soap:Body>");
       out.println("    <urn:submitSingleMessage> ");
       out.println("      <urn:username>" + conn.userId + "</urn:username>");
       out.println("      <urn:password>" + conn.password + "</urn:password>");
       out.println("      <urn:facilityID>" + conn.facilityId + "</urn:facilityID>");
-      out.println("      <urn:hl7Message>");
-      out.print("<![CDATA[");
+      out.print("      <urn:hl7Message><![CDATA[");
       out.print(request);
-      out.println("]]>");
-      out.println("      </urn:hl7Message>");
+      out.println("]]></urn:hl7Message>");
       out.println("    </urn:submitSingleMessage>");
       out.println("  </soap:Body>");
       out.println("</soap:Envelope>");
@@ -146,18 +135,18 @@ public class CASoapConnector extends HttpConnector
   public String connectivityTest(String message) throws Exception {
     StringBuilder response = new StringBuilder();
 
-    StringBuilder debugLog = null;
+     StringBuilder debugLog = new StringBuilder();
     String messageBeingSent = null;
     try {
-      SSLSocketFactory factory = setupSSLSocketFactory(false, debugLog);
+       SSLSocketFactory factory = setupSSLSocketFactory(false, debugLog);
       URLConnection urlConn;
       DataOutputStream printout;
       InputStreamReader input = null;
       URL url = new URL(this.url);
       urlConn = url.openConnection();
-      if (factory != null && urlConn instanceof HttpsURLConnection) {
-        ((HttpsURLConnection) urlConn).setSSLSocketFactory(factory);
-      }
+       if (factory != null && urlConn instanceof HttpsURLConnection) {
+         ((HttpsURLConnection) urlConn).setSSLSocketFactory(factory);
+       }
 
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
@@ -168,11 +157,11 @@ public class CASoapConnector extends HttpConnector
       StringWriter stringWriter = new StringWriter();
       PrintWriter out = new PrintWriter(stringWriter);
       // out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-      out.println("<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:urn=\"urn:cdc:iisb:2011\">");
+      out.println("<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:cdc:iisb:2011\">");
       out.println("  <soap:Header/>");
       out.println("    <soap:Body>");
       out.println("    <urn:connectivityTest> ");
-      out.println("      <urn:echoBack>Testing</urn:echoBack>");
+      out.println("      <urn:echoBack>" + message + "</urn:echoBack>");
       out.println("    </urn:connectivityTest>");
       out.println("  </soap:Body>");
       out.println("</soap:Envelope>");
@@ -188,6 +177,7 @@ public class CASoapConnector extends HttpConnector
         response.append('\r');
       }
       input.close();
+      
     } catch (IOException ioe) {
       response.append("Unable to relay message, received this error: " + ioe.getMessage());
     }
