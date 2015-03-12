@@ -12,14 +12,8 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.immunizationsoftware.dqa.tester.manager.CompareManager;
-import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
-import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestCase;
-import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestPanel;
-import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
-import org.immunizationsoftware.dqa.tester.manager.hl7.messages.ACK;
-import org.immunizationsoftware.dqa.tester.manager.hl7.messages.RSP;
-import org.immunizationsoftware.dqa.tester.run.TestRunner;
+import org.immunizationsoftware.dqa.transform.forecast.ForecastTestCase;
+import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
 
 /**
  * 
@@ -28,129 +22,22 @@ import org.immunizationsoftware.dqa.tester.run.TestRunner;
 public class TestCaseMessage
 {
 
-  private static final String TEST_CASE_SET = "Test Case Set:";
-  private static final String TEST_CASE_NUMBER = "Test Case Number:";
-  private static final String DESCRIPTION = "Description:";
-  private static final String EXPECTED_RESULT = "Expected Result:";
-  private static final String ASSERT_RESULT = "Assert Result:";
-  private static final String ORIGINAL_MESSAGE = "Original Message:";
-  private static final String ACTUAL_RESPONSE_MESSAGE = "Actual Response Message:";
-  private static final String DERIVED_FROM_VXU_MESSAGE = "Derived From VXU Message:";
-  private static final String QUICK_TRANSFORMATIONS = "Quick Transformations:";
-  private static final String CUSTOM_TRANSFORMATIONS = "Custom Transformations:";
-  private static final String CAUSE_ISSUES = "Cause Issues:";
-  private static final String COMMENT = "Comment:";
-  private static final String PATIENT_TYPE = "Patient Type:";
-  private static final String SCENARIO = "Scenario:";
+  public static final String TEST_CASE_SET = "Test Case Set:";
+  public static final String TEST_CASE_NUMBER = "Test Case Number:";
+  public static final String DESCRIPTION = "Description:";
+  public static final String EXPECTED_RESULT = "Expected Result:";
+  public static final String ASSERT_RESULT = "Assert Result:";
+  public static final String ORIGINAL_MESSAGE = "Original Message:";
+  public static final String ACTUAL_RESPONSE_MESSAGE = "Actual Response Message:";
+  public static final String DERIVED_FROM_VXU_MESSAGE = "Derived From VXU Message:";
+  public static final String QUICK_TRANSFORMATIONS = "Quick Transformations:";
+  public static final String CUSTOM_TRANSFORMATIONS = "Custom Transformations:";
+  public static final String CAUSE_ISSUES = "Cause Issues:";
+  public static final String COMMENT = "Comment:";
+  public static final String PATIENT_TYPE = "Patient Type:";
+  public static final String SCENARIO = "Scenario:";
 
-  protected static int createTestCase(TestCaseMessage testCaseMessage, StringBuffer message, int number,
-      List<TestCaseMessage> testCaseMessageList) {
-    String messageText = message.toString();
-    if (messageText.length() > 0) {
-      testCaseMessage.setMessageText(messageText);
-      if (testCaseMessage.getTestCaseNumber().equals("")) {
-        // try to find in message
-        int pos = messageText.indexOf("|");
-        int count = 1;
-        while (pos != -1 && count < 9) {
-          pos = messageText.indexOf("|", pos + 1);
-          count++;
-        }
-        if (pos != -1) {
-          int endPos = messageText.indexOf("|", pos + 1);
-          if (endPos != -1) {
-            String messageId = messageText.substring(pos + 1, endPos);
-            endPos = messageId.indexOf("~");
-            if (endPos != -1) {
-              messageId = messageId.substring(0, endPos);
-            }
-            endPos = messageId.indexOf("^");
-            if (endPos != -1) {
-              messageId = messageId.substring(0, endPos);
-            }
-            testCaseMessage.setTestCaseNumber(messageId);
-          }
-        }
-      }
-      // couldn't find it htere, now looking in PID-3
-      if (testCaseMessage.getTestCaseNumber().equals("")) {
-        // try to find in message
-        int pos = messageText.indexOf("PID|");
-        pos = pos + 3;
-        int count = 1;
-        while (pos != -1 && count < 3) {
-          pos = messageText.indexOf("|", pos + 1);
-          count++;
-        }
-        if (pos != -1) {
-          int endPos = messageText.indexOf("|", pos + 1);
-          if (endPos != -1) {
-            String messageId = messageText.substring(pos + 1, endPos);
-            endPos = messageId.indexOf("~");
-            if (endPos != -1) {
-              messageId = messageId.substring(0, endPos);
-            }
-            endPos = messageId.indexOf("^");
-            if (endPos != -1) {
-              messageId = messageId.substring(0, endPos);
-            }
-            testCaseMessage.setTestCaseNumber(messageId);
-          }
-        }
-      }
-      number++;
-      if (testCaseMessage.getTestCaseNumber().equals("")) {
-        testCaseMessage.setTestCaseNumber("{" + number + "}");
-      }
-      boolean hasRange = false;
-      String tcn = testCaseMessage.getTestCaseNumber();
-      int openBracket = tcn.indexOf("[");
-      if (openBracket != -1) {
-        int closeBracket = tcn.indexOf("]", openBracket);
-        if (closeBracket != -1) {
-          String part1 = tcn.substring(0, openBracket);
-          String range = tcn.substring(openBracket + 1, closeBracket);
-          closeBracket++;
-          String part2 = "";
-          if (closeBracket < tcn.length()) {
-            part2 = tcn.substring(closeBracket);
-          }
-          {
-            int dotdot = range.indexOf("..");
-            if (dotdot != -1) {
-              hasRange = true;
-              String startNum = range.substring(0, dotdot).trim();
-              if (startNum.equals("")) {
-                startNum = "1";
-              }
-              String endNum = range.substring(dotdot + 2).trim();
-              if (endNum.equals("")) {
-                endNum = "100";
-              }
-              int count = 1;
-              number--;
-              while (count < 1000 && !startNum.equals(endNum)) {
-                number++;
-                TestCaseMessage copy = new TestCaseMessage(testCaseMessage);
-                copy.setTestCaseNumber(part1 + startNum + part2);
-                addTestMessageToList(testCaseMessageList, copy);
-                startNum = addOne(startNum);
-                count++;
-              }
-              TestCaseMessage copy = new TestCaseMessage(testCaseMessage);
-              copy.setTestCaseNumber(part1 + startNum + part2);
-              addTestMessageToList(testCaseMessageList, copy);
-            }
-          }
-        }
-      }
-      if (!hasRange) {
-        addTestMessageToList(testCaseMessageList, testCaseMessage);
-      }
-      message.setLength(0);
-    }
-    return number;
-  }
+  
 
   public static void main(String[] args) {
     for (int i = 0; i < args.length; i++) {
@@ -232,9 +119,9 @@ public class TestCaseMessage
   private boolean hasIssue = false;
   private Throwable exception = null;
   private String actualResponseMessage = "";
-  private List<TestRunner.Error> errorList = null;
+  private List<TestError> errorList = null;
   private String derivedFromVXUMessage = "";
-  private List<CompareManager.Comparison> comparisonList = null;
+  private List<Comparison> comparisonList = null;
   private boolean passedTest = false;
   private boolean accepted = false;
   private boolean majorChangesMade = false;
@@ -341,11 +228,11 @@ public class TestCaseMessage
     this.passedTest = pass;
   }
 
-  public List<CompareManager.Comparison> getComparisonList() {
+  public List<Comparison> getComparisonList() {
     return comparisonList;
   }
 
-  public void setComparisonList(List<CompareManager.Comparison> comparisonList) {
+  public void setComparisonList(List<Comparison> comparisonList) {
     this.comparisonList = comparisonList;
   }
 
@@ -357,11 +244,11 @@ public class TestCaseMessage
     this.derivedFromVXUMessage = derivedFromVXUText;
   }
 
-  public List<TestRunner.Error> getErrorList() {
+  public List<TestError> getErrorList() {
     return errorList;
   }
 
-  public void setErrorList(List<TestRunner.Error> errorList) {
+  public void setErrorList(List<TestError> errorList) {
     this.errorList = errorList;
   }
 
@@ -648,7 +535,7 @@ public class TestCaseMessage
     this.originalMessage += append;
   }
 
-  private void appendCauseIssue(String causeIssue) {
+  public void appendCauseIssue(String causeIssue) {
     if (this.causeIssues == null) {
       this.causeIssues = "";
     }
@@ -671,134 +558,9 @@ public class TestCaseMessage
     this.quickTransformations = quickTransformations;
   }
 
-  public static List<TestCaseMessage> createTestCaseMessageList(String source) throws Exception {
-    List<TestCaseMessage> testCaseMessageList = new ArrayList<TestCaseMessage>();
+ 
 
-    try {
-      BufferedReader in = new BufferedReader(new StringReader(source));
-      String line = null;
-      StringBuffer message = new StringBuffer();
-      TestCaseMessage testCaseMessage = new TestCaseMessage();
-      int number = 0;
-      boolean readingHL7 = false;
-      String lastList = "";
-      while ((line = in.readLine()) != null) {
-        line = line.trim();
-        if (line.length() > 0) {
-          if (line.startsWith("TC:") || line.startsWith(TEST_CASE_NUMBER)) {
-            number = createTestCase(testCaseMessage, message, number, testCaseMessageList);
-            testCaseMessage = new TestCaseMessage();
-            readingHL7 = false;
-            lastList = "";
-          } else if (line.startsWith("MSH|")) {
-            if (readingHL7) {
-              // found test case without a proper header
-              number = createTestCase(testCaseMessage, message, number, testCaseMessageList);
-              testCaseMessage = new TestCaseMessage();
-              readingHL7 = false;
-              lastList = "";
-            }
-          }
-          if (line.startsWith("TC:") || line.startsWith(TEST_CASE_NUMBER)) {
-            testCaseMessage.setTestCaseNumber(readValue(line));
-          } else if (line.startsWith(COMMENT)) {
-            String[] parts = split(line);
-            if (parts.length == 2 && parts[0] != null && parts[1] != null) {
-              testCaseMessage.setComment(parts[0].trim(), parts[1].trim());
-            }
-          } else if (line.startsWith(DESCRIPTION)) {
-            testCaseMessage.setDescription(readValue(line));
-          } else if (line.startsWith(PATIENT_TYPE)) {
-            testCaseMessage.setPatientType(PatientType.valueOf(readValue(line)));
-          } else if (line.startsWith(SCENARIO)) {
-            testCaseMessage.setPatientType(PatientType.valueOf(readValue(line)));
-          } else if (line.startsWith(TEST_CASE_SET)) {
-            testCaseMessage.setTestCaseSet(readValue(line));
-          } else if (line.startsWith(EXPECTED_RESULT)) {
-            testCaseMessage.setExpectedResult(readValue(line));
-          } else if (line.startsWith(ORIGINAL_MESSAGE)) {
-            testCaseMessage.setOriginalMessage(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
-          } else if (line.startsWith(ACTUAL_RESPONSE_MESSAGE)) {
-            testCaseMessage.setActualResponseMessage(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
-          } else if (line.startsWith(DERIVED_FROM_VXU_MESSAGE)) {
-            testCaseMessage.setDerivedFromVXUMessage(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
-          } else if (line.startsWith(QUICK_TRANSFORMATIONS)) {
-            testCaseMessage.setQuickTransformations(readValues(line));
-          } else if (line.startsWith(ASSERT_RESULT)) {
-            testCaseMessage.setAssertResult(readValue(line));
-          } else if (line.startsWith(CUSTOM_TRANSFORMATIONS)) {
-            testCaseMessage.setCustomTransformations(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
-            lastList = "CT";
-          } else if (line.startsWith(CAUSE_ISSUES)) {
-            testCaseMessage.setCauseIssues(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
-            lastList = "CI";
-          } else if (line.startsWith("+") && line.length() > 1) {
-            if (lastList.equals("CT")) {
-              testCaseMessage.appendCustomTransformation(line.substring(1).trim());
-            } else if (lastList.equals("CI")) {
-              testCaseMessage.appendCauseIssue(line.substring(1).trim());
-            }
-          } else if (line.startsWith("--") || line.startsWith("//")) {
-            // ignore, this line is a comment
-          } else if (line.startsWith("MSH|")) {
-            // Looks like part of an HL7 message
-            message.append(line);
-            message.append("\r");
-            readingHL7 = true;
-          } else if (readingHL7) {
-            if (line.length() > 3 && line.charAt(3) == '|') {
-              message.append(line);
-              message.append("\r");
-            }
-          } else {
-            lastList = "";
-          }
-        }
-      }
-      if (message.length() > 0) {
-        number = createTestCase(testCaseMessage, message, number, testCaseMessageList);
-      }
-    } catch (Exception e) {
-      throw new Exception("Unable to intantiate test case messages", e);
-    }
-    return testCaseMessageList;
-  }
 
-  private static String readValue(String s) {
-    int pos = s.indexOf(":");
-    if (pos == -1) {
-      return "";
-    }
-    pos++;
-    if (pos == s.length()) {
-      return "";
-    }
-    return s.substring(pos).trim();
-  }
-
-  private static String[] readValues(String s) {
-    String[] values = readValue(s).split("\\,");
-    if (values == null) {
-      values = new String[] {};
-    }
-    for (int i = 0; i < values.length; i++) {
-      values[i] = values[i].trim();
-    }
-    return values;
-  }
-
-  private static String[] split(String s) {
-    int pos = s.indexOf(":");
-    if (pos == -1 || (++pos == s.length())) {
-      return new String[] {};
-    }
-    s = s.substring(pos).trim();
-    pos = s.indexOf("-");
-    if (pos == -1 || (++pos == s.length())) {
-      return new String[] {};
-    }
-    return new String[] { s.substring(0, pos - 1), s.substring(pos) };
-  }
 
   public String createText() {
     return createText(false);
@@ -946,30 +708,5 @@ public class TestCaseMessage
     preparedMessage = sb.toString();
   }
 
-  public HL7Component createHL7Component() {
-    try {
-      HL7Component comp = null;
-      if (getActualMessageResponseType().equals("")) {
-        if (!getActualResponseMessage().equalsIgnoreCase("")) {
-          HL7Reader ackMessageReader = new HL7Reader(getActualResponseMessage());
-          if (ackMessageReader.advanceToSegment("MSH")) {
-            setActualMessageResponseType(ackMessageReader.getValue(9));
-          }
-        }
-      }
-      if (getActualMessageResponseType().equals("ACK")) {
-        comp = new ACK();
-      } else if (getActualMessageResponseType().equals("RSP")) {
-        comp = new RSP();
-      }
-      if (comp != null) {
-        comp.parseTextFromMessage(getActualResponseMessage());
-        comp.checkConformance();
-        return comp;
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return null;
-  }
+ 
 }

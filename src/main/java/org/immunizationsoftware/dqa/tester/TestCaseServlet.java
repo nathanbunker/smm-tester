@@ -20,8 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.immunizationsoftware.dqa.tester.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.manager.TestCaseMessageManager;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 
@@ -260,7 +260,7 @@ public class TestCaseServlet extends ClientServlet {
             testCaseMessageList = new ArrayList<TestCaseMessage>();
         } else {
             try {
-                testCaseMessageList = TestCaseMessage.createTestCaseMessageList(testCase);
+                testCaseMessageList = TestCaseMessageManager.createTestCaseMessageList(testCase);
             } catch (Exception e) {
                 throw new ServletException("Unable to read test case messages", e);
             }

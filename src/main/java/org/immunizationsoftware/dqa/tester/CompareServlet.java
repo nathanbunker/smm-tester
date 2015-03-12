@@ -13,9 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.immunizationsoftware.dqa.tester.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
-import org.immunizationsoftware.dqa.tester.manager.CompareManager.Comparison;
+import org.immunizationsoftware.dqa.transform.Comparison;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 
 /**
@@ -87,7 +86,7 @@ public class CompareServlet extends ClientServlet
         vxuMessageSubmitted = vxuMessage;
       }
 
-      List<CompareManager.Comparison> comparisonList = null;
+      List<Comparison> comparisonList = null;
       if (showSubmissionChange) {
         if (vxuMessage != null && vxuMessageSubmitted != null && !vxuMessage.equals("")
             && !vxuMessageSubmitted.equals("")) {
@@ -152,10 +151,10 @@ public class CompareServlet extends ClientServlet
     }
   }
 
-  public static void printComparison(List<CompareManager.Comparison> comparisonList, PrintWriter out) {
+  public static void printComparison(List<Comparison> comparisonList, PrintWriter out) {
     out.println("      <table border=\"1\" cellspacing=\"0\">");
     String lastSegmentName = "XXX";
-    for (CompareManager.Comparison comparison : comparisonList) {
+    for (Comparison comparison : comparisonList) {
       if (!comparison.getHl7FieldName().startsWith(lastSegmentName)) {
         lastSegmentName = comparison.getHl7FieldName().substring(0, 3);
         out.println("        <tr>");

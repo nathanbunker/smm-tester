@@ -22,50 +22,33 @@ import org.immunizationsoftware.dqa.tester.connectors.ca.Client_ServiceStub;
 import org.immunizationsoftware.dqa.tester.connectors.ca.Client_ServiceStub.ConnectivityTest;
 import org.immunizationsoftware.dqa.tester.connectors.ca.Client_ServiceStub.ConnectivityTestRequestType;
 import org.immunizationsoftware.dqa.tester.connectors.ca.Client_ServiceStub.ConnectivityTestResponse;
+import org.immunizationsoftware.dqa.tester.connectors.ca.Client_ServiceStub.SubmitSingleMessage;
+import org.immunizationsoftware.dqa.tester.connectors.ca.Client_ServiceStub.SubmitSingleMessageRequestType;
+import org.immunizationsoftware.dqa.tester.connectors.ca.Client_ServiceStub.SubmitSingleMessageResponse;
 
 /**
  * 
  * @author nathan
  */
-public class CASoapConnector extends HttpConnector
+public class CASoap2Connector extends HttpConnector
 {
 
-  public CASoapConnector(String label, String url) {
-    super(label, url, "CA SOAP");
+  public CASoap2Connector(String label, String url) {
+    super(label, url, "CA SOAP2");
   }
 
   @Override
   public String submitMessage(String message, boolean debug) throws Exception {
-    ClientConnection cc = new ClientConnection();
-    cc.userId = userid;
-    cc.password = password;
-    cc.facilityId = facilityid;
-    cc.url = url;
-    String result = "";
-    try {
-      result = sendRequest(message, cc, debug);
-      System.out.println("--> RESPONSE");
-      System.out.println(result);
-
-    } catch (Exception e) {
-      return "Unable to relay message, received this error: " + e.getMessage();
-    }
-
-    StringBuffer sbuf = new StringBuffer(result.length());
-    boolean inTag = false;
-    for (char c : result.toCharArray()) {
-      if (c == '<') {
-        inTag = true;
-      } else if (c == '>') {
-        inTag = false;
-      } else if (!inTag) {
-        sbuf.append(c);
-      }
-    }
-    if (sbuf.length() > 0) {
-      result = sbuf.toString();
-    }
-    return result;
+    Client_ServiceStub serviceStub = new Client_ServiceStub();
+    SubmitSingleMessage submitSingleMessage = new SubmitSingleMessage();
+    SubmitSingleMessageRequestType submitSingleMessageRequestType = new SubmitSingleMessageRequestType();
+    submitSingleMessageRequestType.setFacilityID(facilityid);
+    submitSingleMessageRequestType.setHl7Message(message);
+    submitSingleMessageRequestType.setPassword(password);
+    submitSingleMessageRequestType.setUsername(userid);
+    submitSingleMessage.setSubmitSingleMessage(submitSingleMessageRequestType);
+    SubmitSingleMessageResponse submitSingleMessageResponse = serviceStub.submitSingleMessage(submitSingleMessage);
+    return submitSingleMessageResponse.getSubmitSingleMessageResponse().get_return();
   }
 
   public String sendRequest(String request, ClientConnection conn, boolean debug) {
@@ -144,54 +127,13 @@ public class CASoapConnector extends HttpConnector
 
   @Override
   public String connectivityTest(String message) throws Exception {
-    StringBuilder response = new StringBuilder();
-
-    StringBuilder debugLog = null;
-    String messageBeingSent = null;
-    try {
-      SSLSocketFactory factory = setupSSLSocketFactory(false, debugLog);
-      URLConnection urlConn;
-      DataOutputStream printout;
-      InputStreamReader input = null;
-      URL url = new URL(this.url);
-      urlConn = url.openConnection();
-      if (factory != null && urlConn instanceof HttpsURLConnection) {
-        ((HttpsURLConnection) urlConn).setSSLSocketFactory(factory);
-      }
-
-      urlConn.setDoInput(true);
-      urlConn.setDoOutput(true);
-      urlConn.setUseCaches(false);
-      urlConn.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
-      urlConn.setRequestProperty("SOAPAction", "\"urn:cdc:iisb:2011:connectivityTest\"");
-      printout = new DataOutputStream(urlConn.getOutputStream());
-      StringWriter stringWriter = new StringWriter();
-      PrintWriter out = new PrintWriter(stringWriter);
-      // out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-      out.println("<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:urn=\"urn:cdc:iisb:2011\">");
-      out.println("  <soap:Header/>");
-      out.println("    <soap:Body>");
-      out.println("    <urn:connectivityTest> ");
-      out.println("      <urn:echoBack>Testing</urn:echoBack>");
-      out.println("    </urn:connectivityTest>");
-      out.println("  </soap:Body>");
-      out.println("</soap:Envelope>");
-      messageBeingSent = stringWriter.toString();
-      printout.writeBytes(messageBeingSent);
-      printout.flush();
-      printout.close();
-      input = new InputStreamReader(urlConn.getInputStream());
-      BufferedReader in = new BufferedReader(input);
-      String line;
-      while ((line = in.readLine()) != null) {
-        response.append(line);
-        response.append('\r');
-      }
-      input.close();
-    } catch (IOException ioe) {
-      response.append("Unable to relay message, received this error: " + ioe.getMessage());
-    }
-    return response.toString();
+    Client_ServiceStub serviceStub = new Client_ServiceStub();
+    ConnectivityTest connectivityTest = new ConnectivityTest();
+    ConnectivityTestRequestType connectivityTestRequestType = new ConnectivityTestRequestType();
+    connectivityTestRequestType.setEchoBack(message);
+    connectivityTest.setConnectivityTest(connectivityTestRequestType);
+    ConnectivityTestResponse connectivityTestResponse = serviceStub.connectivityTest(connectivityTest);
+    return connectivityTestResponse.getConnectivityTestResponse().get_return();
   }
 
   public static class ClientConnection

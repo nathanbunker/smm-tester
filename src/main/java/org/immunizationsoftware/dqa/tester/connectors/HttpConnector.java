@@ -21,6 +21,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+import java.security.cert.X509Certificate;
 
 /**
  * 
@@ -283,8 +284,31 @@ public class HttpConnector extends Connector
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         tmf.init(getKeyStore());
         X509TrustManager defaultTrustManager = (X509TrustManager) tmf.getTrustManagers()[0];
+        if (debug) {
+          debugLog.append("Trusted certificates: \r");
+          for (X509Certificate cert : defaultTrustManager.getAcceptedIssuers()) {
+            String certStr = "S:" + cert.getSubjectDN().getName() + " I:" + cert.getIssuerDN().getName();
+            debugLog.append(" + " + certStr + " \r");
+          }
+        }
+        
+        TrustManager[] trustAllCerts = new TrustManager[] { 
+            new X509TrustManager() {     
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() { 
+                    return new X509Certificate[0];
+                } 
+                public void checkClientTrusted( 
+                    java.security.cert.X509Certificate[] certs, String authType) {
+                    } 
+                public void checkServerTrusted( 
+                    java.security.cert.X509Certificate[] certs, String authType) {
+                }
+            } 
+        }; 
+        
         SavingTrustManager tm = new SavingTrustManager(defaultTrustManager);
-        context.init(null, new TrustManager[] { tm }, null);
+        // context.init(null, new TrustManager[] { tm }, null);
+        context.init(null, trustAllCerts, null);
         factory = context.getSocketFactory();
         if (debug) {
           debugLog.append("Key store loaded \r");

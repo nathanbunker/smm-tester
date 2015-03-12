@@ -17,6 +17,10 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.immunizationsoftware.dqa.tester.connectors.HttpConnector.AuthenticationMethod;
+import org.immunizationsoftware.dqa.transform.forecast.ForecastExpected;
+import org.immunizationsoftware.dqa.transform.forecast.ForecastTestCase;
+import org.immunizationsoftware.dqa.transform.forecast.ForecastTestEvent;
+import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
 
 public class ForecastTesterManager
 {

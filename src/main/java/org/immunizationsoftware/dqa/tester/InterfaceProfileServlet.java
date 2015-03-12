@@ -28,6 +28,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.manager.TestCaseMessageManager;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 import org.immunizationsoftware.dqa.tester.transform.Issue;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
@@ -483,7 +484,7 @@ public class InterfaceProfileServlet extends ClientServlet
     {
       try
       {
-        testCaseMessageList = TestCaseMessage.createTestCaseMessageList(testCase);
+        testCaseMessageList = TestCaseMessageManager.createTestCaseMessageList(testCase);
       } catch (Exception e)
       {
         throw new ServletException("Unable to read test case messages", e);

@@ -13,6 +13,7 @@ import org.immunizationsoftware.dqa.mover.AckAnalyzer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
+import org.immunizationsoftware.dqa.transform.TestError;
 import org.immunizationsoftware.dqa.transform.Transform;
 import org.immunizationsoftware.dqa.transform.Transformer;
 
@@ -23,35 +24,12 @@ import org.immunizationsoftware.dqa.transform.Transformer;
 public class TestRunner
 {
 
-  public class Error
-  {
-    private ErrorType errorType = ErrorType.UNKNOWN;
-    private String description = "";
-
-    public ErrorType getErrorType() {
-      return errorType;
-    }
-
-    public void setErrorType(ErrorType errorType) {
-      this.errorType = errorType;
-    }
-
-    public String getDescription() {
-      return description;
-    }
-
-    public void setDescription(String description) {
-      this.description = description;
-    }
-
-  }
-
   public static final String ACTUAL_RESULT_STATUS_FAIL = "FAIL";
   public static final String ACTUAL_RESULT_STATUS_PASS = "PASS";
   private String ackMessageText = null;
   private boolean passedTest = false;
   private String status = "";
-  private List<Error> errorList = null;
+  private List<TestError> errorList = null;
   private ErrorType errorType = ErrorType.UNKNOWN;
   private HL7Reader ackMessageReader;
   private long startTime = 0;
@@ -69,7 +47,7 @@ public class TestRunner
     return errorType;
   }
 
-  public List<Error> getErrorList() {
+  public List<TestError> getErrorList() {
     return errorList;
   }
 
@@ -113,7 +91,7 @@ public class TestRunner
     endTime = System.currentTimeMillis();
 
 
-    errorList = new ArrayList<Error>();
+    errorList = new ArrayList<TestError>();
     if (!testCaseMessage.getAssertResult().equalsIgnoreCase("")) {
       ackMessageReader = new HL7Reader(ackMessageText);
       if (ackMessageReader.advanceToSegment("MSH")) {
@@ -148,7 +126,7 @@ public class TestRunner
             while (ackMessageReader.advanceToSegment("ERR")) {
               String severity = ackMessageReader.getValue(4);
               String userMessage = ackMessageReader.getValue(8);
-              Error error = new Error();
+              TestError error = new TestError();
               errorList.add(error);
 
               if (!severity.equals("")) {
@@ -223,7 +201,7 @@ public class TestRunner
       if (passedTest) {
         status = "A";
         testCaseMessage.setActualResultStatus(ACTUAL_RESULT_STATUS_PASS);
-        for (Error error : errorList) {
+        for (TestError error : errorList) {
           if (status.equals("A") && error.getErrorType() == ErrorType.WARNING) {
             // ignore skip warnings
             if (error.getErrorType() != ErrorType.INFORMATION) {

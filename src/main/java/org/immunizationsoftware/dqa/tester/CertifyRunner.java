@@ -43,16 +43,18 @@ import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
-import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestCase;
-import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestEvent;
-import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTestPanel;
+import org.immunizationsoftware.dqa.tester.manager.TestCaseMessageManager;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTesterManager;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 import org.immunizationsoftware.dqa.tester.transform.Issue;
+import org.immunizationsoftware.dqa.transform.Comparison;
 import org.immunizationsoftware.dqa.transform.ScenarioManager;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 import org.immunizationsoftware.dqa.transform.Transformer;
+import org.immunizationsoftware.dqa.transform.forecast.ForecastTestCase;
+import org.immunizationsoftware.dqa.transform.forecast.ForecastTestEvent;
+import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
 
 public class CertifyRunner extends Thread
 {
@@ -797,7 +799,7 @@ public class CertifyRunner extends Thread
     for (TestCaseMessage testCaseMessage : ackAnalysisList) {
       count++;
       if (testCaseMessage.isHasRun()) {
-        HL7Component comp = testCaseMessage.createHL7Component();
+        HL7Component comp = TestCaseMessageManager.createHL7Component(testCaseMessage);
         if (comp != null && comp.hasNoErrors()) {
           pass++;
         }
@@ -818,7 +820,7 @@ public class CertifyRunner extends Thread
     for (TestCaseMessage testCaseMessage : rspAnalysisList) {
       count++;
       if (testCaseMessage.isHasRun()) {
-        HL7Component comp = testCaseMessage.createHL7Component();
+        HL7Component comp = TestCaseMessageManager.createHL7Component(testCaseMessage);
         if (comp != null && comp.hasNoErrors()) {
           pass++;
         }
@@ -897,83 +899,226 @@ public class CertifyRunner extends Thread
     }
   }
 
+  private static final String FIELD_MSH_3 = "MSH-3";
+  private static final String FIELD_MSH_3_1 = "MSH-3.1";
+  private static final String FIELD_MSH_3_2 = "MSH-3.2";
   private static final String FIELD_MSH_4 = "MSH-4";
+  private static final String FIELD_MSH_4_1 = "MSH-4.1";
+  private static final String FIELD_MSH_4_2 = "MSH-4.2";
+  private static final String FIELD_MSH_5 = "MSH-5";
+  private static final String FIELD_MSH_5_1 = "MSH-5.1";
+  private static final String FIELD_MSH_5_2 = "MSH-5.2";
   private static final String FIELD_MSH_6 = "MSH-6";
+  private static final String FIELD_MSH_6_1 = "MSH-6.1";
+  private static final String FIELD_MSH_6_2 = "MSH-6.2";
   private static final String FIELD_MSH_7 = "MSH-7";
   private static final String FIELD_MSH_9 = "MSH-9";
   private static final String FIELD_MSH_10 = "MSH-10";
   private static final String FIELD_MSH_11 = "MSH-11";
   private static final String FIELD_MSH_12 = "MSH-12";
+  private static final String FIELD_MSH_15 = "MSH-15";
   private static final String FIELD_MSH_16 = "MSH-16";
+  private static final String FIELD_MSH_17 = "MSH-17";
+  private static final String FIELD_MSH_21 = "MSH-21";
+  private static final String FIELD_MSH_22 = "MSH-22";
+  private static final String FIELD_MSH_23 = "MSH-23";
+  private static final String FIELD_PD1_1 = "PD1-1";
   private static final String FIELD_PID_3 = "PID-3";
   private static final String FIELD_PID_3_1 = "PID-3.1";
-  private static final String FIELD_PID_3_7 = "PID-3.7";
+  private static final String FIELD_PID_3_4 = "PID-3.4";
+  private static final String FIELD_PID_3_5 = "PID-3.5";
+  private static final String FIELD_PID_3_SSN = "PID-3 SSN";
+  private static final String FIELD_PID_3_MEDICAID = "PID-3 Medicaid";
   private static final String FIELD_PID_5 = "PID-5";
+  private static final String FIELD_PID_5_1 = "PID-5.1";
+  private static final String FIELD_PID_5_2 = "PID-5.2";
+  private static final String FIELD_PID_5_3 = "PID-5.3";
+  private static final String FIELD_PID_5_7 = "PID-5.7";
   private static final String FIELD_PID_6 = "PID-6";
+  private static final String FIELD_PID_6_1 = "PID-6.1";
+  private static final String FIELD_PID_6_2 = "PID-6.2";
+  private static final String FIELD_PID_6_3 = "PID-6.3";
+  private static final String FIELD_PID_6_7 = "PID-6.7";
   private static final String FIELD_PID_7 = "PID-7";
   private static final String FIELD_PID_8 = "PID-8";
   private static final String FIELD_PID_10 = "PID-10";
   private static final String FIELD_PID_11 = "PID-11";
+  private static final String FIELD_PID_11_1 = "PID-11.1";
+  private static final String FIELD_PID_11_2 = "PID-11.2";
+  private static final String FIELD_PID_11_3 = "PID-11.3";
+  private static final String FIELD_PID_11_4 = "PID-11.4";
+  private static final String FIELD_PID_11_5 = "PID-11.5";
+  private static final String FIELD_PID_11_6 = "PID-11.6";
+  private static final String FIELD_PID_11_7 = "PID-11.7";
+  private static final String FIELD_PID_11_9 = "PID-11.9";
   private static final String FIELD_PID_13 = "PID-13";
+  private static final String FIELD_PID_13_1 = "PID-13.1";
+  private static final String FIELD_PID_13_2 = "PID-13.2";
+  private static final String FIELD_PID_13_3 = "PID-13.3";
+  private static final String FIELD_PID_13_6 = "PID-13.6";
+  private static final String FIELD_PID_13_7 = "PID-13.7";
+  private static final String FIELD_PID_13_EMAIL = "PID-13 Email";
+  private static final String FIELD_PID_13_2_EMAIL = "PID-13.2 Email";
+  private static final String FIELD_PID_13_3_EMAIL = "PID-13.3 Email";
+  private static final String FIELD_PID_13_4_EMAIL = "PID-13.4 Email";
+  private static final String FIELD_PID_14 = "PID-14";
+  private static final String FIELD_PID_14_1 = "PID-14.1";
+  private static final String FIELD_PID_14_2 = "PID-14.2";
+  private static final String FIELD_PID_14_3 = "PID-14.3";
+  private static final String FIELD_PID_14_6 = "PID-14.6";
+  private static final String FIELD_PID_14_7 = "PID-14.7";
   private static final String FIELD_PID_15 = "PID-15";
+  private static final String FIELD_PID_15_1 = "PID-15.1";
+  private static final String FIELD_PID_15_2 = "PID-15.2";
+  private static final String FIELD_PID_15_3 = "PID-15.3";
   private static final String FIELD_PID_22 = "PID-22";
+  private static final String FIELD_PID_22_1 = "PID-22.1";
+  private static final String FIELD_PID_22_2 = "PID-22.2";
+  private static final String FIELD_PID_22_3 = "PID-22.3";
   private static final String FIELD_PID_24 = "PID-24";
+  private static final String FIELD_PID_25 = "PID-25";
+  private static final String FIELD_PID_29 = "PID-29";
+  private static final String FIELD_PID_30 = "PID-30";
   private static final String FIELD_PD1_3 = "PD1-3";
+  private static final String FIELD_PD1_3_1 = "PD1-3.1";
+  private static final String FIELD_PD1_3_2 = "PD1-3.2";
+  private static final String FIELD_PD1_3_3 = "PD1-3.3";
+  private static final String FIELD_PD1_3_6 = "PD1-3.6";
+  private static final String FIELD_PD1_3_7 = "PD1-3.7";
+  private static final String FIELD_PD1_3_10 = "PD1-3.10";
   private static final String FIELD_PD1_4 = "PD1-4";
+  private static final String FIELD_PD1_4_1 = "PD1-4.1";
+  private static final String FIELD_PD1_4_2 = "PD1-4.2";
+  private static final String FIELD_PD1_4_3 = "PD1-4.3";
+  private static final String FIELD_PD1_4_4 = "PD1-4.4";
+  private static final String FIELD_PD1_4_9 = "PD1-4.9";
+  private static final String FIELD_PD1_4_10 = "PD1-4.10";
   private static final String FIELD_PD1_11 = "PD1-11";
   private static final String FIELD_PD1_12 = "PD1-12";
   private static final String FIELD_PD1_13 = "PD1-13";
+  private static final String FIELD_PD1_16 = "PD1-16";
+  private static final String FIELD_PD1_17 = "PD1-17";
+  private static final String FIELD_PD1_18 = "PD1-18";
+  private static final String FIELD_NK1_1 = "NK1-1";
   private static final String FIELD_NK1_2 = "NK1-2";
+  private static final String FIELD_NK1_2_1 = "NK1-2.1";
+  private static final String FIELD_NK1_2_2 = "NK1-2.2";
+  private static final String FIELD_NK1_2_3 = "NK1-2.3";
+  private static final String FIELD_NK1_2_7 = "NK1-2.7";
   private static final String FIELD_NK1_3 = "NK1-3";
+  private static final String FIELD_NK1_3_1 = "NK1-3.1";
+  private static final String FIELD_NK1_3_2 = "NK1-3.2";
+  private static final String FIELD_NK1_3_3 = "NK1-3.3";
+  private static final String FIELD_NK1_4 = "NK1-4";
+  private static final String FIELD_NK1_4_1 = "NK1-4.1";
+  private static final String FIELD_NK1_4_2 = "NK1-4.2";
+  private static final String FIELD_NK1_4_3 = "NK1-4.3";
+  private static final String FIELD_NK1_4_4 = "NK1-4.4";
+  private static final String FIELD_NK1_4_5 = "NK1-4.5";
+  private static final String FIELD_NK1_4_6 = "NK1-4.6";
+  private static final String FIELD_NK1_4_7 = "NK1-4.7";
+  private static final String FIELD_NK1_5 = "NK1-5";
+  private static final String FIELD_NK1_5_1 = "NK1-5.1";
+  private static final String FIELD_NK1_5_2 = "NK1-5.2";
+  private static final String FIELD_NK1_5_3 = "NK1-5.3";
+  private static final String FIELD_NK1_5_6 = "NK1-5.6";
+  private static final String FIELD_NK1_5_7 = "NK1-5.7";
+  private static final String FIELD_NK1_6 = "NK1-6";
+  private static final String FIELD_NK1_7 = "NK1-7";
+  private static final String FIELD_NK1_7_1 = "NK1-7.1";
+  private static final String FIELD_NK1_7_2 = "NK1-7.2";
+  private static final String FIELD_NK1_7_3 = "NK1-7.3";
+  private static final String FIELD_PV1_1 = "PV1-1";
+  private static final String FIELD_PV1_2 = "PV1-2";
+  private static final String FIELD_PV1_7 = "PV1-7";
+  private static final String FIELD_PV1_7_1 = "PV1-7.1";
+  private static final String FIELD_PV1_7_2 = "PV1-7.2";
+  private static final String FIELD_PV1_7_3 = "PV1-7.3";
+  private static final String FIELD_PV1_7_4 = "PV1-7.4";
+  private static final String FIELD_PV1_19 = "PV1-19";
   private static final String FIELD_PV1_20 = "PV1-20";
+  private static final String FIELD_PV1_20_1 = "PV1-20.1";
   private static final String FIELD_PV1_20_2 = "PV1-20.2";
+  private static final String FIELD_PV1_44 = "PV1-44";
   private static final String FIELD_ORC_1 = "ORC-1";
   private static final String FIELD_ORC_2 = "ORC-2";
+  private static final String FIELD_ORC_2_1 = "ORC-2.1";
+  private static final String FIELD_ORC_2_3 = "ORC-2.3";
   private static final String FIELD_ORC_3 = "ORC-3";
+  private static final String FIELD_ORC_3_1 = "ORC-3.1";
+  private static final String FIELD_ORC_3_2 = "ORC-3.2";
+  private static final String FIELD_ORC_5 = "ORC-5";
   private static final String FIELD_ORC_10 = "ORC-10";
+  private static final String FIELD_ORC_10_1 = "ORC-10.1";
+  private static final String FIELD_ORC_10_2 = "ORC-10.2";
+  private static final String FIELD_ORC_10_3 = "ORC-10.3";
+  private static final String FIELD_ORC_10_4 = "ORC-10.4";
   private static final String FIELD_ORC_12 = "ORC-12";
-  private static final String FIELD_ADMIN_RXA_3 = "ADMIN RXA-3";
-  private static final String FIELD_ADMIN_RXA_5 = "ADMIN RXA-5";
-  private static final String FIELD_ADMIN_RXA_6 = "ADMIN RXA-6";
-  private static final String FIELD_ADMIN_RXA_7 = "ADMIN RXA-7";
-  private static final String FIELD_ADMIN_RXA_9 = "ADMIN RXA-9";
-  private static final String FIELD_ADMIN_RXA_10 = "ADMIN RXA-10";
-  private static final String FIELD_ADMIN_RXA_11 = "ADMIN RXA-11";
-  private static final String FIELD_ADMIN_RXA_15 = "ADMIN RXA-15";
-  private static final String FIELD_ADMIN_RXA_16 = "ADMIN RXA-16";
-  private static final String FIELD_ADMIN_RXA_17 = "ADMIN RXA-17";
-  private static final String FIELD_ADMIN_RXA_20 = "ADMIN RXA-20";
-  private static final String FIELD_ADMIN_RXA_21 = "ADMIN RXA-21";
-  private static final String FIELD_ADMIN_RXR_1 = "ADMIN RXR-1";
-  private static final String FIELD_ADMIN_RXR_2 = "ADMIN RXR-2";
-  private static final String FIELD_ADMIN_OBX_1 = "ADMIN OBX-1";
-  private static final String FIELD_ADMIN_OBX_2 = "ADMIN OBX-2";
-  private static final String FIELD_ADMIN_OBX_3 = "ADMIN OBX-3";
-  private static final String FIELD_ADMIN_OBX_4 = "ADMIN OBX-4";
-  private static final String FIELD_ADMIN_OBX_5 = "ADMIN OBX-5";
-  private static final String FIELD_ADMIN_OBX_11 = "ADMIN OBX-11";
-  private static final String FIELD_ADMIN_OBX_14 = "ADMIN OBX-14";
-  private static final String FIELD_HIST_RXA_3 = "HIST RXA-3";
-  private static final String FIELD_HIST_RXA_5 = "HIST RXA-5";
-  private static final String FIELD_HIST_RXA_6 = "HIST RXA-6";
-  private static final String FIELD_HIST_RXA_7 = "HIST RXA-7";
-  private static final String FIELD_HIST_RXA_9 = "HIST RXA-9";
-  private static final String FIELD_HIST_RXA_10 = "HIST RXA-10";
-  private static final String FIELD_HIST_RXA_11 = "HIST RXA-11";
-  private static final String FIELD_HIST_RXA_15 = "HIST RXA-15";
-  private static final String FIELD_HIST_RXA_16 = "HIST RXA-16";
-  private static final String FIELD_HIST_RXA_17 = "HIST RXA-17";
-  private static final String FIELD_HIST_RXA_20 = "HIST RXA-20";
-  private static final String FIELD_HIST_RXA_21 = "HIST RXA-21";
-  private static final String FIELD_HIST_RXR_1 = "HIST RXR-1";
-  private static final String FIELD_HIST_RXR_2 = "HIST RXR-2";
-  private static final String FIELD_HIST_OBX_1 = "HIST OBX-1";
-  private static final String FIELD_HIST_OBX_2 = "HIST OBX-2";
-  private static final String FIELD_HIST_OBX_3 = "HIST OBX-3";
-  private static final String FIELD_HIST_OBX_4 = "HIST OBX-4";
-  private static final String FIELD_HIST_OBX_5 = "HIST OBX-5";
-  private static final String FIELD_HIST_OBX_11 = "HIST OBX-11";
-  private static final String FIELD_HIST_OBX_14 = "HIST OBX-14";
+  private static final String FIELD_ORC_12_1 = "ORC-12.1";
+  private static final String FIELD_ORC_12_2 = "ORC-12.2";
+  private static final String FIELD_ORC_12_3 = "ORC-12.3";
+  private static final String FIELD_ORC_12_4 = "ORC-12.4";
+  private static final String FIELD_ORC_17 = "ORC-17";
+  private static final String FIELD_ORC_17_4 = "ORC-17.4";
+  private static final String FIELD_ORC_28 = "ORC-28";
+  private static final String FIELD_ADMIN_RXA_1 = "Admin RXA-1";
+  private static final String FIELD_ADMIN_RXA_2 = "Admin RXA-2";
+  private static final String FIELD_ADMIN_RXA_3 = "Admin RXA-3";
+  private static final String FIELD_ADMIN_RXA_4 = "Admin RXA-4";
+  private static final String FIELD_ADMIN_RXA_5 = "Admin RXA-5";
+  private static final String FIELD_ADMIN_RXA_6 = "Admin RXA-6";
+  private static final String FIELD_ADMIN_RXA_7 = "Admin RXA-7";
+  private static final String FIELD_ADMIN_RXA_9 = "Admin RXA-9";
+  private static final String FIELD_ADMIN_RXA_10 = "Admin RXA-10";
+  private static final String FIELD_ADMIN_RXA_10_1 = "Admin RXA-10.1";
+  private static final String FIELD_ADMIN_RXA_10_2 = "Admin RXA-10.2";
+  private static final String FIELD_ADMIN_RXA_10_3 = "Admin RXA-10.3";
+  private static final String FIELD_ADMIN_RXA_10_4 = "Admin RXA-10.4";
+  private static final String FIELD_ADMIN_RXA_11 = "Admin RXA-11";
+  private static final String FIELD_ADMIN_RXA_11_4 = "Admin RXA-11.4";
+  private static final String FIELD_ADMIN_RXA_15 = "Admin RXA-15";
+  private static final String FIELD_ADMIN_RXA_16 = "Admin RXA-16";
+  private static final String FIELD_ADMIN_RXA_17 = "Admin RXA-17";
+  private static final String FIELD_ADMIN_RXA_20 = "Admin RXA-20";
+  private static final String FIELD_ADMIN_RXA_21 = "Admin RXA-21";
+  private static final String FIELD_ADMIN_RXA_22 = "Admin RXA-22";
+  private static final String FIELD_ADMIN_RXR_1 = "Admin RXR-1";
+  private static final String FIELD_ADMIN_RXR_2 = "Admin RXR-2";
+  private static final String FIELD_ADMIN_OBX_1 = "Admin OBX-1";
+  private static final String FIELD_ADMIN_OBX_2 = "Admin OBX-2";
+  private static final String FIELD_ADMIN_OBX_3 = "Admin OBX-3";
+  private static final String FIELD_ADMIN_OBX_4 = "Admin OBX-4";
+  private static final String FIELD_ADMIN_OBX_5 = "Admin OBX-5";
+  private static final String FIELD_ADMIN_OBX_11 = "Admin OBX-11";
+  private static final String FIELD_ADMIN_OBX_14 = "Admin OBX-14";
+  private static final String FIELD_ADMIN_OBX_17 = "Admin OBX-17";
+  private static final String FIELD_ADMIN_OBX_64994_7 = "Admin OBX 64994-7";
+  private static final String FIELD_ADMIN_OBX_69764_9 = "Admin OBX 69764-9";
+  private static final String FIELD_ADMIN_OBX_29768_9 = "Admin OBX 29768-9";
+  private static final String FIELD_ADMIN_OBX_30956_7 = "Admin OBX 30956-7";
+  private static final String FIELD_ADMIN_OBX_29769_7 = "Admin OBX 29769-7";
+  private static final String FIELD_HIST_RXA_1 = "Hist RXA-1";
+  private static final String FIELD_HIST_RXA_2 = "Hist RXA-2";
+  private static final String FIELD_HIST_RXA_3 = "Hist RXA-3";
+  private static final String FIELD_HIST_RXA_4 = "Hist RXA-4";
+  private static final String FIELD_HIST_RXA_5 = "Hist RXA-5";
+  private static final String FIELD_HIST_RXA_6 = "Hist RXA-6";
+  private static final String FIELD_HIST_RXA_7 = "Hist RXA-7";
+  private static final String FIELD_HIST_RXA_9 = "Hist RXA-9";
+  private static final String FIELD_HIST_RXA_10 = "Hist RXA-10";
+  private static final String FIELD_HIST_RXA_10_1 = "Hist RXA-10.1";
+  private static final String FIELD_HIST_RXA_10_2 = "Hist RXA-10.2";
+  private static final String FIELD_HIST_RXA_10_3 = "Hist RXA-10.3";
+  private static final String FIELD_HIST_RXA_10_4 = "Hist RXA-10.4";
+  private static final String FIELD_HIST_RXA_11 = "Hist RXA-11";
+  private static final String FIELD_HIST_RXA_11_4 = "Hist RXA-11.4";
+  private static final String FIELD_HIST_RXA_15 = "Hist RXA-15";
+  private static final String FIELD_HIST_RXA_16 = "Hist RXA-16";
+  private static final String FIELD_HIST_RXA_17 = "Hist RXA-17";
+  private static final String FIELD_HIST_RXA_20 = "Hist RXA-20";
+  private static final String FIELD_HIST_RXA_21 = "Hist RXA-21";
+  private static final String FIELD_HIST_RXR_1 = "Hist RXR-1";
+  private static final String FIELD_HIST_RXR_2 = "Hist RXR-2";
 
   private TestCaseMessage getPresentTestCase(ProfileLine profileLine, int count, Transformer transformer) {
     String field = profileLine.getField().toUpperCase();
@@ -1009,9 +1154,6 @@ public class CertifyRunner extends Thread
       // should always have this
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_3_1)) {
-      // should always have this
-      testCaseMessage.setHasIssue(true);
-    } else if (field.equals(FIELD_PID_3_7)) {
       // should always have this
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_5)) {
@@ -1127,13 +1269,6 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_HIST_RXA_21)) {
     } else if (field.equals(FIELD_HIST_RXR_1)) {
     } else if (field.equals(FIELD_HIST_RXR_2)) {
-    } else if (field.equals(FIELD_HIST_OBX_1)) {
-    } else if (field.equals(FIELD_HIST_OBX_2)) {
-    } else if (field.equals(FIELD_HIST_OBX_3)) {
-    } else if (field.equals(FIELD_HIST_OBX_4)) {
-    } else if (field.equals(FIELD_HIST_OBX_5)) {
-    } else if (field.equals(FIELD_HIST_OBX_11)) {
-    } else if (field.equals(FIELD_HIST_OBX_14)) {
     } else {
       testCaseMessage.appendCustomTransformation("SFT-5=CHANGES NOT FOUND FOR '" + field + "'");
     }
@@ -1160,7 +1295,13 @@ public class CertifyRunner extends Thread
       testCaseMessage = createTestCaseMessage(SCENARIO_FULL_RECORD_FOR_PROFILING);
     }
     testCaseMessage.setHasIssue(false);
-    if (field.equals(FIELD_MSH_4)) {
+    if (field.equals(FIELD_MSH_3)) {
+      testCaseMessage.appendCustomTransformation("MSH-3.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_3_2)) {
+      testCaseMessage.appendCustomTransformation("MSH-3.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_4)) {
       testCaseMessage.appendCustomTransformation("MSH-4=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_6)) {
@@ -1193,9 +1334,6 @@ public class CertifyRunner extends Thread
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_3_1)) {
       testCaseMessage.appendCustomTransformation("PID-3.1=");
-      testCaseMessage.setHasIssue(true);
-    } else if (field.equals(FIELD_PID_3_7)) {
-      testCaseMessage.appendCustomTransformation("PID-3.7=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_5)) {
       testCaseMessage.appendCustomTransformation("PID-5.1=");
@@ -1409,13 +1547,6 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("RXR-2.2=");
       testCaseMessage.appendCustomTransformation("RXR-2.3=");
       testCaseMessage.setHasIssue(true);
-    } else if (field.equals(FIELD_HIST_OBX_1)) {
-    } else if (field.equals(FIELD_HIST_OBX_2)) {
-    } else if (field.equals(FIELD_HIST_OBX_3)) {
-    } else if (field.equals(FIELD_HIST_OBX_4)) {
-    } else if (field.equals(FIELD_HIST_OBX_5)) {
-    } else if (field.equals(FIELD_HIST_OBX_11)) {
-    } else if (field.equals(FIELD_HIST_OBX_14)) {
     } else {
       testCaseMessage.appendCustomTransformation("SFT-5=CHANGES NOT FOUND FOR '" + field + "'");
     }
@@ -1577,10 +1708,10 @@ public class CertifyRunner extends Thread
 
   private boolean verifyNoMajorChangesMade(TestCaseMessage testCaseMessage) {
     boolean noMajorChangesMade = true;
-    List<CompareManager.Comparison> comparisonList = CompareManager.compareMessages(testCaseMessage.getMessageText(),
+    List<Comparison> comparisonList = CompareManager.compareMessages(testCaseMessage.getMessageText(),
         testCaseMessage.getMessageTextSent());
-    for (CompareManager.Comparison comparison : comparisonList) {
-      if (comparison.isTested() && comparison.getPriorityLevel() <= CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL) {
+    for (Comparison comparison : comparisonList) {
+      if (comparison.isTested() && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
 
         if (!comparison.isPass()) {
           noMajorChangesMade = false;
@@ -2874,19 +3005,19 @@ public class CertifyRunner extends Thread
         totalQueryTime += System.currentTimeMillis() - startTime;
         queryTestCaseMessage.setHasRun(true);
         queryTestCaseMessage.setActualResponseMessage(rspMessage);
-        List<CompareManager.Comparison> comparisonList = CompareManager.compareMessages(vxuMessage, rspMessage);
+        List<Comparison> comparisonList = CompareManager.compareMessages(vxuMessage, rspMessage);
         queryTestCaseMessage.setComparisonList(comparisonList);
-        for (CompareManager.Comparison comparison : comparisonList) {
+        for (Comparison comparison : comparisonList) {
           if (comparison.isTested()
-              && comparison.getPriorityLevel() <= CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL) {
+              && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
             testQueryCountOptional++;
-            if (comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED) {
+            if (comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED) {
               testQueryCountRequired++;
             }
 
             if (comparison.isPass() || fieldNotSupported(comparison)) {
               testQueryPassOptional++;
-              if (comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED) {
+              if (comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED) {
                 testQueryPassRequired++;
               }
             }
@@ -2988,24 +3119,24 @@ public class CertifyRunner extends Thread
         totalQueryTime += System.currentTimeMillis() - startTime;
         queryTestCaseMessage.setHasRun(true);
         queryTestCaseMessage.setActualResponseMessage(rspMessage);
-        List<CompareManager.Comparison> comparisonList = CompareManager.compareMessages(
+        List<Comparison> comparisonList = CompareManager.compareMessages(
             queryTestCaseMessage.getDerivedFromVXUMessage(), rspMessage);
         queryTestCaseMessage.setComparisonList(comparisonList);
         queryTestCaseMessage.setPassedTest(true);
-        for (CompareManager.Comparison comparison : comparisonList) {
+        for (Comparison comparison : comparisonList) {
           if (comparison.isTested()
-              && comparison.getPriorityLevel() <= CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL) {
+              && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
             testQueryCountOptional++;
-            if (comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED) {
+            if (comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED) {
               testQueryCountRequired++;
             }
 
             if (comparison.isPass() || fieldNotSupported(comparison)) {
               testQueryPassOptional++;
-              if (comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED) {
+              if (comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED) {
                 testQueryPassRequired++;
               }
-            } else if (comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED) {
+            } else if (comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED) {
               queryTestCaseMessage.setPassedTest(false);
             }
           }
@@ -3040,12 +3171,12 @@ public class CertifyRunner extends Thread
     areaCount[suite][2] = testQueryCountOptional;
   }
 
-  public boolean fieldNotSupported(CompareManager.Comparison comparison) {
+  public boolean fieldNotSupported(Comparison comparison) {
     return connector.getQueryResponseFieldsNotReturnedSet() != null
         && connector.getQueryResponseFieldsNotReturnedSet().contains(comparison.getFieldLabel());
   }
 
-  public boolean fieldSupported(CompareManager.Comparison comparison) {
+  public boolean fieldSupported(Comparison comparison) {
     return connector.getQueryResponseFieldsNotReturnedSet() == null
         || !connector.getQueryResponseFieldsNotReturnedSet().contains(comparison.getFieldLabel());
   }
@@ -3659,9 +3790,9 @@ public class CertifyRunner extends Thread
             boolean hasUnsupported = false;
             if (testCaseMessage.getComparisonList() != null) {
               hasRun = true;
-              for (CompareManager.Comparison comparison : testCaseMessage.getComparisonList()) {
+              for (Comparison comparison : testCaseMessage.getComparisonList()) {
                 if (comparison.isTested()
-                    && comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED) {
+                    && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED) {
                   if (!comparison.isPass()) {
                     if (fieldSupported(comparison)) {
                       hasPassed = false;
@@ -3677,9 +3808,9 @@ public class CertifyRunner extends Thread
               if (hasUnsupported) {
                 out.println("    <td class=\"pass\">All required fields returned except those not supported: ");
                 out.println("      <br/> <ul>");
-                for (CompareManager.Comparison comparison : testCaseMessage.getComparisonList()) {
+                for (Comparison comparison : testCaseMessage.getComparisonList()) {
                   if (comparison.isTested()
-                      && comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED
+                      && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED
                       && !comparison.isPass() && fieldNotSupported(comparison)) {
                     out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel()
                         + "</li>");
@@ -3696,9 +3827,9 @@ public class CertifyRunner extends Thread
             } else if (hasRun) {
               out.println("    <td class=\"fail\">Required fields not returned:");
               out.println("      <ul>");
-              for (CompareManager.Comparison comparison : testCaseMessage.getComparisonList()) {
+              for (Comparison comparison : testCaseMessage.getComparisonList()) {
                 if (comparison.isTested()
-                    && comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_REQUIRED
+                    && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED
                     && !comparison.isPass()) {
                   if (fieldSupported(comparison)) {
                     out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel()
@@ -3731,9 +3862,9 @@ public class CertifyRunner extends Thread
             boolean hasPassed = true;
             if (testCaseMessage.getComparisonList() != null) {
               hasRun = true;
-              for (CompareManager.Comparison comparison : testCaseMessage.getComparisonList()) {
+              for (Comparison comparison : testCaseMessage.getComparisonList()) {
                 if (comparison.isTested()
-                    && comparison.getPriorityLevel() <= CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL) {
+                    && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
                   if (!comparison.isPass()) {
                     hasPassed = false;
                     break;
@@ -3746,9 +3877,9 @@ public class CertifyRunner extends Thread
                   + makeCompareDetailsLink(testCaseMessage, toFile, false));
             } else if (hasRun) {
               boolean hasOptionalFields = false;
-              for (CompareManager.Comparison comparison : testCaseMessage.getComparisonList()) {
+              for (Comparison comparison : testCaseMessage.getComparisonList()) {
                 if (comparison.isTested()
-                    && comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL
+                    && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL
                     && !comparison.isPass()) {
                   hasOptionalFields = true;
                   break;
@@ -3757,9 +3888,9 @@ public class CertifyRunner extends Thread
               if (hasOptionalFields) {
                 out.println("    <td class=\"fail\">Optional fields not returned:");
                 out.println("      <ul>");
-                for (CompareManager.Comparison comparison : testCaseMessage.getComparisonList()) {
+                for (Comparison comparison : testCaseMessage.getComparisonList()) {
                   if (comparison.isTested()
-                      && comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL
+                      && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL
                       && !comparison.isPass()) {
                     out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel()
                         + "</li>");
@@ -4059,7 +4190,7 @@ public class CertifyRunner extends Thread
       out.println("  </tr>");
       for (TestCaseMessage testCaseMessage : ackAnalysisList) {
         String classText = "nottested";
-        HL7Component actualResponseMessageComponent = testCaseMessage.createHL7Component();
+        HL7Component actualResponseMessageComponent = TestCaseMessageManager.createHL7Component(testCaseMessage);
         if (actualResponseMessageComponent != null) {
           classText = actualResponseMessageComponent.hasNoErrors() ? "pass" : "fail";
         }
@@ -4095,7 +4226,7 @@ public class CertifyRunner extends Thread
       out.println("  </tr>");
       for (TestCaseMessage testCaseMessage : rspAnalysisList) {
         String classText = "nottested";
-        HL7Component actualResponseMessageComponent = testCaseMessage.createHL7Component();
+        HL7Component actualResponseMessageComponent = TestCaseMessageManager.createHL7Component(testCaseMessage);
         if (actualResponseMessageComponent != null) {
           classText = actualResponseMessageComponent.hasNoErrors() ? "pass" : "fail";
         }
@@ -4130,8 +4261,8 @@ public class CertifyRunner extends Thread
     boolean passedAllOptional = false;
     if (testCaseMessage.isHasRun() && testCaseMessage.getComparisonList() != null) {
       passedAllOptional = true;
-      for (CompareManager.Comparison comparison : testCaseMessage.getComparisonList()) {
-        if (comparison.isTested() && comparison.getPriorityLevel() == CompareManager.Comparison.PRIORITY_LEVEL_OPTIONAL
+      for (Comparison comparison : testCaseMessage.getComparisonList()) {
+        if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL
             && !comparison.isPass() && !fieldNotSupported(comparison)) {
           passedAllOptional = false;
           break;
