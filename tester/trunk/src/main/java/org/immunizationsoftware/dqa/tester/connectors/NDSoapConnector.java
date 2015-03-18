@@ -113,6 +113,7 @@ public class NDSoapConnector extends HttpConnector
       while ((line = in.readLine()) != null) {
         response.append(line);
         response.append('\r');
+        System.out.println("--> RESPONSE: " + line);
       }
       input.close();
     } catch (IOException ioe) {
@@ -173,6 +174,7 @@ public class NDSoapConnector extends HttpConnector
       while ((line = in.readLine()) != null) {
         response.append(line);
         response.append('\r');
+        System.out.println("--> RESPONSE: " + line);
       }
       input.close();
       

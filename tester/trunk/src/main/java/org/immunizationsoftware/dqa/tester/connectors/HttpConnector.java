@@ -287,33 +287,34 @@ public class HttpConnector extends Connector
         debugLog.append("Key store defined, looking to load it for use on this connection \r");
       }
       try {
-        
+
         String algorithm = KeyManagerFactory.getDefaultAlgorithm();
         KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithm);
-        
+
         kmf.init(keyStore, getKeyStorePassword().toCharArray());
-        
+
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         tmf.init(keyStore);
         X509TrustManager defaultTrustManager = (X509TrustManager) tmf.getTrustManagers()[0];
         if (debug) {
           doDebug(debugLog, keyStore, defaultTrustManager);
         }
-        
-        TrustManager[] trustAllCerts = new TrustManager[] { 
-            new X509TrustManager() {     
-                public java.security.cert.X509Certificate[] getAcceptedIssuers() { 
-                    return new X509Certificate[0];
-                } 
-                public void checkClientTrusted( 
-                    java.security.cert.X509Certificate[] certs, String authType) {
-                    } 
-                public void checkServerTrusted( 
-                    java.security.cert.X509Certificate[] certs, String authType) {
-                }
-            } 
-        }; 
-        
+
+        TrustManager[] trustAllCerts = null;
+        if (disableServerCertificateCheck) {
+          trustAllCerts = new TrustManager[] { new X509TrustManager() {
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+              return new X509Certificate[0];
+            }
+
+            public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+            }
+
+            public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+            }
+          } };
+        }
+
         SSLContext context = SSLContext.getInstance("TLS");
         context.init(kmf.getKeyManagers(), trustAllCerts, null);
         factory = context.getSocketFactory();
@@ -342,8 +343,7 @@ public class HttpConnector extends Connector
       debugLog.append(" + " + certStr + " \r");
     }
     Enumeration enumeration = keyStore.aliases();
-    while (enumeration.hasMoreElements())
-    {
+    while (enumeration.hasMoreElements()) {
       String alias = (String) enumeration.nextElement();
       debugLog.append(" - " + alias);
       Certificate certificate = keyStore.getCertificate(alias);

@@ -45,7 +45,7 @@ public abstract class Connector
       String facilityid, String password, String keyStorePassword, String enableTimeStart, String enableTimeEnd,
       AckAnalyzer.AckType ackType, TransferType transferType, List<String> fields, String customTransformations,
       List<Connector> connectors, String purpose, int tchForecastTesterSoftwareId,
-      Set<String> queryResponseFieldsNotReturnedSet, Map<String, String> scenarioTransformationsMap) throws Exception {
+      Set<String> queryResponseFieldsNotReturnedSet, Map<String, String> scenarioTransformationsMap, boolean disableServerCertificateCheck) throws Exception {
     if (!label.equals("") && !type.equals("")) {
       Connector connector = null;
       if (type.equals(ConnectorFactory.TYPE_SOAP)) {
@@ -75,6 +75,7 @@ public abstract class Connector
       connector.setKeyStorePassword(keyStorePassword);
       connector.setAckType(ackType);
       connector.setTransferType(transferType);
+      connector.setDisableServerCertificateCheck(disableServerCertificateCheck);
       connector.setEnableTimeStart(enableTimeStart);
       connector.setEnableTimeEnd(enableTimeEnd);
       connector.setTchForecastTesterSoftwareId(tchForecastTesterSoftwareId);
@@ -102,6 +103,7 @@ public abstract class Connector
   protected String currentControlId = "";
   protected String enableTimeStart = "";
   protected String enableTimeEnd = "";
+  protected boolean disableServerCertificateCheck = false;
   protected TransferType transferType = TransferType.NEAR_REAL_TIME_LINK;
   private String customTransformations = "";
   private String[] quickTransformations;
@@ -112,6 +114,14 @@ public abstract class Connector
   private String purpose = "";
   private Set<String> queryResponseFieldsNotReturnedSet = null;
   private Map<String, String> scenarioTransformationsMap = new HashMap<String, String>();
+
+  public boolean isDisableServerCertificateCheck() {
+    return disableServerCertificateCheck;
+  }
+
+  public void setDisableServerCertificateCheck(boolean disableServerCertificateCheck) {
+    this.disableServerCertificateCheck = disableServerCertificateCheck;
+  }
 
   public void setScenarioTransformationsMap(Map<String, String> scenarioTransformationsMap) {
     this.scenarioTransformationsMap = scenarioTransformationsMap;
@@ -350,6 +360,9 @@ public abstract class Connector
     if (!enableTimeEnd.equals("")) {
       sb.append("Enable Time End: " + enableTimeEnd + "\n");
     }
+    if (disableServerCertificateCheck) {
+      sb.append("Disable Certificate Check: true\n");
+    }
     if (queryResponseFieldsNotReturnedSet != null) {
       sb.append("Query Response Fields Not Returned: ");
       boolean first = true;
@@ -404,6 +417,7 @@ public abstract class Connector
     String keyStorePassword = "";
     String enableTimeStart = "";
     String enableTimeEnd = "";
+    boolean disableServerCertificateCheck = false;
     Set<String> queryResponseFieldsNotReturnedSet = null;
     Map<String, String> scenarioTransformationsMap = new HashMap<String, String>();
     int tchForecastTesterSoftwareId = 0;
@@ -418,7 +432,7 @@ public abstract class Connector
       if (line.startsWith("Connection")) {
         addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
             enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose,
-            tchForecastTesterSoftwareId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap);
+            tchForecastTesterSoftwareId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap, disableServerCertificateCheck);
         label = "";
         purpose = "";
         type = "";
@@ -459,6 +473,9 @@ public abstract class Connector
         password = PasswordEncryptUtil.decrypt(readValue(line));
       } else if (line.startsWith("Facility Id:")) {
         facilityid = readValue(line);
+      } else if (line.startsWith("Disable Certificate Check:")) {
+        String s = readValue(line);
+        disableServerCertificateCheck = s.equalsIgnoreCase("y") || s.equalsIgnoreCase("yes") || s.equalsIgnoreCase("true");
       } else if (line.startsWith("Key Store Password:")) {
         keyStorePassword = PasswordEncryptUtil.decrypt(readValue(line));
       } else if (line.startsWith("Cause Issues:")) {
@@ -508,7 +525,7 @@ public abstract class Connector
     }
     addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
         enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose,
-        tchForecastTesterSoftwareId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap);
+        tchForecastTesterSoftwareId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap, disableServerCertificateCheck);
     return connectors;
   }
 
