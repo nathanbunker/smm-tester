@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.immunizationsoftware.dqa.mover.AckAnalyzer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
@@ -34,6 +35,15 @@ public class TestRunner
   private HL7Reader ackMessageReader;
   private long startTime = 0;
   private long endTime = 0;
+  private boolean wasRun = false;
+
+  public boolean isWasRun() {
+    return wasRun;
+  }
+
+  public void setWasRun(boolean wasRun) {
+    this.wasRun = wasRun;
+  }
 
   public long getTotalRunTime() {
     return endTime - startTime;
@@ -79,11 +89,31 @@ public class TestRunner
     testCaseMessage.setActualResponseMessage("");
     testCaseMessage.setPassedTest(false);
     testCaseMessage.setHasRun(false);
-    passedTest = false;
-    ackMessageText = null;
 
     String message = Transformer.transform(connector, testCaseMessage);
-    
+    wasRun = false;
+    return runTest(connector, testCaseMessage, message);
+  }
+
+  public TestCaseMessage runTestIfNew(Connector connector, TestCaseMessage testCaseMessage, Map<String, TestCaseMessage> testCaseMessageMap) throws Exception {
+    wasRun = false;
+    testCaseMessage.setActualResponseMessage("");
+    testCaseMessage.setPassedTest(false);
+    testCaseMessage.setHasRun(false);
+    String message = Transformer.transform(connector, testCaseMessage);
+    if (testCaseMessageMap.containsKey(message))
+    {
+      return testCaseMessageMap.get(message);
+    }
+    runTest(connector, testCaseMessage, message);
+    testCaseMessageMap.put(message, testCaseMessage);
+    return testCaseMessage;
+  }
+
+  public boolean runTest(Connector connector, TestCaseMessage testCaseMessage, String message) throws Exception {
+    wasRun = false;
+    passedTest = false;
+    ackMessageText = null;
     testCaseMessage.setMessageTextSent(message);
 
     startTime = System.currentTimeMillis();
@@ -165,12 +195,15 @@ public class TestRunner
                   }
                 }
               }
+              
             }
             if (testCaseMessage.getActualResultAckType().equals("AE") && !rejected) {
               if (severitySet) {
                 accepted = true;
+                rejected = false;
               } else {
                 accepted = false;
+                rejected = true;
               }
             }
 
@@ -181,9 +214,9 @@ public class TestRunner
               passedTest = issueFound && !rejected;
             } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Skip")) {
               passedTest = issueFound && !rejected;
-            } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Error")) {
+            } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Error") || testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Reject")) {
               passedTest = issueFound && rejected;
-            } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Reject")) {
+            } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Reject") || testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Error")) {
               passedTest = issueFound;
             }
             if (errorType == ErrorType.UNKNOWN) {
@@ -217,6 +250,7 @@ public class TestRunner
     testCaseMessage.setActualResponseMessage(ackMessageText);
     testCaseMessage.setPassedTest(passedTest);
     testCaseMessage.setHasRun(true);
+    wasRun = true;
 
     return passedTest;
   }

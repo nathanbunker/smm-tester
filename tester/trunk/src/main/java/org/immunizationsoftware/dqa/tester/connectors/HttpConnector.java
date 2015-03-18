@@ -90,11 +90,12 @@ public class HttpConnector extends Connector
   @Override
   public String submitMessage(String message, boolean debug) throws Exception {
     ClientConnection cc = new ClientConnection();
-    cc.userId = userid;
-    cc.password = password;
-    cc.facilityId = facilityid;
-    cc.otherId = otherid;
-    cc.url = url;
+    cc.setUserId(userid);
+    cc.setPassword(password);
+    cc.setFacilityId(facilityid);
+    cc.setUrl(url);
+    cc.setOtherId(otherid);
+    cc.setUrl(url);
     String result = "";
     try {
       result = sendRequest(message, cc, debug);
@@ -165,7 +166,7 @@ public class HttpConnector extends Connector
       HttpURLConnection urlConn;
       DataOutputStream printout;
       InputStreamReader input = null;
-      URL url = new URL(conn.url);
+      URL url = new URL(conn.getUrl());
 
       urlConn = (HttpURLConnection) url.openConnection();
       if (factory != null && urlConn instanceof HttpsURLConnection) {
@@ -181,30 +182,30 @@ public class HttpConnector extends Connector
       String content;
       if (authenticationMethod == AuthenticationMethod.HEADER) {
         if (debug) {
-          debugLog.append(">> Sending credentials using HTTP headers to " + conn.url + "\r");
-          debugLog.append(">> " + fieldNames[USERID] + " = '" + conn.userId + "' \r");
-          debugLog.append(">> " + fieldNames[PASSWORD] + " = '" + conn.password + "' \r");
-          debugLog.append(">> " + fieldNames[FACILITYID] + " = '" + conn.facilityId + "' \r");
+          debugLog.append(">> Sending credentials using HTTP headers to " + conn.getUrl() + "\r");
+          debugLog.append(">> " + fieldNames[USERID] + " = '" + conn.getUserId() + "' \r");
+          debugLog.append(">> " + fieldNames[PASSWORD] + " = '" + conn.getPassword() + "' \r");
+          debugLog.append(">> " + fieldNames[FACILITYID] + " = '" + conn.getFacilityId() + "' \r");
         }
         content = request;
-        urlConn.setRequestProperty(fieldNames[USERID], conn.userId);
-        urlConn.setRequestProperty(fieldNames[PASSWORD], conn.password);
-        urlConn.setRequestProperty(fieldNames[FACILITYID], conn.facilityId);
+        urlConn.setRequestProperty(fieldNames[USERID], conn.getUserId());
+        urlConn.setRequestProperty(fieldNames[PASSWORD], conn.getPassword());
+        urlConn.setRequestProperty(fieldNames[FACILITYID], conn.getFacilityId());
       } else if (authenticationMethod == AuthenticationMethod.BASIC) {
         if (debug) {
-          debugLog.append(">> Sending credentials using HTTP Basic Authentication to " + conn.url + "\r");
-          debugLog.append(">> Username = '" + conn.userId + "' \r");
-          debugLog.append(">> Password = '" + conn.password + "' \r");
+          debugLog.append(">> Sending credentials using HTTP Basic Authentication to " + conn.getUrl() + "\r");
+          debugLog.append(">> Username = '" + conn.getUserId() + "' \r");
+          debugLog.append(">> Password = '" + conn.getPassword() + "' \r");
         }
         urlConn.setRequestProperty("Authorization",
-            "Basic " + URLEncoder.encode(conn.userId + ":" + conn.password, "UTF-8"));
+            "Basic " + URLEncoder.encode(conn.getUserId() + ":" + conn.getPassword(), "UTF-8"));
         content = request;
       } else {
         if (debug) {
-          debugLog.append(">> Sending credentials using standard XML Encoded form to " + conn.url + "\r");
-          debugLog.append(">> " + fieldNames[USERID] + " = '" + conn.userId + "' \r");
-          debugLog.append(">> " + fieldNames[PASSWORD] + " = '" + conn.password + "' \r");
-          debugLog.append(">> " + fieldNames[FACILITYID] + " = '" + conn.facilityId + "' \r");
+          debugLog.append(">> Sending credentials using standard XML Encoded form to " + conn.getUrl() + "\r");
+          debugLog.append(">> " + fieldNames[USERID] + " = '" + conn.getUserId() + "' \r");
+          debugLog.append(">> " + fieldNames[PASSWORD] + " = '" + conn.getPassword() + "' \r");
+          debugLog.append(">> " + fieldNames[FACILITYID] + " = '" + conn.getFacilityId() + "' \r");
           debugLog.append(">> " + fieldNames[MESSAGEDATA] + " \r");
         }
         StringBuilder sb = new StringBuilder();
@@ -215,23 +216,23 @@ public class HttpConnector extends Connector
 
         sb.append(fieldNames[USERID]);
         sb.append("=");
-        sb.append(URLEncoder.encode(conn.userId, "UTF-8"));
+        sb.append(URLEncoder.encode(conn.getUserId(), "UTF-8"));
 
         sb.append("&");
         sb.append(fieldNames[PASSWORD]);
         sb.append("=");
-        sb.append(URLEncoder.encode(conn.password, "UTF-8"));
+        sb.append(URLEncoder.encode(conn.getPassword(), "UTF-8"));
 
         sb.append("&");
         sb.append(fieldNames[FACILITYID]);
         sb.append("=");
-        sb.append(URLEncoder.encode(conn.facilityId, "UTF-8"));
+        sb.append(URLEncoder.encode(conn.getFacilityId(), "UTF-8"));
 
-        if (conn.otherId != null && !conn.otherId.equals("")) {
+        if (conn.getOtherId() != null && !conn.getOtherId().equals("")) {
           sb.append("&");
           sb.append(fieldNames[OTHERID]);
           sb.append("=");
-          sb.append(URLEncoder.encode(conn.otherId, "UTF-8"));
+          sb.append(URLEncoder.encode(conn.getOtherId(), "UTF-8"));
         }
 
         sb.append("&");
@@ -353,16 +354,6 @@ public class HttpConnector extends Connector
   @Override
   public String connectivityTest(String message) throws Exception {
     return "Connectivity test not supported for HTTPS POST connections";
-  }
-
-  public static class ClientConnection
-  {
-
-    public String url = "";
-    public String userId = "";
-    public String password = "";
-    public String facilityId = "";
-    public String otherId = "";
   }
 
   @Override

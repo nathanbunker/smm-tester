@@ -41,6 +41,7 @@ import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
+import org.immunizationsoftware.dqa.tester.manager.CvsReader;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
 import org.immunizationsoftware.dqa.tester.manager.TestCaseMessageManager;
@@ -122,7 +123,7 @@ public class CertifyRunner extends Thread
   }
 
   private static enum Usage {
-    R, RE, O, X, RE_OR_O;
+    R, RE, O, X, RE_OR_O, R_OR_X, RE_OR_X, R_OR_RE;
     public String getDescription() {
       switch (this) {
       case R:
@@ -135,6 +136,12 @@ public class CertifyRunner extends Thread
         return "Not Supported";
       case RE_OR_O:
         return "Required, but may be empty or Optional";
+      case R_OR_RE:
+        return "Required or Required, but may be empty";
+      case RE_OR_X:
+        return "Required, but may be empty or Not supported";
+      case R_OR_X:
+        return "Required or Not supported";
       default:
         return toString();
       }
@@ -152,6 +159,14 @@ public class CertifyRunner extends Thread
       return Usage.O;
     } else if (usageString.equalsIgnoreCase("X")) {
       return Usage.X;
+    } else if (usageString.equalsIgnoreCase("RE_OR_O")) {
+      return Usage.RE_OR_O;
+    } else if (usageString.equalsIgnoreCase("R_OR_X")) {
+      return Usage.R_OR_X;
+    } else if (usageString.equalsIgnoreCase("RE_OR_X")) {
+      return Usage.RE_OR_X;
+    } else if (usageString.equalsIgnoreCase("R_OR_RE")) {
+      return Usage.R_OR_RE;
     } else {
       return Usage.O;
     }
@@ -311,6 +326,7 @@ public class CertifyRunner extends Thread
   private List<TestCaseMessage> rspAnalysisList = new ArrayList<TestCaseMessage>();
 
   List<ProfileLine> profileLineList = null;
+  private TestCaseMessage tcmFull = null;
 
   private void register(TestCaseMessage tcm) {
     tcm.setTestCaseId(statusCheckTestCaseList.size());
@@ -358,11 +374,20 @@ public class CertifyRunner extends Thread
 
   private SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
+  private Transformer transformer;
+
   @Override
   public void run() {
 
     status = STATUS_STARTED;
     try {
+
+      File testDataFile = CreateTestCaseServlet.getTestDataFile((Authenticate.User) session.getAttribute("user"));
+      if (testDataFile == null) {
+        transformer = new Transformer();
+      } else {
+        transformer = new Transformer(testDataFile);
+      }
 
       uniqueMRNBase = "" + System.currentTimeMillis() % 1000000 + (uniqueMRNBaseInc++) + "-";
       willQuery = queryType != null && (queryType.equals(QUERY_TYPE_QBP) || queryType.equals(QUERY_TYPE_VXQ));
@@ -427,20 +452,21 @@ public class CertifyRunner extends Thread
       if (run[SUITE_I_PROFILING]) {
         logStatus("Preparing profiling");
 
-        TestCaseMessage tcmFull = createTestCaseMessage(SCENARIO_FULL_RECORD_FOR_PROFILING);
+        tcmFull = createTestCaseMessage(SCENARIO_FULL_RECORD_FOR_PROFILING);
         {
-          Transformer transformer = new Transformer();
           tcmFull.setTestCaseSet(testCaseSet);
           tcmFull.setTestCaseNumber(uniqueMRNBase + "I." + paddWithZeros(0, 3));
           tcmFull.setDescription("Full Record");
           transformer.transform(tcmFull);
           register(tcmFull);
           tcmFull.setAssertResult("Accept - *");
+          tcmFull.setHasIssue(true);
 
           TestRunner testRunner = new TestRunner();
           testRunner.runTest(connector, tcmFull);
           totalUpdateTime += testRunner.getTotalRunTime();
           totalUpdateCount++;
+          tcmFull.setHasRun(true);
 
           if (tcmFull.isPassedTest()) {
             logStatus("Full record for profiling was accepted, profiling of all fields can begin");
@@ -455,7 +481,7 @@ public class CertifyRunner extends Thread
         } else {
           profileLineList = readProfileLines(profileFile);
           logStatus("Found " + profileLineList.size() + " of profile lines to test");
-          updateProfiling(profileLineList, tcmFull);
+          updateProfiling(profileLineList);
           printReportToFile();
           if (!keepRunning) {
             status = STATUS_STOPPED;
@@ -650,7 +676,7 @@ public class CertifyRunner extends Thread
     profileLineList = new ArrayList<CertifyRunner.ProfileLine>();
     BufferedReader in = new BufferedReader(new FileReader(profileFile));
     String line = in.readLine();
-    List<String> valueList = readValuesFromCsv(line);
+    List<String> valueList = CvsReader.readValuesFromCsv(line);
     int posField = findPosition("Field", valueList);
     int posDescription = findPosition("Description", valueList);
     int posUsage = findPosition("Usage", valueList);
@@ -658,31 +684,26 @@ public class CertifyRunner extends Thread
     int posComment = findPosition("Comment", valueList);
     int posValues = findPosition("Values", valueList);
     while ((line = in.readLine()) != null) {
-      valueList = readValuesFromCsv(line);
+      valueList = CvsReader.readValuesFromCsv(line);
       ProfileLine profileLine = new ProfileLine();
-      profileLine.setField(readValue(posField, valueList));
-      profileLine.setDescription(readValue(posDescription, valueList));
-      profileLine.setUsage(readValue(posUsage, valueList));
-      profileLine.setCodeTable(readValue(posCodeTable, valueList));
-      profileLine.setComment(readValue(posComment, valueList));
-      String allowedValue = readValue(posValues, valueList);
-      int pos = 0;
-      while (!allowedValue.equals("")) {
-        profileLine.getAllowedValues().add(allowedValue);
-        pos++;
-        allowedValue = readValue(posValues + pos, valueList);
+      profileLine.setField(CvsReader.readValue(posField, valueList));
+      if (!profileLine.getField().equals("")) {
+        profileLine.setDescription(CvsReader.readValue(posDescription, valueList));
+        profileLine.setUsage(CvsReader.readValue(posUsage, valueList));
+        profileLine.setCodeTable(CvsReader.readValue(posCodeTable, valueList));
+        profileLine.setComment(CvsReader.readValue(posComment, valueList));
+        String allowedValue = CvsReader.readValue(posValues, valueList);
+        int pos = 0;
+        while (!allowedValue.equals("")) {
+          profileLine.getAllowedValues().add(allowedValue);
+          pos++;
+          allowedValue = CvsReader.readValue(posValues + pos, valueList);
+        }
+        profileLineList.add(profileLine);
       }
-      profileLineList.add(profileLine);
     }
     in.close();
     return profileLineList;
-  }
-
-  private String readValue(int pos, List<String> valueList) {
-    if (valueList.size() > pos) {
-      return valueList.get(pos);
-    }
-    return "";
   }
 
   private int findPosition(String headerName, List<String> valueList) {
@@ -694,36 +715,6 @@ public class CertifyRunner extends Thread
       pos++;
     }
     return -1;
-  }
-
-  private List<String> readValuesFromCsv(String line) {
-    ArrayList<String> valueList = new ArrayList<String>();
-    String value = "";
-    boolean inQuote = false;
-    for (int i = 0; i < line.length(); i++) {
-      char curr = line.charAt(i);
-      char peak = (i + 1) < line.length() ? line.charAt(i + 1) : 0;
-      if (curr == '"') {
-        if (inQuote) {
-          if (peak == '"') {
-            continue;
-          } else {
-            value += curr;
-          }
-        } else if (value.length() > 0) {
-          value += curr;
-        } else {
-          inQuote = true;
-        }
-      } else if (curr == ',' && !inQuote) {
-        valueList.add(value.trim());
-        value = "";
-      } else {
-        value += curr;
-      }
-    }
-    valueList.add(value.trim());
-    return valueList;
   }
 
   public PrintWriter setupExampleFile(String name, TestCaseMessage testCaseMessage) {
@@ -843,7 +834,6 @@ public class CertifyRunner extends Thread
 
   private void updateAdvanced(Map<Integer, List<Issue>> issueMap) {
     TestRunner testRunner = new TestRunner();
-    Transformer transformer = new Transformer();
     int count;
     for (int i = 0; i < areaScore[SUITE_C_ADVANCED].length; i++) {
       if (!keepRunning) {
@@ -922,7 +912,7 @@ public class CertifyRunner extends Thread
   private static final String FIELD_MSH_21 = "MSH-21";
   private static final String FIELD_MSH_22 = "MSH-22";
   private static final String FIELD_MSH_23 = "MSH-23";
-  private static final String FIELD_PD1_1 = "PD1-1";
+  private static final String FIELD_PID_1 = "PID-1";
   private static final String FIELD_PID_3 = "PID-3";
   private static final String FIELD_PID_3_1 = "PID-3.1";
   private static final String FIELD_PID_3_4 = "PID-3.4";
@@ -957,10 +947,7 @@ public class CertifyRunner extends Thread
   private static final String FIELD_PID_13_3 = "PID-13.3";
   private static final String FIELD_PID_13_6 = "PID-13.6";
   private static final String FIELD_PID_13_7 = "PID-13.7";
-  private static final String FIELD_PID_13_EMAIL = "PID-13 Email";
-  private static final String FIELD_PID_13_2_EMAIL = "PID-13.2 Email";
-  private static final String FIELD_PID_13_3_EMAIL = "PID-13.3 Email";
-  private static final String FIELD_PID_13_4_EMAIL = "PID-13.4 Email";
+  private static final String FIELD_PID_13_EMAIL = "PID-13 EMAIL";
   private static final String FIELD_PID_14 = "PID-14";
   private static final String FIELD_PID_14_1 = "PID-14.1";
   private static final String FIELD_PID_14_2 = "PID-14.2";
@@ -968,13 +955,7 @@ public class CertifyRunner extends Thread
   private static final String FIELD_PID_14_6 = "PID-14.6";
   private static final String FIELD_PID_14_7 = "PID-14.7";
   private static final String FIELD_PID_15 = "PID-15";
-  private static final String FIELD_PID_15_1 = "PID-15.1";
-  private static final String FIELD_PID_15_2 = "PID-15.2";
-  private static final String FIELD_PID_15_3 = "PID-15.3";
   private static final String FIELD_PID_22 = "PID-22";
-  private static final String FIELD_PID_22_1 = "PID-22.1";
-  private static final String FIELD_PID_22_2 = "PID-22.2";
-  private static final String FIELD_PID_22_3 = "PID-22.3";
   private static final String FIELD_PID_24 = "PID-24";
   private static final String FIELD_PID_25 = "PID-25";
   private static final String FIELD_PID_29 = "PID-29";
@@ -1025,9 +1006,6 @@ public class CertifyRunner extends Thread
   private static final String FIELD_NK1_5_7 = "NK1-5.7";
   private static final String FIELD_NK1_6 = "NK1-6";
   private static final String FIELD_NK1_7 = "NK1-7";
-  private static final String FIELD_NK1_7_1 = "NK1-7.1";
-  private static final String FIELD_NK1_7_2 = "NK1-7.2";
-  private static final String FIELD_NK1_7_3 = "NK1-7.3";
   private static final String FIELD_PV1_1 = "PV1-1";
   private static final String FIELD_PV1_2 = "PV1-2";
   private static final String FIELD_PV1_7 = "PV1-7";
@@ -1043,10 +1021,12 @@ public class CertifyRunner extends Thread
   private static final String FIELD_ORC_1 = "ORC-1";
   private static final String FIELD_ORC_2 = "ORC-2";
   private static final String FIELD_ORC_2_1 = "ORC-2.1";
+  private static final String FIELD_ORC_2_2 = "ORC-2.2";
   private static final String FIELD_ORC_2_3 = "ORC-2.3";
   private static final String FIELD_ORC_3 = "ORC-3";
   private static final String FIELD_ORC_3_1 = "ORC-3.1";
   private static final String FIELD_ORC_3_2 = "ORC-3.2";
+  private static final String FIELD_ORC_3_3 = "ORC-3.3";
   private static final String FIELD_ORC_5 = "ORC-5";
   private static final String FIELD_ORC_10 = "ORC-10";
   private static final String FIELD_ORC_10_1 = "ORC-10.1";
@@ -1059,216 +1039,637 @@ public class CertifyRunner extends Thread
   private static final String FIELD_ORC_12_3 = "ORC-12.3";
   private static final String FIELD_ORC_12_4 = "ORC-12.4";
   private static final String FIELD_ORC_17 = "ORC-17";
+  private static final String FIELD_ORC_17_1 = "ORC-17.1";
   private static final String FIELD_ORC_17_4 = "ORC-17.4";
-  private static final String FIELD_ORC_28 = "ORC-28";
-  private static final String FIELD_ADMIN_RXA_1 = "Admin RXA-1";
-  private static final String FIELD_ADMIN_RXA_2 = "Admin RXA-2";
-  private static final String FIELD_ADMIN_RXA_3 = "Admin RXA-3";
-  private static final String FIELD_ADMIN_RXA_4 = "Admin RXA-4";
-  private static final String FIELD_ADMIN_RXA_5 = "Admin RXA-5";
-  private static final String FIELD_ADMIN_RXA_6 = "Admin RXA-6";
-  private static final String FIELD_ADMIN_RXA_7 = "Admin RXA-7";
-  private static final String FIELD_ADMIN_RXA_9 = "Admin RXA-9";
-  private static final String FIELD_ADMIN_RXA_10 = "Admin RXA-10";
-  private static final String FIELD_ADMIN_RXA_10_1 = "Admin RXA-10.1";
-  private static final String FIELD_ADMIN_RXA_10_2 = "Admin RXA-10.2";
-  private static final String FIELD_ADMIN_RXA_10_3 = "Admin RXA-10.3";
-  private static final String FIELD_ADMIN_RXA_10_4 = "Admin RXA-10.4";
-  private static final String FIELD_ADMIN_RXA_11 = "Admin RXA-11";
-  private static final String FIELD_ADMIN_RXA_11_4 = "Admin RXA-11.4";
-  private static final String FIELD_ADMIN_RXA_15 = "Admin RXA-15";
-  private static final String FIELD_ADMIN_RXA_16 = "Admin RXA-16";
-  private static final String FIELD_ADMIN_RXA_17 = "Admin RXA-17";
-  private static final String FIELD_ADMIN_RXA_20 = "Admin RXA-20";
-  private static final String FIELD_ADMIN_RXA_21 = "Admin RXA-21";
-  private static final String FIELD_ADMIN_RXA_22 = "Admin RXA-22";
-  private static final String FIELD_ADMIN_RXR_1 = "Admin RXR-1";
-  private static final String FIELD_ADMIN_RXR_2 = "Admin RXR-2";
-  private static final String FIELD_ADMIN_OBX_1 = "Admin OBX-1";
-  private static final String FIELD_ADMIN_OBX_2 = "Admin OBX-2";
-  private static final String FIELD_ADMIN_OBX_3 = "Admin OBX-3";
-  private static final String FIELD_ADMIN_OBX_4 = "Admin OBX-4";
-  private static final String FIELD_ADMIN_OBX_5 = "Admin OBX-5";
-  private static final String FIELD_ADMIN_OBX_11 = "Admin OBX-11";
-  private static final String FIELD_ADMIN_OBX_14 = "Admin OBX-14";
-  private static final String FIELD_ADMIN_OBX_17 = "Admin OBX-17";
-  private static final String FIELD_ADMIN_OBX_64994_7 = "Admin OBX 64994-7";
-  private static final String FIELD_ADMIN_OBX_69764_9 = "Admin OBX 69764-9";
-  private static final String FIELD_ADMIN_OBX_29768_9 = "Admin OBX 29768-9";
-  private static final String FIELD_ADMIN_OBX_30956_7 = "Admin OBX 30956-7";
-  private static final String FIELD_ADMIN_OBX_29769_7 = "Admin OBX 29769-7";
-  private static final String FIELD_HIST_RXA_1 = "Hist RXA-1";
-  private static final String FIELD_HIST_RXA_2 = "Hist RXA-2";
-  private static final String FIELD_HIST_RXA_3 = "Hist RXA-3";
-  private static final String FIELD_HIST_RXA_4 = "Hist RXA-4";
-  private static final String FIELD_HIST_RXA_5 = "Hist RXA-5";
-  private static final String FIELD_HIST_RXA_6 = "Hist RXA-6";
-  private static final String FIELD_HIST_RXA_7 = "Hist RXA-7";
-  private static final String FIELD_HIST_RXA_9 = "Hist RXA-9";
-  private static final String FIELD_HIST_RXA_10 = "Hist RXA-10";
-  private static final String FIELD_HIST_RXA_10_1 = "Hist RXA-10.1";
-  private static final String FIELD_HIST_RXA_10_2 = "Hist RXA-10.2";
-  private static final String FIELD_HIST_RXA_10_3 = "Hist RXA-10.3";
-  private static final String FIELD_HIST_RXA_10_4 = "Hist RXA-10.4";
-  private static final String FIELD_HIST_RXA_11 = "Hist RXA-11";
-  private static final String FIELD_HIST_RXA_11_4 = "Hist RXA-11.4";
-  private static final String FIELD_HIST_RXA_15 = "Hist RXA-15";
-  private static final String FIELD_HIST_RXA_16 = "Hist RXA-16";
-  private static final String FIELD_HIST_RXA_17 = "Hist RXA-17";
-  private static final String FIELD_HIST_RXA_20 = "Hist RXA-20";
-  private static final String FIELD_HIST_RXA_21 = "Hist RXA-21";
-  private static final String FIELD_HIST_RXR_1 = "Hist RXR-1";
-  private static final String FIELD_HIST_RXR_2 = "Hist RXR-2";
+  private static final String FIELD_ADMIN_RXA_1 = "ADMIN RXA-1";
+  private static final String FIELD_ADMIN_RXA_2 = "ADMIN RXA-2";
+  private static final String FIELD_ADMIN_RXA_3 = "ADMIN RXA-3";
+  private static final String FIELD_ADMIN_RXA_4 = "ADMIN RXA-4";
+  private static final String FIELD_ADMIN_RXA_5 = "ADMIN RXA-5";
+  private static final String FIELD_ADMIN_RXA_6 = "ADMIN RXA-6";
+  private static final String FIELD_ADMIN_RXA_7 = "ADMIN RXA-7";
+  private static final String FIELD_ADMIN_RXA_9 = "ADMIN RXA-9";
+  private static final String FIELD_ADMIN_RXA_10 = "ADMIN RXA-10";
+  private static final String FIELD_ADMIN_RXA_10_1 = "ADMIN RXA-10.1";
+  private static final String FIELD_ADMIN_RXA_10_2 = "ADMIN RXA-10.2";
+  private static final String FIELD_ADMIN_RXA_10_3 = "ADMIN RXA-10.3";
+  private static final String FIELD_ADMIN_RXA_10_4 = "ADMIN RXA-10.4";
+  private static final String FIELD_ADMIN_RXA_11 = "ADMIN RXA-11";
+  private static final String FIELD_ADMIN_RXA_11_4 = "ADMIN RXA-11.4";
+  private static final String FIELD_ADMIN_RXA_15 = "ADMIN RXA-15";
+  private static final String FIELD_ADMIN_RXA_16 = "ADMIN RXA-16";
+  private static final String FIELD_ADMIN_RXA_17 = "ADMIN RXA-17";
+  private static final String FIELD_ADMIN_RXA_20 = "ADMIN RXA-20";
+  private static final String FIELD_ADMIN_RXA_21 = "ADMIN RXA-21";
+  private static final String FIELD_ADMIN_RXA_22 = "ADMIN RXA-22";
+  private static final String FIELD_ADMIN_RXR_1 = "ADMIN RXR-1";
+  private static final String FIELD_ADMIN_RXR_2 = "ADMIN RXR-2";
+  private static final String FIELD_ADMIN_OBX_1 = "ADMIN OBX-1";
+  private static final String FIELD_ADMIN_OBX_2 = "ADMIN OBX-2";
+  private static final String FIELD_ADMIN_OBX_3 = "ADMIN OBX-3";
+  private static final String FIELD_ADMIN_OBX_4 = "ADMIN OBX-4";
+  private static final String FIELD_ADMIN_OBX_5 = "ADMIN OBX-5";
+  private static final String FIELD_ADMIN_OBX_11 = "ADMIN OBX-11";
+  private static final String FIELD_ADMIN_OBX_14 = "ADMIN OBX-14";
+  private static final String FIELD_ADMIN_OBX_17 = "ADMIN OBX-17";
+  private static final String FIELD_ADMIN_OBX_64994_7 = "ADMIN OBX 64994-7";
+  private static final String FIELD_ADMIN_OBX_69764_9 = "ADMIN OBX 69764-9";
+  private static final String FIELD_ADMIN_OBX_29768_9 = "ADMIN OBX 29768-9";
+  private static final String FIELD_ADMIN_OBX_30956_7 = "ADMIN OBX 30956-7";
+  private static final String FIELD_ADMIN_OBX_29769_7 = "ADMIN OBX 29769-7";
+  private static final String FIELD_HIST_RXA_1 = "HIST RXA-1";
+  private static final String FIELD_HIST_RXA_2 = "HIST RXA-2";
+  private static final String FIELD_HIST_RXA_3 = "HIST RXA-3";
+  private static final String FIELD_HIST_RXA_4 = "HIST RXA-4";
+  private static final String FIELD_HIST_RXA_5 = "HIST RXA-5";
+  private static final String FIELD_HIST_RXA_6 = "HIST RXA-6";
+  private static final String FIELD_HIST_RXA_7 = "HIST RXA-7";
+  private static final String FIELD_HIST_RXA_9 = "HIST RXA-9";
+  private static final String FIELD_HIST_RXA_10 = "HIST RXA-10";
+  private static final String FIELD_HIST_RXA_10_1 = "HIST RXA-10.1";
+  private static final String FIELD_HIST_RXA_10_2 = "HIST RXA-10.2";
+  private static final String FIELD_HIST_RXA_10_3 = "HIST RXA-10.3";
+  private static final String FIELD_HIST_RXA_10_4 = "HIST RXA-10.4";
+  private static final String FIELD_HIST_RXA_11 = "HIST RXA-11";
+  private static final String FIELD_HIST_RXA_11_4 = "HIST RXA-11.4";
+  private static final String FIELD_HIST_RXA_15 = "HIST RXA-15";
+  private static final String FIELD_HIST_RXA_16 = "HIST RXA-16";
+  private static final String FIELD_HIST_RXA_17 = "HIST RXA-17";
+  private static final String FIELD_HIST_RXA_20 = "HIST RXA-20";
+  private static final String FIELD_HIST_RXA_21 = "HIST RXA-21";
+  private static final String FIELD_HIST_RXR_1 = "HIST RXR-1";
+  private static final String FIELD_HIST_RXR_2 = "HIST RXR-2";
 
-  private TestCaseMessage getPresentTestCase(ProfileLine profileLine, int count, Transformer transformer) {
+  private TestCaseMessage getPresentTestCase(ProfileLine profileLine, int count, TestCaseMessage defaultTestCaseMessage) {
     String field = profileLine.getField().toUpperCase();
     TestCaseMessage testCaseMessage = null;
     if (testCaseMessage == null) {
       testCaseMessage = createTestCaseMessage(SCENARIO_FULL_RECORD_FOR_PROFILING);
     }
     testCaseMessage.setHasIssue(false);
-    if (field.equals(FIELD_MSH_4)) {
-      testCaseMessage.appendCustomTransformation("MSH-4=[MAP DEFAULT=>'TEST']");
+    if (field.equals(FIELD_MSH_3)) {
+      testCaseMessage.appendCustomTransformation("MSH-3=[MAP ''=>'TEST']");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_3_1)) {
+      testCaseMessage.appendCustomTransformation("MSH-3=[MAP ''=>'TEST']");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_3_2)) {
+      testCaseMessage.appendCustomTransformation("MSH-3.1=[MAP ''=>'TEST']");
+      testCaseMessage.appendCustomTransformation("MSH-3.2=[MAP ''=>'TEST']");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_4)) {
+      testCaseMessage.appendCustomTransformation("MSH-4=[MAP ''=>'TEST']");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_4_1)) {
+      testCaseMessage.appendCustomTransformation("MSH-4=[MAP ''=>'TEST']");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_4_2)) {
+      testCaseMessage.appendCustomTransformation("MSH-4.1=[MAP ''=>'TEST']");
+      testCaseMessage.appendCustomTransformation("MSH-4.2=[MAP ''=>'TEST']");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_5)) {
+      testCaseMessage.appendCustomTransformation("MSH-5=[MAP ''=>'TEST']");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_5_1)) {
+      testCaseMessage.appendCustomTransformation("MSH-5=[MAP ''=>'TEST']");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_5_2)) {
+      testCaseMessage.appendCustomTransformation("MSH-5.1=[MAP ''=>'TEST']");
+      testCaseMessage.appendCustomTransformation("MSH-5.2=[MAP ''=>'TEST']");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_6)) {
-      testCaseMessage.appendCustomTransformation("MSH-6=[MAP DEFAULT=>'TEST']");
+      testCaseMessage.appendCustomTransformation("MSH-6=[MAP ''=>'TEST']");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_6_1)) {
+      testCaseMessage.appendCustomTransformation("MSH-6=[MAP ''=>'TEST']");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_6_2)) {
+      testCaseMessage.appendCustomTransformation("MSH-6.1=[MAP ''=>'TEST']");
+      testCaseMessage.appendCustomTransformation("MSH-6.2=[MAP ''=>'TEST']");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_7)) {
-      // nothing to do, message should always have date
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_MSH_9)) {
-      // nothing to do
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_MSH_10)) {
-      // nothing to do
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_MSH_11)) {
-      testCaseMessage.appendCustomTransformation("MSH-11=[MAP DEFAULT=>'T']");
+      testCaseMessage.appendCustomTransformation("MSH-11=[MAP ''=>'T']");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_12)) {
-      testCaseMessage.appendCustomTransformation("MSH-12=[MAP DEFAULT=>'2.5.1']");
+      testCaseMessage.appendCustomTransformation("MSH-12=[MAP ''=>'2.5.1']");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_15)) {
+      testCaseMessage.appendCustomTransformation("MSH-16=[MAP ''=>'AL']");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_16)) {
-      testCaseMessage.appendCustomTransformation("MSH-16=[MAP DEFAULT=>'AL']");
-    } else if (field.equals(FIELD_PID_3)) {
-      // should always have this
+      testCaseMessage.appendCustomTransformation("MSH-16=[MAP ''=>'AL']");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_17)) {
+      testCaseMessage.appendCustomTransformation("MSH-17=[MAP ''=>'USA']");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_22)) {
+      testCaseMessage.appendCustomTransformation("MSH-22=[MAP ''=>'TEST']");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_23)) {
+      testCaseMessage.appendCustomTransformation("MSH-23=[MAP ''=>'TEST']");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_1)) {
+      testCaseMessage.appendCustomTransformation("PID-1=1");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_3)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PID_3_1)) {
-      // should always have this
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_3_4)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_3_5)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_3_SSN)) {
+      testCaseMessage.appendCustomTransformation("PID-3.1#2=[SSN]");
+      testCaseMessage.appendCustomTransformation("PID-3.4#2=USA");
+      testCaseMessage.appendCustomTransformation("PID-3.5#2=SS");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_3_MEDICAID)) {
+      testCaseMessage.appendCustomTransformation("PID-3.1#2=[MEDICAID]");
+      testCaseMessage.appendCustomTransformation("PID-3.4#2=MI");
+      testCaseMessage.appendCustomTransformation("PID-3.5#2=MA");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_5)) {
-      // should always have this
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_5_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_5_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_5_3)) {
+      testCaseMessage.appendCustomTransformation("PID-5.3=[BOY_MIDDLE]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_5_7)) {
+      testCaseMessage.appendCustomTransformation("PID-5.7=L");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_6)) {
-      // should always have this
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_6_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_6_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_6_3)) {
+      testCaseMessage.appendCustomTransformation("PID-6.3=[GIRL_MIDDLE]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_6_7)) {
+      testCaseMessage.appendCustomTransformation("PID-6.7=M");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_7)) {
-      // should always have this
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PID_8)) {
-      // should always have this
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PID_10)) {
-      // should always have this
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PID_11)) {
-      // should always have this
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_11_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_11_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_11_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_11_4)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_11_5)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_11_6)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_11_7)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_11_9)) {
+      testCaseMessage.appendCustomTransformation("PID-11.9=26001");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_13)) {
-      // should always have this
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_13_1)) {
+      testCaseMessage.appendCustomTransformation("PID-13=[PHONE]");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_13_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_13_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_13_6)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_13_7)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_13_EMAIL)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_14)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_14_1)) {
+      testCaseMessage.appendCustomTransformation("PID-14=[PHONE_ALT]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_14_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_14_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_14_6)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_14_7)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PID_15)) {
-      testCaseMessage.appendCustomTransformation("PID-15=[LANGUAGE]");
-      testCaseMessage.appendCustomTransformation("PID-15.2=[LANGUAGE_LABEL]");
-      testCaseMessage.appendCustomTransformation("PID-15.3=HL70296");
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PID_22)) {
-      // should always have this
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PID_24)) {
       testCaseMessage.appendCustomTransformation("PID-24=Y");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_25)) {
+      testCaseMessage.appendCustomTransformation("PID-24=Y");
+      testCaseMessage.appendCustomTransformation("PID-25=2");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_29)) {
+      testCaseMessage.appendCustomTransformation("PID-29=Y");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_29)) {
+      testCaseMessage.appendCustomTransformation("PID-29=Y");
+      testCaseMessage.appendCustomTransformation("PID-30=[TODAY]");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_3)) {
-      testCaseMessage.appendCustomTransformation("insert segment PD1 after PID if missing");
-      testCaseMessage.appendCustomTransformation("PD1-3.3=[MAP DEFAULT=>'TEST']");
+      testCaseMessage.appendCustomTransformation("PD1-3.1=[RESPONSIBLE_ORG_NAME]");
+      testCaseMessage.appendCustomTransformation("PD1-3.6=IIS");
+      testCaseMessage.appendCustomTransformation("PD1-3.7=FI");
+      testCaseMessage.appendCustomTransformation("PD1-3.10=[RESPONSIBLE_ORG_ID]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_3_1)) {
+      testCaseMessage.appendCustomTransformation("PD1-3.1=[RESPONSIBLE_ORG_NAME]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_3_2)) {
+      testCaseMessage.appendCustomTransformation("PD1-3.1=[RESPONSIBLE_ORG_NAME]");
+      testCaseMessage.appendCustomTransformation("PD1-3.2=[RESPONSIBLE_ORG_NAME]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_3_3)) {
+      testCaseMessage.appendCustomTransformation("PD1-3.1=[RESPONSIBLE_ORG_NAME]");
+      testCaseMessage.appendCustomTransformation("PD1-3.1=[RESPONSIBLE_ORG_ID]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_3_6)) {
+      testCaseMessage.appendCustomTransformation("PD1-3.6=IIS");
+      testCaseMessage.appendCustomTransformation("PD1-3.7=FI");
+      testCaseMessage.appendCustomTransformation("PD1-3.10=[RESPONSIBLE_ORG_ID]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_3_7)) {
+      testCaseMessage.appendCustomTransformation("PD1-3.6=IIS");
+      testCaseMessage.appendCustomTransformation("PD1-3.7=FI");
+      testCaseMessage.appendCustomTransformation("PD1-3.10=[RESPONSIBLE_ORG_ID]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_3_10)) {
+      testCaseMessage.appendCustomTransformation("PD1-3.6=IIS");
+      testCaseMessage.appendCustomTransformation("PD1-3.7=FI");
+      testCaseMessage.appendCustomTransformation("PD1-3.10=[RESPONSIBLE_ORG_ID]");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_4)) {
-      testCaseMessage.appendCustomTransformation("insert segment PD1 after PID if missing");
-      testCaseMessage.appendCustomTransformation("PD1-4.2=Burden");
-      testCaseMessage.appendCustomTransformation("PD1-4.3=Donna");
+      testCaseMessage.appendCustomTransformation("PD1-4.1=[ORDERED_BY_NPI]");
+      testCaseMessage.appendCustomTransformation("PD1-4.2=[ORDERED_BY_LAST]");
+      testCaseMessage.appendCustomTransformation("PD1-4.3=[ORDERED_BY_FIRST]");
+      testCaseMessage.appendCustomTransformation("PD1-4.4=[ORDERED_BY_MIDDLE]");
+      testCaseMessage.appendCustomTransformation("PD1-4.9=CMS");
+      testCaseMessage.appendCustomTransformation("PD1-4.10=L");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_4_1)) {
+      testCaseMessage.appendCustomTransformation("PD1-4.1=[ORDERED_BY_NPI]");
+      testCaseMessage.appendCustomTransformation("PD1-4.9=CMS");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_4_2)) {
+      testCaseMessage.appendCustomTransformation("PD1-4.2=[ORDERED_BY_LAST]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_4_3)) {
+      testCaseMessage.appendCustomTransformation("PD1-4.3=[ORDERED_BY_FIRST]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_4_4)) {
+      testCaseMessage.appendCustomTransformation("PD1-4.4=[ORDERED_BY_MIDDLE]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_4_9)) {
+      testCaseMessage.appendCustomTransformation("PD1-4.1=[ORDERED_BY_NPI]");
+      testCaseMessage.appendCustomTransformation("PD1-4.9=CMS");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_4_10)) {
+      testCaseMessage.appendCustomTransformation("PD1-4.2=[ORDERED_BY_LAST]");
+      testCaseMessage.appendCustomTransformation("PD1-4.3=[ORDERED_BY_FIRST]");
+      testCaseMessage.appendCustomTransformation("PD1-4.10=L");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_11)) {
-      testCaseMessage.appendCustomTransformation("insert segment PD1 after PID if missing");
-      testCaseMessage.appendCustomTransformation("PD1-11.1=02");
-      testCaseMessage.appendCustomTransformation("PD1-11.2=Reminder/recall - any method");
-      testCaseMessage.appendCustomTransformation("PD1-11.3=HL70215");
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PD1_12)) {
-      testCaseMessage.appendCustomTransformation("insert segment PD1 after PID if missing");
-      testCaseMessage.appendCustomTransformation("PD1-12=N");
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PD1_13)) {
-      testCaseMessage.appendCustomTransformation("insert segment PD1 after PID if missing");
-      testCaseMessage.appendCustomTransformation("PD1-12=N");
-      testCaseMessage.appendCustomTransformation("PD1-13=[VAC1_DATE]");
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_16)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_17)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_18)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_1)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_NK1_2)) {
-      // should already have this
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_2_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_2_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_2_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_2_7)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_NK1_3)) {
-      // should already have this
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_3_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_3_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_3_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_4)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_4_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_4_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_4_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_4_4)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_4_5)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_4_6)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_4_7)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_5)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_5_1)) {
+      testCaseMessage.appendCustomTransformation("NK1-5.1=[PHONE]");
       testCaseMessage.setHasIssue(true);
-    } else if (field.equals(FIELD_PV1_20)) {
-      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
-      testCaseMessage.appendCustomTransformation("PV1-20=[VFC]");
+    } else if (field.equals(FIELD_NK1_5_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_5_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_5_6)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_5_7)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_6)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_7)) {
+      testCaseMessage.appendCustomTransformation("NK1-7=N");
+      testCaseMessage.appendCustomTransformation("NK1-7=Next-of-Kin");
+      testCaseMessage.appendCustomTransformation("NK1-7=HL70131");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PV1_20_2)) {
       testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PV1-1=1");
+      testCaseMessage.appendCustomTransformation("PV1-2=R");
       testCaseMessage.appendCustomTransformation("PV1-20=[VFC]");
       testCaseMessage.appendCustomTransformation("PV1-20.2=[VAC1_DATE]");
       testCaseMessage.setHasIssue(true);
-    } else if (field.equals(FIELD_ORC_1)) {
-    } else if (field.equals(FIELD_ORC_2)) {
-    } else if (field.equals(FIELD_ORC_3)) {
-    } else if (field.equals(FIELD_ORC_10)) {
-    } else if (field.equals(FIELD_ORC_12)) {
-    } else if (field.equals(FIELD_ADMIN_RXA_3)) {
-    } else if (field.equals(FIELD_ADMIN_RXA_5)) {
-    } else if (field.equals(FIELD_ADMIN_RXA_6)) {
-    } else if (field.equals(FIELD_ADMIN_RXA_7)) {
-    } else if (field.equals(FIELD_ADMIN_RXA_9)) {
-    } else if (field.equals(FIELD_ADMIN_RXA_10)) {
-    } else if (field.equals(FIELD_ADMIN_RXA_11)) {
-      testCaseMessage.appendCustomTransformation("RXA-11.4=[MAP DEFAULT=>'TEST']");
+    } else if (field.equals(FIELD_PV1_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PV1_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PV1_7_1)) {
+      testCaseMessage.appendCustomTransformation("PD1-7.1=[ORDERED_BY_NPI]");
+      testCaseMessage.appendCustomTransformation("PD1-7.9=CMS");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_7_2)) {
+      testCaseMessage.appendCustomTransformation("PD1-7.2=[ORDERED_BY_LAST]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_7_3)) {
+      testCaseMessage.appendCustomTransformation("PD1-7.3=[ORDERED_BY_FIRST]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_7_4)) {
+      testCaseMessage.appendCustomTransformation("PD1-7.4=[ORDERED_BY_MIDDLE]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_19)) {
+      testCaseMessage.appendCustomTransformation("PV1-19.1=[MSH-10]");
+      testCaseMessage.appendCustomTransformation("PV1-19.4=[RESPONSIBLE_ORG_ID]");
+      testCaseMessage.appendCustomTransformation("PV1-19.4=VN");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_20)) {
+      testCaseMessage.appendCustomTransformation("PV1-20.1=[VFC]");
+      testCaseMessage.appendCustomTransformation("PV1-20.2=[TODAY]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_20_1)) {
+      testCaseMessage.appendCustomTransformation("PV1-20.1=[VFC]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_20_2)) {
+      testCaseMessage.appendCustomTransformation("PV1-20.2=[TODAY]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_44)) {
+      testCaseMessage.appendCustomTransformation("PV1-44=[TODAY]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ORC_2)) {
+      testCaseMessage.appendCustomTransformation("ORC-2.1=[VAC1_ID]");
+      testCaseMessage.appendCustomTransformation("ORC-2.2=[RESPONSIBLE_ORG_ID]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_2_1)) {
+      // not implemented
+    } else if (field.equals(FIELD_ORC_2_2)) {
+      // not implemented
+    } else if (field.equals(FIELD_ORC_2_3)) {
+      // not implemented
+    } else if (field.equals(FIELD_ORC_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ORC_3_1)) {
+      // not implemented
+    } else if (field.equals(FIELD_ORC_3_2)) {
+      // not implemented
+    } else if (field.equals(FIELD_ORC_3_3)) {
+      // not implemented
+    } else if (field.equals(FIELD_ORC_5)) {
+      testCaseMessage.appendCustomTransformation("ORC-5=CM");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_10)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ORC_10_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ORC_10_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ORC_10_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ORC_10_4)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ORC_12)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ORC_12_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ORC_12_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ORC_12_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ORC_12_4)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ORC_17)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ORC_17_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ORC_17_4)) {
+      testCaseMessage.appendCustomTransformation("ORC-17.4=[ADMIN_ORG_1_NAME]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ADMIN_RXA_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_4)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_5)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_6)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_7)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_9)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_10)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_10_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_10_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_10_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_10_4)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_11)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_11_4)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_RXA_15)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_RXA_16)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_RXA_17)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_RXA_20)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_RXA_21)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_22)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_RXR_1)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_RXR_2)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_OBX_1)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_OBX_2)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_OBX_3)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_OBX_4)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_OBX_5)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_OBX_11)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_OBX_14)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_OBX_17)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_OBX_64994_7)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_OBX_69764_9)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_OBX_29768_9)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_OBX_30956_7)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_OBX_29769_7)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_HIST_RXA_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_HIST_RXA_2)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_HIST_RXA_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_HIST_RXA_4)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-4=[VAC2_DATE]");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_5)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_HIST_RXA_6)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-6=[VAC2_AMOUNT]");
+      testCaseMessage.appendCustomTransformation("RXA#2-7.1=mL");
+      testCaseMessage.appendCustomTransformation("RXA#2-7.2=milliliters");
+      testCaseMessage.appendCustomTransformation("RXA#2-7.3=UCUM");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_7)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-6=[VAC2_AMOUNT]");
+      testCaseMessage.appendCustomTransformation("RXA#2-7.1=mL");
+      testCaseMessage.appendCustomTransformation("RXA#2-7.2=milliliters");
+      testCaseMessage.appendCustomTransformation("RXA#2-7.3=UCUM");
+      testCaseMessage.setHasIssue(true);
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_9)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_HIST_RXA_10)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-10.1=[ADMIN_BY_NPI]");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.2=[ADMIN_BY_LAST]");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.3=[ADMIN_BY_FIRST]");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.4=[ADMIN_BY_MIDDLE]");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.9=CMS");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.10=L");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.13=NPI");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_HIST_RXA_10_1)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-10.1=[ADMIN_BY_NPI]");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.9=CMS");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.13=NPI");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_HIST_RXA_10_2)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-10.2=[ADMIN_BY_LAST]");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.3=[ADMIN_BY_FIRST]");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.4=[ADMIN_BY_MIDDLE]");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.10=L");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_HIST_RXA_10_3)) {
+      // not implemented
+    } else if (field.equals(FIELD_HIST_RXA_10_4)) {
+      // not implemented
     } else if (field.equals(FIELD_HIST_RXA_11)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-11.4=Other Clinic");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_HIST_RXA_11_4)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-11.4=Other Clinic");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_15)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-15=[VAC2_LOT]");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_16)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-16=[FUTURE]");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_17)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-17.1=[VAC2_MVX]");
+      testCaseMessage.appendCustomTransformation("RXA#2-17.2=[VAC2_MVX_LABEL]");
+      testCaseMessage.appendCustomTransformation("RXA#2-17.3=MVX");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_20)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_HIST_RXA_21)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_HIST_RXR_1)) {
+      testCaseMessage.appendCustomTransformation("insert segment RXR after RXA#2");
+      testCaseMessage.appendCustomTransformation("RXA#2:RXR-1.1=[VAC2_ROUTE]");
+      testCaseMessage.appendCustomTransformation("RXA#2:RXR-1.2=");
+      testCaseMessage.appendCustomTransformation("RXA#2:RXR-1.3=HL70162");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXR_2)) {
+      testCaseMessage.appendCustomTransformation("insert segment RXR after RXA#2");
+      testCaseMessage.appendCustomTransformation("RXA#2:RXR-1.1=[VAC2_ROUTE]");
+      testCaseMessage.appendCustomTransformation("RXA#2:RXR-1.2=");
+      testCaseMessage.appendCustomTransformation("RXA#2:RXR-1.3=HL70162");
+      testCaseMessage.appendCustomTransformation("RXA#2:RXR-2.1=[VAC2_SITE]");
+      testCaseMessage.appendCustomTransformation("RXA#2:RXR-2.2=");
+      testCaseMessage.appendCustomTransformation("RXA#2:RXR-2.3=HL70163");
+      testCaseMessage.setHasIssue(true);
     } else {
       testCaseMessage.appendCustomTransformation("SFT-5=CHANGES NOT FOUND FOR '" + field + "'");
     }
@@ -1277,18 +1678,17 @@ public class CertifyRunner extends Thread
     testCaseMessage.setTestCaseNumber(uniqueMRNBase + "I." + paddWithZeros(count, 3));
     testCaseMessage.setDescription("Field " + field + " is present");
     transformer.transform(testCaseMessage);
-    register(testCaseMessage);
     if (profileLine.getUsage() == Usage.R) {
       testCaseMessage.setAssertResult("Accept - *");
     } else if (profileLine.getUsage() == Usage.X) {
-      testCaseMessage.setAssertResult("Error - *");
+      testCaseMessage.setAssertResult("Reject - *");
     } else {
       testCaseMessage.setAssertResult("Accept - *");
     }
     return testCaseMessage;
   }
 
-  private TestCaseMessage getAbsentTestCase(ProfileLine profileLine, int count, Transformer transformer) {
+  private TestCaseMessage getAbsentTestCase(ProfileLine profileLine, int count, TestCaseMessage defaultTestCaseMessage) {
     String field = profileLine.getField().toUpperCase();
     TestCaseMessage testCaseMessage = null;
     if (testCaseMessage == null) {
@@ -1297,15 +1697,47 @@ public class CertifyRunner extends Thread
     testCaseMessage.setHasIssue(false);
     if (field.equals(FIELD_MSH_3)) {
       testCaseMessage.appendCustomTransformation("MSH-3.1=");
+      testCaseMessage.appendCustomTransformation("MSH-3.2=");
+      testCaseMessage.appendCustomTransformation("MSH-3.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_3_1)) {
+      testCaseMessage.appendCustomTransformation("MSH-3.1=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_3_2)) {
       testCaseMessage.appendCustomTransformation("MSH-3.2=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_4)) {
-      testCaseMessage.appendCustomTransformation("MSH-4=");
+      testCaseMessage.appendCustomTransformation("MSH-4.1=");
+      testCaseMessage.appendCustomTransformation("MSH-4.2=");
+      testCaseMessage.appendCustomTransformation("MSH-4.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_4_1)) {
+      testCaseMessage.appendCustomTransformation("MSH-4.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_4_2)) {
+      testCaseMessage.appendCustomTransformation("MSH-4.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_5)) {
+      testCaseMessage.appendCustomTransformation("MSH-5.1=");
+      testCaseMessage.appendCustomTransformation("MSH-5.2=");
+      testCaseMessage.appendCustomTransformation("MSH-5.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_5_1)) {
+      testCaseMessage.appendCustomTransformation("MSH-5.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_5_2)) {
+      testCaseMessage.appendCustomTransformation("MSH-5.2=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_6)) {
-      testCaseMessage.appendCustomTransformation("MSH-6=");
+      testCaseMessage.appendCustomTransformation("MSH-6.1=");
+      testCaseMessage.appendCustomTransformation("MSH-6.2=");
+      testCaseMessage.appendCustomTransformation("MSH-6.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_6_1)) {
+      testCaseMessage.appendCustomTransformation("MSH-6.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_6_2)) {
+      testCaseMessage.appendCustomTransformation("MSH-6.2=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_7)) {
       testCaseMessage.appendCustomTransformation("MSH-7=");
@@ -1324,29 +1756,115 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_MSH_12)) {
       testCaseMessage.appendCustomTransformation("MSH-12=");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_15)) {
+      testCaseMessage.appendCustomTransformation("MSH-16=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_16)) {
       testCaseMessage.appendCustomTransformation("MSH-16=");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_17)) {
+      testCaseMessage.appendCustomTransformation("MSH-17=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_21)) {
+      testCaseMessage.appendCustomTransformation("MSH-21=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_21)) {
+      testCaseMessage.appendCustomTransformation("MSH-21=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_22)) {
+      testCaseMessage.appendCustomTransformation("MSH-22.1=");
+      testCaseMessage.appendCustomTransformation("MSH-22.2=");
+      testCaseMessage.appendCustomTransformation("MSH-22.3=");
+      testCaseMessage.appendCustomTransformation("MSH-22.4=");
+      testCaseMessage.appendCustomTransformation("MSH-22.5=");
+      testCaseMessage.appendCustomTransformation("MSH-22.6=");
+      testCaseMessage.appendCustomTransformation("MSH-22.7=");
+      testCaseMessage.appendCustomTransformation("MSH-22.8=");
+      testCaseMessage.appendCustomTransformation("MSH-22.9=");
+      testCaseMessage.appendCustomTransformation("MSH-22.10=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_23)) {
+      testCaseMessage.appendCustomTransformation("MSH-23.1=");
+      testCaseMessage.appendCustomTransformation("MSH-23.2=");
+      testCaseMessage.appendCustomTransformation("MSH-23.3=");
+      testCaseMessage.appendCustomTransformation("MSH-23.4=");
+      testCaseMessage.appendCustomTransformation("MSH-23.5=");
+      testCaseMessage.appendCustomTransformation("MSH-23.6=");
+      testCaseMessage.appendCustomTransformation("MSH-23.7=");
+      testCaseMessage.appendCustomTransformation("MSH-23.8=");
+      testCaseMessage.appendCustomTransformation("MSH-23.9=");
+      testCaseMessage.appendCustomTransformation("MSH-23.10=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_1)) {
+      testCaseMessage.appendCustomTransformation("PID-1=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_3)) {
       testCaseMessage.appendCustomTransformation("PID-3.1=");
+      testCaseMessage.appendCustomTransformation("PID-3.2=");
+      testCaseMessage.appendCustomTransformation("PID-3.3=");
       testCaseMessage.appendCustomTransformation("PID-3.4=");
       testCaseMessage.appendCustomTransformation("PID-3.5=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_3_1)) {
       testCaseMessage.appendCustomTransformation("PID-3.1=");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_3_4)) {
+      testCaseMessage.appendCustomTransformation("PID-3.4=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_3_5)) {
+      testCaseMessage.appendCustomTransformation("PID-3.5=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_3_SSN)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_3_MEDICAID)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PID_5)) {
       testCaseMessage.appendCustomTransformation("PID-5.1=");
       testCaseMessage.appendCustomTransformation("PID-5.2=");
+      testCaseMessage.appendCustomTransformation("PID-5.3=");
+      testCaseMessage.appendCustomTransformation("PID-5.4=");
+      testCaseMessage.appendCustomTransformation("PID-5.5=");
+      testCaseMessage.appendCustomTransformation("PID-5.6=");
+      testCaseMessage.appendCustomTransformation("PID-5.7=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_5_1)) {
+      testCaseMessage.appendCustomTransformation("PID-5.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_5_2)) {
+      testCaseMessage.appendCustomTransformation("PID-5.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_5_3)) {
+      testCaseMessage.appendCustomTransformation("PID-5.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_5_7)) {
       testCaseMessage.appendCustomTransformation("PID-5.7=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_6)) {
       testCaseMessage.appendCustomTransformation("PID-6.1=");
       testCaseMessage.appendCustomTransformation("PID-6.2=");
+      testCaseMessage.appendCustomTransformation("PID-6.3=");
+      testCaseMessage.appendCustomTransformation("PID-6.4=");
+      testCaseMessage.appendCustomTransformation("PID-6.5=");
+      testCaseMessage.appendCustomTransformation("PID-6.6=");
+      testCaseMessage.appendCustomTransformation("PID-6.7=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_6_1)) {
+      testCaseMessage.appendCustomTransformation("PID-6.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_6_2)) {
+      testCaseMessage.appendCustomTransformation("PID-6.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_6_3)) {
+      testCaseMessage.appendCustomTransformation("PID-6.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_6_7)) {
       testCaseMessage.appendCustomTransformation("PID-6.7=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_7)) {
       testCaseMessage.appendCustomTransformation("PID-7=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_8)) {
+      testCaseMessage.appendCustomTransformation("PID-8=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_8)) {
       testCaseMessage.appendCustomTransformation("PID-6.2=");
@@ -1364,13 +1882,86 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PID-11.5=");
       testCaseMessage.appendCustomTransformation("PID-11.6=");
       testCaseMessage.appendCustomTransformation("PID-11.7=");
+      testCaseMessage.appendCustomTransformation("PID-11.9=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_11_1)) {
+      testCaseMessage.appendCustomTransformation("PID-11.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_11_2)) {
+      testCaseMessage.appendCustomTransformation("PID-11.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_11_3)) {
+      testCaseMessage.appendCustomTransformation("PID-11.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_11_4)) {
+      testCaseMessage.appendCustomTransformation("PID-11.4=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_11_5)) {
+      testCaseMessage.appendCustomTransformation("PID-11.5=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_11_6)) {
+      testCaseMessage.appendCustomTransformation("PID-11.6=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_11_7)) {
+      testCaseMessage.appendCustomTransformation("PID-11.7=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_11_9)) {
+      testCaseMessage.appendCustomTransformation("PID-11.9=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_13)) {
       testCaseMessage.appendCustomTransformation("PID-13.1=");
       testCaseMessage.appendCustomTransformation("PID-13.2=");
       testCaseMessage.appendCustomTransformation("PID-13.3=");
+      testCaseMessage.appendCustomTransformation("PID-13.4=");
+      testCaseMessage.appendCustomTransformation("PID-13.5=");
       testCaseMessage.appendCustomTransformation("PID-13.6=");
       testCaseMessage.appendCustomTransformation("PID-13.7=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_13_1)) {
+      testCaseMessage.appendCustomTransformation("PID-13.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_13_2)) {
+      testCaseMessage.appendCustomTransformation("PID-13.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_13_3)) {
+      testCaseMessage.appendCustomTransformation("PID-13.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_13_6)) {
+      testCaseMessage.appendCustomTransformation("PID-13.6=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_13_7)) {
+      testCaseMessage.appendCustomTransformation("PID-13.7=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_13_EMAIL)) {
+      testCaseMessage.appendCustomTransformation("PID-13.1#1=");
+      testCaseMessage.appendCustomTransformation("PID-13.2#2=");
+      testCaseMessage.appendCustomTransformation("PID-13.3#2=");
+      testCaseMessage.appendCustomTransformation("PID-13.4#2=");
+      testCaseMessage.appendCustomTransformation("PID-13.5#2=");
+      testCaseMessage.appendCustomTransformation("PID-13.6#2=");
+      testCaseMessage.appendCustomTransformation("PID-13.7#2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_14)) {
+      testCaseMessage.appendCustomTransformation("PID-14.1=");
+      testCaseMessage.appendCustomTransformation("PID-14.2=");
+      testCaseMessage.appendCustomTransformation("PID-14.3=");
+      testCaseMessage.appendCustomTransformation("PID-14.6=");
+      testCaseMessage.appendCustomTransformation("PID-14.7=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_14_1)) {
+      testCaseMessage.appendCustomTransformation("PID-14.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_14_2)) {
+      testCaseMessage.appendCustomTransformation("PID-14.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_14_3)) {
+      testCaseMessage.appendCustomTransformation("PID-14.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_14_6)) {
+      testCaseMessage.appendCustomTransformation("PID-14.6=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_14_7)) {
+      testCaseMessage.appendCustomTransformation("PID-14.7=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_15)) {
       testCaseMessage.appendCustomTransformation("PID-15.1=");
@@ -1385,29 +1976,361 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_PID_24)) {
       testCaseMessage.appendCustomTransformation("PID-24=");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_24)) {
+      testCaseMessage.appendCustomTransformation("PID-24=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_25)) {
+      testCaseMessage.appendCustomTransformation("PID-25=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_29)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PID_30)) {
+      testCaseMessage.appendCustomTransformation("PID-30=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_3_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_3_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_3_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_3_6)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_3_7)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_3_10)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PD1_4)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_4_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_4_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_4_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_4_4)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_4_9)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_4_10)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PD1_11)) {
+      testCaseMessage.appendCustomTransformation("PD1-11.1=");
+      testCaseMessage.appendCustomTransformation("PD1-11.2=");
+      testCaseMessage.appendCustomTransformation("PD1-11.3=");
+      testCaseMessage.appendCustomTransformation("PD1-18=");
+      testCaseMessage.setHasIssue(true);
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_12)) {
+      testCaseMessage.appendCustomTransformation("PD1-12=");
+      testCaseMessage.appendCustomTransformation("PD1-13=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_13)) {
+      testCaseMessage.appendCustomTransformation("PD1-13=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_16)) {
+      testCaseMessage.appendCustomTransformation("PD1-16=");
+      testCaseMessage.appendCustomTransformation("PD1-17=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_17)) {
+      testCaseMessage.appendCustomTransformation("PD1-17=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_18)) {
+      testCaseMessage.appendCustomTransformation("PD1-18=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_1)) {
+      testCaseMessage.appendCustomTransformation("NK1-1=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_NK1_2)) {
-      testCaseMessage.appendCustomTransformation("NK1.2.1=");
-      testCaseMessage.appendCustomTransformation("NK1.2.2=");
-      testCaseMessage.appendCustomTransformation("NK1.2.7=");
+      testCaseMessage.appendCustomTransformation("NK1-2.1=");
+      testCaseMessage.appendCustomTransformation("NK1-2.2=");
+      testCaseMessage.appendCustomTransformation("NK1-2.3=");
+      testCaseMessage.appendCustomTransformation("NK1-2.4=");
+      testCaseMessage.appendCustomTransformation("NK1-2.5=");
+      testCaseMessage.appendCustomTransformation("NK1-2.6=");
+      testCaseMessage.appendCustomTransformation("NK1-2.7=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_2_1)) {
+      testCaseMessage.appendCustomTransformation("NK1-2.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_2_2)) {
+      testCaseMessage.appendCustomTransformation("NK1-2.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_2_3)) {
+      testCaseMessage.appendCustomTransformation("NK1-2.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_2_7)) {
+      testCaseMessage.appendCustomTransformation("NK1-2.7=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_NK1_3)) {
-      testCaseMessage.appendCustomTransformation("NK1.3.1=");
-      testCaseMessage.appendCustomTransformation("NK1.3.2=");
-      testCaseMessage.appendCustomTransformation("NK1.3.3=");
+      testCaseMessage.appendCustomTransformation("NK1-3.1=");
+      testCaseMessage.appendCustomTransformation("NK1-3.2=");
+      testCaseMessage.appendCustomTransformation("NK1-3.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_3_1)) {
+      testCaseMessage.appendCustomTransformation("NK1-3.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_3_2)) {
+      testCaseMessage.appendCustomTransformation("NK1-3.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_3_3)) {
+      testCaseMessage.appendCustomTransformation("NK1-3.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_4)) {
+      testCaseMessage.appendCustomTransformation("NK1-4.1=");
+      testCaseMessage.appendCustomTransformation("NK1-4.2=");
+      testCaseMessage.appendCustomTransformation("NK1-4.3=");
+      testCaseMessage.appendCustomTransformation("NK1-4.4=");
+      testCaseMessage.appendCustomTransformation("NK1-4.5=");
+      testCaseMessage.appendCustomTransformation("NK1-4.6=");
+      testCaseMessage.appendCustomTransformation("NK1-4.7=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_4_1)) {
+      testCaseMessage.appendCustomTransformation("NK1-4.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_4_2)) {
+      testCaseMessage.appendCustomTransformation("NK1-4.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_4_3)) {
+      testCaseMessage.appendCustomTransformation("NK1-4.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_4_4)) {
+      testCaseMessage.appendCustomTransformation("NK1-4.4=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_4_5)) {
+      testCaseMessage.appendCustomTransformation("NK1-4.5=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_4_6)) {
+      testCaseMessage.appendCustomTransformation("NK1-4.6=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_4_7)) {
+      testCaseMessage.appendCustomTransformation("NK1-4.7=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_5)) {
+      testCaseMessage.appendCustomTransformation("NK1-5.1=");
+      testCaseMessage.appendCustomTransformation("NK1-5.2=");
+      testCaseMessage.appendCustomTransformation("NK1-5.3=");
+      testCaseMessage.appendCustomTransformation("NK1-5.4=");
+      testCaseMessage.appendCustomTransformation("NK1-5.5=");
+      testCaseMessage.appendCustomTransformation("NK1-5.6=");
+      testCaseMessage.appendCustomTransformation("NK1-5.7=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_5_1)) {
+      testCaseMessage.appendCustomTransformation("NK1-5.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_5_2)) {
+      testCaseMessage.appendCustomTransformation("NK1-5.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_5_3)) {
+      testCaseMessage.appendCustomTransformation("NK1-5.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_5_6)) {
+      testCaseMessage.appendCustomTransformation("NK1-5.6=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_5_7)) {
+      testCaseMessage.appendCustomTransformation("NK1-5.7=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1_6)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1_7)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PV1_1)) {
+      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PV1-1=");
+      testCaseMessage.appendCustomTransformation("PV1-2=R");
+      testCaseMessage.appendCustomTransformation("PV1-20=[VFC]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_2)) {
+      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PV1-1=1");
+      testCaseMessage.appendCustomTransformation("PV1-2=");
+      testCaseMessage.appendCustomTransformation("PV1-20=[VFC]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_7)) {
+      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PV1-1=1");
+      testCaseMessage.appendCustomTransformation("PV1-2=R");
+      testCaseMessage.appendCustomTransformation("PV1-7.1=");
+      testCaseMessage.appendCustomTransformation("PV1-7.2=");
+      testCaseMessage.appendCustomTransformation("PV1-7.3=");
+      testCaseMessage.appendCustomTransformation("PV1-7.4=");
+      testCaseMessage.appendCustomTransformation("PV1-20=[VFC]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_7_1)) {
+      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PV1-1=1");
+      testCaseMessage.appendCustomTransformation("PV1-2=R");
+      testCaseMessage.appendCustomTransformation("PV1-7.1=");
+      testCaseMessage.appendCustomTransformation("PV1-20=[VFC]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_7_2)) {
+      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PV1-1=1");
+      testCaseMessage.appendCustomTransformation("PV1-2=R");
+      testCaseMessage.appendCustomTransformation("PV1-7.2=");
+      testCaseMessage.appendCustomTransformation("PV1-20=[VFC]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_7_3)) {
+      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PV1-1=1");
+      testCaseMessage.appendCustomTransformation("PV1-2=R");
+      testCaseMessage.appendCustomTransformation("PV1-7.3=");
+      testCaseMessage.appendCustomTransformation("PV1-20=[VFC]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_7_4)) {
+      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PV1-1=1");
+      testCaseMessage.appendCustomTransformation("PV1-2=R");
+      testCaseMessage.appendCustomTransformation("PV1-7.4=");
+      testCaseMessage.appendCustomTransformation("PV1-20=[VFC]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_19)) {
+      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PV1-1=1");
+      testCaseMessage.appendCustomTransformation("PV1-2=R");
+      testCaseMessage.appendCustomTransformation("PV1-20=[VFC]");
+      testCaseMessage.appendCustomTransformation("PV1-19=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PV1_20)) {
+      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PV1-1=1");
+      testCaseMessage.appendCustomTransformation("PV1-2=R");
+      testCaseMessage.appendCustomTransformation("PV1-20.1=");
+      testCaseMessage.appendCustomTransformation("PV1-20.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_20_1)) {
+      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PV1-1=1");
+      testCaseMessage.appendCustomTransformation("PV1-2=R");
+      testCaseMessage.appendCustomTransformation("PV1-20.1=");
+      testCaseMessage.appendCustomTransformation("PV1-20.2=[VAC1_DATE]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_20_2)) {
+      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PV1-1=1");
+      testCaseMessage.appendCustomTransformation("PV1-2=R");
+      testCaseMessage.appendCustomTransformation("PV1-20.1=[VFC]");
+      testCaseMessage.appendCustomTransformation("PV1-20.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1_44)) {
+      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
+      testCaseMessage.appendCustomTransformation("PV1-1=1");
+      testCaseMessage.appendCustomTransformation("PV1-2=R");
+      testCaseMessage.appendCustomTransformation("PV1-44=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ORC_1)) {
+      testCaseMessage.appendCustomTransformation("ORC-1=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ORC_2)) {
+      testCaseMessage.appendCustomTransformation("ORC-2.1=");
+      testCaseMessage.appendCustomTransformation("ORC-2.2=");
+      testCaseMessage.appendCustomTransformation("ORC-2.3=");
+      testCaseMessage.appendCustomTransformation("ORC-2.4=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_2_1)) {
+      testCaseMessage.appendCustomTransformation("ORC-2.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_2_2)) {
+      testCaseMessage.appendCustomTransformation("ORC-2.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_2_3)) {
+      testCaseMessage.appendCustomTransformation("ORC-2.3=");
+      testCaseMessage.appendCustomTransformation("ORC-2.4=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ORC_3)) {
+      testCaseMessage.appendCustomTransformation("ORC-3.1=");
+      testCaseMessage.appendCustomTransformation("ORC-3.2=");
+      testCaseMessage.appendCustomTransformation("ORC-3.3=");
+      testCaseMessage.appendCustomTransformation("ORC-3.4=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_3_1)) {
+      testCaseMessage.appendCustomTransformation("ORC-3.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_3_2)) {
+      testCaseMessage.appendCustomTransformation("ORC-3.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_3_3)) {
+      testCaseMessage.appendCustomTransformation("ORC-3.3=");
+      testCaseMessage.appendCustomTransformation("ORC-3.4=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_5)) {
+      testCaseMessage.appendCustomTransformation("ORC-5=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ORC_10)) {
+      testCaseMessage.appendCustomTransformation("ORC-10.1=");
+      testCaseMessage.appendCustomTransformation("ORC-10.2=");
+      testCaseMessage.appendCustomTransformation("ORC-10.3=");
+      testCaseMessage.appendCustomTransformation("ORC-10.4=");
+      testCaseMessage.appendCustomTransformation("ORC-10.5=");
+      testCaseMessage.appendCustomTransformation("ORC-10.6=");
+      testCaseMessage.appendCustomTransformation("ORC-10.7=");
+      testCaseMessage.appendCustomTransformation("ORC-10.8=");
+      testCaseMessage.appendCustomTransformation("ORC-10.9=");
+      testCaseMessage.appendCustomTransformation("ORC-10.10=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_10_1)) {
+      testCaseMessage.appendCustomTransformation("ORC-10.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_10_2)) {
+      testCaseMessage.appendCustomTransformation("ORC-10.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_10_3)) {
+      testCaseMessage.appendCustomTransformation("ORC-10.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_10_4)) {
+      testCaseMessage.appendCustomTransformation("ORC-10.4=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ORC_12)) {
+      testCaseMessage.appendCustomTransformation("ORC-12.1=");
+      testCaseMessage.appendCustomTransformation("ORC-12.2=");
+      testCaseMessage.appendCustomTransformation("ORC-12.3=");
+      testCaseMessage.appendCustomTransformation("ORC-12.4=");
+      testCaseMessage.appendCustomTransformation("ORC-12.5=");
+      testCaseMessage.appendCustomTransformation("ORC-12.6=");
+      testCaseMessage.appendCustomTransformation("ORC-12.7=");
+      testCaseMessage.appendCustomTransformation("ORC-12.8=");
+      testCaseMessage.appendCustomTransformation("ORC-12.9=");
+      testCaseMessage.appendCustomTransformation("ORC-12.10=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_12_1)) {
+      testCaseMessage.appendCustomTransformation("ORC-12.1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_12_2)) {
+      testCaseMessage.appendCustomTransformation("ORC-12.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_12_3)) {
+      testCaseMessage.appendCustomTransformation("ORC-12.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_12_4)) {
+      testCaseMessage.appendCustomTransformation("ORC-12.4=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_17)) {
+      testCaseMessage.appendCustomTransformation("ORC-17.1=");
+      testCaseMessage.appendCustomTransformation("ORC-17.2=");
+      testCaseMessage.appendCustomTransformation("ORC-17.3=");
+      testCaseMessage.appendCustomTransformation("ORC-17.4=");
+      testCaseMessage.appendCustomTransformation("ORC-17.5=");
+      testCaseMessage.appendCustomTransformation("ORC-17.6=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_17_1)) {
+      testCaseMessage.appendCustomTransformation("ORC-17.1=");
+      testCaseMessage.appendCustomTransformation("ORC-17.2=");
+      testCaseMessage.appendCustomTransformation("ORC-17.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_17_4)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ADMIN_RXA_1)) {
+      testCaseMessage.appendCustomTransformation("RXA-1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ADMIN_RXA_2)) {
+      testCaseMessage.appendCustomTransformation("RXA-2=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_3)) {
       testCaseMessage.appendCustomTransformation("RXA-3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ADMIN_RXA_4)) {
+      testCaseMessage.appendCustomTransformation("RXA-4=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_5)) {
       testCaseMessage.appendCustomTransformation("RXA-5.1=");
@@ -1416,23 +2339,54 @@ public class CertifyRunner extends Thread
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_6)) {
       testCaseMessage.appendCustomTransformation("RXA-6=999");
-      testCaseMessage.appendCustomTransformation("RXA-7=");
+      testCaseMessage.appendCustomTransformation("RXA-7.1=");
+      testCaseMessage.appendCustomTransformation("RXA-7.2=");
+      testCaseMessage.appendCustomTransformation("RXA-7.3=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_7)) {
-      testCaseMessage.appendCustomTransformation("RXA-7=");
+      testCaseMessage.appendCustomTransformation("RXA-7.1=");
+      testCaseMessage.appendCustomTransformation("RXA-7.2=");
+      testCaseMessage.appendCustomTransformation("RXA-7.3=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_9)) {
       testCaseMessage.appendCustomTransformation("RXA-9.1=");
+      testCaseMessage.appendCustomTransformation("RXA-9.2=");
+      testCaseMessage.appendCustomTransformation("RXA-9.3=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_10)) {
       testCaseMessage.appendCustomTransformation("RXA-10.1=");
       testCaseMessage.appendCustomTransformation("RXA-10.2=");
       testCaseMessage.appendCustomTransformation("RXA-10.3=");
       testCaseMessage.appendCustomTransformation("RXA-10.4=");
+      testCaseMessage.appendCustomTransformation("RXA-10.5=");
+      testCaseMessage.appendCustomTransformation("RXA-10.6=");
+      testCaseMessage.appendCustomTransformation("RXA-10.7=");
+      testCaseMessage.appendCustomTransformation("RXA-10.8=");
+      testCaseMessage.appendCustomTransformation("RXA-10.9=");
       testCaseMessage.appendCustomTransformation("RXA-10.10=");
+      testCaseMessage.appendCustomTransformation("RXA-10.11=");
+      testCaseMessage.appendCustomTransformation("RXA-10.12=");
+      testCaseMessage.appendCustomTransformation("RXA-10.13=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ADMIN_RXA_10_1)) {
+      testCaseMessage.appendCustomTransformation("RXA-10.1=");
+      testCaseMessage.appendCustomTransformation("RXA-10.9=");
+      testCaseMessage.appendCustomTransformation("RXA-10.13=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ADMIN_RXA_10_2)) {
+      testCaseMessage.appendCustomTransformation("RXA-10.2=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ADMIN_RXA_10_3)) {
+      testCaseMessage.appendCustomTransformation("RXA-10.3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ADMIN_RXA_10_4)) {
+      testCaseMessage.appendCustomTransformation("RXA-10.4=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_11)) {
       testCaseMessage.appendCustomTransformation("RXA-11.1=");
+      testCaseMessage.appendCustomTransformation("RXA-11.4=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ADMIN_RXA_11_4)) {
       testCaseMessage.appendCustomTransformation("RXA-11.4=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_15)) {
@@ -1451,6 +2405,9 @@ public class CertifyRunner extends Thread
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_21)) {
       testCaseMessage.appendCustomTransformation("RXA-21=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ADMIN_RXA_22)) {
+      testCaseMessage.appendCustomTransformation("RXA-22=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXR_1)) {
       testCaseMessage.appendCustomTransformation("RXR-1.1=");
@@ -1474,9 +2431,7 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("OBX-3.3=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_OBX_4)) {
-      testCaseMessage.appendCustomTransformation("OBX#3-4.1=");
-      testCaseMessage.appendCustomTransformation("OBX#3-4.2=");
-      testCaseMessage.appendCustomTransformation("OBX#3-4.3=");
+      testCaseMessage.appendCustomTransformation("OBX#3-4*=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_OBX_5)) {
       testCaseMessage.appendCustomTransformation("OBX-5.1=");
@@ -1489,8 +2444,37 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_ADMIN_OBX_14)) {
       testCaseMessage.appendCustomTransformation("OBX-14*=");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ADMIN_OBX_17)) {
+      testCaseMessage.appendCustomTransformation("OBX-14.1*=");
+      testCaseMessage.appendCustomTransformation("OBX-14.2*=");
+      testCaseMessage.appendCustomTransformation("OBX-14.3*=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ADMIN_OBX_64994_7)) {
+      testCaseMessage.appendCustomTransformation("remove observation 64994-7");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ADMIN_OBX_69764_9)) {
+      testCaseMessage.appendCustomTransformation("remove observation 69764-9");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ADMIN_OBX_29768_9)) {
+      testCaseMessage.appendCustomTransformation("remove observation 29768-9");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ADMIN_OBX_30956_7)) {
+      testCaseMessage.appendCustomTransformation("remove observation 30956-7");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ADMIN_OBX_29769_7)) {
+      testCaseMessage.appendCustomTransformation("remove observation 29769-7");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_HIST_RXA_1)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-1=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_HIST_RXA_2)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-2=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_3)) {
       testCaseMessage.appendCustomTransformation("RXA#2-3=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_HIST_RXA_4)) {
+      testCaseMessage.appendCustomTransformation("RXA#2-4=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_5)) {
       testCaseMessage.appendCustomTransformation("RXA#2-5.1=");
@@ -1504,95 +2488,105 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("RXA#2-7.3==");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_7)) {
-      testCaseMessage.appendCustomTransformation("RXA-7.1=");
-      testCaseMessage.appendCustomTransformation("RXA-7.2=");
-      testCaseMessage.appendCustomTransformation("RXA-7.3==");
+      testCaseMessage.appendCustomTransformation("RXA#2-7.1=");
+      testCaseMessage.appendCustomTransformation("RXA#2-7.2=");
+      testCaseMessage.appendCustomTransformation("RXA#2-7.3=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_9)) {
-      testCaseMessage.appendCustomTransformation("RXA-9.1=");
-      testCaseMessage.appendCustomTransformation("RXA-9.2=");
-      testCaseMessage.appendCustomTransformation("RXA-9.3==");
+      testCaseMessage.appendCustomTransformation("RXA#2-9.1=");
+      testCaseMessage.appendCustomTransformation("RXA#2-9.2=");
+      testCaseMessage.appendCustomTransformation("RXA#2-9.3=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_10)) {
-      testCaseMessage.appendCustomTransformation("RXA-10.2=");
-      testCaseMessage.appendCustomTransformation("RXA-10.3=");
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_HIST_RXA_10_1)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_HIST_RXA_10_2)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_HIST_RXA_10_3)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_HIST_RXA_10_4)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_HIST_RXA_11)) {
-      testCaseMessage.appendCustomTransformation("RXA-11.4=");
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_HIST_RXA_11_4)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_HIST_RXA_15)) {
-      testCaseMessage.appendCustomTransformation("RXA-15=");
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_HIST_RXA_16)) {
-      testCaseMessage.appendCustomTransformation("RXA-16=");
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_HIST_RXA_17)) {
-      testCaseMessage.appendCustomTransformation("RXA-17.1=");
-      testCaseMessage.appendCustomTransformation("RXA-17.2=");
-      testCaseMessage.appendCustomTransformation("RXA-17.3=");
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_HIST_RXA_20)) {
-      testCaseMessage.appendCustomTransformation("RXA-20=");
+      testCaseMessage.appendCustomTransformation("RXA#2-20=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_21)) {
-      testCaseMessage.appendCustomTransformation("RXA-21=");
+      testCaseMessage.appendCustomTransformation("RXA#2-21=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXR_1)) {
-      testCaseMessage.appendCustomTransformation("RXR-1.1=");
-      testCaseMessage.appendCustomTransformation("RXR-1.2=");
-      testCaseMessage.appendCustomTransformation("RXR-1.3=");
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_HIST_RXR_2)) {
-      testCaseMessage.appendCustomTransformation("RXR-2.1=");
-      testCaseMessage.appendCustomTransformation("RXR-2.2=");
-      testCaseMessage.appendCustomTransformation("RXR-2.3=");
-      testCaseMessage.setHasIssue(true);
+      return defaultTestCaseMessage;
     } else {
-      testCaseMessage.appendCustomTransformation("SFT-5=CHANGES NOT FOUND FOR '" + field + "'");
+      testCaseMessage.appendCustomTransformation("MSH-10.2=CHANGES NOT FOUND FOR '" + field + "'");
     }
 
     testCaseMessage.setTestCaseSet(testCaseSet);
     testCaseMessage.setTestCaseNumber(uniqueMRNBase + "I." + paddWithZeros(count, 3));
-    testCaseMessage.setDescription("Field " + field + " is absent");
     transformer.transform(testCaseMessage);
-    register(testCaseMessage);
     if (profileLine.getUsage() == Usage.R) {
-      testCaseMessage.setAssertResult("Error - *");
+      testCaseMessage.setDescription("Required field " + field + " is absent");
+      testCaseMessage.setAssertResult("Reject - *");
     } else if (profileLine.getUsage() == Usage.X) {
+      testCaseMessage.setDescription("Unsupported field " + field + " is absent");
       testCaseMessage.setAssertResult("Accept - *");
     } else {
+      if (profileLine.getUsage() == Usage.RE) {
+        testCaseMessage.setDescription("Required, but may be empty field " + field + " is absent");
+      } else {
+        testCaseMessage.setDescription("Optional field " + field + " is absent");
+      }
       testCaseMessage.setAssertResult("Accept - *");
     }
     return testCaseMessage;
   }
 
-  private void updateProfiling(List<ProfileLine> profileLineList, TestCaseMessage tcmFull) {
+  private void updateProfiling(List<ProfileLine> profileLineList) {
 
     TestRunner testRunner = new TestRunner();
-    Transformer transformer = new Transformer();
     int count;
     int countPass = 0;
     count = 0;
+    Map<String, TestCaseMessage> testCaseMessageMap = new HashMap<String, TestCaseMessage>();
     for (ProfileLine profileLine : profileLineList) {
       count++;
 
-      TestCaseMessage testCaseMessagePresent = getPresentTestCase(profileLine, count, transformer);
-      TestCaseMessage testCaseMessageAbsent = getAbsentTestCase(profileLine, count, transformer);
-      if (testCaseMessagePresent.getCustomTransformations().equals("")) {
-        testCaseMessagePresent = tcmFull;
-      }
-      profileLine.setTestCaseMessageAbsent(testCaseMessageAbsent);
-      profileLine.setTestCaseMessagePresent(testCaseMessagePresent);
+      TestCaseMessage testCaseMessagePresent = getPresentTestCase(profileLine, count, tcmFull);
+      TestCaseMessage testCaseMessageAbsent = getAbsentTestCase(profileLine, count, tcmFull);
       try {
-        if (testCaseMessagePresent != tcmFull) {
-          testRunner.runTest(connector, testCaseMessagePresent);
-          totalUpdateTime += testRunner.getTotalRunTime();
-          totalUpdateCount++;
-        }
-        if (testCaseMessageAbsent.hasIssue()) {
-          testRunner.runTest(connector, testCaseMessageAbsent);
-          totalUpdateCount++;
-          totalUpdateTime += testRunner.getTotalRunTime();
+        if (!testCaseMessagePresent.hasIssue() || !testCaseMessageAbsent.hasIssue()) {
+          profileLine.setTestCaseMessagePresent(testCaseMessagePresent);
+          profileLine.setTestCaseMessageAbsent(testCaseMessageAbsent);
+          profileLine.setHasRun(false);
+        } else {
+          profileLine.setTestCaseMessagePresent(testCaseMessagePresent);
+          if (testCaseMessagePresent != tcmFull) {
+            register(testCaseMessagePresent);
+            testCaseMessagePresent = testRunner.runTestIfNew(connector, testCaseMessagePresent, testCaseMessageMap);
+            if (testRunner.isWasRun()) {
+              totalUpdateTime += testRunner.getTotalRunTime();
+              totalUpdateCount++;
+            }
+          }
+          profileLine.setTestCaseMessageAbsent(testCaseMessageAbsent);
+          if (testCaseMessageAbsent != tcmFull) {
+            register(testCaseMessageAbsent);
+            testRunner.runTestIfNew(connector, testCaseMessageAbsent, testCaseMessageMap);
+            if (testRunner.isWasRun()) {
+              totalUpdateTime += testRunner.getTotalRunTime();
+              totalUpdateCount++;
+            }
+          }
           if (testCaseMessagePresent.isAccepted() && !testCaseMessageAbsent.isAccepted()) {
             profileLine.setUsageDetected(Usage.R);
           } else if (!testCaseMessagePresent.isAccepted() && testCaseMessageAbsent.isAccepted()) {
@@ -1605,11 +2599,9 @@ public class CertifyRunner extends Thread
             profileLine.setPassed(true);
           }
           profileLine.setHasRun(true);
-        } else {
-          profileLine.setHasRun(false);
+          printExampleMessage(testCaseMessagePresent, "I Profiling");
+          printExampleMessage(testCaseMessageAbsent, "I Profiling");
         }
-        printExampleMessage(testCaseMessagePresent, "I Profiling");
-        printExampleMessage(testCaseMessageAbsent, "I Profiling");
       } catch (Throwable t) {
         testCaseMessagePresent.setException(t);
       }
@@ -1643,7 +2635,6 @@ public class CertifyRunner extends Thread
 
   private void prepareBasic() {
 
-    Transformer transformer = new Transformer();
     int count = 0;
     for (String scenario : statusCheckScenarios) {
       count++;
@@ -1732,7 +2723,6 @@ public class CertifyRunner extends Thread
 
   private void prepareIntermediate() {
 
-    Transformer transformer = new Transformer();
     int masterCount = 0;
     int count;
     List<Certify.CertifyItem> certifyItems;
@@ -2547,7 +3537,6 @@ public class CertifyRunner extends Thread
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
     String eighteen = sdf.format(calendar.getTime());
 
-    Transformer transformer = new Transformer();
     int count = 0;
     forecastTesterManager = new ForecastTesterManager(TCH_FORECAST_TESTER_URL);
     try {
@@ -2625,7 +3614,6 @@ public class CertifyRunner extends Thread
 
   private void prepareExceptional() {
 
-    Transformer transformer = new Transformer();
     int count = 0;
 
     {
@@ -3008,8 +3996,7 @@ public class CertifyRunner extends Thread
         List<Comparison> comparisonList = CompareManager.compareMessages(vxuMessage, rspMessage);
         queryTestCaseMessage.setComparisonList(comparisonList);
         for (Comparison comparison : comparisonList) {
-          if (comparison.isTested()
-              && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
+          if (comparison.isTested() && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
             testQueryCountOptional++;
             if (comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED) {
               testQueryCountRequired++;
@@ -3124,8 +4111,7 @@ public class CertifyRunner extends Thread
         queryTestCaseMessage.setComparisonList(comparisonList);
         queryTestCaseMessage.setPassedTest(true);
         for (Comparison comparison : comparisonList) {
-          if (comparison.isTested()
-              && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
+          if (comparison.isTested() && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
             testQueryCountOptional++;
             if (comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED) {
               testQueryCountRequired++;
@@ -3791,8 +4777,7 @@ public class CertifyRunner extends Thread
             if (testCaseMessage.getComparisonList() != null) {
               hasRun = true;
               for (Comparison comparison : testCaseMessage.getComparisonList()) {
-                if (comparison.isTested()
-                    && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED) {
+                if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED) {
                   if (!comparison.isPass()) {
                     if (fieldSupported(comparison)) {
                       hasPassed = false;
@@ -3809,8 +4794,7 @@ public class CertifyRunner extends Thread
                 out.println("    <td class=\"pass\">All required fields returned except those not supported: ");
                 out.println("      <br/> <ul>");
                 for (Comparison comparison : testCaseMessage.getComparisonList()) {
-                  if (comparison.isTested()
-                      && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED
+                  if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED
                       && !comparison.isPass() && fieldNotSupported(comparison)) {
                     out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel()
                         + "</li>");
@@ -3828,8 +4812,7 @@ public class CertifyRunner extends Thread
               out.println("    <td class=\"fail\">Required fields not returned:");
               out.println("      <ul>");
               for (Comparison comparison : testCaseMessage.getComparisonList()) {
-                if (comparison.isTested()
-                    && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED
+                if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED
                     && !comparison.isPass()) {
                   if (fieldSupported(comparison)) {
                     out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel()
@@ -3863,8 +4846,7 @@ public class CertifyRunner extends Thread
             if (testCaseMessage.getComparisonList() != null) {
               hasRun = true;
               for (Comparison comparison : testCaseMessage.getComparisonList()) {
-                if (comparison.isTested()
-                    && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
+                if (comparison.isTested() && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
                   if (!comparison.isPass()) {
                     hasPassed = false;
                     break;
@@ -3878,8 +4860,7 @@ public class CertifyRunner extends Thread
             } else if (hasRun) {
               boolean hasOptionalFields = false;
               for (Comparison comparison : testCaseMessage.getComparisonList()) {
-                if (comparison.isTested()
-                    && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL
+                if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL
                     && !comparison.isPass()) {
                   hasOptionalFields = true;
                   break;
@@ -3889,8 +4870,7 @@ public class CertifyRunner extends Thread
                 out.println("    <td class=\"fail\">Optional fields not returned:");
                 out.println("      <ul>");
                 for (Comparison comparison : testCaseMessage.getComparisonList()) {
-                  if (comparison.isTested()
-                      && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL
+                  if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL
                       && !comparison.isPass()) {
                     out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel()
                         + "</li>");
@@ -4064,8 +5044,8 @@ public class CertifyRunner extends Thread
         out.println("  <tr>");
         out.println("    <th>Field</th>");
         out.println("    <th>Description</th>");
-        out.println("    <th>Usage Comparison</th>");
-        out.println("    <th>Usage Expected</th>");
+        out.println("    <th>" + connector.getLabel() + " Usage</th>");
+        out.println("    <th>Comparison Usage</th>");
         out.println("    <th>Comment</th>");
         out.println("  </tr>");
         for (ProfileLine profileLine : profileLineList) {
@@ -4361,23 +5341,22 @@ public class CertifyRunner extends Thread
     out.println("    <td class=\"" + profileLineClassText + "\">" + profileLine.getUsage().getDescription() + "</td>");
     out.println("    <td class=\"" + profileLineClassText + "\">" + profileLine.getUsageDetected().getDescription()
         + "</td>");
-    if (profileLinePassed) {
-      out.println("    <td class=\"" + profileLineClassText + "\">Confirmed</td>");
+    if (profileLine.getTestCaseMessagePresent() == null || !profileLine.getTestCaseMessagePresent().hasIssue()) {
+      out.println("    <td class=\"" + profileLineClassText + "\">Unable to Confirm, Present Test Not Defined</td>");
+    } else if (profileLine.getTestCaseMessageAbsent() == null || !profileLine.getTestCaseMessageAbsent().hasIssue()) {
+      out.println("    <td class=\"" + profileLineClassText + "\">Unable to Confirm, Absent Test Not Defined</td>");
     } else if (profileLine.isHasRun()) {
-      out.println("    <td class=\"" + profileLineClassText + "\">Inconsistent</td>");
-    } else if (profileLine.getTestCaseMessageAbsent() != null && !profileLine.getTestCaseMessageAbsent().isHasRun()) {
-      out.println("    <td class=\"" + profileLineClassText + "\">Unable to Compare</td>");
+      if (profileLinePassed) {
+        out.println("    <td class=\"" + profileLineClassText + "\">Confirmed</td>");
+      } else {
+        out.println("    <td class=\"" + profileLineClassText + "\">Inconsistent</td>");
+      }
     } else {
-      out.println("    <td class=\"" + profileLineClassText + "\"></td>");
-
+      out.println("    <td class=\"" + profileLineClassText + "\">-</td>");
     }
 
     printTestMessageCell(out, toFile, profileLine.getTestCaseMessagePresent());
-    if (profileLine.getTestCaseMessageAbsent() != null && profileLine.getTestCaseMessageAbsent().isHasRun()) {
-      printTestMessageCell(out, toFile, profileLine.getTestCaseMessageAbsent());
-    } else {
-      out.println("    <td class=\"" + profileLineClassText + "\">Not Run</td>");
-    }
+    printTestMessageCell(out, toFile, profileLine.getTestCaseMessageAbsent());
     out.println("  </tr>");
   }
 
@@ -4388,11 +5367,6 @@ public class CertifyRunner extends Thread
     out.println("  <tr>");
     out.println("    <td class=\"pass\">" + profileLine.getField() + "</td>");
     out.println("    <td class=\"pass\">" + profileLine.getDescription() + "</td>");
-    if (comparisonUsage == null) {
-      out.println("    <td class=\"fail\">Not Defined</td>");
-    } else {
-      out.println("    <td class=\"pass\">" + comparisonUsage.getDescription() + "</td>");
-    }
 
     String comment = "";
     String usageClass;
@@ -4412,6 +5386,15 @@ public class CertifyRunner extends Thread
         usageClass = "fail";
       } else if (comparisonUsage == Usage.X) {
         usageClass = "fail";
+      } else if (comparisonUsage == Usage.RE_OR_X) {
+        usageClass = "pass";
+        comment = "Compatible when configured and field is populated";
+      } else if (comparisonUsage == Usage.R_OR_RE) {
+        usageClass = "pass";
+        comment = "Compatible when field populated";
+      } else if (comparisonUsage == Usage.R_OR_X) {
+        usageClass = "pass";
+        comment = "Compatible when configured";
       } else {
         usageClass = "fail";
       }
@@ -4427,6 +5410,14 @@ public class CertifyRunner extends Thread
         usageClass = "fail";
       } else if (comparisonUsage == Usage.X) {
         usageClass = "fail";
+      } else if (comparisonUsage == Usage.RE_OR_X) {
+        usageClass = "pass";
+        comment = "Compatible when configured";
+      } else if (comparisonUsage == Usage.R_OR_RE) {
+        usageClass = "pass";
+      } else if (comparisonUsage == Usage.R_OR_X) {
+        usageClass = "pass";
+        comment = "Compatible when configured";
       } else {
         usageClass = "fail";
       }
@@ -4441,6 +5432,14 @@ public class CertifyRunner extends Thread
         usageClass = "pass";
       } else if (comparisonUsage == Usage.X) {
         usageClass = "fail";
+      } else if (comparisonUsage == Usage.RE_OR_X) {
+        usageClass = "pass";
+        comment = "Compatible when configured";
+      } else if (comparisonUsage == Usage.R_OR_RE) {
+        usageClass = "pass";
+      } else if (comparisonUsage == Usage.R_OR_X) {
+        usageClass = "pass";
+        comment = "Compatible when configured";
       } else {
         usageClass = "fail";
       }
@@ -4455,6 +5454,14 @@ public class CertifyRunner extends Thread
         usageClass = "pass";
       } else if (comparisonUsage == Usage.X) {
         usageClass = "fail";
+      } else if (comparisonUsage == Usage.RE_OR_X) {
+        usageClass = "pass";
+        comment = "Compatible when configured";
+      } else if (comparisonUsage == Usage.R_OR_RE) {
+        usageClass = "pass";
+      } else if (comparisonUsage == Usage.R_OR_X) {
+        usageClass = "pass";
+        comment = "Compatible when configured";
       } else {
         usageClass = "fail";
       }
@@ -4469,6 +5476,14 @@ public class CertifyRunner extends Thread
         usageClass = "fail";
       } else if (comparisonUsage == Usage.X) {
         usageClass = "pass";
+      } else if (comparisonUsage == Usage.RE_OR_X) {
+        usageClass = "pass";
+        comment = "Compatible when configured";
+      } else if (comparisonUsage == Usage.R_OR_RE) {
+        usageClass = "fail";
+      } else if (comparisonUsage == Usage.R_OR_X) {
+        usageClass = "pass";
+        comment = "Compatible when configured";
       } else {
         usageClass = "fail";
       }
@@ -4476,6 +5491,11 @@ public class CertifyRunner extends Thread
       usageClass = "fail";
     }
     out.println("    <td class=\"" + usageClass + "\">" + profileLine.getUsage().getDescription() + "</td>");
+    if (comparisonUsage == null) {
+      out.println("    <td class=\"fail\">Not Defined</td>");
+    } else {
+      out.println("    <td class=\"" + usageClass + "\">" + comparisonUsage.getDescription() + "</td>");
+    }
     out.println("    <td class=\"" + usageClass + "\">" + comment + "</td>");
     out.println("  </tr>");
   }
@@ -4483,18 +5503,33 @@ public class CertifyRunner extends Thread
   public void printTestMessageCell(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage) {
     String classText = "nottested";
     boolean testPassed = false;
-    if (testCaseMessage != null && testCaseMessage.isHasRun()) {
-      testPassed = testCaseMessage.getActualResultStatus().equals(TestRunner.ACTUAL_RESULT_STATUS_PASS);
-      classText = testPassed ? "pass" : "fail";
-      if (testPassed) {
-        out.println("    <td class=\"" + classText + "\">Test passed. "
-            + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
-      } else {
-        out.println("    <td class=\"" + classText + "\">Test failed. "
-            + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
-      }
+    if (testCaseMessage == null || !testCaseMessage.hasIssue()) {
+      out.println("    <td class=\"" + classText + "\">Not Defined</td>");
     } else {
-      out.println("    <td class=\"" + classText + "\">not run yet</td>");
+      if (!testCaseMessage.isHasRun()) {
+        out.println("    <td class=\"" + classText + "\">Not Run</td>");
+      } else {
+        testPassed = testCaseMessage.getActualResultStatus().equals(TestRunner.ACTUAL_RESULT_STATUS_PASS);
+        classText = testPassed ? "pass" : "fail";
+        if (testPassed) {
+          if (testCaseMessage == tcmFull) {
+            out.println("    <td class=\"" + classText + "\">General Test Passed "
+                + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+          } else {
+            out.println("    <td class=\"" + classText + "\">Specific Test Passed "
+                + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+          }
+        } else {
+          if (testCaseMessage == tcmFull) {
+            out.println("    <td class=\"" + classText + "\">General Test Failed "
+                + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+          } else {
+            out.println("    <td class=\"" + classText + "\">Test Failed "
+                + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+          }
+        }
+
+      }
     }
   }
 

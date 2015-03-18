@@ -601,6 +601,17 @@ public class CreateTestCaseServlet extends ClientServlet
     }
     return null;
   }
+  
+  public static File getTestDataFile(Authenticate.User user) {
+    File testCaseDir = user.getSendData().getTestDir();
+    if (testCaseDir != null) {
+      File testDataFile = new File(testCaseDir, "test-data.txt");
+      if (testDataFile.exists()) {
+        return testDataFile;
+      }
+    }
+    return null;
+  }
 
   public static File getTestCaseDir(TestCaseMessage testCaseMessage, HttpSession session) {
     if (testCaseMessage.getTestCaseNumber() != null && !testCaseMessage.getTestCaseNumber().equals("")) {

@@ -11,14 +11,16 @@
       <param-name>scan.start.folders</param-name>
       <param-value>/home/oisptorg/ois-pt.org/data/tester;c:\Export\;c:\data\Dropbox (Personal)\work\product\smm</param-value>
     </init-param>
+
     <init-param>
       <param-name>keyStore</param-name>
-      <param-value>C:\data\Dropbox (Personal)\work\product\smm\data\cair.jks</param-value>
+      <param-value>C:\data\Dropbox (Personal)\work\product\smm\data\nd.jks</param-value>
     </init-param>
     <init-param>
       <param-name>keyStorePassword</param-name>
-      <param-value>C@ir2015</param-value>
+      <param-value>nddevdev</param-value>
     </init-param>
+
     <init-param>
       <param-name>support_center.code</param-name>
       <param-value>general</param-value>

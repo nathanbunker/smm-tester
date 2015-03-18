@@ -60,6 +60,8 @@ public abstract class Connector
         connector = new ORConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_CA_SOAP)) {
         connector = new CASoapConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_ND_SOAP)) {
+        connector = new NDSoapConnector(label, url);
       } else {
         connector = new HttpConnector(label, url);
       }

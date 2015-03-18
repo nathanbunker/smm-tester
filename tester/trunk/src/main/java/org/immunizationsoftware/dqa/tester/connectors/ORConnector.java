@@ -75,7 +75,7 @@ public class ORConnector extends Connector
   @Override
   public String submitMessage(String message, boolean debug) throws Exception {
     ClientConnection cc = new ClientConnection();
-    cc.url = url;
+    cc.setUrl(url);
     String result = "";
     try {
       result = sendRequest(message, cc, debug);
@@ -119,7 +119,7 @@ public class ORConnector extends Connector
       HttpURLConnection urlConn;
       DataOutputStream printout;
       InputStreamReader input = null;
-      URL url = new URL(conn.url);
+      URL url = new URL(conn.getUrl());
 
       urlConn = (HttpURLConnection) url.openConnection();
       if (factory != null && urlConn instanceof HttpsURLConnection) {
@@ -231,10 +231,6 @@ public class ORConnector extends Connector
     return "Connectivity test not supported for HTTPS POST connections";
   }
 
-  public static class ClientConnection
-  {
-    public String url = "";
-  }
 
   @Override
   protected void setupFields(List<String> fields) {

@@ -22,11 +22,11 @@ import javax.net.ssl.SSLSocketFactory;
  * 
  * @author nathan
  */
-public class CASoapConnector extends HttpConnector
+public class NDSoapConnector extends HttpConnector
 {
 
-  public CASoapConnector(String label, String url) {
-    super(label, url, "CA SOAP");
+  public NDSoapConnector(String label, String url) {
+    super(label, url, "ND SOAP");
   }
 
   @Override
@@ -85,23 +85,22 @@ public class CASoapConnector extends HttpConnector
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       urlConn.setUseCaches(false);
-      urlConn.setRequestProperty("Content-Type", "text/xml;charset=UTF-8");
-      urlConn.setRequestProperty("SOAPAction", "\"urn:cdc:iisb:2011:submitSingleMessage\"");
+      urlConn.setRequestProperty("Content-Type", "text/xml;charset=utf-8");
+      urlConn.setRequestProperty("SOAPAction", "\"https://ndiisioptest.noridian.com/submitSingleMessage\"");
       printout = new DataOutputStream(urlConn.getOutputStream());
       StringWriter stringWriter = new StringWriter();
       PrintWriter out = new PrintWriter(stringWriter);
-      // out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-      out.println("<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:cdc:iisb:2011\">");
-      out.println("  <soap:Header/>");
-      out.println("    <soap:Body>");
-      out.println("    <urn:submitSingleMessage> ");
-      out.println("      <urn:username>" + conn.getUserId() + "</urn:username>");
-      out.println("      <urn:password>" + conn.getPassword() + "</urn:password>");
-      out.println("      <urn:facilityID>" + conn.getFacilityId() + "</urn:facilityID>");
-      out.print("      <urn:hl7Message><![CDATA[");
+      out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+      out.println("<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
+      out.println("  <soap:Body>");
+      out.println("    <submitSingleMessage xmlns=\"https://ndiisioptest.noridian.com/\"> ");
+      out.println("      <username>" + conn.getUserId() + "</username>");
+      out.println("      <password>" + conn.getPassword() + "</password>");
+      out.println("      <facilityID>" + conn.getFacilityId() + "</facilityID>");
+      out.print("      <hl7Message><![CDATA[");
       out.print(request);
-      out.println("]]></urn:hl7Message>");
-      out.println("    </urn:submitSingleMessage>");
+      out.println("]]></hl7Message>");
+      out.println("    </submitSingleMessage>");
       out.println("  </soap:Body>");
       out.println("</soap:Envelope>");
       messageBeingSent = stringWriter.toString();
@@ -152,17 +151,16 @@ public class CASoapConnector extends HttpConnector
       urlConn.setDoOutput(true);
       urlConn.setUseCaches(false);
       urlConn.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
-      urlConn.setRequestProperty("SOAPAction", "\"urn:cdc:iisb:2011:connectivityTest\"");
+      urlConn.setRequestProperty("SOAPAction", "\"https://ndiisioptest.noridian.com/connectivityTest\"");
       printout = new DataOutputStream(urlConn.getOutputStream());
       StringWriter stringWriter = new StringWriter();
       PrintWriter out = new PrintWriter(stringWriter);
-      // out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-      out.println("<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:cdc:iisb:2011\">");
-      out.println("  <soap:Header/>");
-      out.println("    <soap:Body>");
-      out.println("    <urn:connectivityTest> ");
-      out.println("      <urn:echoBack>" + message + "</urn:echoBack>");
-      out.println("    </urn:connectivityTest>");
+      out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+      out.println("<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
+      out.println("  <soap:Body>");
+      out.println("    <connectivityTest xmlns=\"https://ndiisioptest.noridian.com/\"> ");
+      out.println("      <echoBack>" + message + "</echoBack>");
+      out.println("    </connectivityTest>");
       out.println("  </soap:Body>");
       out.println("</soap:Envelope>");
       messageBeingSent = stringWriter.toString();
@@ -184,6 +182,7 @@ public class CASoapConnector extends HttpConnector
     return response.toString();
   }
 
+ 
   @Override
   protected void makeScriptAdditions(StringBuilder sb) {
     // do nothing

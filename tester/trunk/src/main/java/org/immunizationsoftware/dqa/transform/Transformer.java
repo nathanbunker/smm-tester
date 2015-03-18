@@ -1,6 +1,8 @@
 package org.immunizationsoftware.dqa.transform;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -25,10 +27,13 @@ import org.immunizationsoftware.dqa.tester.transform.Patient;
  */
 public class Transformer
 {
-
+  private static final String REP_PAT_EMAIL = "[EMAIL]";
   private static final String REP_PAT_PHONE = "[PHONE]";
   private static final String REP_PAT_PHONE_AREA = "[PHONE_AREA]";
   private static final String REP_PAT_PHONE_LOCAL = "[PHONE_LOCAL]";
+  private static final String REP_PAT_PHONE_ALT = "[PHONE_ALT]";
+  private static final String REP_PAT_PHONE_ALT_AREA = "[PHONE_ALT_AREA]";
+  private static final String REP_PAT_PHONE_ALT_LOCAL = "[PHONE_ALT_LOCAL]";
   private static final String REP_PAT_VAC3_DATE = "[VAC3_DATE]";
   private static final String REP_PAT_LANGUAGE = "[LANGUAGE]";
   private static final String REP_PAT_ETHNICITY_LABEL = "[ETHNICITY_LABEL]";
@@ -50,6 +55,25 @@ public class Transformer
   private static final String REP_PAT_BOY_OR_GIRL = "[BOY_OR_GIRL]";
   private static final String REP_PAT_GIRL = "[GIRL]";
   private static final String REP_PAT_BOY = "[BOY]";
+
+  private static final String REP_ENTERED_BY_FIRST = "[ENTERED_BY_FIRST]";
+  private static final String REP_ENTERED_BY_LAST = "[ENTERED_BY_LAST]";
+  private static final String REP_ENTERED_BY_MIDDLE = "[ENTERED_BY_MIDDLE]";
+  private static final String REP_ENTERED_BY_NPI = "[ENTERED_BY_NPI]";
+  private static final String REP_ORDERED_BY_FIRST = "[ORDERED_BY_FIRST]";
+  private static final String REP_ORDERED_BY_LAST = "[ORDERED_BY_LAST]";
+  private static final String REP_ORDERED_BY_MIDDLE = "[ORDERED_BY_MIDDLE]";
+  private static final String REP_ORDERED_BY_NPI = "[ORDERED_BY_NPI]";
+  private static final String REP_ADMIN_BY_FIRST = "[ADMIN_BY_FIRST]";
+  private static final String REP_ADMIN_BY_LAST = "[ADMIN_BY_LAST]";
+  private static final String REP_ADMIN_BY_MIDDLE = "[ADMIN_BY_MIDDLE]";
+  private static final String REP_ADMIN_BY_NPI = "[ADMIN_BY_NPI]";
+  private static final String REP_RESPONSIBLE_ORG_NAME = "[RESPONSIBLE_ORG_NAME]";
+  private static final String REP_RESPONSIBLE_ORG_ID = "[RESPONSIBLE_ORG_ID]";
+  private static final String REP_ADMIN_ORG_1_NAME = "[ADMIN_ORG_1_NAME]";
+  private static final String REP_ADMIN_ORG_1_ID = "[ADMIN_ORG_1_ID]";
+  private static final String REP_ADMIN_ORG_2_NAME = "[ADMIN_ORG_2_NAME]";
+  private static final String REP_ADMIN_ORG_2_ID = "[ADMIN_ORG_2_ID]";
 
   private static final String REP_CON_USERID = "[USERID]";
   private static final String REP_CON_PASSWORD = "[PASSWORD]";
@@ -100,33 +124,60 @@ public class Transformer
   private static final int VACCINE_VIS3_PUB_DATE = 17;
 
   private static Map<String, List<String[]>> conceptMap = null;
+  private static Map<String, List<String[]>> testDataMap = null;
   private static Random random = new Random();
+
+  public Transformer() {
+    // default
+  }
+
+  public Transformer(File testDataFile) throws IOException {
+    BufferedReader in = new BufferedReader(new FileReader(testDataFile));
+    testDataMap = readDataIn(in);
+    in.close();
+  }
 
   public String getValue(String concept) throws IOException {
     return getValue(concept, 0);
   }
 
   public String getValue(String concept, int pos) throws IOException {
-    String value = "";
     if (conceptMap == null) {
       init();
     }
-    List<String[]> valueList = conceptMap.get(concept);
-    if (valueList != null) {
-      String[] values = valueList.get(random.nextInt(valueList.size()));
-      if (pos < values.length) {
-        value = values[pos];
+    if (testDataMap != null) {
+      List<String[]> valueList = testDataMap.get(concept);
+      if (valueList != null) {
+        return getRandomValue(pos, valueList);
       }
     }
-    return value;
+    List<String[]> valueList = conceptMap.get(concept);
+    if (valueList != null) {
+      return getRandomValue(pos, valueList);
+    }
+    return "";
+  }
+
+  public String getRandomValue(int pos, List<String[]> valueList) {
+    String[] values = valueList.get(random.nextInt(valueList.size()));
+    if (pos < values.length) {
+      return values[pos];
+    }
+    return "";
   }
 
   public String[] getValueArray(String concept, int size) throws IOException {
     if (conceptMap == null) {
       init();
     }
-    List<String[]> valueList = conceptMap.get(concept);
     String[] valueSourceList = null;
+    List<String[]> valueList = null;
+    if (testDataMap != null) {
+      valueList = testDataMap.get(concept);
+    }
+    if (valueList == null) {
+      valueList = conceptMap.get(concept);
+    }
     if (valueList != null) {
       valueSourceList = valueList.get(random.nextInt(valueList.size()));
     }
@@ -151,8 +202,6 @@ public class Transformer
     }
     return alsoHas;
   }
-
-
 
   protected PatientType createDates(String[] dates, PatientType type) {
     {
@@ -329,22 +378,27 @@ public class Transformer
   }
 
   protected void init() throws IOException {
-    conceptMap = new HashMap<String, List<String[]>>();
     BufferedReader in = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("transform.txt")));
+    conceptMap = readDataIn(in);
+  }
+
+  public HashMap<String, List<String[]>> readDataIn(BufferedReader in) throws IOException {
+    HashMap<String, List<String[]>> map = new HashMap<String, List<String[]>>();
     String line;
     while ((line = in.readLine()) != null) {
       int equals = line.indexOf("=");
       if (equals != -1) {
         String concept = line.substring(0, equals);
         String[] values = line.substring(equals + 1).split("\\,");
-        List<String[]> valueList = conceptMap.get(concept);
+        List<String[]> valueList = map.get(concept);
         if (valueList == null) {
           valueList = new ArrayList<String[]>();
-          conceptMap.put(concept, valueList);
+          map.put(concept, valueList);
         }
         valueList.add(values);
       }
     }
+    return map;
   }
 
   public String transform(Connector connector, String messageText) {
@@ -685,7 +739,7 @@ public class Transformer
     quickTransforms += front + "-5.1=[VAC" + count + "_CVX]\n";
     quickTransforms += front + "-5.2=[VAC" + count + "_CVX_LABEL]\n";
     quickTransforms += front + "-5.3=CVX\n";
-    quickTransforms += front + "-6=[VAC2_AMOUNT]\n";
+    quickTransforms += front + "-6=[VAC" + count + "_AMOUNT]\n";
     quickTransforms += front + "-7.1=mL\n";
     quickTransforms += front + "-7.2=milliliters\n";
     quickTransforms += front + "-7.3=UCUM\n";
@@ -1072,8 +1126,7 @@ public class Transformer
                 }
               }
             }
-          }
-          else if (line.toLowerCase().trim().startsWith(CLEAN)) {
+          } else if (line.toLowerCase().trim().startsWith(CLEAN)) {
             boolean noLastSlash = line.toLowerCase().indexOf(CLEAN_NO_LAST_SLASH) != -1;
             BufferedReader inResult = new BufferedReader(new StringReader(resultText));
             resultText = "";
@@ -1333,7 +1386,7 @@ public class Transformer
                 // there's no caret, so add it to value, keep same
                 // position
                 while (count < t.subfield) {
-                  prepend = "^" + prepend;
+                  prepend = prepend + "^";
                   count++;
                 }
                 if (endPosTilde < endPosBar) {
@@ -1819,9 +1872,9 @@ public class Transformer
         p2 = patient.getVaccine2()[VACCINE_TRADE_NAME];
       } else if (p2.equals("[VAC2_AMOUNT]")) {
         p2 = patient.getVaccine2()[VACCINE_AMOUNT];
-      } else if (p2.equals("[VAC1_ROUTE]")) {
+      } else if (p2.equals("[VAC2_ROUTE]")) {
         p2 = patient.getVaccine2()[VACCINE_ROUTE];
-      } else if (p2.equals("[VAC1_SITE]")) {
+      } else if (p2.equals("[VAC2_SITE]")) {
         p2 = patient.getVaccine2()[VACCINE_SITE];
       } else if (p2.equals("[VAC2_VIS_PUB_NAME]")) {
         p2 = patient.getVaccine2()[VACCINE_VIS_PUB];
@@ -1857,15 +1910,61 @@ public class Transformer
         p2 = patient.getCity();
       } else if (p2.equals("[STREET]")) {
         p2 = patient.getStreet();
+      } else if (p2.equals("[STREET2]")) {
+        p2 = patient.getStreet2();
       } else if (p2.equals("[STATE]")) {
         p2 = patient.getState();
       } else if (p2.equals("[ZIP]")) {
         p2 = patient.getZip();
+      } else if (p2.equals(REP_ENTERED_BY_FIRST)) {
+        p2 = patient.getEnteredByFirstName();
+      } else if (p2.equals(REP_ENTERED_BY_MIDDLE)) {
+        p2 = patient.getEnteredByMiddleName();
+      } else if (p2.equals(REP_ENTERED_BY_LAST)) {
+        p2 = patient.getEnteredByLastName();
+      } else if (p2.equals(REP_ENTERED_BY_NPI)) {
+        p2 = patient.getEnteredByNPI();
+      } else if (p2.equals(REP_ORDERED_BY_FIRST)) {
+        p2 = patient.getOrderedByFirstName();
+      } else if (p2.equals(REP_ORDERED_BY_MIDDLE)) {
+        p2 = patient.getOrderedByMiddleName();
+      } else if (p2.equals(REP_ORDERED_BY_LAST)) {
+        p2 = patient.getOrderedByLastName();
+      } else if (p2.equals(REP_ORDERED_BY_NPI)) {
+        p2 = patient.getOrderedByNPI();
+      } else if (p2.equals(REP_ADMIN_BY_FIRST)) {
+        p2 = patient.getAdminByFirstName();
+      } else if (p2.equals(REP_ADMIN_BY_MIDDLE)) {
+        p2 = patient.getAdminByMiddleName();
+      } else if (p2.equals(REP_ADMIN_BY_LAST)) {
+        p2 = patient.getAdminByLastName();
+      } else if (p2.equals(REP_ADMIN_BY_NPI)) {
+        p2 = patient.getAdminByNPI();
+      } else if (p2.equals(REP_RESPONSIBLE_ORG_ID)) {
+        p2 = patient.getResponsibleOrg()[0];
+      } else if (p2.equals(REP_RESPONSIBLE_ORG_NAME)) {
+        p2 = patient.getResponsibleOrg()[1];
+      } else if (p2.equals(REP_ADMIN_ORG_1_ID)) {
+        p2 = patient.getAdminOrg1()[0];
+      } else if (p2.equals(REP_ADMIN_ORG_1_NAME)) {
+        p2 = patient.getAdminOrg1()[1];
+      } else if (p2.equals(REP_ADMIN_ORG_2_ID)) {
+        p2 = patient.getAdminOrg2()[0];
+      } else if (p2.equals(REP_ADMIN_ORG_2_NAME)) {
+        p2 = patient.getAdminOrg2()[1];
+      } else if (p2.equals(REP_PAT_EMAIL)) {
+        p2 = patient.getEmail();
       } else if (p2.equals(REP_PAT_PHONE)) {
         p2 = patient.getPhone();
       } else if (p2.equals(REP_PAT_PHONE_AREA)) {
         p2 = patient.getPhoneArea();
       } else if (p2.equals(REP_PAT_PHONE_LOCAL)) {
+        p2 = patient.getPhoneLocal();
+      } else if (p2.equals(REP_PAT_PHONE_ALT)) {
+        p2 = patient.getPhone();
+      } else if (p2.equals(REP_PAT_PHONE_ALT_AREA)) {
+        p2 = patient.getPhoneArea();
+      } else if (p2.equals(REP_PAT_PHONE_ALT_LOCAL)) {
         p2 = patient.getPhoneLocal();
       } else if (p2.equals(REP_PAT_VAC3_DATE)) {
         p2 = patient.getDates()[3];
@@ -1921,6 +2020,7 @@ public class Transformer
     patient.setVfc(getValueArray("VFC", 2));
     patient.setSuffix(getValue("SUFFIX"));
     patient.setStreet((random.nextInt(400) + 1) + " " + getValue("LAST_NAME") + " " + getValue("STREET_ABBREVIATION"));
+    patient.setStreet2("APT #" + (random.nextInt(400) + 1));
     patient.setCity(patient.getAddress()[0]);
     patient.setState(patient.getAddress()[1]);
     patient.setZip(patient.getAddress()[2]);
@@ -1928,11 +2028,70 @@ public class Transformer
     patient.setPhoneLocal("" + (random.nextInt(8) + 2) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
         + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
     patient.setPhone("(" + patient.getPhoneArea() + ")" + patient.getPhoneLocal());
+    patient.setPhoneAltArea(patient.getAddress()[3]);
+    patient.setPhoneAltLocal("" + (random.nextInt(8) + 2) + random.nextInt(10) + random.nextInt(10)
+        + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
+    patient.setPhoneAlt("(" + patient.getPhoneAltArea() + ")" + patient.getPhoneAltLocal());
+    if (PatientType.ADULT == patientType) {
+      if (patient.getGender().equals("M")) {
+        patient.setEmail(patient.getBoyName().toLowerCase() + "." + patient.getLastName().toLowerCase()
+            + "@madeupemailaddress.com");
+      } else {
+        patient.setEmail(patient.getGirlName().toLowerCase() + "." + patient.getLastName().toLowerCase()
+            + "@madeupemailaddress.com");
+      }
+    } else {
+      patient.setEmail(patient.getMotherName().toLowerCase() + "." + patient.getLastName().toLowerCase()
+          + "@madeupemailaddress.com");
+    }
     patient.setBirthCount(makeBirthCount());
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
     Calendar calendar = Calendar.getInstance();
     calendar.add(Calendar.YEAR, 1);
     patient.setFuture(sdf.format(calendar.getTime()));
+    {
+      boolean enteredByBoy = random.nextBoolean();
+      patient.setEnteredByFirstName(getValue(enteredByBoy ? "BOY" : "GIRL"));
+      patient.setEnteredByMiddleName(getValue(enteredByBoy ? "BOY" : "GIRL"));
+      patient.setEnteredByLastName(getValue("LAST_NAME"));
+      patient.setEnteredByNPI("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
+          + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
+          + random.nextInt(10));
+    }
+    {
+      boolean orderedByBoy = random.nextBoolean();
+      patient.setOrderedByFirstName(getValue(orderedByBoy ? "BOY" : "GIRL"));
+      patient.setOrderedByMiddleName(getValue(orderedByBoy ? "BOY" : "GIRL"));
+      patient.setOrderedByLastName(getValue("LAST_NAME"));
+      patient.setOrderedByNPI("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
+          + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
+          + random.nextInt(10));
+    }
+    {
+      boolean adminByBoy = random.nextBoolean();
+      patient.setAdminByFirstName(getValue(adminByBoy ? "BOY" : "GIRL"));
+      patient.setAdminByMiddleName(getValue(adminByBoy ? "BOY" : "GIRL"));
+      patient.setAdminByLastName(getValue("LAST_NAME"));
+      patient.setAdminByNPI("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
+          + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
+          + random.nextInt(10));
+    }
+    patient.setResponsibleOrg(getValueArray("RESPONSIBLE ORG", 2));
+    if (patient.getResponsibleOrg()[0].equals("") && patient.getResponsibleOrg()[1].equals("")) {
+      patient.getResponsibleOrg()[0] = "101";
+      patient.getResponsibleOrg()[1] = getValue("LAST_NAME")
+          + (random.nextBoolean() ? " Family Clinic" : " Pediatrics");
+    }
+    patient.setAdminOrg1(getValueArray("ADMIN ORG 1", 2));
+    if (patient.getAdminOrg1()[0].equals("") && patient.getAdminOrg1()[1].equals("")) {
+      patient.getAdminOrg1()[0] = patient.getResponsibleOrg()[0] + "-" + "01";
+      patient.getAdminOrg1()[1] = patient.getResponsibleOrg()[1] + " - " + getValue("LAST_NAME");
+    }
+    patient.setAdminOrg2(getValueArray("ADMIN ORG 2", 2));
+    if (patient.getAdminOrg2()[0].equals("") && patient.getAdminOrg2()[1].equals("")) {
+      patient.getAdminOrg2()[0] = patient.getResponsibleOrg()[0] + "-" + "02";
+      patient.getAdminOrg2()[1] = patient.getResponsibleOrg()[1] + " - " + getValue("LAST_NAME");
+    }
     return patient;
   }
 
