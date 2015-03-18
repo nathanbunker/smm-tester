@@ -202,7 +202,6 @@ public class SubmitServlet extends ClientServlet
             }
             out.println("<h3>" + title + "</h3>");
             out.print("<pre>");
-            System.out.println(responseText);
             out.print(responseText.replace("<", "&lt;").replace(">", "&gt;"));
             out.println("</pre>");
           }

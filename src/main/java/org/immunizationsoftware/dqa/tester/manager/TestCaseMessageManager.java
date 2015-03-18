@@ -56,7 +56,7 @@ public class TestCaseMessageManager
           } else if (line.startsWith(TestCaseMessage.PATIENT_TYPE)) {
             testCaseMessage.setPatientType(PatientType.valueOf(readValue(line)));
           } else if (line.startsWith(TestCaseMessage.SCENARIO)) {
-            testCaseMessage.setPatientType(PatientType.valueOf(readValue(line)));
+            testCaseMessage.setScenario(readValue(line));
           } else if (line.startsWith(TestCaseMessage.TEST_CASE_SET)) {
             testCaseMessage.setTestCaseSet(readValue(line));
           } else if (line.startsWith(TestCaseMessage.EXPECTED_RESULT)) {

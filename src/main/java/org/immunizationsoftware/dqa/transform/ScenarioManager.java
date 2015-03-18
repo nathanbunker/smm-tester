@@ -1,6 +1,5 @@
 package org.immunizationsoftware.dqa.transform;
 
-
 public class ScenarioManager
 {
   public static final String SCENARIO_BLANK = "Blank";
@@ -40,7 +39,8 @@ public class ScenarioManager
       SCENARIO_3_R_HISTORICAL_TWELVE_YEARS_OLD, SCENARIO_4_1_CONSENTED_CHILD, SCENARIO_4_R_CONSENTED_CHILD,
       SCENARIO_5_1_REFUSED_TODDLER, SCENARIO_5_R_REFUSED_TODDLER, SCENARIO_5_P_REFUSED_TODDLER,
       SCENARIO_6_1_VARICELLA_HISTORY_CHILD, SCENARIO_6_R_VARICELLA_HISTORY_CHILD, SCENARIO_6_P_VARICELLA_HISTORY_CHILD,
-      SCENARIO_7_1_COMPLETE_RECORD, SCENARIO_7_R_COMPLETE_RECORD, SCENARIO_FULL_RECORD_FOR_PROFILING, SCENARIO_ADD_DELETE, SCENARIO_MCIR_MPI };
+      SCENARIO_7_1_COMPLETE_RECORD, SCENARIO_7_R_COMPLETE_RECORD, SCENARIO_FULL_RECORD_FOR_PROFILING,
+      SCENARIO_ADD_DELETE, SCENARIO_MCIR_MPI };
 
   public static TestCaseMessage createTestCaseMessage(String scenario) {
     TestCaseMessage testCaseMessage;
@@ -181,11 +181,31 @@ public class ScenarioManager
       patientType = PatientType.TODDLER;
     } else if (scenario.equals(SCENARIO_FULL_RECORD_FOR_PROFILING)) {
       description = "Full Record for Profiling";
-      originalMessage = "MSH|\nPID|\nNK1|\nORC|\nRXA|\nRXR|\nOBX|\nOBX|\nOBX|\nOBX|\nORC|\nRXA|\nORC|\nRXA|\nRXR|\nOBX|\nOBX|\nOBX|\nOBX|\n";
-      quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "MOTHER", "RACE", "ETHNICITY",
-          "VAC1_ADMIN", "VAC2_HIST", "VAC3_ADMIN" };
+      originalMessage = "MSH|\nPID|\nPD1|\nNK1|\nPV1|\nORC|\nRXA|\nRXR|\nOBX|\nOBX|\nOBX|\nOBX|\nORC|\nRXA|\nORC|\nRXA|\nRXR|\nOBX|\nOBX|\nOBX|\nOBX|\n";
+      quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "MOTHER", "RACE",
+          "ETHNICITY", "VAC1_ADMIN", "VAC2_HIST", "VAC3_ADMIN" };
       patientType = PatientType.TODDLER;
-      customTransformations = "RXA-10.2=Burden\nRXA-10.3=Donna\nRXA-16=[FUTURE]\nRXA#3-16=[FUTURE]\nRXA*-20=CP\n";
+      customTransformations = "MSH-15=AL\nMSH-16=AL\nMSH-22=[RESPONSIBLE_ORG_NAME]\n"
+          + "PID-11.2=[STREET2]\n"
+          + "PID-15=[LANGUAGE]\nPID-15.2=[LANGUAGE_LABEL]\nPID-15.3=HL70296\nPID-13.2#2=NET\nPID-13.4#2=[EMAIL]\n"
+          + "PID-14.2=WPN\nPID-14.3=PH\nPID-14.6=[PHONE_ALT_AREA]\nPID-14.7=[PHONE_ALT_LOCAL]\nPID-24=N\nPID-25=1\nPID-30=N\n"
+          + "PD1-11.1=02\nPD1-11.2=Reminder/recall - any method\nPD1-11.3=HL70215\nPD1-12=N\nPD1-13=[TODAY]\nPD1-16=A\nPD1-17=[TODAY]\nPD1-18=[TODAY]\n"
+          + "NK1-2.3=[GIRL_MIDDLE]\nNK1-2.7=L\n" 
+          + "NK1-4.1=[STREET]\nNK1-4.2=[STREET2]\nNK1-4.3=[CITY]\nNK1-4.4=[STATE]\nNK1-4.5=[ZIP]\nNK1-4.6=USA\nNK1-4.7=P\n"
+          + "NK1-5.2=PRN\nNK1-5.3=PH\nNK1-5.6=[PHONE_AREA]\nNK1-5.7=[PHONE_LOCAL]\n"
+          + "NK1-6.2=WPN\nNK1-6.3=PH\nNK1-6.6=[PHONE_ALT_AREA]\nNK1-6.7=[PHONE_ALT_LOCAL]\n"
+          + "ORC-10.1=[ENTERED_BY_NPI]\nORC-10.2=[ENTERED_BY_LAST]\nORC-10.3=[ENTERED_BY_FIRST]\nORC-10.4=[ENTERED_BY_MIDDLE]\nORC-10.9=CNS\nORC-10.10=L\nORC-10.13=NPI\n"
+          + "ORC-12.1=[ORDERED_BY_NPI]\nORC-12.2=[ORDERED_BY_LAST]\nORC-12.3=[ORDERED_BY_FIRST]\nORC-12.4=[ORDERED_BY_MIDDLE]\nORC-12.9=CMS\nORC-10.10=L\nORC-12.13=NPI\n"
+          + "ORC-17.1=[ADMIN_ORG_1_ID]\nORC-17.2=[ADMIN_ORG_1_NAME]\nORC-17.3=HL70362\n"
+          + "RXA-4=[VAC1_DATE]\n"
+          + "RXA-10.1=[ADMIN_BY_NPI]\nRXA-10.2=[ADMIN_BY_LAST]\nRXA-10.3=[ADMIN_BY_FIRST]\nRXA-10.4=[ADMIN_BY_MIDDLE]\nRXA-10.9=CMS\nRXA-10.10=L\nRXA-10.13=NPI\n"
+          + "RXA-11.4=[ADMIN_ORG_1_ID]\n"
+          + "RXA-16=[FUTURE]\nRXA#3-16=[FUTURE]\nRXA*-20=CP\nRXA-22=[NOW]\n"
+          + "RXA#2-4=[VAC2_DATE]\n"
+          + "ORC#3-10.1=[ENTERED_BY_NPI]\nORC#3-10.2=[ENTERED_BY_LAST]\nORC#3-10.3=[ENTERED_BY_FIRST]\nORC#3-10.4=[ENTERED_BY_MIDDLE]\nORC#3-10.9=CMS\nORC#3-10.10=L\nORC#3-10.13=NPI\n"
+          + "ORC#3-12.1=[ORDERED_BY_NPI]\nORC#3-12.2=[ORDERED_BY_LAST]\nORC#3-12.3=[ORDERED_BY_FIRST]\nORC#3-12.4=[ORDERED_BY_MIDDLE]\nORC#3-12.9=CMS\nORC#3-10.10=L\nORC#3-12.13=NPI\n"
+          + "ORC#3-17.1=[ADMIN_ORG_1_ID]\nORC#3-17.2=[ADMIN_ORG_1_NAME]\nORC#3-17.3=HL70362\n";
+
     } else if (scenario.equals(SCENARIO_1_1_ADMIN_CHILD)) {
       description = "NIST IZ #1.1: Administered for Child";
       originalMessage = "MSH|^~\\&|Test EHR Application|X68||NIST Test Iz Reg|201207010822||VXU^V04^VXU_V04|NIST-IZ-001.00|P|2.5.1|||AL|ER\n"

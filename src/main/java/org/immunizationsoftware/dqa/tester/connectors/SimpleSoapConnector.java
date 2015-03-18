@@ -31,10 +31,10 @@ public class SimpleSoapConnector extends Connector
   public String submitMessage(String message, boolean debug) throws Exception
   {
     ClientConnection cc = new ClientConnection();
-    cc.userId = userid;
-    cc.password = password;
-    cc.facilityId = facilityid;
-    cc.url = url;
+    cc.setUserId(userid);
+    cc.setPassword(password);
+    cc.setFacilityId(facilityid);
+    cc.setUrl(url);
     String result = "";
     try
     {
@@ -72,7 +72,7 @@ public class SimpleSoapConnector extends Connector
     URLConnection urlConn;
     DataOutputStream printout;
     InputStreamReader input = null;
-    URL url = new URL(conn.url);
+    URL url = new URL(conn.getUrl());
     urlConn = url.openConnection();
     urlConn.setDoInput(true);
     urlConn.setDoOutput(true);
@@ -86,8 +86,8 @@ public class SimpleSoapConnector extends Connector
     out.println("<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
     out.println("  <soap:Body>");
     out.println("    <ExecuteHL7Message xmlns=\"http://tempuri.org/\">");
-    out.println("      <userName>" + conn.userId + "</userName>");
-    out.println("      <password>" + conn.password + "</password>");
+    out.println("      <userName>" + conn.getUserId() + "</userName>");
+    out.println("      <password>" + conn.getPassword() + "</password>");
     out.println("      <flatWire>" + request + "</flatWire>");
     out.println("    </ExecuteHL7Message>");
     out.println("  </soap:Body>");
@@ -114,14 +114,6 @@ public class SimpleSoapConnector extends Connector
     return "Connectivity test not supported for HTTPS POST connections";
   }
 
-  public static class ClientConnection
-  {
-
-    public String url = "";
-    public String userId = "";
-    public String password = "";
-    public String facilityId = "";
-  }
 
   @Override
   protected void makeScriptAdditions(StringBuilder sb)

@@ -39,14 +39,194 @@ public class Patient {
     private String[] vfc = null;
     private String suffix = "";
     private String street = "";
+    private String street2 = "";
     private String city = "";
     private String state = "";
     private String zip = "";
+    private String phone = "";
     private String phoneArea = "";
     private String phoneLocal = "";
-    private String phone = "";
+    private String phoneAlt = "";
+    private String phoneAltArea = "";
+    private String phoneAltLocal = "";
     private int birthCount = 0;
     private String future = "";
+    private String email = "";
+    private String enteredByFirstName = "";
+    private String enteredByLastName = "";
+    private String enteredByMiddleName = "";
+    private String enteredByNPI = "";
+    private String orderedByFirstName = "";
+    private String orderedByLastName = "";
+    private String orderedByMiddleName = "";
+    private String orderedByNPI = "";
+    private String adminByFirstName = "";
+    private String adminByLastName = "";
+    private String adminByMiddleName = "";
+    private String adminByNPI = "";
+    private String[] responsibleOrg = null;
+    private String[] adminOrg1 = null;
+    private String[] adminOrg2 = null;
+    
+    public String getAdminByFirstName() {
+      return adminByFirstName;
+    }
+
+    public void setAdminByFirstName(String adminByFirstName) {
+      this.adminByFirstName = adminByFirstName;
+    }
+
+    public String getAdminByLastName() {
+      return adminByLastName;
+    }
+
+    public void setAdminByLastName(String adminByLastName) {
+      this.adminByLastName = adminByLastName;
+    }
+
+    public String getAdminByMiddleName() {
+      return adminByMiddleName;
+    }
+
+    public void setAdminByMiddleName(String adminByMiddleName) {
+      this.adminByMiddleName = adminByMiddleName;
+    }
+
+    public String getAdminByNPI() {
+      return adminByNPI;
+    }
+
+    public void setAdminByNPI(String adminByNPI) {
+      this.adminByNPI = adminByNPI;
+    }
+
+    public String[] getResponsibleOrg() {
+      return responsibleOrg;
+    }
+
+    public void setResponsibleOrg(String[] responsibleOrg) {
+      this.responsibleOrg = responsibleOrg;
+    }
+
+    public String[] getAdminOrg1() {
+      return adminOrg1;
+    }
+
+    public void setAdminOrg1(String[] adminOrg1) {
+      this.adminOrg1 = adminOrg1;
+    }
+
+    public String[] getAdminOrg2() {
+      return adminOrg2;
+    }
+
+    public void setAdminOrg2(String[] adminOrg2) {
+      this.adminOrg2 = adminOrg2;
+    }
+
+    public String getEnteredByFirstName() {
+      return enteredByFirstName;
+    }
+
+    public void setEnteredByFirstName(String enteredByFirstName) {
+      this.enteredByFirstName = enteredByFirstName;
+    }
+
+    public String getEnteredByLastName() {
+      return enteredByLastName;
+    }
+
+    public void setEnteredByLastName(String enteredByLastName) {
+      this.enteredByLastName = enteredByLastName;
+    }
+
+    public String getEnteredByMiddleName() {
+      return enteredByMiddleName;
+    }
+
+    public void setEnteredByMiddleName(String enteredByMiddleName) {
+      this.enteredByMiddleName = enteredByMiddleName;
+    }
+
+    public String getEnteredByNPI() {
+      return enteredByNPI;
+    }
+
+    public void setEnteredByNPI(String enteredByNPI) {
+      this.enteredByNPI = enteredByNPI;
+    }
+
+    public String getOrderedByFirstName() {
+      return orderedByFirstName;
+    }
+
+    public void setOrderedByFirstName(String orderedByFirstName) {
+      this.orderedByFirstName = orderedByFirstName;
+    }
+
+    public String getOrderedByLastName() {
+      return orderedByLastName;
+    }
+
+    public void setOrderedByLastName(String orderedByLastName) {
+      this.orderedByLastName = orderedByLastName;
+    }
+
+    public String getOrderedByMiddleName() {
+      return orderedByMiddleName;
+    }
+
+    public void setOrderedByMiddleName(String orderedByMiddleName) {
+      this.orderedByMiddleName = orderedByMiddleName;
+    }
+
+    public String getOrderedByNPI() {
+      return orderedByNPI;
+    }
+
+    public void setOrderedByNPI(String orderedByNPI) {
+      this.orderedByNPI = orderedByNPI;
+    }
+
+    public String getStreet2() {
+      return street2;
+    }
+
+    public void setStreet2(String street2) {
+      this.street2 = street2;
+    }
+
+    public String getPhoneAlt() {
+      return phoneAlt;
+    }
+
+    public void setPhoneAlt(String phoneAlt) {
+      this.phoneAlt = phoneAlt;
+    }
+
+    public String getPhoneAltArea() {
+      return phoneAltArea;
+    }
+
+    public void setPhoneAltArea(String phoneAltArea) {
+      this.phoneAltArea = phoneAltArea;
+    }
+
+    public String getPhoneAltLocal() {
+      return phoneAltLocal;
+    }
+
+    public void setPhoneAltLocal(String phoneAltLocal) {
+      this.phoneAltLocal = phoneAltLocal;
+    }
+
+    public String getEmail() {
+      return email;
+    }
+
+    public void setEmail(String email) {
+      this.email = email;
+    }
 
     public String getWic() {
       return wic;
