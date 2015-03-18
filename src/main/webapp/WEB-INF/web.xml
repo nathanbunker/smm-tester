@@ -12,6 +12,7 @@
       <param-value>/home/oisptorg/ois-pt.org/data/tester;c:\Export\;c:\data\Dropbox (Personal)\work\product\smm</param-value>
     </init-param>
 
+<!-- 
     <init-param>
       <param-name>keyStore</param-name>
       <param-value>C:\data\Dropbox (Personal)\work\product\smm\data\nd.jks</param-value>
@@ -19,6 +20,11 @@
     <init-param>
       <param-name>keyStorePassword</param-name>
       <param-value>nddevdev</param-value>
+    </init-param>
+     -->
+    <init-param>
+      <param-name>sun.security.ssl.allowUnsafeRenegotiation</param-name>
+      <param-value>true</param-value>
     </init-param>
 
     <init-param>

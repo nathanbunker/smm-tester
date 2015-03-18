@@ -233,6 +233,12 @@ public class ManagerServlet extends ClientServlet
       }
     }
 
+    String allowUnsafeRenegotiation = getInitParameter("sun.security.ssl.allowUnsafeRenegotiation");
+    if (allowUnsafeRenegotiation != null) {
+      System.setProperty("sun.security.ssl.allowUnsafeRenegotiation", "true");
+      System.out.println("Setting option to allow unsafe renegotiation ");
+    }
+
     ShutdownInterceptor shutdownInterceptor = new ShutdownInterceptor();
     Runtime.getRuntime().addShutdownHook(shutdownInterceptor);
   }
