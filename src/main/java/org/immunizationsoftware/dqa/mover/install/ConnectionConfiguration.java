@@ -13,6 +13,7 @@ public class ConnectionConfiguration
   public static final String FIELD_OTHERID = "otherid";
   public static final String FIELD_PASSWORD = "password";
   public static final String FIELD_FACILITYID = "faclityid";
+  public static final String FIELD_KEY_STORE_PASSWORD = "keyStorePassword";
   public static final String FIELD_ENABLE_TIME_START = "enableTimeStart";
   public static final String FIELD_ENABLE_TIME_END = "enableTimeEnd";
 
@@ -27,9 +28,18 @@ public class ConnectionConfiguration
   private String folderName = "";
   private String instructions = "";
   private String receiverName = "the receiver";
+  private String keyStorePassword = "";
   private String enableTimeEnd = "";
   private String enableTimeStart = "";
   
+  public String getKeyStorePassword() {
+    return keyStorePassword;
+  }
+
+  public void setKeyStorePassword(String keyStorePassword) {
+    this.keyStorePassword = keyStorePassword;
+  }
+
   public String getOtherid() {
     return otherid;
   }
@@ -109,12 +119,39 @@ public class ConnectionConfiguration
   private boolean otheridRequired = false;
   private boolean enableTimeShow = false;
   private boolean enableTimeRequired = false;
+  private boolean keyStorePasswordShow = false;
+  private boolean keyStorePasswordRequired = false;
   private String urlLabel = "URL";
   private String useridLabel = "User Id";
   private String otheridLabel = "Other Id";
   private String passwordLabel = "Password";
   private String facilityidLabel = "Facility Id";
+  private String keyStorePasswordLabel = "Key Store Password";
   
+  public boolean isKeyStorePasswordShow() {
+    return keyStorePasswordShow;
+  }
+
+  public void setKeyStorePasswordShow(boolean keyStorePasswordShow) {
+    this.keyStorePasswordShow = keyStorePasswordShow;
+  }
+
+  public boolean isKeyStorePasswordRequired() {
+    return keyStorePasswordRequired;
+  }
+
+  public void setKeyStorePasswordRequired(boolean keyStorePasswordRequired) {
+    this.keyStorePasswordRequired = keyStorePasswordRequired;
+  }
+
+  public String getKeyStorePasswordLabel() {
+    return keyStorePasswordLabel;
+  }
+
+  public void setKeyStorePasswordLabel(String keyStorePasswordLabel) {
+    this.keyStorePasswordLabel = keyStorePasswordLabel;
+  }
+
   public boolean isOtheridShow() {
     return otheridShow;
   }
@@ -397,17 +434,6 @@ public class ConnectionConfiguration
     {
       out.println("<input type=\"hidden\" name=\"" + FIELD_USERID + "\" value=\"" + userid + "\">");
     }
-    if (otheridShow)
-    {
-      out.println("  <tr class=\"boxed\">");
-      out.println("    <th class=\"boxed\">" + otheridLabel + "</th>");
-      out.println("    <td class=\"boxed\"><input type=\"text\" name=\"" + FIELD_OTHERID + "\" size=\"10\" value=\"" + otherid + "\"></td>");
-      out.println("    <td class=\"boxed\">Another unique identifier supplied by " + receiverName + ".</td>");
-      out.println("  </tr>");
-    } else
-    {
-      out.println("<input type=\"hidden\" name=\"" + FIELD_OTHERID + "\" value=\"" + otherid + "\">");
-    }
     if (passwordShow)
     {
       out.println("  <tr class=\"boxed\">");
@@ -430,15 +456,25 @@ public class ConnectionConfiguration
     {
       out.println("<input type=\"hidden\" name=\"" + FIELD_FACILITYID + "\" value=\"" + facilityid + "\">");
     }
-    if (enableTimeShow)
+    if (otheridShow)
     {
       out.println("  <tr class=\"boxed\">");
-      out.println("    <th class=\"boxed\">SMM Enable Time</th>");
+      out.println("    <th class=\"boxed\">" + otheridLabel + "</th>");
+      out.println("    <td class=\"boxed\"><input type=\"text\" name=\"" + FIELD_OTHERID + "\" size=\"10\" value=\"" + otherid + "\"></td>");
+      out.println("    <td class=\"boxed\">Another unique identifier supplied by " + receiverName + ".</td>");
+      out.println("  </tr>");
+    } else
+    {
+      out.println("<input type=\"hidden\" name=\"" + FIELD_OTHERID + "\" value=\"" + otherid + "\">");
+    }
+    if (keyStorePasswordShow)
+    {
+      out.println("  <tr class=\"boxed\">");
+      out.println("    <th class=\"boxed\">" + keyStorePasswordLabel + "</th>");
       out.println("    <td class=\"boxed\">");
-      out.println("      <input type=\"text\" name=\"" + FIELD_ENABLE_TIME_START + "\" size=\"5\" value=\"" + enableTimeStart + "\"> to ");
-      out.println("      <input type=\"text\" name=\"" + FIELD_ENABLE_TIME_END + "\" size=\"5\" value=\"" + enableTimeEnd + "\">");
+      out.println("      <input type=\"text\" name=\"" + FIELD_KEY_STORE_PASSWORD + "\" size=\"10\" value=\"" + keyStorePassword + "\"> ");
       out.println("    </td>");
-      out.println("    <td class=\"boxed\">The time that the SMM is allowed to submit data to " + receiverName + " (use 24 hour time, HH:MM)</td>");
+      out.println("    <td class=\"boxed\">The password for the keystore file. </td>");
       out.println("  </tr>");
     } 
     out.println("  <tr class=\"boxed\">");

@@ -25,6 +25,7 @@ public class ConfigureServlet extends ClientServlet
   public static final String TEMPLATE_ASIIS_PROD = "ASIIS Production";
   public static final String TEMPLATE_ASIIS_TEST = "ASIIS Test";
   public static final String TEMPLATE_CAIR_TEST = "CAIR Test";
+  public static final String TEMPLATE_CAIR_PROD = "CAIR Prod";
   public static final String TEMPLATE_MT_IMMTRAX_TEST = "MT imMTrax Test";
   public static final String TEMPLATE_MT_IMMTRAX_PRODUCTION = "MT imMTrax Production";
   public static final String TEMPLATE_NMSIIS_RAW_PROD = "NMSIIS Raw Production";
@@ -37,9 +38,10 @@ public class ConfigureServlet extends ClientServlet
   public static final String TEMPLATE_VACTRAK_PRODUCTION = "AK VacTrAK Production";
 
   public static final String[] TEMPLATES = { TEMPLATE_DEFAULT_SOAP, TEMPLATE_DEFAULT_POST, TEMPLATE_CAIR_TEST,
-      TEMPLATE_VACTRAK_TESTING, TEMPLATE_VACTRAK_PRODUCTION, TEMPLATE_ASIIS_PROD, TEMPLATE_ASIIS_TEST,
-      TEMPLATE_MT_IMMTRAX_TEST, TEMPLATE_MT_IMMTRAX_PRODUCTION, TEMPLATE_NMSIIS_RAW_PROD, TEMPLATE_NMSIIS_RAW_UAT,
-      TEMPLATE_NV_WEBIZ_TESTING, TEMPLATE_NV_WEBIZ_PRODUCTION, TEMPLATE_WA_IIS_TESTING, TEMPLATE_WA_IIS_PRODUCTION };
+      TEMPLATE_CAIR_PROD, TEMPLATE_VACTRAK_TESTING, TEMPLATE_VACTRAK_PRODUCTION, TEMPLATE_ASIIS_PROD,
+      TEMPLATE_ASIIS_TEST, TEMPLATE_MT_IMMTRAX_TEST, TEMPLATE_MT_IMMTRAX_PRODUCTION, TEMPLATE_NMSIIS_RAW_PROD,
+      TEMPLATE_NMSIIS_RAW_UAT, TEMPLATE_NV_WEBIZ_TESTING, TEMPLATE_NV_WEBIZ_PRODUCTION, TEMPLATE_WA_IIS_TESTING,
+      TEMPLATE_WA_IIS_PRODUCTION };
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -99,11 +101,13 @@ public class ConfigureServlet extends ClientServlet
               cc.setPassword(req.getParameter(ConnectionConfiguration.FIELD_PASSWORD));
               cc.setUserid(req.getParameter(ConnectionConfiguration.FIELD_USERID));
               cc.setOtherid(req.getParameter(ConnectionConfiguration.FIELD_OTHERID));
+              cc.setKeyStorePassword(req.getParameter(ConnectionConfiguration.FIELD_KEY_STORE_PASSWORD));
 
               connector.setUserid(cc.getUserid());
               connector.setOtherid(cc.getOtherid());
               connector.setPassword(cc.getPassword());
               connector.setFacilityid(cc.getFacilityid());
+              connector.setKeyStorePassword(cc.getKeyStorePassword());
               connector.setEnableTimeStart(safe(req.getParameter(ConnectionConfiguration.FIELD_ENABLE_TIME_START)));
               connector.setEnableTimeEnd(safe(req.getParameter(ConnectionConfiguration.FIELD_ENABLE_TIME_END)));
               if (cc.isUseridRequired() && connector.getUserid().equals("")) {
@@ -112,6 +116,8 @@ public class ConfigureServlet extends ClientServlet
                 message = "You must indicate a " + cc.getPasswordLabel();
               } else if (cc.isFacilityidRequired() && connector.getFacilityid().equals("")) {
                 message = "You must indicate a " + cc.getFacilityidLabel();
+              } else if (cc.isKeyStorePasswordRequired() && connector.getKeyStorePassword().equals("")) {
+                message = "You must indicate a " + cc.getKeyStorePasswordLabel();
               }
 
               if (cc.isEnableTimeRequired()) {
@@ -203,13 +209,13 @@ public class ConfigureServlet extends ClientServlet
             + "insert segment IN1 before ORC if missing\n" + "insert segment IN2 after IN1 if missing\n" + "IN1-1=1\n"
             + "fix missing mother maiden first\n" + "remove observation 64994-7 if 18+\n");
       } else if (templateName.equals(TEMPLATE_ASIIS_PROD) || templateName.equals(TEMPLATE_ASIIS_TEST)) {
-        CASoapConnector caSoapConnector = (CASoapConnector) connector;
-        caSoapConnector.setCustomTransformations("MSH-4=[USERID]\n" + "MSH-6=CAIRLO\n"
-            + "insert segment PD1 after PID if missing\n" + "PD1-12=[MAP ''=>'N']\n" + "MSH-7=[TRUNC 14]\n");
-      } else if (templateName.equals(TEMPLATE_CAIR_TEST)) {
         HttpConnector httpConnector = (HttpConnector) connector;
         httpConnector.setCustomTransformations("MSH-3=RPMS\n" + "MSH-4=[FACILITYID]\n" + "MSH-5=ASIIS\n" + "PV1-10=\n"
             + "fix ampersand\n");
+      } else if (templateName.equals(TEMPLATE_CAIR_TEST) || templateName.equals(TEMPLATE_CAIR_PROD)) {
+        CASoapConnector caSoapConnector = (CASoapConnector) connector;
+        caSoapConnector.setCustomTransformations("MSH-4=[USERID]\n" + "MSH-6=[OTHERID]\n"
+            + "insert segment PD1 after PID if missing\n" + "PD1-12=[MAP ''=>'N']\n" + "MSH-7=[TRUNC 14]\n");
       } else if (templateName.equals(TEMPLATE_NV_WEBIZ_TESTING) || templateName.equals(TEMPLATE_NV_WEBIZ_PRODUCTION)) {
         HttpConnector httpConnector = (HttpConnector) connector;
         httpConnector.stripXML();
@@ -322,11 +328,32 @@ public class ConfigureServlet extends ClientServlet
         cc.setFacilityidShow(true);
         cc.setFacilityidRequired(true);
         cc.setTypeShow(false);
-        cc.setInstructions("Contact CAIR for Username, password and facilityID. ");
+        cc.setInstructions("Contact CAIR for Username, password and facilityID. The Registry Region Code identifies the region the immunization data should be sent to and is defined by CAIR. In addition, CAIR requires that a certificate be used, a Java Key Store must be installed in the smm transmission folder with the name of smm.jks and the password to the key store must be entered here.  ");
         cc.setReceiverName("CAIR");
         cc.setUseridRequired(true);
         cc.setPasswordRequired(true);
         cc.setUseridLabel("Username");
+        cc.setOtheridShow(true);
+        cc.setOtheridRequired(true);
+        cc.setOtheridLabel("Registry Region Code");
+        cc.setKeyStorePasswordRequired(true);
+        cc.setKeyStorePasswordShow(true);
+      } else if (templateName.equals(TEMPLATE_CAIR_TEST)) {
+        cc.setType(ConnectorFactory.TYPE_CA_SOAP);
+        cc.setUrl("https://igs.cdph.ca.gov/submit/client_Servic.client_ServiceHttpsSoap11Endpoint");
+        cc.setFacilityidShow(true);
+        cc.setFacilityidRequired(true);
+        cc.setTypeShow(false);
+        cc.setInstructions("Contact CAIR for Username, password and facilityID. The Registry Region Code identifies the region the immunization data should be sent to and is defined by CAIR. In addition, CAIR requires that a certificate be used, a Java Key Store must be installed in the smm transmission folder with the name of smm.jks and the password to the key store must be entered here.  ");
+        cc.setReceiverName("CAIR");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setUseridLabel("Username");
+        cc.setOtheridShow(true);
+        cc.setOtheridRequired(true);
+        cc.setOtheridLabel("Registry Region Code");
+        cc.setKeyStorePasswordRequired(true);
+        cc.setKeyStorePasswordShow(true);
       } else if (templateName.equals(TEMPLATE_WA_IIS_PRODUCTION)) {
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setUrl("https://fortress.wa.gov/doh/cpir/iweb/HL7Server");
