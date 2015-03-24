@@ -902,6 +902,7 @@ public class CertifyRunner extends Thread
   private static final String FIELD_MSH_6_1 = "MSH-6.1";
   private static final String FIELD_MSH_6_2 = "MSH-6.2";
   private static final String FIELD_MSH_7 = "MSH-7";
+  private static final String FIELD_MSH_8 = "MSH-8";
   private static final String FIELD_MSH_9 = "MSH-9";
   private static final String FIELD_MSH_10 = "MSH-10";
   private static final String FIELD_MSH_11 = "MSH-11";
@@ -912,6 +913,7 @@ public class CertifyRunner extends Thread
   private static final String FIELD_MSH_21 = "MSH-21";
   private static final String FIELD_MSH_22 = "MSH-22";
   private static final String FIELD_MSH_23 = "MSH-23";
+  private static final String FIELD_PID = "PID";
   private static final String FIELD_PID_1 = "PID-1";
   private static final String FIELD_PID_3 = "PID-3";
   private static final String FIELD_PID_3_1 = "PID-3.1";
@@ -923,6 +925,7 @@ public class CertifyRunner extends Thread
   private static final String FIELD_PID_5_1 = "PID-5.1";
   private static final String FIELD_PID_5_2 = "PID-5.2";
   private static final String FIELD_PID_5_3 = "PID-5.3";
+  private static final String FIELD_PID_5_4 = "PID-5.4";
   private static final String FIELD_PID_5_7 = "PID-5.7";
   private static final String FIELD_PID_6 = "PID-6";
   private static final String FIELD_PID_6_1 = "PID-6.1";
@@ -960,6 +963,7 @@ public class CertifyRunner extends Thread
   private static final String FIELD_PID_25 = "PID-25";
   private static final String FIELD_PID_29 = "PID-29";
   private static final String FIELD_PID_30 = "PID-30";
+  private static final String FIELD_PD1 = "PD1";
   private static final String FIELD_PD1_3 = "PD1-3";
   private static final String FIELD_PD1_3_1 = "PD1-3.1";
   private static final String FIELD_PD1_3_2 = "PD1-3.2";
@@ -974,12 +978,15 @@ public class CertifyRunner extends Thread
   private static final String FIELD_PD1_4_4 = "PD1-4.4";
   private static final String FIELD_PD1_4_9 = "PD1-4.9";
   private static final String FIELD_PD1_4_10 = "PD1-4.10";
+  private static final String FIELD_PD1_4_13 = "PD1-4.13";
+  private static final String FIELD_PD1_4_21 = "PD1-4.21";
   private static final String FIELD_PD1_11 = "PD1-11";
   private static final String FIELD_PD1_12 = "PD1-12";
   private static final String FIELD_PD1_13 = "PD1-13";
   private static final String FIELD_PD1_16 = "PD1-16";
   private static final String FIELD_PD1_17 = "PD1-17";
   private static final String FIELD_PD1_18 = "PD1-18";
+  private static final String FIELD_NK1 = "NK1";
   private static final String FIELD_NK1_1 = "NK1-1";
   private static final String FIELD_NK1_2 = "NK1-2";
   private static final String FIELD_NK1_2_1 = "NK1-2.1";
@@ -987,9 +994,6 @@ public class CertifyRunner extends Thread
   private static final String FIELD_NK1_2_3 = "NK1-2.3";
   private static final String FIELD_NK1_2_7 = "NK1-2.7";
   private static final String FIELD_NK1_3 = "NK1-3";
-  private static final String FIELD_NK1_3_1 = "NK1-3.1";
-  private static final String FIELD_NK1_3_2 = "NK1-3.2";
-  private static final String FIELD_NK1_3_3 = "NK1-3.3";
   private static final String FIELD_NK1_4 = "NK1-4";
   private static final String FIELD_NK1_4_1 = "NK1-4.1";
   private static final String FIELD_NK1_4_2 = "NK1-4.2";
@@ -1006,6 +1010,7 @@ public class CertifyRunner extends Thread
   private static final String FIELD_NK1_5_7 = "NK1-5.7";
   private static final String FIELD_NK1_6 = "NK1-6";
   private static final String FIELD_NK1_7 = "NK1-7";
+  private static final String FIELD_PV1 = "PV1";
   private static final String FIELD_PV1_1 = "PV1-1";
   private static final String FIELD_PV1_2 = "PV1-2";
   private static final String FIELD_PV1_7 = "PV1-7";
@@ -1018,6 +1023,8 @@ public class CertifyRunner extends Thread
   private static final String FIELD_PV1_20_1 = "PV1-20.1";
   private static final String FIELD_PV1_20_2 = "PV1-20.2";
   private static final String FIELD_PV1_44 = "PV1-44";
+  private static final String FIELD_ORC = "ORC";
+  private static final String FIELD_ORC_GROUP = "ORC GROUP";
   private static final String FIELD_ORC_1 = "ORC-1";
   private static final String FIELD_ORC_2 = "ORC-2";
   private static final String FIELD_ORC_2_1 = "ORC-2.1";
@@ -1041,6 +1048,7 @@ public class CertifyRunner extends Thread
   private static final String FIELD_ORC_17 = "ORC-17";
   private static final String FIELD_ORC_17_1 = "ORC-17.1";
   private static final String FIELD_ORC_17_4 = "ORC-17.4";
+  private static final String FIELD_RXA = "RXA";
   private static final String FIELD_ADMIN_RXA_1 = "ADMIN RXA-1";
   private static final String FIELD_ADMIN_RXA_2 = "ADMIN RXA-2";
   private static final String FIELD_ADMIN_RXA_3 = "ADMIN RXA-3";
@@ -1149,6 +1157,9 @@ public class CertifyRunner extends Thread
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_7)) {
       return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_MSH_8)) {
+      testCaseMessage.appendCustomTransformation("MSH-8=[MAP ''=>'TEST']");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_9)) {
       return defaultTestCaseMessage;
     } else if (field.equals(FIELD_MSH_10)) {
@@ -1174,6 +1185,8 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_MSH_23)) {
       testCaseMessage.appendCustomTransformation("MSH-23=[MAP ''=>'TEST']");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PID_1)) {
       testCaseMessage.appendCustomTransformation("PID-1=1");
       testCaseMessage.setHasIssue(true);
@@ -1203,6 +1216,9 @@ public class CertifyRunner extends Thread
       return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PID_5_3)) {
       testCaseMessage.appendCustomTransformation("PID-5.3=[BOY_MIDDLE]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_5_4)) {
+      testCaseMessage.appendCustomTransformation("PID-5.4=Jr");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_5_7)) {
       testCaseMessage.appendCustomTransformation("PID-5.7=L");
@@ -1284,12 +1300,14 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PID-25=2");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_29)) {
-      testCaseMessage.appendCustomTransformation("PID-29=Y");
+      testCaseMessage.appendCustomTransformation("PID-29=[TODAY]");
+      testCaseMessage.appendCustomTransformation("PID-30=Y");
       testCaseMessage.setHasIssue(true);
-    } else if (field.equals(FIELD_PID_29)) {
-      testCaseMessage.appendCustomTransformation("PID-29=Y");
-      testCaseMessage.appendCustomTransformation("PID-30=[TODAY]");
+    } else if (field.equals(FIELD_PID_30)) {
+      testCaseMessage.appendCustomTransformation("PID-30=Y");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PD1_3)) {
       testCaseMessage.appendCustomTransformation("PD1-3.1=[RESPONSIBLE_ORG_NAME]");
       testCaseMessage.appendCustomTransformation("PD1-3.6=IIS");
@@ -1316,6 +1334,9 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PD1-3.6=IIS");
       testCaseMessage.appendCustomTransformation("PD1-3.7=FI");
       testCaseMessage.appendCustomTransformation("PD1-3.10=[RESPONSIBLE_ORG_ID]");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_3)) {
+      testCaseMessage.appendCustomTransformation("remove segment PD1");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_3_10)) {
       testCaseMessage.appendCustomTransformation("PD1-3.6=IIS");
@@ -1352,6 +1373,17 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PD1-4.3=[ORDERED_BY_FIRST]");
       testCaseMessage.appendCustomTransformation("PD1-4.10=L");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_4_13)) {
+      testCaseMessage.appendCustomTransformation("PD1-4.1=[ORDERED_BY_NPI]");
+      testCaseMessage.appendCustomTransformation("PD1-4.9=CMS");
+      testCaseMessage.appendCustomTransformation("PD1-4.13=NPI");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1_4_21)) {
+      testCaseMessage.appendCustomTransformation("PD1-4.2=[ORDERED_BY_LAST]");
+      testCaseMessage.appendCustomTransformation("PD1-4.3=[ORDERED_BY_FIRST]");
+      testCaseMessage.appendCustomTransformation("PD1-4.10=L");
+      testCaseMessage.appendCustomTransformation("PD1-4.21=Dr");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_11)) {
       return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PD1_12)) {
@@ -1366,6 +1398,8 @@ public class CertifyRunner extends Thread
       return defaultTestCaseMessage;
     } else if (field.equals(FIELD_NK1_1)) {
       return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_NK1)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_NK1_2)) {
       return defaultTestCaseMessage;
     } else if (field.equals(FIELD_NK1_2_1)) {
@@ -1377,12 +1411,6 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_NK1_2_7)) {
       return defaultTestCaseMessage;
     } else if (field.equals(FIELD_NK1_3)) {
-      return defaultTestCaseMessage;
-    } else if (field.equals(FIELD_NK1_3_1)) {
-      return defaultTestCaseMessage;
-    } else if (field.equals(FIELD_NK1_3_2)) {
-      return defaultTestCaseMessage;
-    } else if (field.equals(FIELD_NK1_3_3)) {
       return defaultTestCaseMessage;
     } else if (field.equals(FIELD_NK1_4)) {
       return defaultTestCaseMessage;
@@ -1420,17 +1448,19 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("NK1-7=Next-of-Kin");
       testCaseMessage.appendCustomTransformation("NK1-7=HL70131");
       testCaseMessage.setHasIssue(true);
-    } else if (field.equals(FIELD_PV1_20_2)) {
-      testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
-      testCaseMessage.appendCustomTransformation("PV1-1=1");
-      testCaseMessage.appendCustomTransformation("PV1-2=R");
-      testCaseMessage.appendCustomTransformation("PV1-20=[VFC]");
-      testCaseMessage.appendCustomTransformation("PV1-20.2=[VAC1_DATE]");
-      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PV1)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PV1_1)) {
       return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PV1_2)) {
       return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PV1_7)) {
+      testCaseMessage.appendCustomTransformation("PD1-7.1=[ORDERED_BY_NPI]");
+      testCaseMessage.appendCustomTransformation("PD1-7.9=CMS");
+      testCaseMessage.appendCustomTransformation("PD1-7.2=[ORDERED_BY_LAST]");
+      testCaseMessage.appendCustomTransformation("PD1-7.3=[ORDERED_BY_FIRST]");
+      testCaseMessage.appendCustomTransformation("PD1-7.4=[ORDERED_BY_MIDDLE]");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PV1_7_1)) {
       testCaseMessage.appendCustomTransformation("PD1-7.1=[ORDERED_BY_NPI]");
       testCaseMessage.appendCustomTransformation("PD1-7.9=CMS");
@@ -1462,6 +1492,10 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_PV1_44)) {
       testCaseMessage.appendCustomTransformation("PV1-44=[TODAY]");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_ORC_GROUP)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ORC_1)) {
       return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ORC_2)) {
@@ -1512,6 +1546,8 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_ORC_17_4)) {
       testCaseMessage.appendCustomTransformation("ORC-17.4=[ADMIN_ORG_1_NAME]");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_RXA)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_RXA_1)) {
       return defaultTestCaseMessage;
     } else if (field.equals(FIELD_ADMIN_RXA_2)) {
@@ -1627,13 +1663,19 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_HIST_RXA_10_2)) {
       testCaseMessage.appendCustomTransformation("RXA#2-10.2=[ADMIN_BY_LAST]");
       testCaseMessage.appendCustomTransformation("RXA#2-10.3=[ADMIN_BY_FIRST]");
-      testCaseMessage.appendCustomTransformation("RXA#2-10.4=[ADMIN_BY_MIDDLE]");
       testCaseMessage.appendCustomTransformation("RXA#2-10.10=L");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_10_3)) {
-      // not implemented
+      testCaseMessage.appendCustomTransformation("RXA#2-10.2=[ADMIN_BY_LAST]");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.3=[ADMIN_BY_FIRST]");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.10=L");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_10_4)) {
-      // not implemented
+      testCaseMessage.appendCustomTransformation("RXA#2-10.2=[ADMIN_BY_LAST]");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.3=[ADMIN_BY_FIRST]");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.4=[ADMIN_BY_MIDDLE]");
+      testCaseMessage.appendCustomTransformation("RXA#2-10.10=L");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_HIST_RXA_11)) {
       testCaseMessage.appendCustomTransformation("RXA#2-11.4=Other Clinic");
       testCaseMessage.setHasIssue(true);
@@ -1742,6 +1784,9 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_MSH_7)) {
       testCaseMessage.appendCustomTransformation("MSH-7=");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_MSH_8)) {
+      testCaseMessage.appendCustomTransformation("MSH-8=");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_MSH_9)) {
       testCaseMessage.appendCustomTransformation("MSH-9.1=");
       testCaseMessage.appendCustomTransformation("MSH-9.2=");
@@ -1795,6 +1840,9 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("MSH-23.9=");
       testCaseMessage.appendCustomTransformation("MSH-23.10=");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID)) {
+      testCaseMessage.appendCustomTransformation("remove segment PID");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PID_1)) {
       testCaseMessage.appendCustomTransformation("PID-1=");
       testCaseMessage.setHasIssue(true);
@@ -1836,6 +1884,8 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_PID_5_3)) {
       testCaseMessage.appendCustomTransformation("PID-5.3=");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PID_5_4)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PID_5_7)) {
       testCaseMessage.appendCustomTransformation("PID-5.7=");
       testCaseMessage.setHasIssue(true);
@@ -1987,6 +2037,9 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_PID_30)) {
       testCaseMessage.appendCustomTransformation("PID-30=");
       testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_PD1)) {
+      testCaseMessage.appendCustomTransformation("remove segment PD1");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_3)) {
       return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PD1_3_1)) {
@@ -2015,6 +2068,10 @@ public class CertifyRunner extends Thread
       return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PD1_4_10)) {
       return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_4_13)) {
+      return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PD1_4_21)) {
+      return defaultTestCaseMessage;
     } else if (field.equals(FIELD_PD1_11)) {
       testCaseMessage.appendCustomTransformation("PD1-11.1=");
       testCaseMessage.appendCustomTransformation("PD1-11.2=");
@@ -2038,6 +2095,9 @@ public class CertifyRunner extends Thread
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PD1_18)) {
       testCaseMessage.appendCustomTransformation("PD1-18=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_NK1)) {
+      testCaseMessage.appendCustomTransformation("remove segment NK1");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_NK1_1)) {
       testCaseMessage.appendCustomTransformation("NK1-1=");
@@ -2066,15 +2126,6 @@ public class CertifyRunner extends Thread
     } else if (field.equals(FIELD_NK1_3)) {
       testCaseMessage.appendCustomTransformation("NK1-3.1=");
       testCaseMessage.appendCustomTransformation("NK1-3.2=");
-      testCaseMessage.appendCustomTransformation("NK1-3.3=");
-      testCaseMessage.setHasIssue(true);
-    } else if (field.equals(FIELD_NK1_3_1)) {
-      testCaseMessage.appendCustomTransformation("NK1-3.1=");
-      testCaseMessage.setHasIssue(true);
-    } else if (field.equals(FIELD_NK1_3_2)) {
-      testCaseMessage.appendCustomTransformation("NK1-3.2=");
-      testCaseMessage.setHasIssue(true);
-    } else if (field.equals(FIELD_NK1_3_3)) {
       testCaseMessage.appendCustomTransformation("NK1-3.3=");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_NK1_4)) {
@@ -2135,6 +2186,9 @@ public class CertifyRunner extends Thread
       return defaultTestCaseMessage;
     } else if (field.equals(FIELD_NK1_7)) {
       return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_PV1)) {
+      testCaseMessage.appendCustomTransformation("remove segment PV1");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_PV1_1)) {
       testCaseMessage.appendCustomTransformation("insert segment PV1 after PID if missing");
       testCaseMessage.appendCustomTransformation("PV1-1=");
@@ -2218,6 +2272,15 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PV1-1=1");
       testCaseMessage.appendCustomTransformation("PV1-2=R");
       testCaseMessage.appendCustomTransformation("PV1-44=");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC)) {
+      testCaseMessage.appendCustomTransformation("remove segment ORC");
+      testCaseMessage.setHasIssue(true);
+    } else if (field.equals(FIELD_ORC_GROUP)) {
+      testCaseMessage.appendCustomTransformation("remove segment ORC all");
+      testCaseMessage.appendCustomTransformation("remove segment RXA all");
+      testCaseMessage.appendCustomTransformation("remove segment RXR all");
+      testCaseMessage.appendCustomTransformation("remove segment OBX all");
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ORC_1)) {
       testCaseMessage.appendCustomTransformation("ORC-1=");
@@ -2320,6 +2383,9 @@ public class CertifyRunner extends Thread
       testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ORC_17_4)) {
       return defaultTestCaseMessage;
+    } else if (field.equals(FIELD_RXA)) {
+      testCaseMessage.appendCustomTransformation("remove segment RXA");
+      testCaseMessage.setHasIssue(true);
     } else if (field.equals(FIELD_ADMIN_RXA_1)) {
       testCaseMessage.appendCustomTransformation("RXA-1=");
       testCaseMessage.setHasIssue(true);
@@ -3466,8 +3532,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.setDescription("Death Recorded With Date");
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + ".2");
-      testCaseMessage.appendCustomTransformation("PID-30=Y");
       testCaseMessage.appendCustomTransformation("PID-29=[TODAY]");
+      testCaseMessage.appendCustomTransformation("PID-30=Y");
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
@@ -4338,7 +4404,7 @@ public class CertifyRunner extends Thread
             + "<font size=\"-1\"><a href=\"#areaILevel1\">(details)</a></font></td>");
       } else if (areaScore[SUITE_I_PROFILING][0] >= 0) {
         out.println("    <td class=\"fail\">Not all requirements are confirmed (" + areaScore[SUITE_I_PROFILING][0]
-            + "% requirements confirmed) " + "<font size=\"-1\"><a href=\"#areaDLevel1\">(details)</a></font></td>");
+            + "% requirements confirmed) " + "<font size=\"-1\"><a href=\"#areaILevel1\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_I_PROFILING][0] > -1) {
           out.println("    <td>running now ... <br/>" + areaProgress[SUITE_I_PROFILING][0] + "% complete</td>");

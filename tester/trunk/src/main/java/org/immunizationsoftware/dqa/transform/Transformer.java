@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -20,6 +21,8 @@ import java.util.Random;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.transform.IssueCreator;
 import org.immunizationsoftware.dqa.tester.transform.Patient;
+import org.immunizationsoftware.dqa.transform.procedure.ProcedureFactory;
+import org.immunizationsoftware.dqa.transform.procedure.ProcedureInterface;
 
 /**
  * 
@@ -87,6 +90,8 @@ public class Transformer
   private static final String INSERT_SEGMENT_AFTER = "after";
   private static final String INSERT_SEGMENT_LAST = "last";
   private static final String INSERT_SEGMENT_IF_MISSING = "if missing";
+
+  private static final String RUN_PROCEDURE = "run procedure";
 
   private static final String REMOVE_SEGMENT = "remove segment ";
   private static final String REMOVE_OBSERVATION = "remove observation ";
@@ -804,432 +809,543 @@ public class Transformer
   }
 
   protected String transform(String baseText, String transformText, PatientType patientType, Connector connector) {
-    String resultText = baseText;
     try {
-      if (!resultText.endsWith("\r")) {
-        resultText += "\r";
-      }
-      BufferedReader inTransform = new BufferedReader(new StringReader(transformText));
-      Patient patient = null;
+      TransformRequest transformRequest = new TransformRequest(baseText);
+      transformRequest.setConnector(connector);
+      transformRequest.setPatientType(patientType);
       if (patientType != PatientType.NONE) {
-        patient = setupPatient(patientType);
+        Patient patient = setupPatient(patientType);
+        transformRequest.setPatient(patient);
       }
-      SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-      String today = sdf.format(new Date());
-      Calendar tomorrowCalendar = Calendar.getInstance();
-      tomorrowCalendar.add(Calendar.DAY_OF_MONTH, -1);
-      String tomorrow = sdf.format(tomorrowCalendar.getTime());
-      sdf = new SimpleDateFormat("yyyyMMddHHmmssZ");
-      String now = sdf.format(new Date());
-      sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-      String nowNoTimezone = sdf.format(new Date());
-      String line;
-      while ((line = inTransform.readLine()) != null) {
-        line = line.trim();
-        if (line.length() > 0) {
-          int if18plus = line.indexOf(IF_18_PLUS);
-          int if19plus = line.indexOf(IF_19_PLUS);
-          int if18minus = line.indexOf(IF_18_MINUS);
-          int if19minus = line.indexOf(IF_19_MINUS);
-          if (if18plus > 0 || if19plus > 0 || if18minus > 0 || if19minus > 0) {
-            String dobString = readValueFromHL7Text("PID-7", resultText);
-            if (dobString.length() > 8) {
-              dobString = dobString.substring(0, 8);
-            }
-            if (dobString.length() == 8) {
-              int dobInt = Integer.parseInt(dobString);
-              int ageInt = 180000;
-              if (if19plus > 0 || if19minus > 0) {
-                ageInt = 190000;
-              }
-              ageInt += dobInt;
-              int todayInt = Integer.parseInt(today);
-              if (if18plus > 0 || if19plus > 0) {
-                if (todayInt < ageInt) {
-                  continue;
-                }
-              }
-              if (if18minus > 0 || if19minus > 0) {
-                if (todayInt >= ageInt) {
-                  continue;
-                }
-              }
-            }
-            if (if18plus > 0) {
-              line = line.substring(0, if18plus - 1);
-            } else if (if19plus > 0) {
-              line = line.substring(0, if19plus - 1);
-            } else if (if18minus > 0) {
-              line = line.substring(0, if18minus - 1);
-            } else if (if19minus > 0) {
-              line = line.substring(0, if19minus - 1);
+
+      BufferedReader inTransform = new BufferedReader(new StringReader(transformText));
+      String transformCommand;
+      while ((transformCommand = inTransform.readLine()) != null) {
+        transformRequest.setLine(transformCommand.trim());
+        if (transformCommand.length() > 0) {
+          {
+            boolean shouldSkipTransform = checkForAgeSkip(transformRequest);
+            if (shouldSkipTransform) {
+              continue;
             }
           }
-          if (line.toLowerCase().startsWith(INSERT_SEGMENT)) {
-            line = line.substring(INSERT_SEGMENT.length()).trim();
-            if (line.length() > 3 && line.indexOf(" ") == 3) {
-              String newSegmentName = line.substring(0, 3);
-              boolean okayToInsertSegment = true;
-              int segmentIfMissingPos = line.indexOf(INSERT_SEGMENT_IF_MISSING);
-              if (segmentIfMissingPos > 0) {
-                okayToInsertSegment = !hasSegment(newSegmentName, resultText);
-                line = line.substring(0, segmentIfMissingPos - 1);
-              }
-              if (okayToInsertSegment) {
-                if (newSegmentName.equals("FHS") || newSegmentName.equals("BHS")) {
-                  BufferedReader inResult = new BufferedReader(new StringReader(resultText));
-                  String lineResult;
-                  String msh = null;
-                  while ((lineResult = inResult.readLine()) != null) {
-                    lineResult = lineResult.trim();
-                    if (lineResult.length() > 0) {
-                      if (lineResult.startsWith("MSH|")) {
-                        msh = lineResult;
-                      }
-                    }
-                  }
-                  if (msh != null && msh.startsWith("MSH|")) {
-                    String[] mshFields = msh.split("\\|");
-                    if (mshFields.length > 1 && mshFields[1] != null) {
-                      newSegmentName += "|" + mshFields[1];
-                      // MSH-3
-                      if (mshFields.length > 2 && mshFields[2] != null) {
-                        newSegmentName += "|" + mshFields[2];
-                        // MSH-4
-                        if (mshFields.length > 3 && mshFields[3] != null) {
-                          newSegmentName += "|" + mshFields[3];
-                          // MSH-5
-                          if (mshFields.length > 4 && mshFields[4] != null) {
-                            newSegmentName += "|" + mshFields[4];
-                            // MSH-6
-                            if (mshFields.length > 5 && mshFields[5] != null) {
-                              newSegmentName += "|" + mshFields[5];
-                              // MSH-7
-                              if (mshFields.length > 6 && mshFields[6] != null) {
-                                newSegmentName += "|" + mshFields[6];
-                                // MSH-10
-                                if (mshFields.length > 9 && mshFields[9] != null) {
-                                  newSegmentName += "||||" + mshFields[9];
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    } else {
-                      newSegmentName += "|^~\\&";
-                    }
-                  } else {
-                    newSegmentName += "|^~\\&";
-                  }
-                }
-                line = line.substring(3).trim();
-                int nextSpace = line.indexOf(" ");
-                if (nextSpace == -1) {
-                  nextSpace = line.length();
-                }
-                String insertAction = line.substring(0, nextSpace);
-                line = line.substring(nextSpace).trim();
-                if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_FIRST)) {
-                  resultText = newSegmentName + "|\r" + resultText;
-                } else if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_LAST)) {
-                  resultText = resultText + newSegmentName + "|\r";
-                } else if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_AFTER)
-                    || insertAction.equalsIgnoreCase(INSERT_SEGMENT_BEFORE)) {
-                  int repeatPos = 0;
-                  int poundPos = line.indexOf("#");
-                  if (poundPos == -1) {
-                    repeatPos = 1;
-                  } else {
-                    try {
-                      repeatPos = Integer.parseInt(line.substring(poundPos + 1).trim());
+          if (transformCommand.toLowerCase().startsWith(INSERT_SEGMENT)) {
+            doInsertSegment(transformRequest);
+          } else if (transformCommand.toLowerCase().startsWith(REMOVE_SEGMENT)) {
+            doRemoveSegment(transformRequest);
+          } else if (transformCommand.toLowerCase().startsWith(REMOVE_OBSERVATION)) {
+            doRemoveObservation(transformRequest);
+          } else if (transformCommand.toLowerCase().startsWith(REMOVE_EMPTY_OBSERVATIONS)) {
+            doRemoveEmptyObservations(transformRequest);
+          } else if (transformCommand.toLowerCase().trim().startsWith(FIX)) {
+            doFix(transformRequest);
+          } else if (transformCommand.toLowerCase().trim().startsWith(CLEAN)) {
+            doClean(transformRequest);
+          } else if (transformCommand.toLowerCase().trim().startsWith(RUN_PROCEDURE)) {
+            doRunProcedure(transformRequest);
+          } else {
+            doSetField(transformRequest);
+          }
+        }
+      }
 
-                    } catch (NumberFormatException nfe) {
-                      repeatPos = 1;
-                    }
-                    line = line.substring(0, poundPos);
-                  }
-                  BufferedReader inResult = new BufferedReader(new StringReader(resultText));
-                  resultText = "";
-                  String lineResult;
-                  int repeatCount = 0;
-                  while ((lineResult = inResult.readLine()) != null) {
-                    lineResult = lineResult.trim();
-                    if (lineResult.length() > 0) {
-                      if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_AFTER)) {
-                        resultText += lineResult + "\r";
-                      }
-                      if (lineResult.startsWith(line)) {
-                        repeatCount++;
-                        if (repeatCount == repeatPos) {
-                          resultText += newSegmentName + "|\r";
-                        }
-                      }
-                      if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_BEFORE)) {
-                        resultText += lineResult + "\r";
-                      }
-                    }
-                  }
-                }
-              }
+      return transformRequest.getResultText();
+    } catch (Exception e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter out = new PrintWriter(stringWriter);
+      e.printStackTrace(out);
+      return "Unable to transform: " + e.getMessage() + "\n" + stringWriter.toString();
+    }
+
+  }
+
+  public boolean checkForAgeSkip(TransformRequest transformRequest) throws IOException {
+    String line = transformRequest.getLine();
+    boolean shouldSkipTransform = false;
+    int if18plus = line.indexOf(IF_18_PLUS);
+    int if19plus = line.indexOf(IF_19_PLUS);
+    int if18minus = line.indexOf(IF_18_MINUS);
+    int if19minus = line.indexOf(IF_19_MINUS);
+    if (if18plus > 0 || if19plus > 0 || if18minus > 0 || if19minus > 0) {
+      String dobString = readValueFromHL7Text("PID-7", transformRequest.getResultText());
+      if (dobString.length() > 8) {
+        dobString = dobString.substring(0, 8);
+      }
+      if (dobString.length() == 8) {
+        int dobInt = Integer.parseInt(dobString);
+        int ageInt = 180000;
+        if (if19plus > 0 || if19minus > 0) {
+          ageInt = 190000;
+        }
+        ageInt += dobInt;
+        int todayInt = Integer.parseInt(transformRequest.getToday());
+        if (if18plus > 0 || if19plus > 0) {
+          if (todayInt < ageInt) {
+            shouldSkipTransform = true;
+          }
+        }
+        if (if18minus > 0 || if19minus > 0) {
+          if (todayInt >= ageInt) {
+            shouldSkipTransform = true;
+          }
+        }
+      }
+      if (!shouldSkipTransform) {
+        if (if18plus > 0) {
+          line = line.substring(0, if18plus - 1);
+        } else if (if19plus > 0) {
+          line = line.substring(0, if19plus - 1);
+        } else if (if18minus > 0) {
+          line = line.substring(0, if18minus - 1);
+        } else if (if19minus > 0) {
+          line = line.substring(0, if19minus - 1);
+        }
+        transformRequest.setLine(line);
+      }
+    }
+    return shouldSkipTransform;
+  }
+
+  public void doSetField(TransformRequest transformRequest) throws IOException {
+    String resultText = transformRequest.getResultText();
+    String line = transformRequest.getLine();
+    int posEqual = line.indexOf("=");
+    Transform t = readHL7Reference(line, posEqual);
+    if (t != null) {
+      t.value = line.substring(posEqual + 1).trim();
+      int count = 1;
+      if (t.all) {
+        count = countSegments(resultText, t);
+      }
+      for (int i = 1; i <= count; i++) {
+        if (t.all) {
+          t.segmentRepeat = i;
+        }
+        handleSometimes(t);
+        doReplacements(t, transformRequest);
+        resultText = setValueInHL7(resultText, t);
+      }
+    }
+    transformRequest.setResultText(resultText);
+  }
+
+  public void doClean(TransformRequest transformRequest) throws IOException {
+    String line = transformRequest.getLine();
+    String resultText = transformRequest.getResultText();
+    boolean noLastSlash = line.toLowerCase().indexOf(CLEAN_NO_LAST_SLASH) != -1;
+    BufferedReader inResult = new BufferedReader(new StringReader(resultText));
+    resultText = "";
+    String lineResult;
+    int repeatCount = 0;
+    while ((lineResult = inResult.readLine()) != null) {
+      lineResult = lineResult.trim();
+      if (lineResult.length() > 0) {
+        String finalLine = "";
+        int writtenPos = 0;
+        String possibleLine = "";
+
+        String headerStart = null;
+        if (lineResult.startsWith("MSH|^~\\&|") || lineResult.startsWith("BHS|^~\\&|")
+            || lineResult.startsWith("FHS|^~\\&|")) {
+          headerStart = lineResult.substring(0, 9);
+          lineResult = lineResult.substring(9);
+        }
+
+        boolean foundFieldData = false;
+        boolean foundCompData = false;
+        boolean foundRepData = false;
+
+        for (int i = lineResult.length() - 1; i >= 0; i--) {
+          char c = lineResult.charAt(i);
+
+          if (!foundFieldData) {
+            if (c != '|' && c != '^' && c != '~') {
+              foundFieldData = true;
+              foundRepData = true;
+              foundCompData = true;
             }
-          } else if (line.toLowerCase().startsWith(REMOVE_SEGMENT)) {
-            line = line.substring(REMOVE_SEGMENT.length()).trim();
-            if (line.length() >= 3) {
-              int nextSpace = line.indexOf(" ");
-              if (nextSpace == -1) {
-                nextSpace = line.length();
-              }
-              String removeSegmentName = line.substring(0, nextSpace);
-              line = line.substring(removeSegmentName.length()).trim();
-              int repeatPos = 0;
-              int poundPos = removeSegmentName.indexOf("#");
-              if (poundPos == -1) {
-                repeatPos = 1;
-              } else {
-                try {
-                  repeatPos = Integer.parseInt(removeSegmentName.substring(poundPos + 1).trim());
-                } catch (NumberFormatException nfe) {
-                  repeatPos = 1;
-                }
-                removeSegmentName = removeSegmentName.substring(0, poundPos);
-              }
-
-              String removeAction = line.trim();
-              boolean all = false;
-              if (removeAction.equalsIgnoreCase("all")) {
-                all = true;
-              }
-
-              BufferedReader inResult = new BufferedReader(new StringReader(resultText));
-              resultText = "";
-              String lineResult;
-              int repeatCount = 0;
-              while ((lineResult = inResult.readLine()) != null) {
-                lineResult = lineResult.trim();
-                if (lineResult.length() > 0) {
-                  if (lineResult.startsWith(removeSegmentName)) {
-                    repeatCount++;
-                    if (!all && repeatCount != repeatPos) {
-                      resultText += lineResult + "\r";
-                    }
-                  } else {
-                    resultText += lineResult + "\r";
-                  }
-                }
-              }
+          } else if (!foundRepData) {
+            if (c != '^' && c != '~') {
+              foundRepData = true;
+              foundCompData = true;
             }
-          } else if (line.toLowerCase().startsWith(REMOVE_OBSERVATION)) {
-            line = line.substring(REMOVE_OBSERVATION.length()).trim();
-            if (line.length() >= 3) {
-              int nextSpace = line.indexOf(" ");
-              if (nextSpace == -1) {
-                nextSpace = line.length();
-              }
-              String obsCode = line.substring(0, nextSpace);
-              line = line.substring(obsCode.length()).trim();
-
-              BufferedReader inResult = new BufferedReader(new StringReader(resultText));
-              resultText = "";
-              String lineResult;
-              while ((lineResult = inResult.readLine()) != null) {
-                lineResult = lineResult.trim();
-                if (lineResult.length() > 0) {
-                  if (lineResult.startsWith("OBX")) {
-                    String[] fields = lineResult.split("\\|");
-                    if (fields.length <= 3
-                        || fields[3] == null
-                        || (!fields[3].equalsIgnoreCase(obsCode) && !fields[3].toLowerCase().startsWith(
-                            obsCode.toLowerCase() + "^"))) {
-                      resultText += lineResult + "\r";
-                    }
-                  } else {
-                    resultText += lineResult + "\r";
-                  }
-                }
-              }
+          } else if (!foundCompData) {
+            if (c != '^') {
+              foundCompData = true;
             }
-          } else if (line.toLowerCase().startsWith(REMOVE_EMPTY_OBSERVATIONS)) {
-            BufferedReader inResult = new BufferedReader(new StringReader(resultText));
-            resultText = "";
-            String lineResult;
-            while ((lineResult = inResult.readLine()) != null) {
-              lineResult = lineResult.trim();
-              if (lineResult.length() > 0) {
-                if (lineResult.startsWith("OBX")) {
-                  String[] fields = lineResult.split("\\|");
-                  if (fields.length > 5 && fields[5] != null && !fields[5].startsWith("^")
-                      && !fields[5].startsWith("~") && !fields[5].equals("")) {
-                    resultText += lineResult + "\r";
-                  }
-                } else {
-                  resultText += lineResult + "\r";
-                }
+          }
+          if (foundFieldData) {
+            if (c == '|') {
+              foundRepData = false;
+              foundCompData = false;
+              finalLine = c + finalLine;
+            } else if (c == '~') {
+              if (foundRepData) {
+                finalLine = c + finalLine;
               }
+              foundCompData = false;
+            } else if (c == '^') {
+              if (foundCompData) {
+                finalLine = c + finalLine;
+              }
+            } else {
+              finalLine = c + finalLine;
             }
+          }
+        }
+        if (noLastSlash) {
+          resultText += finalLine + "\r";
+        } else {
+          resultText += finalLine + "|\r";
+        }
 
-          } else if (line.toLowerCase().trim().startsWith(FIX)) {
-            if (resultText.length() > 9) {
-              if (line.toLowerCase().indexOf(FIX_ESCAPE) > 0) {
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < resultText.length(); i++) {
-                  char c = resultText.charAt(i);
-                  if (i < 8 || c != '\\') {
-                    sb.append(c);
-                  } else {
-                    if ((i + 2) >= resultText.length() || resultText.charAt(i + 2) != '\\') {
-                      sb.append("\\E\\");
-                    } else {
-                      sb.append(c);
-                    }
-                  }
-                }
-                resultText = sb.toString();
-              }
-              if (line.toLowerCase().indexOf(FIX_AMPERSAND) > 0) {
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < resultText.length(); i++) {
-                  char c = resultText.charAt(i);
-                  if (i < 8 || c != '&') {
-                    sb.append(c);
-                  } else {
-                    sb.append("\\T\\");
-                  }
-                }
-                resultText = sb.toString();
-              }
-              if (line.toLowerCase().indexOf(FIX_MISSING_MOTHER_MAIDEN_FIRST) > 0) {
-                String motherMaidenFirst = readValueFromHL7Text("PID-6.2", resultText);
-                String motherMaidenLast = readValueFromHL7Text("PID-6.1", resultText);
-                boolean needToClear = true;
-                if (!motherMaidenLast.equals("")) {
-                  if (!motherMaidenFirst.equals("")) {
-                    needToClear = false;
-                  } else {
-                    String guardianType = readValueFromHL7Text("NK1-3.1", resultText);
-                    motherMaidenFirst = readValueFromHL7Text("NK1-2.2", resultText);
-                    int pos = 1;
-                    while (!guardianType.equals("") && !guardianType.equals("MTH")) {
-                      pos++;
-                      guardianType = readValueFromHL7Text("NK1#" + pos + "-3.1", resultText);
-                      motherMaidenFirst = readValueFromHL7Text("NK1#" + pos + "-2.2", resultText);
-                    }
-                    if (guardianType.equals("MTH")) {
-                      resultText = setValueInHL7("PID-6.2", motherMaidenFirst, resultText);
-                      needToClear = false;
-                    }
-                  }
-                }
-                if (needToClear) {
-                  resultText = setValueInHL7("PID-6.1", "", resultText);
-                  resultText = setValueInHL7("PID-6.2", "", resultText);
-                }
-              }
+        if (headerStart != null) {
+          resultText = headerStart + resultText;
+        }
+      }
+    }
+    transformRequest.setResultText(resultText);
+  }
+
+  public void doFix(TransformRequest transformRequest) throws IOException {
+    String line = transformRequest.getLine();
+    String resultText = transformRequest.getResultText();
+    if (resultText.length() > 9) {
+      if (line.toLowerCase().indexOf(FIX_ESCAPE) > 0) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < resultText.length(); i++) {
+          char c = resultText.charAt(i);
+          if (i < 8 || c != '\\') {
+            sb.append(c);
+          } else {
+            if ((i + 2) >= resultText.length() || resultText.charAt(i + 2) != '\\') {
+              sb.append("\\E\\");
+            } else {
+              sb.append(c);
             }
-          } else if (line.toLowerCase().trim().startsWith(CLEAN)) {
-            boolean noLastSlash = line.toLowerCase().indexOf(CLEAN_NO_LAST_SLASH) != -1;
-            BufferedReader inResult = new BufferedReader(new StringReader(resultText));
-            resultText = "";
-            String lineResult;
-            int repeatCount = 0;
-            while ((lineResult = inResult.readLine()) != null) {
-              lineResult = lineResult.trim();
-              if (lineResult.length() > 0) {
-                String finalLine = "";
-                int writtenPos = 0;
-                String possibleLine = "";
+          }
+        }
+        resultText = sb.toString();
+      }
+      if (line.toLowerCase().indexOf(FIX_AMPERSAND) > 0) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < resultText.length(); i++) {
+          char c = resultText.charAt(i);
+          if (i < 8 || c != '&') {
+            sb.append(c);
+          } else {
+            sb.append("\\T\\");
+          }
+        }
+        resultText = sb.toString();
+      }
+      if (line.toLowerCase().indexOf(FIX_MISSING_MOTHER_MAIDEN_FIRST) > 0) {
+        String motherMaidenFirst = readValueFromHL7Text("PID-6.2", resultText);
+        String motherMaidenLast = readValueFromHL7Text("PID-6.1", resultText);
+        boolean needToClear = true;
+        if (!motherMaidenLast.equals("")) {
+          if (!motherMaidenFirst.equals("")) {
+            needToClear = false;
+          } else {
+            String guardianType = readValueFromHL7Text("NK1-3.1", resultText);
+            motherMaidenFirst = readValueFromHL7Text("NK1-2.2", resultText);
+            int pos = 1;
+            while (!guardianType.equals("") && !guardianType.equals("MTH")) {
+              pos++;
+              guardianType = readValueFromHL7Text("NK1#" + pos + "-3.1", resultText);
+              motherMaidenFirst = readValueFromHL7Text("NK1#" + pos + "-2.2", resultText);
+            }
+            if (guardianType.equals("MTH")) {
+              resultText = setValueInHL7("PID-6.2", motherMaidenFirst, resultText);
+              needToClear = false;
+            }
+          }
+        }
+        if (needToClear) {
+          resultText = setValueInHL7("PID-6.1", "", resultText);
+          resultText = setValueInHL7("PID-6.2", "", resultText);
+        }
+      }
+    }
+    transformRequest.setResultText(resultText);
+  }
 
-                String headerStart = null;
-                if (lineResult.startsWith("MSH|^~\\&|") || lineResult.startsWith("BHS|^~\\&|")
-                    || lineResult.startsWith("FHS|^~\\&|")) {
-                  headerStart = lineResult.substring(0, 9);
-                  lineResult = lineResult.substring(9);
-                }
+  public void doRemoveEmptyObservations(TransformRequest transformRequest) throws IOException {
+    String resultText = transformRequest.getResultText();
+    BufferedReader inResult = new BufferedReader(new StringReader(resultText));
+    resultText = "";
+    String lineResult;
+    while ((lineResult = inResult.readLine()) != null) {
+      lineResult = lineResult.trim();
+      if (lineResult.length() > 0) {
+        if (lineResult.startsWith("OBX")) {
+          String[] fields = lineResult.split("\\|");
+          if (fields.length > 5 && fields[5] != null && !fields[5].startsWith("^") && !fields[5].startsWith("~")
+              && !fields[5].equals("")) {
+            resultText += lineResult + "\r";
+          }
+        } else {
+          resultText += lineResult + "\r";
+        }
+      }
+    }
+    transformRequest.setResultText(resultText);
+  }
 
-                boolean foundFieldData = false;
-                boolean foundCompData = false;
-                boolean foundRepData = false;
+  public void doRemoveObservation(TransformRequest transformRequest) throws IOException {
+    String line = transformRequest.getLine();
+    String resultText = transformRequest.getResultText();
+    line = line.substring(REMOVE_OBSERVATION.length()).trim();
+    if (line.length() >= 3) {
+      int nextSpace = line.indexOf(" ");
+      if (nextSpace == -1) {
+        nextSpace = line.length();
+      }
+      String obsCode = line.substring(0, nextSpace);
+      line = line.substring(obsCode.length()).trim();
 
-                for (int i = lineResult.length() - 1; i >= 0; i--) {
-                  char c = lineResult.charAt(i);
-
-                  if (!foundFieldData) {
-                    if (c != '|' && c != '^' && c != '~') {
-                      foundFieldData = true;
-                      foundRepData = true;
-                      foundCompData = true;
-                    }
-                  } else if (!foundRepData) {
-                    if (c != '^' && c != '~') {
-                      foundRepData = true;
-                      foundCompData = true;
-                    }
-                  } else if (!foundCompData) {
-                    if (c != '^') {
-                      foundCompData = true;
-                    }
-                  }
-                  if (foundFieldData) {
-                    if (c == '|') {
-                      foundRepData = false;
-                      foundCompData = false;
-                      finalLine = c + finalLine;
-                    } else if (c == '~') {
-                      if (foundRepData) {
-                        finalLine = c + finalLine;
-                      }
-                      foundCompData = false;
-                    } else if (c == '^') {
-                      if (foundCompData) {
-                        finalLine = c + finalLine;
-                      }
-                    } else {
-                      finalLine = c + finalLine;
-                    }
-                  }
-                }
-                if (noLastSlash) {
-                  resultText += finalLine + "\r";
-                } else {
-                  resultText += finalLine + "|\r";
-                }
-
-                if (headerStart != null) {
-                  resultText = headerStart + resultText;
-                }
-              }
+      BufferedReader inResult = new BufferedReader(new StringReader(resultText));
+      resultText = "";
+      String lineResult;
+      while ((lineResult = inResult.readLine()) != null) {
+        lineResult = lineResult.trim();
+        if (lineResult.length() > 0) {
+          if (lineResult.startsWith("OBX")) {
+            String[] fields = lineResult.split("\\|");
+            if (fields.length <= 3
+                || fields[3] == null
+                || (!fields[3].equalsIgnoreCase(obsCode) && !fields[3].toLowerCase().startsWith(
+                    obsCode.toLowerCase() + "^"))) {
+              resultText += lineResult + "\r";
             }
           } else {
-            int posEqual = line.indexOf("=");
-            Transform t = readHL7Reference(line, posEqual);
-            if (t != null) {
-              t.value = line.substring(posEqual + 1).trim();
-              int count = 1;
-              if (t.all) {
-                count = countSegments(resultText, t);
+            resultText += lineResult + "\r";
+          }
+        }
+      }
+    }
+    transformRequest.setResultText(resultText);
+  }
+
+  public void doRunProcedure(TransformRequest transformRequest) throws IOException {
+    String line = transformRequest.getLine();
+    String resultText = transformRequest.getResultText();
+    line = line.substring(RUN_PROCEDURE.length()).trim();
+    if (line.length() >= 3) {
+      int nextSpace = line.indexOf(" ");
+      if (nextSpace == -1) {
+        nextSpace = line.length();
+      }
+      String procedureName = line.substring(0, nextSpace);
+      ProcedureInterface procedure = ProcedureFactory.getProcedure(procedureName);
+      if (procedure != null) {
+        line = line.substring(nextSpace).trim();
+        transformRequest.setLine(line);
+        LinkedList<String> linkedList = createTokenList(line);
+        procedure.doProcedure(transformRequest, linkedList);
+      }
+    }
+  }
+
+  protected static LinkedList<String> createTokenList(String line) {
+    String tokenString = "";
+    LinkedList<String> linkedList = new LinkedList<String>();
+    boolean singleQuoted = false;
+    for (int pos = 0; pos < line.length(); pos++) {
+      char c = line.charAt(pos);
+      char peak = (pos + 1) < line.length() ? line.charAt(pos + 1) : 0;
+      if (!singleQuoted && c == ' ') {
+        if (!tokenString.equals("")) {
+          linkedList.add(tokenString);
+        }
+        tokenString = "";
+      } else if (c == '\'') {
+        if (!singleQuoted) {
+          if (tokenString.equals("")) {
+            singleQuoted = true;
+          } else {
+            tokenString = tokenString + c;
+          }
+        } else {
+          if (peak == '\'') {
+            tokenString = tokenString + c;
+            pos++;
+          } else if (peak == 0 || peak == ' ') {
+            singleQuoted = false;
+          }
+        }
+      } else {
+        tokenString = tokenString + c;
+      }
+    }
+    if (!tokenString.equals("")) {
+      linkedList.add(tokenString);
+    }
+    return linkedList;
+  }
+
+  public void doRemoveSegment(TransformRequest transformRequest) throws IOException {
+    String line = transformRequest.getLine();
+    String resultText = transformRequest.getResultText();
+    line = line.substring(REMOVE_SEGMENT.length()).trim();
+    if (line.length() >= 3) {
+      int nextSpace = line.indexOf(" ");
+      if (nextSpace == -1) {
+        nextSpace = line.length();
+      }
+      String removeSegmentName = line.substring(0, nextSpace);
+      line = line.substring(removeSegmentName.length()).trim();
+      int repeatPos = 0;
+      int poundPos = removeSegmentName.indexOf("#");
+      if (poundPos == -1) {
+        repeatPos = 1;
+      } else {
+        try {
+          repeatPos = Integer.parseInt(removeSegmentName.substring(poundPos + 1).trim());
+        } catch (NumberFormatException nfe) {
+          repeatPos = 1;
+        }
+        removeSegmentName = removeSegmentName.substring(0, poundPos);
+      }
+
+      String removeAction = line.trim();
+      boolean all = false;
+      if (removeAction.equalsIgnoreCase("all")) {
+        all = true;
+      }
+
+      BufferedReader inResult = new BufferedReader(new StringReader(resultText));
+      resultText = "";
+      String lineResult;
+      int repeatCount = 0;
+      while ((lineResult = inResult.readLine()) != null) {
+        lineResult = lineResult.trim();
+        if (lineResult.length() > 0) {
+          if (lineResult.startsWith(removeSegmentName)) {
+            repeatCount++;
+            if (!all && repeatCount != repeatPos) {
+              resultText += lineResult + "\r";
+            }
+          } else {
+            resultText += lineResult + "\r";
+          }
+        }
+      }
+    }
+    transformRequest.setResultText(resultText);
+  }
+
+  public void doInsertSegment(TransformRequest transformRequest) throws IOException {
+    String resultText = transformRequest.getResultText();
+    String line = transformRequest.getLine();
+    line = line.substring(INSERT_SEGMENT.length()).trim();
+    if (line.length() > 3 && line.indexOf(" ") == 3) {
+      String newSegmentName = line.substring(0, 3);
+      boolean okayToInsertSegment = true;
+      int segmentIfMissingPos = line.indexOf(INSERT_SEGMENT_IF_MISSING);
+      if (segmentIfMissingPos > 0) {
+        okayToInsertSegment = !hasSegment(newSegmentName, resultText);
+        line = line.substring(0, segmentIfMissingPos - 1);
+      }
+      if (okayToInsertSegment) {
+        if (newSegmentName.equals("FHS") || newSegmentName.equals("BHS")) {
+          BufferedReader inResult = new BufferedReader(new StringReader(resultText));
+          String lineResult;
+          String msh = null;
+          while ((lineResult = inResult.readLine()) != null) {
+            lineResult = lineResult.trim();
+            if (lineResult.length() > 0) {
+              if (lineResult.startsWith("MSH|")) {
+                msh = lineResult;
               }
-              for (int i = 1; i <= count; i++) {
-                if (t.all) {
-                  t.segmentRepeat = i;
+            }
+          }
+          if (msh != null && msh.startsWith("MSH|")) {
+            String[] mshFields = msh.split("\\|");
+            if (mshFields.length > 1 && mshFields[1] != null) {
+              newSegmentName += "|" + mshFields[1];
+              // MSH-3
+              if (mshFields.length > 2 && mshFields[2] != null) {
+                newSegmentName += "|" + mshFields[2];
+                // MSH-4
+                if (mshFields.length > 3 && mshFields[3] != null) {
+                  newSegmentName += "|" + mshFields[3];
+                  // MSH-5
+                  if (mshFields.length > 4 && mshFields[4] != null) {
+                    newSegmentName += "|" + mshFields[4];
+                    // MSH-6
+                    if (mshFields.length > 5 && mshFields[5] != null) {
+                      newSegmentName += "|" + mshFields[5];
+                      // MSH-7
+                      if (mshFields.length > 6 && mshFields[6] != null) {
+                        newSegmentName += "|" + mshFields[6];
+                        // MSH-10
+                        if (mshFields.length > 9 && mshFields[9] != null) {
+                          newSegmentName += "||||" + mshFields[9];
+                        }
+                      }
+                    }
+                  }
                 }
-                handleSometimes(t);
-                doReplacements(patientType, patient, today, now, tomorrow, nowNoTimezone, connector, t, resultText);
-                resultText = setValueInHL7(resultText, t);
+              }
+            } else {
+              newSegmentName += "|^~\\&";
+            }
+          } else {
+            newSegmentName += "|^~\\&";
+          }
+        }
+        line = line.substring(3).trim();
+        int nextSpace = line.indexOf(" ");
+        if (nextSpace == -1) {
+          nextSpace = line.length();
+        }
+        String insertAction = line.substring(0, nextSpace);
+        line = line.substring(nextSpace).trim();
+        if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_FIRST)) {
+          resultText = newSegmentName + "|\r" + resultText;
+        } else if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_LAST)) {
+          resultText = resultText + newSegmentName + "|\r";
+        } else if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_AFTER)
+            || insertAction.equalsIgnoreCase(INSERT_SEGMENT_BEFORE)) {
+          int repeatPos = 0;
+          int poundPos = line.indexOf("#");
+          if (poundPos == -1) {
+            repeatPos = 1;
+          } else {
+            try {
+              repeatPos = Integer.parseInt(line.substring(poundPos + 1).trim());
+
+            } catch (NumberFormatException nfe) {
+              repeatPos = 1;
+            }
+            line = line.substring(0, poundPos);
+          }
+          BufferedReader inResult = new BufferedReader(new StringReader(resultText));
+          resultText = "";
+          String lineResult;
+          int repeatCount = 0;
+          while ((lineResult = inResult.readLine()) != null) {
+            lineResult = lineResult.trim();
+            if (lineResult.length() > 0) {
+              if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_AFTER)) {
+                resultText += lineResult + "\r";
+              }
+              if (lineResult.startsWith(line)) {
+                repeatCount++;
+                if (repeatCount == repeatPos) {
+                  resultText += newSegmentName + "|\r";
+                }
+              }
+              if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_BEFORE)) {
+                resultText += lineResult + "\r";
               }
             }
           }
         }
       }
-
-    } catch (Exception e) {
-      StringWriter stringWriter = new StringWriter();
-      PrintWriter out = new PrintWriter(stringWriter);
-      e.printStackTrace(out);
-      resultText = "Unable to transform: " + e.getMessage() + "\n" + stringWriter.toString();
-
     }
-
-    return resultText;
+    transformRequest.setResultText(resultText);
   }
 
   public String setValueInHL7(String ref, String value, String resultText) throws IOException {
@@ -1464,8 +1580,14 @@ public class Transformer
       return oldValue.substring(0, size);
     }
   }
+  
+  public static String getValueFromHL7(final String ref, final String messageText) throws IOException
+  {
+    Transform t = readHL7Reference(ref, ref.length());
+    return getValueFromHL7(messageText, t);
+  }
 
-  private String getValueFromHL7(final String resultText, Transform t) throws IOException {
+  protected static String getValueFromHL7(final String resultText, Transform t) throws IOException {
     BufferedReader inResult = new BufferedReader(new StringReader(resultText));
     boolean foundBoundStart = false;
     boolean foundBoundEnd = false;
@@ -1577,7 +1699,7 @@ public class Transformer
     return false;
   }
 
-  private Transform readHL7Reference(String line, int endOfInput) {
+  public static Transform readHL7Reference(String line, int endOfInput) {
     Transform t = null;
     int posStar = line.indexOf("*");
     boolean all = false;
@@ -1659,17 +1781,21 @@ public class Transformer
     }
   }
 
-  private void doReplacements(PatientType patientType, Patient patient, String today, String now, String tomorrow,
-      String nowNoTimezone, Connector connector, Transform t, String resultText) throws IOException {
+  private void doReplacements(Transform t, TransformRequest transformRequest) throws IOException {
+    PatientType patientType = transformRequest.getPatientType();
+    Connector connector = transformRequest.getConnector();
+    String resultText = transformRequest.getResultText();
     if (patientType != PatientType.NONE) {
-      doPatientReplacements(patient, t);
+      doPatientReplacements(transformRequest.getPatient(), t);
     }
     if (t.value.equalsIgnoreCase("[NOW]")) {
-      t.value = now;
+      t.value = transformRequest.getNow();
     } else if (t.value.equalsIgnoreCase("[NOW_NO_TIMEZONE]")) {
-      t.value = nowNoTimezone;
+      t.value = transformRequest.getNowNoTimezone();
     } else if (t.value.equalsIgnoreCase("[TODAY]")) {
-      t.value = today;
+      t.value = transformRequest.getToday();
+    } else if (t.value.equalsIgnoreCase("[TOMORROW]")) {
+      t.value = transformRequest.getTomorrow();
     } else if (t.value.equalsIgnoreCase("[CONTROL_ID]")) {
       t.value = connector.getCurrentControlId();
     } else if (t.value.toLowerCase().startsWith("[map") && t.value.endsWith("]")) {
