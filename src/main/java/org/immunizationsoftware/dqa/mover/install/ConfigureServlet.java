@@ -215,7 +215,8 @@ public class ConfigureServlet extends ClientServlet
       } else if (templateName.equals(TEMPLATE_CAIR_TEST) || templateName.equals(TEMPLATE_CAIR_PROD)) {
         CASoapConnector caSoapConnector = (CASoapConnector) connector;
         caSoapConnector.setCustomTransformations("MSH-4=[USERID]\n" + "MSH-6=[OTHERID]\n"
-            + "insert segment PD1 after PID if missing\n" + "PD1-12=[MAP ''=>'N']\n" + "MSH-7=[TRUNC 14]\n");
+            + "insert segment PD1 after PID if missing\n" + "PD1-12=[MAP ''=>'N']\n" + "MSH-7=[TRUNC 14]\n"
+            + "RXA-9=[MAP ''=>'01']\n" + "run procedure Remove_Vaccination_Groups where RXA-20 equals 'RE'\n");
       } else if (templateName.equals(TEMPLATE_NV_WEBIZ_TESTING) || templateName.equals(TEMPLATE_NV_WEBIZ_PRODUCTION)) {
         HttpConnector httpConnector = (HttpConnector) connector;
         httpConnector.stripXML();
@@ -338,7 +339,7 @@ public class ConfigureServlet extends ClientServlet
         cc.setOtheridLabel("Registry Region Code");
         cc.setKeyStorePasswordRequired(true);
         cc.setKeyStorePasswordShow(true);
-      } else if (templateName.equals(TEMPLATE_CAIR_TEST)) {
+      } else if (templateName.equals(TEMPLATE_CAIR_PROD)) {
         cc.setType(ConnectorFactory.TYPE_CA_SOAP);
         cc.setUrl("https://igs.cdph.ca.gov/submit/client_Servic.client_ServiceHttpsSoap11Endpoint");
         cc.setFacilityidShow(true);
