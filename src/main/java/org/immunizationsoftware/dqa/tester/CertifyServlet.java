@@ -185,37 +185,7 @@ public class CertifyServlet extends ClientServlet
         out.println("    <h2>Start Test</h2>");
         out.println("    <form action=\"CertifyServlet\" method=\"POST\">");
         out.println("      <table border=\"0\">");
-        int id = 0;
-        if (request.getParameter("id") != null) {
-          id = Integer.parseInt(request.getParameter("id"));
-        }
-        if (session.getAttribute("id") != null) {
-          id = (Integer) session.getAttribute("id");
-        }
-        out.println("        <tr>");
-        out.println("          <td>Service</td>");
-        out.println("          <td>");
-        List<Connector> connectors = ConnectServlet.getConnectors(session);
-        if (connectors.size() == 1) {
-          out.println("            " + connectors.get(0).getLabelDisplay());
-          out.println("            <input type=\"hidden\" name=\"id\" value=\"1\"/>");
-        } else {
-          out.println("            <select name=\"id\">");
-          out.println("              <option value=\"\">select</option>");
-          int i = 0;
-          for (Connector connector : connectors) {
-            i++;
-            if (id == i) {
-              out.println("              <option value=\"" + i + "\" selected=\"true\">" + connector.getLabelDisplay()
-                  + "</option>");
-            } else {
-              out.println("              <option value=\"" + i + "\">" + connector.getLabelDisplay() + "</option>");
-            }
-          }
-          out.println("            </select>");
-        }
-        out.println("          </td>");
-        out.println("        </tr>");
+        printServiceSelector(request, session, out);
         out.println("        <tr>");
         out.println("          <td>Query Type</td>");
         out.println("          <td>");

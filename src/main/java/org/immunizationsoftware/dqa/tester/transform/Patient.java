@@ -20,6 +20,8 @@ public class Patient {
     private String girlName = "";
     private String motherName = "";
     private String motherMaidenName = "";
+    private String motherDob = "";
+    private String motherSsn = "";
     private String fatherName = "";
     private String lastName = "";
     private String differentLastName = "";
@@ -68,6 +70,22 @@ public class Patient {
     private String[] adminOrg1 = null;
     private String[] adminOrg2 = null;
     
+    public String getMotherSsn() {
+      return motherSsn;
+    }
+
+    public void setMotherSsn(String motherSsn) {
+      this.motherSsn = motherSsn;
+    }
+
+    public String getMotherDob() {
+      return motherDob;
+    }
+
+    public void setMotherDob(String motherDob) {
+      this.motherDob = motherDob;
+    }
+
     public String getAdminByFirstName() {
       return adminByFirstName;
     }

@@ -134,6 +134,10 @@ public class TestCaseMessageViewerServlet extends ClientServlet
 
     if (testCaseMessage.getMessageTextSent() != null && !testCaseMessage.getMessageTextSent().equals("")
         && !testCaseMessage.getMessageTextSent().equals(testCaseMessage.getMessageText())) {
+      if (testCaseMessage.getAdditionalTransformations() != null && !testCaseMessage.getAdditionalTransformations().equals("")) {
+        out.println("<p>The following additional transformations applied to original message before sending message:</p>");
+        out.println("<pre>" + testCaseMessage.getAdditionalTransformations()+ "</pre>");
+      }
       out.println("<h3>Message Actually Sent</h3>");
       out.println("<p>The final message message sent was different than the request, local transformations were applied. "
           + "These are specified in the connection settings of the connector that was used to run this test. </p>");

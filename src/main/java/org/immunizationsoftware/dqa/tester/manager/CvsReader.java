@@ -38,7 +38,7 @@ public class CvsReader
   }
   
   public static String readValue(int pos, List<String> valueList) {
-    if (valueList.size() > pos) {
+    if (pos >= 0 && valueList.size() > pos) {
       return valueList.get(pos);
     }
     return "";

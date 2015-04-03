@@ -5,11 +5,14 @@
 package org.immunizationsoftware.dqa.tester;
 
 import java.io.PrintWriter;
+import java.util.List;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.SoftwareVersion;
+import org.immunizationsoftware.dqa.tester.connectors.Connector;
 
 /**
  * 
@@ -147,5 +150,43 @@ public class ClientServlet extends HttpServlet
     out.println("    </style>");
     out.println("  </head>");
     out.println("  <body>");
+  }
+
+  public Connector printServiceSelector(HttpServletRequest request, HttpSession session, PrintWriter out) {
+    Connector connectorSelected = null;
+    int id = 0;
+    if (request.getParameter("id") != null) {
+      id = Integer.parseInt(request.getParameter("id"));
+    }
+    if (session.getAttribute("id") != null) {
+      id = (Integer) session.getAttribute("id");
+    }
+    out.println("        <tr>");
+    out.println("          <td>Service</td>");
+    out.println("          <td>");
+    List<Connector> connectors = ConnectServlet.getConnectors(session);
+    if (connectors.size() == 1) {
+      out.println("            " + connectors.get(0).getLabelDisplay());
+      out.println("            <input type=\"hidden\" name=\"id\" value=\"1\"/>");
+      connectorSelected = connectors.get(0);
+    } else {
+      out.println("            <select name=\"id\">");
+      out.println("              <option value=\"\">select</option>");
+      int i = 0;
+      for (Connector connector : connectors) {
+        i++;
+        if (id == i) {
+          out.println("              <option value=\"" + i + "\" selected=\"true\">" + connector.getLabelDisplay()
+              + "</option>");
+          connectorSelected = connector;
+        } else {
+          out.println("              <option value=\"" + i + "\">" + connector.getLabelDisplay() + "</option>");
+        }
+      }
+      out.println("            </select>");
+    }
+    out.println("          </td>");
+    out.println("        </tr>");
+    return connectorSelected;
   }
 }

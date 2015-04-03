@@ -92,14 +92,20 @@ public class SubmitServlet extends ClientServlet
       if (transform) {
         TestCaseMessage testCaseMessage = (TestCaseMessage) session.getAttribute("testCaseMessage");
         String scenarioTransforms = null;
+        String additionalTransformations = "";
         if (testCaseMessage != null) {
           scenarioTransforms = connector.getScenarioTransformationsMap().get(testCaseMessage.getScenario());
+          additionalTransformations = testCaseMessage.getAdditionalTransformations();
+          if (additionalTransformations.equals("")) {
+            additionalTransformations = null;
+          }
         }
-        if (!connector.getCustomTransformations().equals("") || scenarioTransforms != null) {
+        if (!connector.getCustomTransformations().equals("") || scenarioTransforms != null
+            || additionalTransformations != null) {
           Transformer transformer = new Transformer();
           SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
           connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
-          message = transformer.transform(connector, message, scenarioTransforms);
+          message = transformer.transform(connector, message, scenarioTransforms, additionalTransformations);
         }
       }
       message = cleanMessage(message);
