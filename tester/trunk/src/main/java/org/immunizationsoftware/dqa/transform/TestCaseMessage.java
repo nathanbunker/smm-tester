@@ -32,6 +32,7 @@ public class TestCaseMessage
   public static final String DERIVED_FROM_VXU_MESSAGE = "Derived From VXU Message:";
   public static final String QUICK_TRANSFORMATIONS = "Quick Transformations:";
   public static final String CUSTOM_TRANSFORMATIONS = "Custom Transformations:";
+  public static final String ADDITIONAL_TRANSFORMATIONS = "Additional Transformations:";
   public static final String CAUSE_ISSUES = "Cause Issues:";
   public static final String COMMENT = "Comment:";
   public static final String PATIENT_TYPE = "Patient Type:";
@@ -108,6 +109,7 @@ public class TestCaseMessage
   private String[] quickTransformations = new String[] {};
   private String quickTransformationsConverted = "";
   private String customTransformations = "";
+  private String additionalTransformations = "";
   private String causeIssueTransforms = "";
   private String causeIssues = "";
   private List<Comment> comments = new ArrayList<Comment>();
@@ -131,6 +133,14 @@ public class TestCaseMessage
   private ForecastTestCase forecastTestCase = null;
   private ForecastTestPanel forecastTestPanel = null;
   private String scenario = "";
+
+  public String getAdditionalTransformations() {
+    return additionalTransformations;
+  }
+
+  public void setAdditionalTransformations(String additionalTransformations) {
+    this.additionalTransformations = additionalTransformations;
+  }
 
   public String getScenario() {
     return scenario;
@@ -302,6 +312,7 @@ public class TestCaseMessage
     System.arraycopy(copy.quickTransformations, 0, this.quickTransformations, 0, copy.quickTransformations.length);
     this.quickTransformationsConverted = copy.quickTransformationsConverted;
     this.customTransformations = copy.customTransformations;
+    this.additionalTransformations = copy.additionalTransformations;
     this.causeIssueTransforms = copy.causeIssueTransforms;
     this.causeIssues = copy.causeIssues;
     this.comments = new ArrayList<Comment>(copy.comments);
@@ -346,6 +357,9 @@ public class TestCaseMessage
     }
     if (!updated.getCustomTransformations().equals("")) {
       customTransformations = updated.getCustomTransformations();
+    }
+    if (!updated.getAdditionalTransformations().equals("")) {
+      additionalTransformations = updated.getAdditionalTransformations();
     }
     if (!updated.getCauseIssues().equals("")) {
       causeIssues = updated.getCauseIssues();
@@ -528,6 +542,13 @@ public class TestCaseMessage
     this.customTransformations += customTransformation + "\n";
   }
 
+  public void appendAdditionalTransformation(String additionalTransformation) {
+    if (this.additionalTransformations == null) {
+      this.additionalTransformations = "";
+    }
+    this.additionalTransformations += additionalTransformation + "\n";
+  }
+
   public void appendOriginalMessage(String append) {
     if (this.originalMessage == null) {
       this.originalMessage = "";
@@ -607,6 +628,15 @@ public class TestCaseMessage
       if (customTransformations != null && !customTransformations.equals("")) {
         stringOut.println(CUSTOM_TRANSFORMATIONS + " ");
         BufferedReader inTransform = new BufferedReader(new StringReader(customTransformations));
+        String line;
+        while ((line = inTransform.readLine()) != null) {
+          line = line.trim();
+          stringOut.println(" + " + line);
+        }
+      }
+      if (additionalTransformations != null && !additionalTransformations.equals("")) {
+        stringOut.println(ADDITIONAL_TRANSFORMATIONS + " ");
+        BufferedReader inTransform = new BufferedReader(new StringReader(additionalTransformations));
         String line;
         while ((line = inTransform.readLine()) != null) {
           line = line.trim();

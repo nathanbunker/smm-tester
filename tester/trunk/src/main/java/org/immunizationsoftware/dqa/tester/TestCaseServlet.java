@@ -162,6 +162,12 @@ public class TestCaseServlet extends ClientServlet
                   + testCaseMessage.getCustomTransformations() + "</pre></td>");
               out.println("</tr>");
             }
+            if (!testCaseMessage.getAdditionalTransformations().equals("")) {
+              out.println("<tr>");
+              out.println("<th nowrap align=\"left\" valign=\"top\">Additional Changes</th><td><pre>"
+                  + testCaseMessage.getAdditionalTransformations() + "</pre></td>");
+              out.println("</tr>");
+            }
             if (!testCaseMessage.getCauseIssues().equals("")) {
               out.println("<tr>");
               out.println("<th nowrap align=\"left\" valign=\"top\">Issues</th><td><pre>"

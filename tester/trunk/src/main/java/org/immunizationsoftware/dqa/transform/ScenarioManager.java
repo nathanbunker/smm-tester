@@ -185,7 +185,7 @@ public class ScenarioManager
       quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "MOTHER", "RACE",
           "ETHNICITY", "VAC1_ADMIN", "VAC2_HIST", "VAC3_ADMIN" };
       patientType = PatientType.TODDLER;
-      customTransformations = "MSH-15=AL\nMSH-16=AL\nMSH-22=[RESPONSIBLE_ORG_NAME]\n"
+      customTransformations = "MSH-15=NE\nMSH-16=AL\nMSH-22=[RESPONSIBLE_ORG_NAME]\n"
           + "PID-11.2=[STREET2]\n"
           + "PID-15=[LANGUAGE]\nPID-15.2=[LANGUAGE_LABEL]\nPID-15.3=HL70296\nPID-13.2#2=NET\nPID-13.4#2=[EMAIL]\n"
           + "PID-14.2=WPN\nPID-14.3=PH\nPID-14.6=[PHONE_ALT_AREA]\nPID-14.7=[PHONE_ALT_LOCAL]\nPID-24=N\nPID-25=1\nPID-30=N\n"

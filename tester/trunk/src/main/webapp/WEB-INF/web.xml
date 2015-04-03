@@ -9,7 +9,10 @@
     <servlet-class>org.immunizationsoftware.dqa.mover.ManagerServlet</servlet-class>
     <init-param>
       <param-name>scan.start.folders</param-name>
+      <!--  
       <param-value>/home/oisptorg/ois-pt.org/data/tester;c:\Export\;c:\data\Dropbox (Personal)\work\product\smm</param-value>
+       -->
+      <param-value>C:\data\Dropbox (AIRA)\Shared AIRA Files\Technical Assistance\IIS\</param-value>
     </init-param>
 
 <!-- 
@@ -53,6 +56,10 @@
   <servlet>
     <servlet-name>CreateTestCaseServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.tester.CreateTestCaseServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>ProfileServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.tester.ProfileServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>GenerateDataServlet</servlet-name>
@@ -149,6 +156,10 @@
   <servlet-mapping>
     <servlet-name>CreateTestCaseServlet</servlet-name>
     <url-pattern>/CreateTestCaseServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>ProfileServlet</servlet-name>
+    <url-pattern>/ProfileServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>CertifyServlet</servlet-name>

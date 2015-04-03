@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -51,6 +52,8 @@ public class Transformer
   private static final String REP_PAT_BIRTH_MULTIPLE = "[BIRTH_MULTIPLE]";
   private static final String REP_PAT_DOB = "[DOB]";
   private static final String REP_PAT_MOTHER_MAIDEN = "[MOTHER_MAIDEN]";
+  private static final String REP_PAT_MOTHER_DOB = "[MOTHER_DOB]";
+  private static final String REP_PAT_MOTHER_SSN = "[MOTHER_SSN]";
   private static final String REP_PAT_MOTHER = "[MOTHER]";
   private static final String REP_PAT_SUFFIX = "[SUFFIX]";
   private static final String REP_PAT_FATHER = "[FATHER]";
@@ -429,16 +432,22 @@ public class Transformer
   public static String transform(Connector connector, TestCaseMessage testCaseMessage) {
     String message = testCaseMessage.getMessageText();
     String scenarioTransforms = connector.getScenarioTransformationsMap().get(testCaseMessage.getScenario());
-    if (!connector.getCustomTransformations().equals("") || scenarioTransforms != null) {
+    String additionalTransformations = testCaseMessage.getAdditionalTransformations();
+    if (additionalTransformations.equals("")) {
+      additionalTransformations = null;
+    }
+    if (!connector.getCustomTransformations().equals("") || scenarioTransforms != null
+        || additionalTransformations != null) {
       Transformer transformer = new Transformer();
       SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
       connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
-      message = transformer.transform(connector, message, scenarioTransforms);
+      message = transformer.transform(connector, message, scenarioTransforms, additionalTransformations);
     }
     return message;
   }
 
-  public String transform(Connector connector, String messageText, String scenarioTransformations) {
+  public String transform(Connector connector, String messageText, String scenarioTransformations,
+      String additionalTransformations) {
     String quickTransforms = "";
 
     if (connector.getQuickTransformations() != null) {
@@ -457,6 +466,9 @@ public class Transformer
     if (scenarioTransformations != null) {
       transforms += scenarioTransformations;
     }
+    if (additionalTransformations != null) {
+      transforms += additionalTransformations;
+    }
 
     return transform(messageText, transforms, PatientType.NONE, connector);
   }
@@ -466,8 +478,19 @@ public class Transformer
     if (actualTestCase.equals("")) {
       actualTestCase = REP_PAT_MRN;
     }
-    String quickTransforms = "";
+    String quickTransforms = convertQuickTransforms(testCaseMessage, actualTestCase);
 
+    String causeIssueTransforms = IssueCreator.createTransforms(testCaseMessage);
+    testCaseMessage.setCauseIssueTransforms(causeIssueTransforms);
+    String transforms = quickTransforms + "\n" + testCaseMessage.getCustomTransformations() + "\n"
+        + causeIssueTransforms;
+    String result = transform(testCaseMessage.getPreparedMessage(), transforms, testCaseMessage.getPatientType(), null);
+    testCaseMessage.setMessageText(result);
+    testCaseMessage.setQuickTransformationsConverted(quickTransforms);
+  }
+
+  public String convertQuickTransforms(TestCaseMessage testCaseMessage, String actualTestCase) {
+    String quickTransforms = "";
     if (testCaseMessage.getQuickTransformations() != null) {
       for (String extra : testCaseMessage.getQuickTransformations()) {
         if (extra.equals("BOY")) {
@@ -691,14 +714,7 @@ public class Transformer
         }
       }
     }
-
-    String causeIssueTransforms = IssueCreator.createTransforms(testCaseMessage);
-    testCaseMessage.setCauseIssueTransforms(causeIssueTransforms);
-    String transforms = quickTransforms + "\n" + testCaseMessage.getCustomTransformations() + "\n"
-        + causeIssueTransforms;
-    String result = transform(testCaseMessage.getPreparedMessage(), transforms, testCaseMessage.getPatientType(), null);
-    testCaseMessage.setMessageText(result);
-    testCaseMessage.setQuickTransformationsConverted(quickTransforms);
+    return quickTransforms;
   }
 
   private String addDelete(String quickTransforms, String vaccineNumber, int count) {
@@ -1580,9 +1596,8 @@ public class Transformer
       return oldValue.substring(0, size);
     }
   }
-  
-  public static String getValueFromHL7(final String ref, final String messageText) throws IOException
-  {
+
+  public static String getValueFromHL7(final String ref, final String messageText) throws IOException {
     Transform t = readHL7Reference(ref, ref.length());
     return getValueFromHL7(messageText, t);
   }
@@ -1886,6 +1901,10 @@ public class Transformer
         p2 = patient.getMotherMaidenName();
       } else if (p2.equals(REP_PAT_DOB)) {
         p2 = patient.getDates()[0];
+      } else if (p2.equals(REP_PAT_MOTHER_DOB)) {
+        p2 = patient.getMotherDob();
+      } else if (p2.equals(REP_PAT_MOTHER_SSN)) {
+        p2 = patient.getMotherSsn();
       } else if (p2.equals(REP_PAT_BIRTH_MULTIPLE)) {
         p2 = patient.getBirthCount() > 1 ? "Y" : "N";
       } else if (p2.equals(REP_PAT_BIRTH_ORDER)) {
@@ -2117,6 +2136,8 @@ public class Transformer
         + (char) (random.nextInt(26) + 'A') + medicalRecordNumberInc);
     patient.setSsn("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
         + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
+    patient.setMotherSsn("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
+        + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
     patient.setMedicaidNumber("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
         + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
         + random.nextInt(10) + random.nextInt(10));
@@ -2134,6 +2155,7 @@ public class Transformer
     String[] dates = new String[4];
     patient.setDates(dates);
     patient.setVaccineType(createDates(dates, patientType));
+    patient.setMotherDob(makeMotherDob(dates[0]));
     patient.setGender(random.nextBoolean() ? "F" : "M");
     patient.setVaccine1(getValueArray("VACCINE_" + patient.getVaccineType(), VACCINE_VIS_PUB_DATE + 1));
     patient.setVaccine2(getValueArray("VACCINE_" + patient.getVaccineType(), VACCINE_VIS_PUB_DATE + 1));
@@ -2219,6 +2241,20 @@ public class Transformer
       patient.getAdminOrg2()[1] = patient.getResponsibleOrg()[1] + " - " + getValue("LAST_NAME");
     }
     return patient;
+  }
+
+  private static String makeMotherDob(String dob) {
+    try {
+      SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+      Calendar calendar = Calendar.getInstance();
+      calendar.setTime(sdf.parse(dob));
+      calendar.add(Calendar.YEAR, -20 - random.nextInt(15));
+      calendar.add(Calendar.MONTH, -random.nextInt(12));
+      calendar.add(Calendar.DATE, -random.nextInt(30));
+      return sdf.format(calendar.getTime());
+    } catch (ParseException pe) {
+      return dob;
+    }
   }
 
   protected int makeBirthCount() {

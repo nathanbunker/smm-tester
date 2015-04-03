@@ -107,6 +107,10 @@ public class HomeServlet extends ClientServlet
         out.println("    <td>This is a deprecated function that is now covered by the Test IIS. </td>");
         out.println("  </tr>");
         out.println("  <tr>");
+        out.println("    <td><a href=\"ProfileServlet\">View Profile</a></td>");
+        out.println("    <td>View test settings for a particular connection. </td>");
+        out.println("  </tr>");
+        out.println("  <tr>");
         out.println("    <td><a href=\"interfaceProfile\">Profile Interface</a></td>");
         out.println("    <td>This is a deprecated function that is now covered by the Test IIS. </td>");
         out.println("  </tr>");
