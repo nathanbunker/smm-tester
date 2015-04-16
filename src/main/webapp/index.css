@@ -2,7 +2,11 @@ body {font-family: Tahoma, Geneva, sans-serif; background:#D5E1DD}
 p {width:650px; color:#2B3E42;}
 ol {width:650px; color:#2B3E42;}
 li {width:650px; color:#2B3E42;}
-td {color:#2B3E42;}
+td {
+	color:#2B3E42;
+	padding-left: 5px; 
+	padding-right: 5px; 
+}
 .menu {width:1080px; padding:0px; background-color:#F7F3E8; margin: 0px; border-color: #2B3E42; border-width: 1px; border-style: solid}
 a:link {  text-decoration:none; color: #2B3E42;}
 a:visited { text-decoration:none; color: #2B3E42;}
@@ -29,3 +33,10 @@ pre {background:#F7F3E8; padding:4px; margin: 2px; }
 .help {width:700px; padding: 10px;}
 .smallTitle {padding-right: 5px; padding-left: 5px; border-style:solid; border-width: 1px; border-color: #747E80;}
 .boxed {border-collapse: collapse; border-width: 1px; border-style: solid; padding-left:5px; padding-right:5px;}
+.different {background:#FF9999;}
+
+
+a:link.hl7 {    background: #F7F3E8; text-decoration:none;  border-style: solid; border-color: #F7F3E8; border-width: 1px; color: #000;}
+a:visited.hl7 { background: #F7F3E8; text-decoration:none;  border-style: solid; border-color: #F7F3E8; border-width: 1px; color: #000;}
+a:hover.hl7 {   background: #77BED2; text-decoration:none;  border-style: solid; border-color: #2B3E42; border-width: 1px; color: #2B3E42;}
+a:active.hl7 {  background: #F7F3E8; text-decoration:none;  border-style: solid; border-color: #F7F3E8; border-width: 1px; color: #000;}

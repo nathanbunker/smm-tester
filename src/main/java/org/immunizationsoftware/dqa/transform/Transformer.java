@@ -483,10 +483,15 @@ public class Transformer
     String causeIssueTransforms = IssueCreator.createTransforms(testCaseMessage);
     testCaseMessage.setCauseIssueTransforms(causeIssueTransforms);
     String transforms = quickTransforms + "\n" + testCaseMessage.getCustomTransformations() + "\n"
-        + causeIssueTransforms;
+        + causeIssueTransforms + testCaseMessage.getAdditionalTransformations();
     String result = transform(testCaseMessage.getPreparedMessage(), transforms, testCaseMessage.getPatientType(), null);
     testCaseMessage.setMessageText(result);
     testCaseMessage.setQuickTransformationsConverted(quickTransforms);
+  }
+  
+  public String transformAddition(TestCaseMessage testCaseMessage, String additionTransformations)
+  {
+    return transform(testCaseMessage.getMessageText(), additionTransformations, testCaseMessage.getPatientType(), null);
   }
 
   public String convertQuickTransforms(TestCaseMessage testCaseMessage, String actualTestCase) {

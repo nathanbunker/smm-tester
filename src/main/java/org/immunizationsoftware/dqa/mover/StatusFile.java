@@ -1,6 +1,5 @@
 package org.immunizationsoftware.dqa.mover;
 
-import java.util.Date;
 
 public class StatusFile
 {
