@@ -6,9 +6,7 @@ package org.immunizationsoftware.dqa.tester;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
 
 /**
@@ -87,7 +86,26 @@ public class CertifyServlet extends ClientServlet
           }
         }
         if (certifyRunner.isRun(CertifyRunner.SUITE_I_PROFILING)) {
-          certifyRunner.setProfilingComparison(request.getParameter("profilingComparison"));
+          initProfileManager(false);
+          certifyRunner.setProfileManager(profileManager);
+          String profileUsageIdString = request.getParameter("profileUsageId");
+          String profileUsageIdForInteroperabilityString = request.getParameter("profileUsageIdForInteroperability");
+          String profileUsageIdForConformanceString = request.getParameter("profileUsageIdForConformance");
+          if (!profileUsageIdString.equals("")) {
+            int profileUsageId = Integer.parseInt(profileUsageIdString);
+            session.setAttribute("profileUsageId", profileUsageId);
+            certifyRunner.setProfileUsage(profileManager.getProfileUsageList().get(profileUsageId - 1));
+          }
+          if (!profileUsageIdForInteroperabilityString.equals("")) {
+            int profileUsageId = Integer.parseInt(profileUsageIdForInteroperabilityString);
+            certifyRunner.setProfileUsageComparisonInteroperability(profileManager.getProfileUsageList().get(
+                profileUsageId - 1));
+          }
+          if (!profileUsageIdForConformanceString.equals("")) {
+            int profileUsageId = Integer.parseInt(profileUsageIdForConformanceString);
+            certifyRunner.setProfileUsageComparisonConformance(profileManager.getProfileUsageList().get(
+                profileUsageId - 1));
+          }
         }
 
         session.setAttribute("certifyRunner", certifyRunner);
@@ -182,6 +200,7 @@ public class CertifyServlet extends ClientServlet
       }
 
       if (canStart) {
+        initProfileManager(false);
         out.println("    <h2>Start Test</h2>");
         out.println("    <form action=\"CertifyServlet\" method=\"POST\">");
         out.println("      <table border=\"0\">");
@@ -220,8 +239,50 @@ public class CertifyServlet extends ClientServlet
         out.println("          <td valign=\"top\">");
         out.println("            <input type=\"checkbox\" name=\"runI\" value=\"true\"/> Profiling");
         out.println("          </td>");
-        out.println("          <td>Comparison Mapping<br/>");
-        out.println("            <textarea row=\"5\" cols=\"30\" name=\"profilingComparison\"></textarea>");
+        int profileUsageId = 0;
+        if (session.getAttribute("profileUsageId") != null) {
+          profileUsageId = (Integer) session.getAttribute("profileUsageId");
+        }
+        out.println("          <td>");
+        out.println("            Verify requirements:");
+        {
+          out.println("            <select name=\"profileUsageId\">");
+          out.println("              <option value=\"\">select</option>");
+          int i = 0;
+          for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
+            i++;
+            if (profileUsageId == i) {
+              out.println("              <option value=\"" + i + "\" selected=\"true\">" + profileUsage + "</option>");
+            } else {
+              out.println("              <option value=\"" + i + "\">" + profileUsage + "</option>");
+            }
+          }
+        }
+        out.println("            </select>");
+        out.println("            <br/>");
+        out.println("            Compare for conformance:");
+        {
+          out.println("            <select name=\"profileUsageIdForConformance\">");
+          out.println("              <option value=\"\">select</option>");
+          int i = 0;
+          for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
+            i++;
+            out.println("              <option value=\"" + i + "\">" + profileUsage + "</option>");
+          }
+        }
+        out.println("            </select>");
+        out.println("            <br/>");
+        out.println("            Compare for interoperability: ");
+        {
+          out.println("            <select name=\"profileUsageIdForInteroperability\">");
+          out.println("              <option value=\"\">select</option>");
+          int i = 0;
+          for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
+            i++;
+            out.println("              <option value=\"" + i + "\">" + profileUsage + "</option>");
+          }
+        }
+        out.println("            </select>");
         out.println("          </td>");
         out.println("        </tr>");
         out.println("        <tr>");

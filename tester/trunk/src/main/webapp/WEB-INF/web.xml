@@ -9,10 +9,14 @@
     <servlet-class>org.immunizationsoftware.dqa.mover.ManagerServlet</servlet-class>
     <init-param>
       <param-name>scan.start.folders</param-name>
+      <param-value>/home/oisptorg/ois-pt.org/data/tester;c:\Export\;c:\data\Dropbox (Personal)\work\product\smm;C:\data\Dropbox (AIRA)\Shared AIRA Files\Technical Assistance\IIS\</param-value>
       <!--  
-      <param-value>/home/oisptorg/ois-pt.org/data/tester;c:\Export\;c:\data\Dropbox (Personal)\work\product\smm</param-value>
-       -->
       <param-value>C:\data\Dropbox (AIRA)\Shared AIRA Files\Technical Assistance\IIS\</param-value>
+       -->
+    </init-param>
+    <init-param>
+      <param-name>checkIntervalInSeconds</param-name>
+      <param-value>3600</param-value>
     </init-param>
 
 <!-- 

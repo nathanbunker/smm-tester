@@ -24,7 +24,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,11 +43,13 @@ import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
 import org.immunizationsoftware.dqa.tester.manager.TestCaseMessageManager;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTesterManager;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.profile.CompatibilityConformance;
+import org.immunizationsoftware.dqa.tester.profile.CompatibilityInteroperability;
 import org.immunizationsoftware.dqa.tester.profile.MessageAcceptStatus;
-import org.immunizationsoftware.dqa.tester.profile.ProfileField;
 import org.immunizationsoftware.dqa.tester.profile.ProfileLine;
 import org.immunizationsoftware.dqa.tester.profile.ProfileManager;
-import org.immunizationsoftware.dqa.tester.profile.Usage;
+import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
+import org.immunizationsoftware.dqa.tester.profile.ProfileUsageValue;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 import org.immunizationsoftware.dqa.tester.transform.Issue;
 import org.immunizationsoftware.dqa.transform.Comparison;
@@ -316,18 +317,21 @@ public class CertifyRunner extends Thread
         tcmFull = createTestCaseMessage(SCENARIO_FULL_RECORD_FOR_PROFILING);
         prepareProfiling();
 
-        File profileFile = CreateTestCaseServlet.getProfileFile((Authenticate.User) session.getAttribute("user"));
-        if (profileFile == null) {
-          logStatus("Profile not found");
+        if (profileManager == null) {
+          logStatus("Profiling not setup");
         } else {
-          profileLineList = ProfileManager.readProfileLines(profileFile);
-          ProfileManager.updateMessageAcceptStatus(profileLineList);
-          logStatus("Found " + profileLineList.size() + " of profile lines to test");
-          updateProfiling(profileLineList);
-          printReportToFile();
-          if (!keepRunning) {
-            status = STATUS_STOPPED;
-            return;
+          if (profileUsage == null) {
+            logStatus("Profile not selected");
+          } else {
+            profileLineList = profileManager.createProfileLines(profileUsage);
+            ProfileManager.updateMessageAcceptStatus(profileLineList);
+            logStatus("Found " + profileLineList.size() + " of profile lines to test");
+            updateProfiling(profileLineList);
+            printReportToFile();
+            if (!keepRunning) {
+              status = STATUS_STOPPED;
+              return;
+            }
           }
         }
       }
@@ -1730,32 +1734,29 @@ public class CertifyRunner extends Thread
   }
 
   private List<ForecastTestPanel> forecastTestPanelList = new ArrayList<ForecastTestPanel>();
-  private Map<String, Usage> profilingComparisonMap = new HashMap<String, Usage>();
+  private ProfileUsage profileUsage = null;
+  private ProfileUsage profileUsageComparisonInteroperability = null;
+  private ProfileUsage profileUsageComparisonConformance = null;
+  private ProfileManager profileManager = null;
+
+  public void setProfileUsage(ProfileUsage profileUsage) {
+    this.profileUsage = profileUsage;
+  }
+
+  public void setProfileUsageComparisonInteroperability(ProfileUsage profileUsageComparisonEhr) {
+    this.profileUsageComparisonInteroperability = profileUsageComparisonEhr;
+  }
+
+  public void setProfileUsageComparisonConformance(ProfileUsage profileUsageComparisonUs) {
+    this.profileUsageComparisonConformance = profileUsageComparisonUs;
+  }
+
+  public void setProfileManager(ProfileManager profileManager) {
+    this.profileManager = profileManager;
+  }
 
   public void addForecastTestPanel(ForecastTestPanel forecastTestPanel) {
     forecastTestPanelList.add(forecastTestPanel);
-  }
-
-  public void setProfilingComparison(String profilingTemplate) {
-    if (profilingTemplate.equals("")) {
-      for (ProfileField field : ProfileField.values()) {
-        profilingComparisonMap.put(field.toString(), field.getCdcUsage());
-      }
-    } else {
-      BufferedReader in = new BufferedReader(new StringReader(profilingTemplate));
-      String line;
-      try {
-        while ((line = in.readLine()) != null) {
-          int pos = line.indexOf("=");
-          if (pos > 0) {
-            profilingComparisonMap.put(line.substring(0, pos).toUpperCase(),
-                ProfileLine.readUsage(line.substring(pos + 1).toUpperCase()));
-          }
-        }
-      } catch (IOException ioe) {
-        // ignore
-      }
-    }
   }
 
   private static final String TCH_FORECAST_TESTER_URL = "http://tchforecasttester.org/ft/ExternalTestServlet";
@@ -2819,17 +2820,14 @@ public class CertifyRunner extends Thread
       reportScore[REPORT_6_EHR] = 0.0;
       reportScore[REPORT_7_PERFORM] = 0.0;
       reportScore[REPORT_8_ACK] = 0.0;
-      Map<Compatibility, List<ProfileLine>> compatibilityMap = new HashMap<CertifyRunner.Compatibility, List<ProfileLine>>();
+      Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap = new HashMap<CompatibilityConformance, List<ProfileLine>>();
 
       if (areaProgress[SUITE_A_BASIC][0] > 0) {
         reportScore[REPORT_1_INTEROP] = areaScore[SUITE_A_BASIC][0] / 100.0;
       }
 
       if (areaProgress[SUITE_B_INTERMEDIATE][0] > 0) {
-        double score = 100 - areaScore[SUITE_B_INTERMEDIATE][0] + 1;
-        if (score > 0) {
-          score = 1 - Math.log(areaScore[SUITE_B_INTERMEDIATE][0] ) / Math.log(101);
-        }
+        double score = 1 - Math.log(areaScore[SUITE_B_INTERMEDIATE][0] + 1) / Math.log(101);
         reportScore[REPORT_2_CODED] = score;
       }
 
@@ -2852,24 +2850,35 @@ public class CertifyRunner extends Thread
       }
       if (profileLineList != null) {
         for (ProfileLine profileLine : profileLineList) {
-          Compatibility compatibility = getClassStyleForCdc(profileLine);
-          List<ProfileLine> profileLineList = compatibilityMap.get(compatibility);
-          if (profileLineList == null) {
-            profileLineList = new ArrayList<ProfileLine>();
-            compatibilityMap.put(compatibility, profileLineList);
+          ProfileUsageValue profileUsageValueConformance = profileUsageComparisonConformance.getProfileUsageValueMap()
+              .get(profileLine.getField());
+          if (profileUsageValueConformance != null) {
+            CompatibilityConformance compatibility = ProfileManager.getCompatibilityConformance(
+                profileLine.getProfileUsageValue(), profileUsageValueConformance);
+            List<ProfileLine> profileLineList = compatibilityMap.get(compatibility);
+            if (profileLineList == null) {
+              profileLineList = new ArrayList<ProfileLine>();
+              compatibilityMap.put(compatibility, profileLineList);
+            }
+            profileLineList.add(profileLine);
           }
-          profileLineList.add(profileLine);
         }
-        if (compatibilityMap.get(Compatibility.CONFLICT) != null) {
-          reportScore[REPORT_3_LOCAL] = 0.0;
-        } else if (compatibilityMap.get(Compatibility.HARD_CONSTRAINT) != null) {
+        if (compatibilityMap.get(CompatibilityConformance.MAJOR_CONFLICT) != null) {
+          reportScore[REPORT_4_NATIONAL] = 0.0;
+        } else if (compatibilityMap.get(CompatibilityConformance.MAJOR_CONSTRAINT) != null) {
           reportScore[REPORT_4_NATIONAL] = 0.7;
-        } else if (compatibilityMap.get(Compatibility.CONSTRAINT) != null) {
+        } else if (compatibilityMap.get(CompatibilityConformance.CONSTRAINT) != null) {
           reportScore[REPORT_4_NATIONAL] = 0.8;
-        } else if (compatibilityMap.get(Compatibility.ALLOWANCE) != null) {
+        } else if (compatibilityMap.get(CompatibilityConformance.ALLOWANCE) != null) {
           reportScore[REPORT_4_NATIONAL] = 0.9;
         } else {
           reportScore[REPORT_4_NATIONAL] = 1.0;
+        }
+        if (compatibilityMap.get(CompatibilityConformance.CONFLICT) != null) {
+          reportScore[REPORT_4_NATIONAL] -= 0.05;
+        }
+        if (reportScore[REPORT_4_NATIONAL] < 0) {
+          reportScore[REPORT_4_NATIONAL] = 0;
         }
       }
 
@@ -3062,9 +3071,9 @@ public class CertifyRunner extends Thread
       out.println("<p><a href=\"IIS Testing Report Detail.html#areaALevel1\">More Details</a></p>");
 
       out.println("<h2>Coded Values Test</h2>");
-      out.println("<p>For every coded value listed in the CDC Implementation a single test message was submitted with this coded value. " +
-      		"In most cases IIS should accept coded values listed in the CDC Implementation guide without rejecting messages. Messages that" +
-      		" were rejected are listed here. </p>");
+      out.println("<p>For every coded value listed in the CDC Implementation a single test message was submitted with this coded value. "
+          + "In most cases IIS should accept coded values listed in the CDC Implementation guide without rejecting messages. Messages that"
+          + " were rejected are listed here. </p>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
       out.println("    <th>Test</th>");
@@ -3104,16 +3113,22 @@ public class CertifyRunner extends Thread
         }
         out.println("<p><a href=\"IIS Testing Report Detail.html#areaILevel1\">More Details</a></p>");
 
-        out.println("<h2>National Compatibility Test</h2>");
-        printCompatibility(out, compatibilityMap, Compatibility.CONFLICT,
-            "Local Standard Conflicts with National Standards");
-        printCompatibility(out, compatibilityMap, Compatibility.HARD_CONSTRAINT,
-            "Local Standard Defines Hard Constraint on National Standard");
-        printCompatibility(out, compatibilityMap, Compatibility.CONSTRAINT,
-            "Local Standard Defines Constraint on National Standard");
-        printCompatibility(out, compatibilityMap, Compatibility.ALLOWANCE,
-            "Local Standard Loosens National Constraints");
-        printCompatibility(out, compatibilityMap, Compatibility.UNABLE_TO_DETERMINE, "Local Standard is Not Determined");
+        if (profileUsageComparisonConformance != null) {
+
+          out.println("<h2>National Compatibility Test</h2>");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONFLICT,
+              "Local Standard has Major Conflict with National Standards");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONFLICT,
+              "Local Standard Conflicts with National Standards");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONSTRAINT,
+              "Local Standard Defines Hard Constraint on National Standard");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONSTRAINT,
+              "Local Standard Defines Constraint on National Standard");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.ALLOWANCE,
+              "Local Standard Loosens National Constraints");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.UNABLE_TO_DETERMINE,
+              "Local Standard is Not Determined");
+        }
       }
 
       out.println("<h2>Tolerance Test</h2>");
@@ -3192,8 +3207,8 @@ public class CertifyRunner extends Thread
     out.println("<p><a href=\"IIS Testing Report Detail.html\">See Full Report</a></p>");
   }
 
-  public void printCompatibility(PrintWriter out, Map<Compatibility, List<ProfileLine>> compatibilityMap,
-      Compatibility c, String heading) {
+  public void printConformanceCompatibility(PrintWriter out,
+      Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap, CompatibilityConformance c, String heading) {
     if (compatibilityMap.get(c) != null) {
       out.println("<h3>" + heading + "</h3>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
@@ -3204,12 +3219,16 @@ public class CertifyRunner extends Thread
       out.println("    <th>Local Usage</th>");
       out.println("  </tr>");
       for (ProfileLine profileLine : compatibilityMap.get(c)) {
-        out.println("  <tr>");
-        out.println("    <td>" + profileLine.getField().getFieldName() + "</td>");
-        out.println("    <td>" + profileLine.getField().getDescription() + "</td>");
-        out.println("    <td>" + profileLine.getField().getCdcUsage() + "</td>");
-        out.println("    <td>" + profileLine.getUsage() + "</td>");
-        out.println("  </tr>");
+        ProfileUsageValue profileUsageValueConformance = profileUsageComparisonConformance.getProfileUsageValueMap()
+            .get(profileLine.getField());
+        if (profileUsageValueConformance != null) {
+          out.println("  <tr>");
+          out.println("    <td>" + profileLine.getField().getFieldName() + "</td>");
+          out.println("    <td>" + profileLine.getField().getDescription() + "</td>");
+          out.println("    <td>" + profileUsageValueConformance.getUsage() + "</td>");
+          out.println("    <td>" + profileLine.getUsage() + "</td>");
+          out.println("  </tr>");
+        }
       }
       out.println("</table>");
     }
@@ -3729,18 +3748,31 @@ public class CertifyRunner extends Thread
         printProfileLine(out, toFile, profileLine);
       }
       out.println("</table>");
-      if (profilingComparisonMap.size() > 0) {
-        out.println("<h3>Comparison</h3>");
+      if (profileUsageComparisonConformance != null) {
+        out.println("<h3>Conformance to " + profileUsageComparisonConformance + "</h3>");
         out.println("<table border=\"1\" cellspacing=\"0\">");
         out.println("  <tr>");
         out.println("    <th>Field</th>");
         out.println("    <th>Description</th>");
         out.println("    <th>" + connector.getLabel() + " Usage</th>");
         out.println("    <th>Comparison Usage</th>");
-        out.println("    <th>Comment</th>");
         out.println("  </tr>");
         for (ProfileLine profileLine : profileLineList) {
-          printProfileLineComparison(out, toFile, profileLine);
+          printProfileLineComparisonConformance(out, toFile, profileLine);
+        }
+        out.println("</table>");
+      }
+      if (profileUsageComparisonInteroperability != null) {
+        out.println("<h3>Interoperability with " + profileUsageComparisonConformance + "</h3>");
+        out.println("<table border=\"1\" cellspacing=\"0\">");
+        out.println("  <tr>");
+        out.println("    <th>Field</th>");
+        out.println("    <th>Description</th>");
+        out.println("    <th>" + connector.getLabel() + " Usage</th>");
+        out.println("    <th>Comparison Usage</th>");
+        out.println("  </tr>");
+        for (ProfileLine profileLine : profileLineList) {
+          printProfileLineComparisonInteroperability(out, toFile, profileLine);
         }
         out.println("</table>");
       }
@@ -4076,264 +4108,70 @@ public class CertifyRunner extends Thread
     out.println("  </tr>");
   }
 
-  private static enum Compatibility {
-    HARD_CONSTRAINT, CONSTRAINT, CONFLICT, ALLOWANCE, COMPATIBLE, UNABLE_TO_DETERMINE
+  public void printProfileLineComparisonConformance(PrintWriter out, boolean toFile, ProfileLine profileLine) {
+    ProfileUsageValue profileUsageValue = profileUsageComparisonConformance.getProfileUsageValueMap().get(
+        profileLine.getField());
+    if (profileUsageValue != null) {
+      CompatibilityConformance compatibilityConformance = ProfileManager.getCompatibilityConformance(
+          profileLine.getProfileUsageValue(), profileUsageValue);
+      String usageClass = "";
+      switch (compatibilityConformance) {
+      case COMPATIBLE:
+        usageClass = "pass";
+        break;
+      case ALLOWANCE:
+      case CONFLICT:
+      case CONSTRAINT:
+      case MAJOR_CONFLICT:
+      case MAJOR_CONSTRAINT:
+        usageClass = "fail";
+        break;
+      case UNABLE_TO_DETERMINE:
+        usageClass = "";
+        break;
+      }
+      out.println("  <tr>");
+      out.println("    <td class=\"pass\">" + profileLine.getField().getFieldName() + "</td>");
+      out.println("    <td class=\"pass\">" + profileLine.getField().getDescription() + "</td>");
+      out.println("    <td class=\"" + usageClass + "\">" + compatibilityConformance + "</td>");
+      out.println("    <td class=\"" + usageClass + "\">" + profileUsageValue.getUsage() + "</td>");
+      out.println("  </tr>");
+    }
   }
 
-  private static Compatibility getClassStyleForCdc(ProfileLine profileLine) {
-    Usage cdcUsage = Usage.O;
-    if (profileLine != null && profileLine.getField() != null && profileLine.getField().getCdcUsage() != null) {
-      cdcUsage = profileLine.getField().getCdcUsage();
+  public void printProfileLineComparisonInteroperability(PrintWriter out, boolean toFile, ProfileLine profileLine) {
+    ProfileUsageValue profileUsageValue = profileUsageComparisonInteroperability.getProfileUsageValueMap().get(
+        profileLine.getField());
+    if (profileUsageValue != null) {
+      CompatibilityInteroperability compatibilityInteroperability = ProfileManager.getCompatibilityInteroperability(
+          profileLine.getProfileUsageValue(), profileUsageValue);
+      String usageClass = "";
+      switch (compatibilityInteroperability) {
+      case COMPATIBLE:
+      case DATA_LOSS:
+      case IF_CONFIGURED:
+      case IF_POPULATED:
+      case NO_PROBLEM:
+        usageClass = "pass";
+        break;
+      case MAJOR_PROBLEM:
+      case PROBLEM:
+        usageClass = "fail";
+        break;
+      case UNABLE_TO_DETERMINE:
+        usageClass = "";
+        break;
+      }
+      out.println("  <tr>");
+      out.println("    <td class=\"pass\">" + profileLine.getField().getFieldName() + "</td>");
+      out.println("    <td class=\"pass\">" + profileLine.getField().getDescription() + "</td>");
+      out.println("    <td class=\"" + usageClass + "\">" + compatibilityInteroperability + "</td>");
+      out.println("    <td class=\"" + usageClass + "\">" + profileUsageValue.getUsage() + "</td>");
+      out.println("  </tr>");
     }
-    switch (cdcUsage) {
-    case O:
-      switch (profileLine.getUsage()) {
-      case O:
-        return Compatibility.COMPATIBLE;
-      case O_NOT_USED:
-        return Compatibility.COMPATIBLE;
-      case R:
-        return Compatibility.HARD_CONSTRAINT;
-      case RE:
-        return Compatibility.CONSTRAINT;
-      case RE_NOT_USED:
-        return Compatibility.CONSTRAINT;
-      case R_NOT_ENFORCED:
-        return Compatibility.CONSTRAINT;
-      case X:
-        return Compatibility.CONSTRAINT;
-      case X_NOT_ENFORCED:
-        return Compatibility.COMPATIBLE;
-      }
-      break;
-    case R:
-      switch (profileLine.getUsage()) {
-      case O:
-        return Compatibility.ALLOWANCE;
-      case O_NOT_USED:
-        return Compatibility.ALLOWANCE;
-      case R:
-        return Compatibility.COMPATIBLE;
-      case RE:
-        return Compatibility.ALLOWANCE;
-      case RE_NOT_USED:
-        return Compatibility.ALLOWANCE;
-      case R_NOT_ENFORCED:
-        return Compatibility.COMPATIBLE;
-      case X:
-        return Compatibility.CONFLICT;
-      case X_NOT_ENFORCED:
-        return Compatibility.ALLOWANCE;
-      }
-      break;
-    case RE:
-      switch (profileLine.getUsage()) {
-      case O:
-        return Compatibility.ALLOWANCE;
-      case O_NOT_USED:
-        return Compatibility.ALLOWANCE;
-      case R:
-        return Compatibility.HARD_CONSTRAINT;
-      case RE:
-        return Compatibility.COMPATIBLE;
-      case RE_NOT_USED:
-        return Compatibility.COMPATIBLE;
-      case R_NOT_ENFORCED:
-        return Compatibility.CONSTRAINT;
-      case X:
-        return Compatibility.CONFLICT;
-      case X_NOT_ENFORCED:
-        return Compatibility.ALLOWANCE;
-      }
-      break;
-    case X:
-      switch (profileLine.getUsage()) {
-      case O:
-        return Compatibility.CONFLICT;
-      case O_NOT_USED:
-        return Compatibility.COMPATIBLE;
-      case R:
-        return Compatibility.CONFLICT;
-      case RE:
-        return Compatibility.CONFLICT;
-      case RE_NOT_USED:
-        return Compatibility.CONFLICT;
-      case R_NOT_ENFORCED:
-        return Compatibility.CONFLICT;
-      case X:
-        return Compatibility.COMPATIBLE;
-      case X_NOT_ENFORCED:
-        return Compatibility.COMPATIBLE;
-      }
-      break;
-    }
-    return Compatibility.UNABLE_TO_DETERMINE;
   }
 
-  public void printProfileLineComparison(PrintWriter out, boolean toFile, ProfileLine profileLine) {
-
-    Usage comparisonUsage = profilingComparisonMap.get(profileLine.getField().getFieldName().toUpperCase());
-
-    out.println("  <tr>");
-    out.println("    <td class=\"pass\">" + profileLine.getField().getFieldName() + "</td>");
-    out.println("    <td class=\"pass\">" + profileLine.getField().getDescription() + "</td>");
-
-    String comment = "";
-    String usageClass;
-    Usage usage = profileLine.getUsage();
-    if (comparisonUsage == null) {
-      usageClass = "fail";
-    } else if (usage == Usage.R || comparisonUsage == Usage.R_NOT_ENFORCED) {
-      usageClass = "fail";
-      switch (comparisonUsage) {
-      case R:
-      case R_NOT_ENFORCED:
-        usageClass = "pass";
-        break;
-      case RE:
-      case RE_NOT_USED:
-      case RE_OR_O:
-      case RE_OR_X:
-      case R_OR_RE:
-      case R_OR_X:
-        usageClass = "pass";
-        comment = "Compatible when field populated";
-        break;
-      case O:
-      case O_NOT_USED:
-        usageClass = "fail";
-        break;
-      case X:
-      case X_NOT_ENFORCED:
-        usageClass = "fail";
-        break;
-      }
-    } else if (usage == Usage.RE) {
-
-      switch (comparisonUsage) {
-      case R:
-      case R_NOT_ENFORCED:
-        usageClass = "pass";
-        break;
-      case RE:
-      case RE_NOT_USED:
-      case RE_OR_O:
-      case RE_OR_X:
-      case R_OR_RE:
-      case R_OR_X:
-        usageClass = "pass";
-        comment = "Compatible when field populated";
-        break;
-      case O:
-      case O_NOT_USED:
-        usageClass = "fail";
-        break;
-      case X:
-      case X_NOT_ENFORCED:
-        usageClass = "fail";
-        break;
-      }
-
-      if (comparisonUsage == Usage.R) {
-        usageClass = "pass";
-      } else if (comparisonUsage == Usage.RE) {
-        usageClass = "pass";
-      } else if (comparisonUsage == Usage.RE_OR_O) {
-        usageClass = "pass";
-        comment = "Compatible if field supported";
-      } else if (comparisonUsage == Usage.O) {
-        usageClass = "fail";
-      } else if (comparisonUsage == Usage.X) {
-        usageClass = "fail";
-      } else if (comparisonUsage == Usage.RE_OR_X) {
-        usageClass = "pass";
-        comment = "Compatible when configured";
-      } else if (comparisonUsage == Usage.R_OR_RE) {
-        usageClass = "pass";
-      } else if (comparisonUsage == Usage.R_OR_X) {
-        usageClass = "pass";
-        comment = "Compatible when configured";
-      } else {
-        usageClass = "fail";
-      }
-    } else if (usage == Usage.RE_OR_O) {
-      if (comparisonUsage == Usage.R) {
-        usageClass = "pass";
-      } else if (comparisonUsage == Usage.RE) {
-        usageClass = "pass";
-      } else if (comparisonUsage == Usage.RE_OR_O) {
-        usageClass = "pass";
-      } else if (comparisonUsage == Usage.O) {
-        usageClass = "pass";
-      } else if (comparisonUsage == Usage.X) {
-        usageClass = "fail";
-      } else if (comparisonUsage == Usage.RE_OR_X) {
-        usageClass = "pass";
-        comment = "Compatible when configured";
-      } else if (comparisonUsage == Usage.R_OR_RE) {
-        usageClass = "pass";
-      } else if (comparisonUsage == Usage.R_OR_X) {
-        usageClass = "pass";
-        comment = "Compatible when configured";
-      } else {
-        usageClass = "fail";
-      }
-    } else if (usage == Usage.O) {
-      if (comparisonUsage == Usage.R) {
-        usageClass = "pass";
-      } else if (comparisonUsage == Usage.RE) {
-        usageClass = "pass";
-      } else if (comparisonUsage == Usage.RE_OR_O) {
-        usageClass = "pass";
-      } else if (comparisonUsage == Usage.O) {
-        usageClass = "pass";
-      } else if (comparisonUsage == Usage.X) {
-        usageClass = "fail";
-      } else if (comparisonUsage == Usage.RE_OR_X) {
-        usageClass = "pass";
-        comment = "Compatible when configured";
-      } else if (comparisonUsage == Usage.R_OR_RE) {
-        usageClass = "pass";
-      } else if (comparisonUsage == Usage.R_OR_X) {
-        usageClass = "pass";
-        comment = "Compatible when configured";
-      } else {
-        usageClass = "fail";
-      }
-    } else if (usage == Usage.X) {
-      if (comparisonUsage == Usage.R) {
-        usageClass = "fail";
-      } else if (comparisonUsage == Usage.RE) {
-        usageClass = "fail";
-      } else if (comparisonUsage == Usage.RE_OR_O) {
-        usageClass = "fail";
-      } else if (comparisonUsage == Usage.O) {
-        usageClass = "fail";
-      } else if (comparisonUsage == Usage.X) {
-        usageClass = "pass";
-      } else if (comparisonUsage == Usage.RE_OR_X) {
-        usageClass = "pass";
-        comment = "Compatible when configured";
-      } else if (comparisonUsage == Usage.R_OR_RE) {
-        usageClass = "fail";
-      } else if (comparisonUsage == Usage.R_OR_X) {
-        usageClass = "pass";
-        comment = "Compatible when configured";
-      } else {
-        usageClass = "fail";
-      }
-    } else {
-      usageClass = "fail";
-    }
-    out.println("    <td class=\"" + usageClass + "\">" + profileLine.getUsage().getDescription() + "</td>");
-    if (comparisonUsage == null) {
-      out.println("    <td class=\"fail\">Not Defined</td>");
-    } else {
-      out.println("    <td class=\"" + usageClass + "\">" + comparisonUsage.getDescription() + "</td>");
-    }
-    out.println("    <td class=\"" + usageClass + "\">" + comment + "</td>");
-    out.println("  </tr>");
-  }
+  // profileUsageComparisonInteroperability
 
   public void printTestMessageCell(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage) {
     String classText = "nottested";

@@ -591,17 +591,6 @@ public class CreateTestCaseServlet extends ClientServlet
     return testCaseDir;
   }
 
-  public static File getProfileFile(Authenticate.User user) {
-    File testCaseDir = user.getSendData().getTestDir();
-    if (testCaseDir != null) {
-      File profileFile = new File(testCaseDir, "profile.csv");
-      if (profileFile.exists()) {
-        return profileFile;
-      }
-    }
-    return null;
-  }
-  
   public static File getTestDataFile(Authenticate.User user) {
     File testCaseDir = user.getSendData().getTestDir();
     if (testCaseDir != null) {

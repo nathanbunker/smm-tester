@@ -50,6 +50,25 @@ public class ManagerServlet extends ClientServlet
   private static String supportCenterCode = "";
   private static ShutdownInterceptor shutdownInterceptor;
   private static File softwareDir = null;
+  private static File requirementTestFieldsFile = null;
+  private static File requirementTestProfilesFile = null;
+  private static File requirementTestTransformsFile = null;
+
+  private static final String REQUIREMENT_TEST_FIELDS_FILE = "SMM Requirement Test Fields.csv";
+  private static final String REQUIREMENT_TEST_PROFILES_FILE = "SMM Requirement Test Profiles.csv";
+  private static final String REQUIREMENT_TEST_TRANSFORMS = "SMM Requirement Test Transforms.txt";
+
+  public static File getRequirementTestFieldsFile() {
+    return requirementTestFieldsFile;
+  }
+
+  public static File getRequirementTestProfilesFile() {
+    return requirementTestProfilesFile;
+  }
+
+  public static File getRequirementTestTransformsFile() {
+    return requirementTestTransformsFile;
+  }
 
   public static File getSoftwareDir() {
     return softwareDir;
@@ -179,6 +198,14 @@ public class ManagerServlet extends ClientServlet
     }
     String scanStartFolders = getInitParameter("scan.start.folders");
     System.out.println("SMM Initializing Manager Servlet");
+    String checkIntervalInSeconds = getInitParameter("checkIntervalInSeconds");
+    if (checkIntervalInSeconds != null) {
+      checkInterval = Long.parseLong(checkIntervalInSeconds);
+      if (checkInterval <= 0) {
+        checkInterval = 5;
+      }
+      System.out.println("Check interval has been set to " + checkInterval + " seconds");
+    }
     if (scanStartFolders != null) {
       String[] scanStartFolderNames = scanStartFolders.split("\\;");
       List<File> foldersToScan = new ArrayList<File>();
@@ -191,6 +218,30 @@ public class ManagerServlet extends ClientServlet
             if (scanStartFile.exists() && scanStartFile.isDirectory()) {
               System.out.println("SMM fold exists, adding to scan directory");
               foldersToScan.add(scanStartFile);
+              if (requirementTestFieldsFile == null) {
+                requirementTestFieldsFile = new File(scanStartFile, REQUIREMENT_TEST_FIELDS_FILE);
+                if (!requirementTestFieldsFile.exists()) {
+                  requirementTestFieldsFile = null;
+                } else {
+                  System.out.println("Found " + requirementTestFieldsFile);
+                }
+              }
+              if (requirementTestProfilesFile == null) {
+                requirementTestProfilesFile = new File(scanStartFile, REQUIREMENT_TEST_PROFILES_FILE);
+                if (!requirementTestProfilesFile.exists()) {
+                  requirementTestProfilesFile = null;
+                } else {
+                  System.out.println("Found " + requirementTestProfilesFile);
+                }
+              }
+              if (requirementTestTransformsFile == null) {
+                requirementTestTransformsFile = new File(scanStartFile, REQUIREMENT_TEST_TRANSFORMS);
+                if (!requirementTestTransformsFile.exists()) {
+                  requirementTestTransformsFile = null;
+                } else {
+                  System.out.println("Found " + requirementTestTransformsFile);
+                }
+              }
             }
           }
         }

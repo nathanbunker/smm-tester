@@ -5,13 +5,23 @@ import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 public class ProfileLine
 {
   private ProfileField field;
-  private Usage usage = Usage.O;
+  private Usage usage = Usage.NOT_DEFINED;
   private TestCaseMessage testCaseMessagePresent = null;
   private TestCaseMessage testCaseMessageAbsent = null;
   private boolean passed = false;
   private boolean hasRun = false;
   private MessageAcceptStatus messageAcceptStatus = null;
   private MessageAcceptStatus messageAcceptStatusDetected = null;
+  private ProfileUsageValue profileUsageValue = null;
+  
+  public ProfileLine(ProfileUsageValue profileUsageValue)
+  {
+    this.profileUsageValue = profileUsageValue;
+  }
+
+  public ProfileUsageValue getProfileUsageValue() {
+    return profileUsageValue;
+  }
 
   public MessageAcceptStatus getMessageAcceptStatusDetected() {
     return messageAcceptStatusDetected;
@@ -78,41 +88,11 @@ public class ProfileLine
   }
 
   public void setUsage(String usageString) {
-    this.usage = readUsage(usageString);
+    this.usage = Usage.readUsage(usageString);
   }
 
   
 
-  public static Usage readUsage(String usageString) {
-    if (usageString == null) {
-      return Usage.O;
-    } else if (usageString.equalsIgnoreCase("R")) {
-      return Usage.R;
-    } else if (usageString.equalsIgnoreCase("RE")) {
-      return Usage.RE;
-    } else if (usageString.equalsIgnoreCase("O")) {
-      return Usage.O;
-    } else if (usageString.equalsIgnoreCase("X")) {
-      return Usage.X;
-    } else if (usageString.equalsIgnoreCase("RE_OR_O")) {
-      return Usage.RE_OR_O;
-    } else if (usageString.equalsIgnoreCase("R_OR_X")) {
-      return Usage.R_OR_X;
-    } else if (usageString.equalsIgnoreCase("RE_OR_X")) {
-      return Usage.RE_OR_X;
-    } else if (usageString.equalsIgnoreCase("R_OR_RE")) {
-      return Usage.R_OR_RE;
-    } else if (usageString.equalsIgnoreCase("R*")) {
-      return Usage.R_NOT_ENFORCED;
-    } else if (usageString.equalsIgnoreCase("RE*")) {
-      return Usage.RE_NOT_USED;
-    } else if (usageString.equalsIgnoreCase("O*")) {
-      return Usage.O_NOT_USED;
-    } else if (usageString.equalsIgnoreCase("X*")) {
-      return Usage.X_NOT_ENFORCED;
-    } else {
-      return Usage.O;
-    }
-  }
+  
 
 }

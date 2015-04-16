@@ -4,6 +4,7 @@
  */
 package org.immunizationsoftware.dqa.tester;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
@@ -12,7 +13,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.SoftwareVersion;
+import org.immunizationsoftware.dqa.mover.ManagerServlet;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.profile.ProfileManager;
 
 /**
  * 
@@ -27,6 +30,15 @@ public class ClientServlet extends HttpServlet
   protected static final String MENU_HEADER_EDIT = "Edit Test Case";
   protected static final String MENU_HEADER_SEND = "Send Message";
   protected static final String MENU_HEADER_TEST = "Test IIS";
+  
+  protected static ProfileManager profileManager = null;
+  
+  protected void initProfileManager(boolean forceRefresh) throws IOException {
+    if ((forceRefresh || profileManager == null) && ManagerServlet.getRequirementTestFieldsFile() != null
+        && ManagerServlet.getRequirementTestProfilesFile() != null) {
+      profileManager = new ProfileManager();
+    }
+  }
 
   protected static void printHtmlHead(PrintWriter out, String title, HttpServletRequest request) {
     out.println("<html>");
