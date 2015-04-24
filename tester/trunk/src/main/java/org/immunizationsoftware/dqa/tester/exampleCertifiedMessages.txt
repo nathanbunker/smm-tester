@@ -552,3 +552,89 @@ OBX|1|CE|64994-7^funding eligibility for immunization^LN|1|V04^Am Indian/AK Nati
 OBX|3|CE|30956-7^vaccine type^LN|2|108^MENINGOCOCCAL, NOS^CVX||||||F
 OBX|4|TS|29768-9^Date vaccine information statement published^LN|2|17000000||||||F
 OBX|5|TS|29769-7^Date vaccine information statement presented^LN|2|20140815||||||F
+
+-- Cerner 2015-04-17 - VXU message for well child visit single vaccination (Administration Child)
+MSH|^~\&|EHR Application|X68|PH Application|PH Facility|201504151105||VXU^V04^VXU_V04|12049|P|2.5.1|||AL|ER
+PID|1||145688^^^&2.16.840.1.114060&ISO^MR||SNOW^MADELYNN^AINSLEY^^^^L|LAM^MORGAN|20100706|F||2076-8^NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER^HL70005|32 Prescott Street Ave^^Warwick^MA^02452^USA^L||^PRN^PH^^^657^5558563~^||^ISO639|||||||2186-5^NOT HISPANIC OR LATINO^CDCREC||N||
+PD1|||||||||||02^Reminder/recall - any method^HL70215|||||A|20120701|20120701
+NK1|1|Morgan^Lam^^^^^L|MTH^MOTHER^HL70063|32 Prescott Street Ave^^Warwick^MA^02452^USA^L|^PRN^PH^^^657^5558563|||||||||||||||^ISO639
+ORC|RE||145688-140-1^CRT|||||||BURDEN123^BURDEN^DONNA^A^^^^^CRT||057422^RADON^NICHOLAS^^^^^^CRT^L||||||||
+RXA|0|1|20120814||140^Influenza, seasonal, injectable, preservative free^CVX|0.5|mL^MilliLiter[SI Volume Units]^UCUM||00^New immunization record^NIP001|78321^LEMON^MIKE^A^^^^^CRT|^^^CRTC||||Z0860BB|20121104|CSL^CSL BEHRING^MVX|||CP|A||
+RXR|C28161^INTRAMUSCULAR^NCIT|LA^Left Arm^HL70163|
+OBX|1|CE|64994-7^Vaccine funding program eligibility category^LN|1|V05^Eligible - Federally qualified (under-insured)^HL70064||||||F||||||VXC40^Eligibility captured at the immunization level^CDCPHINVS
+OBX|2|CE|30956-7^vaccine type^LN|2|88^Influenza^CVX||||||F
+OBX|3|TS|29768-9^Data vaccine information published^LN|2|20120702||||||F
+OBX|4|TS|29769-7^Date vaccine statement presented^LN|2|20130829||||||F
+
+-- Cerner 2015-04-17 - VXU message for single vaccination administered to an adult in the annual checkup (Administration Adult)
+MSH|^~\&|EHR Application|X68|PH Application|PH Facility|201504151121||VXU^V04^VXU_V04|12053|P|2.5.1|||AL|ER
+PID|1||159844^^^&2.16.840.1.114060&ISO^MR~184-36-9200^^^CRT^SS||VALLY^NITIKA^^^^^L|^|19410813|F|||||^^~^NET^^NVALLY@FASTMAIL.COM||^ISO639|||||||||N||
+ORC|RE||159844-52-1^CRT|||||||BURDEN123^BURDEN^DONNA^A^^^^^CRT||057422^RADON^NICHOLAS^^^^^^CRT^L||||||||
+RXA|0|1|20120814||52^Hep A, adult^CVX|1|mL^MilliLiter[SI Volume Units]^UCUM||00^New immunization record^NIP001|78321^LEMON^MIKE^A^^^^^CRT|^^^CRTC||||I90FV|20121214|MSD^MERCK AND CO^MVX|||CP|A||
+RXR|C28161^INTRAMUSCULAR^NCIT|RA^Right Arm^HL70163|
+OBX|1|CE|64994-7^Vaccine funding program eligibility category^LN|1|V01^Not eligible^HL70064||||||F||||||VXC40^Eligibility captured at the immunization level^CDCPHINVS
+OBX|2|CE|30956-7^vaccine type^LN|2|85^Hepatitis A^CVX||||||F
+OBX|3|TS|29768-9^Data vaccine information published^LN|2|20111025||||||F
+OBX|4|TS|29769-7^Date vaccine statement presented^LN|2|20130829||||||F
+
+
+-- Cerner 2015-04-17 - VXU message for well child visit reporting historical vaccination (Historical Child)
+MSH|^~\&|EHR Application|X68|PH Application|PH Facility|201504151123||VXU^V04^VXU_V04|12055|P|2.5.1|||AL|ER
+PID|1||159847^^^&2.16.840.1.114060&ISO^MR||MONTGOMERY^LEWIS^^^^^L|^|20010821|M|||||^^~^||^ISO639|||||||||N||
+ORC|RE||159847-118-1^CRT|||||||BURDEN123^BURDEN^DONNA^A^^^^^CRT||||||||||
+RXA|0|1|20110215||118^HPV, bivalent^CVX|999|||01^Historical information - source unspecified^NIP001|78321^LEMON^MIKE^A^^^^^CRT|^^^CRTC|||||||||CP|A||
+OBX|1|CE|30956-7^vaccine type^LN|2|118^HPV-Cervarix^CVX||||||F
+OBX|2|TS|29768-9^Data vaccine information published^LN|2|20110503||||||F
+OBX|3|TS|29769-7^Date vaccine statement presented^LN|2|20130829||||||F
+
+
+-- Cerner 2015-04-17 - VXU message for well child visit single vaccination where the guardian has indicated that the information shall not be protected (Consented Child)
+MSH|^~\&|EHR Application|X68|PH Application|PH Facility|201504151125||VXU^V04^VXU_V04|12057|P|2.5.1|||AL|ER
+PID|1||159849^^^&2.16.840.1.114060&ISO^MR||NEWTON^LEA^^^^^L|^|20010905|F|||||^^~^||^ISO639|||||||||N||
+PD1||||||||||||N|20110214|||||
+ORC|RE||159849-115-1^CRT|||||||BURDEN123^BURDEN^DONNA^A^^^^^CRT||||||||||
+RXA|0|1|20110214||115^Tdap^CVX|999|||01^Historical information - source unspecified^NIP001|78321^LEMON^MIKE^A^^^^^CRT|^^^CRTC|||||||||CP|A||
+OBX|1|CE|30956-7^vaccine type^LN|2|139^Td/Tdap(use for Td)^CVX||||||F
+OBX|2|TS|29768-9^Data vaccine information published^LN|2|20120124||||||F
+OBX|3|TS|29769-7^Date vaccine statement presented^LN|2|20130829||||||F
+
+-- Cerner 2015-04-17 - VXU message for well child visit where the child's mother refused administration of a vaccination (Refused Toddler)
+MSH|^~\&|EHR Application|X68|PH Application|PH Facility|201504151234||VXU^V04^VXU_V04|12059|P|2.5.1|||AL|ER
+PID|1||159852^^^&2.16.840.1.114060&ISO^MR||FLEMING^CHAD^^^^^L|^|20100830|M|||||^^~^||^ISO639|||||||||N||
+ORC|RE||9999^CDC^|||||||||||||||||
+RXA|0|1|20110815||03^MMR^CVX|999||||78321^LEMON^MIKE^A^^^^^CRT|^^^CRTC|||||||00^Parental decision^NIP002||RE|A||
+
+
+-- Cerner 2015-04-17 - VXU message for well child visit where the child's parent reports that the child had had varicella previously
+MSH|^~\&|EHR Application|X68|PH Application|PH Facility|201504151237||VXU^V04^VXU_V04|12061|P|2.5.1|||AL|ER
+PID|1||159853^^^&2.16.840.1.114060&ISO^MR||WOLFE^ARON^^^^^L|^|20010907|M|||||^^~^||^ISO639|||||||||N||
+ORC|RE||9999^CDC^|||||||||||||||||
+RXA|0|1|20110215||998^No vaccine administered^CVX|999||||78321^LEMON^MIKE^A^^^^^CRT|^^^CRTC|||||||||NA|A||
+OBX|1|CE|59784-9^Disease with presumed immunity^LN|1|38907003^Varicella (disorder)^SCT||||||F
+
+-- Cerner 2015-04-17 - VXU message for a well child visit where a single, historical and combination vaccination will be reported (Complete Record)
+MSH|^~\&|EHR Application|X68|PH Application|PH Facility|201504151258||VXU^V04^VXU_V04|12065|P|2.5.1|||AL|ER
+PID|1||159857^^^&2.16.840.1.114060&ISO^MR||UMATILLA^SALIMA^KAILYN^^^^L|^|20100824|F|||||^^~^||^ISO639|||||||||N||
+ORC|RE||159857-140-1^CRT|||||||BURDEN123^BURDEN^DONNA^A^^^^^CRT||057422^RADON^NICHOLAS^^^^^^CRT^L||||||||
+RXA|0|1|20120814||140^Influenza, seasonal, injectable, preservative free^CVX|0.25|mL^MilliLiter[SI Volume Units]^UCUM||00^New immunization record^NIP001|78321^LEMON^MIKE^A^^^^^CRT|^^^CRTC||||D6992FF|20121214|PMC^SANOFI-PASTEUR^MVX|||CP|A||
+RXR|C28161^INTRAMUSCULAR^NCIT|RA^Right Arm^HL70163|
+OBX|1|CE|64994-7^Vaccine funding program eligibility category^LN|1|V03^Eligible - uninsured^HL70064||||||F||||||VXC40^Eligibility captured at the immunization level^CDCPHINVS
+OBX|2|CE|30956-7^vaccine type^LN|2|88^Influenza^CVX||||||F
+OBX|3|TS|29768-9^Data vaccine information published^LN|2|20120702||||||F
+OBX|4|TS|29769-7^Date vaccine statement presented^LN|2|20150415||||||F
+ORC|RE||159857-20-1^CRT|||||||BURDEN123^BURDEN^DONNA^A^^^^^CRT||||||||||
+RXA|0|1|20120814||20^DTaP^CVX|999|||01^Historical information - source unspecified^NIP001|78321^LEMON^MIKE^A^^^^^CRT|^^^CRTC|||||||||CP|A||
+ORC|RE||159857-120-1^CRT|||||||BURDEN123^BURDEN^DONNA^A^^^^^CRT||057422^RADON^NICHOLAS^^^^^^CRT^L||||||||
+RXA|0|1|20120814||120^DTaP-Hib-IPV^CVX|0.5|mL^MilliLiter[SI Volume Units]^UCUM||00^New immunization record^NIP001|78321^LEMON^MIKE^A^^^^^CRT|^^^CRTC||||568AHK11|20121214|PMC^SANOFI-PASTEUR^MVX|||CP|A||
+RXR|C28161^INTRAMUSCULAR^NCIT|RA^Right Arm^HL70163|
+OBX|1|CE|64994-7^Vaccine funding program eligibility category^LN|1|V03^Eligible - uninsured^HL70064||||||F||||||VXC40^Eligibility captured at the immunization level^CDCPHINVS
+OBX|2|CE|30956-7^vaccine type^LN|2|107^DTaP^CVX||||||F
+OBX|3|TS|29768-9^Data vaccine information published^LN|2|20070517||||||F
+OBX|4|TS|29769-7^Date vaccine statement presented^LN|2|20150415||||||F
+OBX|5|CE|30956-7^vaccine type^LN|3|89^Polio^CVX||||||F
+OBX|6|TS|29768-9^Data vaccine information published^LN|3|20111108||||||F
+OBX|7|TS|29769-7^Date vaccine statement presented^LN|3|20150415||||||F
+OBX|8|CE|30956-7^vaccine type^LN|4|17^Hib^CVX||||||F
+OBX|9|TS|29768-9^Data vaccine information published^LN|4|19981216||||||F
+OBX|10|TS|29769-7^Date vaccine statement presented^LN|4|20150415||||||F
+
