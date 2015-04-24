@@ -2827,7 +2827,7 @@ public class CertifyRunner extends Thread
       }
 
       if (areaProgress[SUITE_B_INTERMEDIATE][0] > 0) {
-        double score = 1 - Math.log(areaScore[SUITE_B_INTERMEDIATE][0] + 1) / Math.log(101);
+        double score = Math.log(areaScore[SUITE_B_INTERMEDIATE][0] + 1) / Math.log(101);
         reportScore[REPORT_2_CODED] = score;
       }
 
