@@ -14,8 +14,10 @@ public class Transform {
     protected int field;
     protected int segmentRepeat = 1;
     protected int fieldRepeat = 1;
+    protected boolean fieldRepeatSet = false;
     protected String value;
     protected int subfield;
+    protected int subsubfield;
     protected String boundSegment = null;
     protected int boundRepeat = 1;
     protected boolean all = false;

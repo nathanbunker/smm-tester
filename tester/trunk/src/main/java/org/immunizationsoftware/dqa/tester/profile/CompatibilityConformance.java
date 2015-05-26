@@ -1,7 +1,7 @@
 package org.immunizationsoftware.dqa.tester.profile;
 
 public enum CompatibilityConformance {
-  COMPATIBLE, ALLOWANCE, CONSTRAINT, MAJOR_CONSTRAINT, CONFLICT, MAJOR_CONFLICT, UNABLE_TO_DETERMINE;
+  COMPATIBLE, ALLOWANCE, CONSTRAINT, MAJOR_CONSTRAINT, CONFLICT, MAJOR_CONFLICT, UNABLE_TO_DETERMINE, NOT_DEFINED;
 
   public String toString() {
     switch (this) {
@@ -19,6 +19,8 @@ public enum CompatibilityConformance {
       return "Major Constraint";
     case UNABLE_TO_DETERMINE:
       return "Unable to Determine";
+    case NOT_DEFINED:
+      return "Not Defined";
     }
     return super.toString();
   };

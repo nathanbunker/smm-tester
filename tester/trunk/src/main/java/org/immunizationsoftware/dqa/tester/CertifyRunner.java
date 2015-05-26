@@ -4126,6 +4126,7 @@ public class CertifyRunner extends Thread
       case MAJOR_CONSTRAINT:
         usageClass = "fail";
         break;
+      case NOT_DEFINED:
       case UNABLE_TO_DETERMINE:
         usageClass = "";
         break;
