@@ -1,6 +1,7 @@
 package org.immunizationsoftware.dqa.mover;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
@@ -28,9 +29,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.immunizationsoftware.dqa.tester.Authenticate;
 import org.immunizationsoftware.dqa.tester.ClientServlet;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.profile.ProfileCategory;
+import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 
-public class ManagerServlet extends ClientServlet
-{
+public class ManagerServlet extends ClientServlet {
 
   public static final String STANDARD_DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
   public static final String STANDARD_TIME_FORMAT = "HH:mm:ss";
@@ -51,19 +53,20 @@ public class ManagerServlet extends ClientServlet
   private static ShutdownInterceptor shutdownInterceptor;
   private static File softwareDir = null;
   private static File requirementTestFieldsFile = null;
-  private static File requirementTestProfilesFile = null;
   private static File requirementTestTransformsFile = null;
+  private static Set<ProfileUsage> requirementTestProfileFileSet = new HashSet<ProfileUsage>();
 
   private static final String REQUIREMENT_TEST_FIELDS_FILE = "SMM Requirement Test Fields.csv";
-  private static final String REQUIREMENT_TEST_PROFILES_FILE = "SMM Requirement Test Profiles.csv";
   private static final String REQUIREMENT_TEST_TRANSFORMS = "SMM Requirement Test Transforms.txt";
+  private static final String REQUIREMENT_TEST_PROFILE_START = "SMM Requirement ";
+  private static final String REQUIREMENT_TEST_PROFILE_END = ".csv";
+
+  public static Set<ProfileUsage> getRequirementTestProfileFileSet() {
+    return requirementTestProfileFileSet;
+  }
 
   public static File getRequirementTestFieldsFile() {
     return requirementTestFieldsFile;
-  }
-
-  public static File getRequirementTestProfilesFile() {
-    return requirementTestProfilesFile;
   }
 
   public static File getRequirementTestTransformsFile() {
@@ -226,20 +229,44 @@ public class ManagerServlet extends ClientServlet
                   System.out.println("Found " + requirementTestFieldsFile);
                 }
               }
-              if (requirementTestProfilesFile == null) {
-                requirementTestProfilesFile = new File(scanStartFile, REQUIREMENT_TEST_PROFILES_FILE);
-                if (!requirementTestProfilesFile.exists()) {
-                  requirementTestProfilesFile = null;
-                } else {
-                  System.out.println("Found " + requirementTestProfilesFile);
-                }
-              }
               if (requirementTestTransformsFile == null) {
                 requirementTestTransformsFile = new File(scanStartFile, REQUIREMENT_TEST_TRANSFORMS);
                 if (!requirementTestTransformsFile.exists()) {
                   requirementTestTransformsFile = null;
                 } else {
                   System.out.println("Found " + requirementTestTransformsFile);
+                }
+              }
+              File profileFileList[] = scanStartFile.listFiles(new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                  // TODO Auto-generated method stub
+                  return name.startsWith(REQUIREMENT_TEST_PROFILE_START) && name.endsWith(REQUIREMENT_TEST_PROFILE_END);
+                }
+              });
+              for (File profileFile : profileFileList) {
+                String name = profileFile.getName();
+                if (name.startsWith(REQUIREMENT_TEST_PROFILE_START) && name.endsWith(REQUIREMENT_TEST_PROFILE_END)) {
+                  name = name.substring(REQUIREMENT_TEST_PROFILE_START.length(), name.length() - REQUIREMENT_TEST_PROFILE_END.length()).trim();
+                  int pos = name.indexOf("-");
+                  if (pos > 0) {
+                    try {
+                      ProfileUsage profileUsage = new ProfileUsage();
+                      ProfileCategory category = ProfileCategory.valueOf(name.substring(0, pos).trim().toUpperCase());
+                      profileUsage.setCategory(category);
+                      name = name.substring(pos + 1).trim();
+                      pos = name.indexOf("-");
+                      if (pos > 0) {
+                        profileUsage.setVersion(name.substring(pos + 1).trim());
+                        name = name.substring(0, pos).trim();
+                      }
+                      profileUsage.setLabel(name);
+                      profileUsage.setFile(profileFile);
+                      requirementTestProfileFileSet.add(profileUsage);
+                    } catch (Exception e) {
+                      System.out.println("Unable to load profile requirements file");
+                      e.printStackTrace();
+                    }
+                  }
                 }
               }
             }

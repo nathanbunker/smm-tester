@@ -29,13 +29,14 @@ public class ClientServlet extends HttpServlet
   protected static final String MENU_HEADER_SETUP = "Manage Test Cases";
   protected static final String MENU_HEADER_EDIT = "Edit Test Case";
   protected static final String MENU_HEADER_SEND = "Send Message";
-  protected static final String MENU_HEADER_TEST = "Test IIS";
+  protected static final String MENU_HEADER_PROFILE = "Profile";
+  protected static final String MENU_HEADER_TEST = "Test";
   
   protected static ProfileManager profileManager = null;
   
   protected void initProfileManager(boolean forceRefresh) throws IOException {
     if ((forceRefresh || profileManager == null) && ManagerServlet.getRequirementTestFieldsFile() != null
-        && ManagerServlet.getRequirementTestProfilesFile() != null) {
+        ) {
       profileManager = new ProfileManager();
     }
   }
@@ -79,7 +80,7 @@ public class ClientServlet extends HttpServlet
       { "LoginServlet", "Login" } };
   private static final String[][] MENU_LOGGED_IN = { { Authenticate.APP_DEFAULT_HOME, MENU_HEADER_HOME },
       { "ConnectServlet", MENU_HEADER_CONNECT }, { "SetupServlet", MENU_HEADER_SETUP }, { "CreateTestCaseServlet", MENU_HEADER_EDIT },
-      { "SubmitServlet", MENU_HEADER_SEND }, { "CertifyServlet", MENU_HEADER_TEST }, { "LoginServlet?action=Logout", "Logout" } };
+      { "SubmitServlet", MENU_HEADER_SEND },  { "ProfileServlet", MENU_HEADER_PROFILE }, { "CertifyServlet", MENU_HEADER_TEST }, { "LoginServlet?action=Logout", "Logout" } };
 
   public static String makeMenu(HttpServletRequest request, String title) {
     boolean loggedIn = false;
