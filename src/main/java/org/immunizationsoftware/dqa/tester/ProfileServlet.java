@@ -585,12 +585,13 @@ public class ProfileServlet extends ClientServlet {
           if (profileField.getType() == profileFieldType1 || profileField.getType() == profileFieldType2) {
             String link = "ProfileServlet?show=Edit&fieldName=" + URLEncoder.encode(profileField.getFieldName(), "UTF-8");
             out.println("  <tr>");
-            if (profileField.getType() == ProfileFieldType.FIELD || profileField.getType() == ProfileFieldType.FIELD_SUB_PART) {
-              out.println("    <td><a href=\"" + link + "\">" + profileField.getFieldName() + "</a></td>");
-              out.println("    <td><a href=\"" + link + "\">" + profileField.getDescription() + "</a></td>");
-            } else {
+            if (profileLine.getUsage() == Usage.NOT_DEFINED
+                || (profileField.getType() != ProfileFieldType.FIELD && profileField.getType() != ProfileFieldType.FIELD_SUB_PART)) {
               out.println("    <td>" + profileField.getFieldName() + "</td>");
               out.println("    <td>" + profileField.getDescription() + "</td>");
+            } else {
+              out.println("    <td><a href=\"" + link + "\">" + profileField.getFieldName() + "</a></td>");
+              out.println("    <td><a href=\"" + link + "\">" + profileField.getDescription() + "</a></td>");
             }
             out.println("    <td>");
             out.println("      <select name=\"usage" + profileField.getPos() + "\">");

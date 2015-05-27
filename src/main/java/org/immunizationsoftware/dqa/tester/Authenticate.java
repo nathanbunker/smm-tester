@@ -175,15 +175,18 @@ public class Authenticate {
             addUser("Gooseberry", "1i2E81q2Ff5K66v", "Joel Freborg", "Joel.Freborg@bcbsnd.com");
             addUser("Grape", "5w005eeg707388P", "Pam Kowalske", "pkowalsk@mphi.org");
             addUser("Guava", "72F3NJym543TL6r", "Karen McGettigan", "kmcgetti@mphi.org");
+            // http://ois-pt.org/tester/LoginServlet?username=Jujube&password=rqK275tcM2Cfi6w&action=Login
+            // http://ois-pt.org/tester/LoginServlet?username=Kiwifruit&password=d4UGV51c4POgt1l&action=Login
+            // http://ois-pt.org/tester/LoginServlet?username=Maprang&password=17ExGM5j4CsB765&action=Login
             addUser("Jackfruit", "13vG71f41233S7q");
-            addUser("Jujube", "rqK275tcM2Cfi6w");
-            addUser("Kiwifruit", "d4UGV51c4POgt1l");
+            addUser("Jujube", "rqK275tcM2Cfi6w", "Kevin Murset", "kevinmurset@gmail.com", true);
+            addUser("Kiwifruit", "d4UGV51c4POgt1l", "Nichole Lambrecht", "nlambrecht@immregistries.org", true);
             addUser("Longan", "26Cau26Rd7DcUSb");
             addUser("Lychee", "26Cau26Rd7DcUSb");
             addUser("Mafai", "LU0Z23LJlqW1bQR", "Nathan Bunker", "Nathan.Bunker@gmail.com", true);
             addUser("Mango", "6Y847F1EL2W55fr", "Tony Mack", "tmack1@health.nyc.gov");
             addUser("Mangosteen", "25O5rk7BB84k9cF", "Angel Aponte", "aaponte@health.nyc.gov");
-            addUser("Maprang", "17ExGM5j4CsB765", "Eric Larson", "vev5@cdc.gov");
+            addUser("Maprang", "17ExGM5j4CsB765", "Eric Larson", "elarson@immregistries.org ", true);
             addUser("Olive", "y249n5rX60X47Ro", "Paul Groll", "GROLLP@michigan.gov");
             addUser("Orange", "MmUrGMw2B5bS772", "Rod Mach", "rmach@hiperlogic.com");
             addUser("Papaya", "54i627F29GEc21j");
