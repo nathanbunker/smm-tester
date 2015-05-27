@@ -17,6 +17,7 @@ public class Transform {
     protected boolean fieldRepeatSet = false;
     protected String value;
     protected int subfield;
+    protected boolean subfieldSet = false;
     protected int subsubfield;
     protected String boundSegment = null;
     protected int boundRepeat = 1;
