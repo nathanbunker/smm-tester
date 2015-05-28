@@ -181,7 +181,7 @@ public class ProfileManager {
 
   public void saveProfileUsage(ProfileUsage profileUsage, List<ProfileLine> profileLineList) throws IOException {
     PrintWriter out = new PrintWriter(profileUsage.getFile());
-    out.println("Field Name,Usage,Value,Comments");
+    out.println("Field Name,Usage,Value,Comments,Notes");
     try {
       for (ProfileLine profileLine : profileLineList) {
         
@@ -197,7 +197,10 @@ public class ProfileManager {
           out.print(profileUsageValue.getValue());
           out.print("\",");
           out.print("\"");
-          out.print(profileUsageValue.getComments());
+          out.print(profileUsageValue.getComments().replace('"', '\''));
+          out.println("\"");
+          out.print("\"");
+          out.print(profileUsageValue.getNotes().replace('"', '\''));
           out.println("\"");
         }
       }
@@ -240,6 +243,7 @@ public class ProfileManager {
           String usageString = CvsReader.readValue(1, valueList);
           String usageValue = CvsReader.readValue(2, valueList);
           String usageComments = CvsReader.readValue(3, valueList);
+          String usageNotes = CvsReader.readValue(4, valueList);
           ProfileUsageValue profileUsageValue = profileUsage.getProfileUsageValueMap().get(profileField);
           if (profileUsageValue == null) {
             profileUsageValue = new ProfileUsageValue();
@@ -248,6 +252,7 @@ public class ProfileManager {
           profileUsageValue.setUsage(Usage.readUsage(usageString.toUpperCase()));
           profileUsageValue.setValue(usageValue);
           profileUsageValue.setComments(usageComments);
+          profileUsageValue.setNotes(usageNotes);
         }
       }
       profileUsageList.add(profileUsage);
@@ -418,6 +423,8 @@ public class ProfileManager {
               pfNew.setPosInField(profileField.getPosInField());
               pfNew.setPosInSubField(pfDataType.getDataTypePos());
             }
+            pfNew.setDataTypePos(pfDataType.getDataTypePos());
+            pfNew.setDataTypeDef(pfDataType.getDataTypeDef());
             pfNew.setSpecialSection(profileField.getSpecialSection());
             if (pfDataType.getSpecialName().equals("")) {
               pfNew.setSpecialName(profileField.getSpecialName());

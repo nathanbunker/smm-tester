@@ -5,6 +5,14 @@ public class ProfileUsageValue
   private Usage usage = null;
   private String value = "";
   private String comments = "";
+  private String notes = "";
+  
+  public String getNotes() {
+    return notes;
+  }
+  public void setNotes(String notes) {
+    this.notes = notes;
+  }
   public Usage getUsage() {
     return usage;
   }
