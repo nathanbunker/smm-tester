@@ -351,6 +351,7 @@ public class ProfileServlet extends ClientServlet {
             }
           } else if (show.equals("Edit")) {
             List<ProfileLine> profileLineList = profileManager.createProfileLines(profileUsageSelected);
+            ProfileLine copyFrom = null;
             if (action.equals("Save")) {
               for (ProfileLine profileLine : profileLineList) {
                 int pos = profileLine.getField().getPos();
@@ -360,8 +361,10 @@ public class ProfileServlet extends ClientServlet {
                   profileLine.setUsage(profileLine.getProfileUsageValue().getUsage());
                   String value = request.getParameter("value" + pos);
                   String comments = request.getParameter("comments" + pos);
+                  String notes = request.getParameter("notes" + pos);
                   profileLine.getProfileUsageValue().setValue(value);
                   profileLine.getProfileUsageValue().setComments(comments);
+                  profileLine.getProfileUsageValue().setNotes(notes);
                 }
               }
               if (profileUsageSelected.getFile() != null) {
@@ -372,13 +375,22 @@ public class ProfileServlet extends ClientServlet {
                   out.println("<p>Unable to save: " + ioe.getMessage() + "</p>");
                 }
               }
+            } else if (action.equals("Copy")) {
+              if (!request.getParameter("copyFrom").equals("")) {
+                int copyFromPos = Integer.parseInt(request.getParameter("copyFrom"));
+                for (ProfileLine profileLine : profileLineList) {
+                  if (profileLine.getField().getPos() == copyFromPos) {
+                    copyFrom = profileLine;
+                    break;
+                  }
+                }
+              }
             }
             ProfileManager.updateMessageAcceptStatus(profileLineList);
             out.println("<h2>Edit Profile for " + profileUsageSelected + "</h2>");
             String fieldName = request.getParameter("fieldName");
             if (fieldName == null) {
               printEditTable(out, profileLineList, ProfileFieldType.SEGMENT, ProfileFieldType.SEGMENT_GROUP);
-              printEditTable(out, profileLineList, ProfileFieldType.DATA_TYPE, null);
             } else {
               ProfileLine profileLineSelected = null;
               for (ProfileLine profileLine : profileLineList) {
@@ -388,7 +400,7 @@ public class ProfileServlet extends ClientServlet {
                 }
               }
               if (profileLineSelected != null) {
-                printEditTable(out, profileLineList, profileLineSelected, request.getParameter("fieldName"));
+                printEditTable(out, profileLineList, profileLineSelected, request.getParameter("fieldName"), copyFrom);
               }
             }
           } else if (show.equals("transforms")) {
@@ -518,8 +530,8 @@ public class ProfileServlet extends ClientServlet {
     }
   }
 
-  private void printEditTable(PrintWriter out, List<ProfileLine> profileLineList, ProfileLine profileLineSelected, String fieldName)
-      throws UnsupportedEncodingException {
+  private void printEditTable(PrintWriter out, List<ProfileLine> profileLineList, ProfileLine profileLineSelected, String fieldName,
+      ProfileLine copyFrom) throws UnsupportedEncodingException {
     out.println("<h3>" + profileLineSelected.getField().getDescription() + " Table</h3>");
     out.println("<form action=\"ProfileServlet\" method=\"POST\">");
     out.println("<table border=\"1\" cellspacing=\"0\">");
@@ -529,6 +541,7 @@ public class ProfileServlet extends ClientServlet {
     out.println("    <th>Usage</th>");
     out.println("    <th>Value</th>");
     out.println("    <th>Comments</th>");
+    out.println("    <th>Testing Notes</th>");
     out.println("  </tr>");
     boolean found = false;
     ProfileFieldType profileFieldType1 = null;
@@ -575,9 +588,28 @@ public class ProfileServlet extends ClientServlet {
       profileFieldType2 = null;
       break;
     }
+    List<ProfileLine> copyFromItemList = null;
+    if (copyFrom != null) {
+      copyFromItemList = new ArrayList<ProfileLine>();
+      Usage usageCopy = Usage.NOT_DEFINED;
+      boolean foundCopy = false;
+      for (ProfileLine profileLineCopy : profileLineList) {
+        if (foundCopy) {
+          if (profileLineCopy.getField().getType() == copyFrom.getField().getType()) {
+            foundCopy = false;
+          } else {
+            if (profileLineCopy.getField().getType() == profileFieldType1 || profileLineCopy.getField().getType() == profileFieldType2) {
+              copyFromItemList.add(profileLineCopy);
+            }
+          }
+        } else if (profileLineCopy == copyFrom) {
+          foundCopy = true;
+        }
+      }
+    }
+
     for (ProfileLine profileLine : profileLineList) {
       ProfileField profileField = profileLine.getField();
-
       if (found) {
         if (profileField.getType() == profileLineSelected.getField().getType()) {
           found = false;
@@ -597,7 +629,24 @@ public class ProfileServlet extends ClientServlet {
             out.println("      <select name=\"usage" + profileField.getPos() + "\">");
             out.println("        <option value=\"\">select</option>");
             for (Usage usage : Usage.values()) {
-              if (usage == profileLine.getUsage()) {
+              Usage selectedUsage = profileLine.getUsage();
+              if (copyFromItemList != null) {
+                for (ProfileLine profileLineCopy : copyFromItemList) {
+                  if (profileLine.getField().getType() == ProfileFieldType.FIELD) {
+                    if (profileLine.getField().getPosInSegment() == profileLineCopy.getField().getPosInSegment()
+                        && profileLine.getField().getSpecialName().equals(profileLineCopy.getField().getSpecialName())) {
+                      selectedUsage = profileLineCopy.getUsage();
+                    }
+                  } else {
+                    if (profileLine.getField().getDataTypePos() == profileLineCopy.getField().getDataTypePos()
+                        && profileField.getType() == profileLineCopy.getField().getType()
+                        && profileField.getCodeValue().equals(profileLineCopy.getField().getCodeValue())) {
+                      selectedUsage = profileLineCopy.getUsage();
+                    }
+                  }
+                }
+              }
+              if (usage == selectedUsage) {
                 out.println("        <option value=\"" + usage + "\" selected=\"true\">" + usage + " " + usage.getDescription() + "</option>");
               } else {
                 out.println("        <option value=\"" + usage + "\">" + usage + " " + usage.getDescription() + "</option>");
@@ -612,6 +661,8 @@ public class ProfileServlet extends ClientServlet {
                 + profileLine.getProfileUsageValue().getValue() + "\"/></td>");
             out.println("    <td><input type=\"text\" size=\"20\" name=\"comments" + profileField.getPos() + "\" value=\""
                 + profileLine.getProfileUsageValue().getComments() + "\"/></td>");
+            out.println("    <td><input type=\"text\" size=\"20\" name=\"notes" + profileField.getPos() + "\" value=\""
+                + profileLine.getProfileUsageValue().getNotes() + "\"/></td>");
             out.println("  </tr>");
           }
         }
@@ -620,8 +671,37 @@ public class ProfileServlet extends ClientServlet {
       }
     }
     out.println("</table>");
+    List<ProfileLine> copyFromList = new ArrayList<ProfileLine>();
+    ProfileFieldType typeSelected = profileLineSelected.getField().getType();
+    for (ProfileLine profileLine : profileLineList) {
+      ProfileField profileField = profileLine.getField();
+      if (profileLine != profileLineSelected && profileLine.getUsage() != Usage.NOT_DEFINED) {
+        if (typeSelected == ProfileFieldType.SEGMENT) {
+          if (profileField.getType() == ProfileFieldType.SEGMENT) {
+            if (profileField.getSegmentName().equals(profileLineSelected.getField().getSegmentName())) {
+              copyFromList.add(profileLine);
+            }
+          }
+        } else if (typeSelected == ProfileFieldType.FIELD || typeSelected == ProfileFieldType.FIELD_PART
+            || typeSelected == ProfileFieldType.FIELD_SUB_PART) {
+          if (profileField.getDataType().equals(profileLineSelected.getField().getDataType())) {
+            copyFromList.add(profileLine);
+          }
+        }
+      }
+    }
     out.println("<input type=\"hidden\" name=\"show\" value=\"Edit\"/>");
     out.println("<input type=\"submit\" name=\"action\" value=\"Save\"/>");
+    if (copyFromList.size() > 0) {
+      out.println("      <select name=\"copyFrom\">");
+      out.println("        <option value=\"\">select</option>");
+      for (ProfileLine profileLine : copyFromList) {
+        out.println("        <option value=\"" + profileLine.getField().getPos() + "\">" + profileLine.getField().getFieldName() + "</option>");
+      }
+      out.println("      </select>");
+      out.println("<input type=\"submit\" name=\"action\" value=\"Copy\"/>");
+
+    }
     out.println("</form>");
   }
 
@@ -636,6 +716,7 @@ public class ProfileServlet extends ClientServlet {
     out.println("    <th>Usage</th>");
     out.println("    <th>Value</th>");
     out.println("    <th>Comments</th>");
+    out.println("    <th>Testing Notes</th>");
     out.println("  </tr>");
     for (ProfileLine profileLine : profileLineList) {
       ProfileField profileField = profileLine.getField();
@@ -665,6 +746,8 @@ public class ProfileServlet extends ClientServlet {
             + profileLine.getProfileUsageValue().getValue() + "\"/></td>");
         out.println("    <td><input type=\"text\" size=\"20\" name=\"comments" + profileField.getPos() + "\" value=\""
             + profileLine.getProfileUsageValue().getComments() + "\"/></td>");
+        out.println("    <td><input type=\"text\" size=\"20\" name=\"notes" + profileField.getPos() + "\" value=\""
+            + profileLine.getProfileUsageValue().getNotes() + "\"/></td>");
         out.println("  </tr>");
       }
     }

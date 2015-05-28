@@ -4,7 +4,7 @@
 	<groupId>org.immunizationsoftware.dqa</groupId>
 	<artifactId>tester</artifactId>
 	<packaging>war</packaging>
-	<version>1.41</version>
+	<version>1.42</version>
 	<name>IIS HL7 Tester and Simple Message Mover</name>
 	<description></description>
 	<!-- TODO <organization> <name>company name</name> <url>company url</url> 
