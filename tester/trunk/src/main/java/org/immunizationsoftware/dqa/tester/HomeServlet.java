@@ -85,6 +85,7 @@ public class HomeServlet extends ClientServlet
           out.println("    <td><a href=\"InstallCertServlet\">Install Cert</a></td>");
           out.println("    <td>Install certificate for use on a particular connection.</td>");
           out.println("  </tr>");
+           
         }
         out.println("  <tr>");
         out.println("    <td><a href=\"GenerateDataServlet\">Generate Data</a></td>");
@@ -118,6 +119,10 @@ public class HomeServlet extends ClientServlet
           out.println("  <tr>");
           out.println("    <td><a href=\"CertifyHistoryServlet\">Test IIS Results</a></td>");
           out.println("    <td>Review previously run Test IIS reports.</td>");
+          out.println("  </tr>");
+          out.println("  <tr>");
+          out.println("    <td><a href=\"ProfileDownloadServlet\">Download Profiles</a></td>");
+          out.println("    <td>Download CSV spreadsheet with all profile settings.</td>");
           out.println("  </tr>");
         }
         out.println("</table>");

@@ -66,6 +66,10 @@
     <servlet-class>org.immunizationsoftware.dqa.tester.ProfileServlet</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>ProfileDownloadServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.tester.ProfileDownloadServlet</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>GenerateDataServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.tester.GenerateDataServlet</servlet-class>
   </servlet>
@@ -164,6 +168,10 @@
   <servlet-mapping>
     <servlet-name>ProfileServlet</servlet-name>
     <url-pattern>/ProfileServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>ProfileDownloadServlet</servlet-name>
+    <url-pattern>/ProfileDownloadServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>CertifyServlet</servlet-name>

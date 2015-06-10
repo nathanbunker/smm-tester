@@ -199,7 +199,7 @@ public class QueryConverter
         sb.append(pidFields.get(34) + "|");
         sb.append('\r');
       }
-      sb.append("RCP|I|20|");
+      sb.append("RCP|I|20^RD|");
       sb.append('\r');
 
     } catch (Exception e) {
