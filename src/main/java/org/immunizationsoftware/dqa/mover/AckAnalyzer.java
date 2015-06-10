@@ -14,7 +14,7 @@ public class AckAnalyzer
   };
 
   public static enum AckType {
-    DEFAULT, NMSIIS, ALERT, WEBIZ
+    DEFAULT, NMSIIS, ALERT, WEBIZ, MIIC
   };
 
   private ErrorType errorType = null;
@@ -156,6 +156,12 @@ public class AckAnalyzer
           log("Record was rejected, message contains phrase Record Rejected");
         }
         positive = !setupProblem && recordNotRejected;
+      } else if (ackType.equals(AckType.MIIC)) {
+        int recordRejectedPos = ackUpperCase.indexOf("REJECTED");
+        positive = recordRejectedPos == -1;
+        if (!positive) {
+          log("The word rejected appeared in the message so the message was rejected");
+        }
       } else if (ackType.equals(AckType.ALERT)) {
         positive = true;
         int pos = 1;

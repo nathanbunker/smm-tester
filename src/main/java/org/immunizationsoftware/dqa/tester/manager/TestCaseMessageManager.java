@@ -13,9 +13,8 @@ import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 import org.immunizationsoftware.dqa.transform.Transformer;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 
-public class TestCaseMessageManager
-{
-  
+public class TestCaseMessageManager {
+
   public static List<TestCaseMessage> createTestCaseMessageList(String source) throws Exception {
     List<TestCaseMessage> testCaseMessageList = new ArrayList<TestCaseMessage>();
 
@@ -108,9 +107,8 @@ public class TestCaseMessageManager
     }
     return testCaseMessageList;
   }
-  
-  protected static int createTestCase(TestCaseMessage testCaseMessage, StringBuffer message, int number,
-      List<TestCaseMessage> testCaseMessageList) {
+
+  protected static int createTestCase(TestCaseMessage testCaseMessage, StringBuffer message, int number, List<TestCaseMessage> testCaseMessageList) {
     String messageText = message.toString();
     if (messageText.length() > 0) {
       testCaseMessage.setMessageText(messageText);
@@ -217,7 +215,7 @@ public class TestCaseMessageManager
     }
     return number;
   }
-  
+
   protected static void addTestMessageToList(List<TestCaseMessage> testCaseMessageList, TestCaseMessage testCaseMessage) {
     if (testCaseMessage.getMessageText().startsWith("MSH|TRANSFORM")) {
       Transformer transformer = new Transformer();
@@ -238,7 +236,7 @@ public class TestCaseMessageManager
       testCaseMessageList.add(testCaseMessage);
     }
   }
-  
+
   protected static String addOne(String s) {
     String result = "";
     if (s.equals("")) {
@@ -266,7 +264,7 @@ public class TestCaseMessageManager
     }
     return result;
   }
-  
+
   private static String readValue(String s) {
     int pos = s.indexOf(":");
     if (pos == -1) {
@@ -278,7 +276,7 @@ public class TestCaseMessageManager
     }
     return s.substring(pos).trim();
   }
-  
+
   private static String[] readValues(String s) {
     String[] values = readValue(s).split("\\,");
     if (values == null) {
@@ -302,13 +300,12 @@ public class TestCaseMessageManager
     }
     return new String[] { s.substring(0, pos - 1), s.substring(pos) };
   }
-  
-  
+
   public static HL7Component createHL7Component(TestCaseMessage testCaseMessage) {
     try {
       HL7Component comp = null;
       if (testCaseMessage.getActualMessageResponseType().equals("")) {
-        if (!testCaseMessage.getActualResponseMessage().equalsIgnoreCase("")) {
+        if (testCaseMessage.getActualResponseMessage() != null && !testCaseMessage.getActualResponseMessage().equalsIgnoreCase("")) {
           HL7Reader ackMessageReader = new HL7Reader(testCaseMessage.getActualResponseMessage());
           if (ackMessageReader.advanceToSegment("MSH")) {
             testCaseMessage.setActualMessageResponseType(ackMessageReader.getValue(9));
@@ -330,8 +327,5 @@ public class TestCaseMessageManager
     }
     return null;
   }
-  
+
 }
-
-
-

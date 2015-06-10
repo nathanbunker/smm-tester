@@ -11,6 +11,7 @@ public class FolderScanner extends Thread
   private String scanningStatus = "";
   private boolean scanning = false;
   private boolean keepRunning = true;
+  private ManagerServlet managerServlet = null;
 
   public List<File> getFoldersToScan() {
     return foldersToScan;
@@ -24,8 +25,9 @@ public class FolderScanner extends Thread
     return scanning;
   }
 
-  public FolderScanner(List<File> foldersToScan) {
+  public FolderScanner(List<File> foldersToScan, ManagerServlet managerServlet) {
     this.foldersToScan = foldersToScan;
+    this.managerServlet = managerServlet;
   }
 
   public void setFoldersToScan(List<File> foldersToScan) {
@@ -74,6 +76,7 @@ public class FolderScanner extends Thread
       // already found, don't look here again
       return;
     }
+    managerServlet.scanForFieldDefinitions(folder);
     log("Looking in folder " + folder.getAbsolutePath());
     File configFile = new File(folder, "smm.config.txt");
     if (configFile.exists() && configFile.isFile() && configFile.canRead()) {

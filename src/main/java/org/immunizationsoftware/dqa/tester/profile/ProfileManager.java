@@ -46,13 +46,17 @@ public class ProfileManager {
     ProfileManager.readTransforms(ManagerServlet.getRequirementTestTransformsFile(), profileFieldList);
   }
 
-  public List<ProfileLine> createProfileLines(ProfileUsage profileUsage) {
-    return createProfileLines(profileFieldList, profileUsage);
+  public List<ProfileLine> createProfileLines(ProfileUsage profileUsage, boolean includeDataType) {
+    return createProfileLines(profileFieldList, profileUsage, includeDataType);
   }
 
-  public static List<ProfileLine> createProfileLines(List<ProfileField> profileFieldList, ProfileUsage profileUsage) {
+  public static List<ProfileLine> createProfileLines(List<ProfileField> profileFieldList, ProfileUsage profileUsage, boolean includeDataType) {
     List<ProfileLine> profileLineList = new ArrayList<ProfileLine>();
     for (ProfileField profileField : profileFieldList) {
+      if (profileField.isDataType() && !includeDataType)
+      {
+        continue;
+      }
       ProfileUsageValue profileUsageValue = profileUsage.getProfileUsageValueMap().get(profileField);
       if (profileUsageValue == null) {
         profileUsageValue = new ProfileUsageValue();
@@ -148,8 +152,8 @@ public class ProfileManager {
             } else {
               profileField.setTransformsAbsent(transforms);
             }
-            transforms = "";
           }
+          transforms = "";
           expectingFieldName = true;
         } else if (line.startsWith("-----")) {
           expectingFieldName = false;
@@ -268,7 +272,7 @@ public class ProfileManager {
       for (ProfileField profileField : profileFieldList) {
         ProfileUsageValue profileUsageValue = new ProfileUsageValue();
         profileUsage.getProfileUsageValueMap().put(profileField, profileUsageValue);
-        profileUsageValue.setUsage(Usage.readUsage(profileField.getTestUsage()));
+        profileUsageValue.setUsage(profileField.getTestUsage());
       }
     }
     return profileUsageList;
@@ -373,7 +377,7 @@ public class ProfileManager {
         profileField.setDataTypeDef(dataTypeDef);
         profileField.setDataTypePos(dataTypePos);
         profileField.setTableName(tableName);
-        profileField.setTestUsage(testUsage);
+        profileField.setTestUsage(Usage.readUsage(testUsage));
         profileField.setBaseUsage(baseUsage);
         try {
           profileField.setType(ProfileFieldType.valueOf(type.toUpperCase().replace(" ", "_")));
@@ -461,7 +465,11 @@ public class ProfileManager {
     MessageAcceptStatus masFieldSubPart = null;
     for (ProfileLine profileLine : profileLineList) {
       ProfileField field = profileLine.getField();
-      if (field.getType() == ProfileFieldType.SEGMENT) {
+      if (field.isDataType())
+      {
+        continue;
+      }
+      else if (field.getType() == ProfileFieldType.SEGMENT) {
         masSegment = determineMessageAcceptStatus(profileLine, MessageAcceptStatus.ONLY_IF_PRESENT);
         profileLine.setMessageAcceptStatus(masSegment);
       } else if (field.getType() == ProfileFieldType.FIELD) {
@@ -485,9 +493,14 @@ public class ProfileManager {
 
   public static MessageAcceptStatus determineMessageAcceptStatus(ProfileLine profileLine, MessageAcceptStatus masHigher) {
     MessageAcceptStatus mas = null;
-    if (masHigher == MessageAcceptStatus.ONLY_IF_ABSENT || profileLine.getUsage() == Usage.X) {
+    Usage usage = profileLine.getUsage();
+    if (usage == Usage.NOT_DEFINED)
+    {
+      usage = profileLine.getField().getTestUsage();
+    }
+    if (masHigher == MessageAcceptStatus.ONLY_IF_ABSENT || usage == Usage.X) {
       mas = MessageAcceptStatus.ONLY_IF_ABSENT;
-    } else if (masHigher == MessageAcceptStatus.ONLY_IF_PRESENT && profileLine.getUsage() == Usage.R) {
+    } else if (masHigher == MessageAcceptStatus.ONLY_IF_PRESENT && usage == Usage.R) {
       mas = MessageAcceptStatus.ONLY_IF_PRESENT;
     } else {
       mas = MessageAcceptStatus.IF_PRESENT_OR_ABSENT;

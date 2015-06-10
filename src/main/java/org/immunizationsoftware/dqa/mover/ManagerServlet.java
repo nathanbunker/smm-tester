@@ -237,44 +237,12 @@ public class ManagerServlet extends ClientServlet {
                   System.out.println("Found " + requirementTestTransformsFile);
                 }
               }
-              File profileFileList[] = scanStartFile.listFiles(new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                  // TODO Auto-generated method stub
-                  return name.startsWith(REQUIREMENT_TEST_PROFILE_START) && name.endsWith(REQUIREMENT_TEST_PROFILE_END);
-                }
-              });
-              for (File profileFile : profileFileList) {
-                String name = profileFile.getName();
-                if (name.startsWith(REQUIREMENT_TEST_PROFILE_START) && name.endsWith(REQUIREMENT_TEST_PROFILE_END)) {
-                  name = name.substring(REQUIREMENT_TEST_PROFILE_START.length(), name.length() - REQUIREMENT_TEST_PROFILE_END.length()).trim();
-                  int pos = name.indexOf("-");
-                  if (pos > 0) {
-                    try {
-                      ProfileUsage profileUsage = new ProfileUsage();
-                      ProfileCategory category = ProfileCategory.valueOf(name.substring(0, pos).trim().toUpperCase());
-                      profileUsage.setCategory(category);
-                      name = name.substring(pos + 1).trim();
-                      pos = name.indexOf("-");
-                      if (pos > 0) {
-                        profileUsage.setVersion(name.substring(pos + 1).trim());
-                        name = name.substring(0, pos).trim();
-                      }
-                      profileUsage.setLabel(name);
-                      profileUsage.setFile(profileFile);
-                      requirementTestProfileFileSet.add(profileUsage);
-                    } catch (Exception e) {
-                      System.out.println("Unable to load profile requirements file");
-                      e.printStackTrace();
-                    }
-                  }
-                }
-              }
             }
           }
         }
       }
       if (scanStartFolders.length() > 0) {
-        folderScanner = new FolderScanner(foldersToScan);
+        folderScanner = new FolderScanner(foldersToScan, this);
         folderScanner.start();
       }
     }
@@ -319,6 +287,42 @@ public class ManagerServlet extends ClientServlet {
 
     ShutdownInterceptor shutdownInterceptor = new ShutdownInterceptor();
     Runtime.getRuntime().addShutdownHook(shutdownInterceptor);
+  }
+
+  public void scanForFieldDefinitions(File scanStartFile) {
+    File profileFileList[] = scanStartFile.listFiles(new FilenameFilter() {
+      public boolean accept(File dir, String name) {
+        return name.startsWith(REQUIREMENT_TEST_PROFILE_START) && name.endsWith(REQUIREMENT_TEST_PROFILE_END);
+      }
+    });
+    for (File profileFile : profileFileList) {
+      String name = profileFile.getName();
+      if (name.startsWith(REQUIREMENT_TEST_PROFILE_START) && name.endsWith(REQUIREMENT_TEST_PROFILE_END)) {
+        name = name.substring(REQUIREMENT_TEST_PROFILE_START.length(), name.length() - REQUIREMENT_TEST_PROFILE_END.length()).trim();
+        int pos = name.indexOf("-");
+        if (pos > 0) {
+          try {
+            ProfileUsage profileUsage = new ProfileUsage();
+            ProfileCategory category = ProfileCategory.valueOf(name.substring(0, pos).trim().toUpperCase());
+            profileUsage.setCategory(category);
+            name = name.substring(pos + 1).trim();
+            pos = name.indexOf("-");
+            if (pos > 0) {
+              profileUsage.setVersion(name.substring(pos + 1).trim());
+              name = name.substring(0, pos).trim();
+            }
+            profileUsage.setLabel(name);
+            profileUsage.setFile(profileFile);
+            synchronized (requirementTestProfileFileSet) {
+              requirementTestProfileFileSet.add(profileUsage);
+            }
+          } catch (Exception e) {
+            System.out.println("Unable to load profile requirements file");
+            e.printStackTrace();
+          }
+        }
+      }
+    }
   }
 
   protected static String doHash(String valueIn) {

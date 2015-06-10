@@ -19,10 +19,10 @@ public class ProfileField {
   private String tableName = "";
   private String dataTypeDef = "";
   private int dataTypePos = 0;
-  private String testUsage = "";
+  private Usage testUsage = Usage.NOT_DEFINED;
   private String baseUsage = "";
 
-  public String getTestUsage() {
+  public Usage getTestUsage() {
     return testUsage;
   }
 
@@ -34,7 +34,7 @@ public class ProfileField {
     this.pos = pos;
   }
 
-  public void setTestUsage(String testUsage) {
+  public void setTestUsage(Usage testUsage) {
     this.testUsage = testUsage;
   }
 

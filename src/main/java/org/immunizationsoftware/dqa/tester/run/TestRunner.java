@@ -22,8 +22,7 @@ import org.immunizationsoftware.dqa.transform.Transformer;
  * 
  * @author nathan
  */
-public class TestRunner
-{
+public class TestRunner {
 
   public static final String ACTUAL_RESULT_STATUS_FAIL = "FAIL";
   public static final String ACTUAL_RESULT_STATUS_PASS = "PASS";
@@ -95,14 +94,14 @@ public class TestRunner
     return runTest(connector, testCaseMessage, message);
   }
 
-  public TestCaseMessage runTestIfNew(Connector connector, TestCaseMessage testCaseMessage, Map<String, TestCaseMessage> testCaseMessageMap) throws Exception {
+  public TestCaseMessage runTestIfNew(Connector connector, TestCaseMessage testCaseMessage, Map<String, TestCaseMessage> testCaseMessageMap)
+      throws Exception {
     wasRun = false;
     testCaseMessage.setActualResponseMessage("");
     testCaseMessage.setPassedTest(false);
     testCaseMessage.setHasRun(false);
     String message = Transformer.transform(connector, testCaseMessage);
-    if (testCaseMessageMap.containsKey(message))
-    {
+    if (testCaseMessageMap.containsKey(message)) {
       return testCaseMessageMap.get(message);
     }
     runTest(connector, testCaseMessage, message);
@@ -120,131 +119,148 @@ public class TestRunner
     ackMessageText = connector.submitMessage(message, false);
     endTime = System.currentTimeMillis();
 
-
     errorList = new ArrayList<TestError>();
     if (!testCaseMessage.getAssertResult().equalsIgnoreCase("")) {
-      ackMessageReader = new HL7Reader(ackMessageText);
-      if (ackMessageReader.advanceToSegment("MSH")) {
-        testCaseMessage.setActualMessageResponseType(ackMessageReader.getValue(9));
-        if (testCaseMessage.getActualMessageResponseType().equals("ACK")) {
-          AckAnalyzer ackAnalyzer = new AckAnalyzer(ackMessageText, connector.getAckType());
-          testCaseMessage.setAccepted(ackAnalyzer.isPositive());
-
-          if (ackMessageReader.advanceToSegment("MSA")) {
-            testCaseMessage.setActualResultAckType(ackMessageReader.getValue(1));
-            testCaseMessage.setActualResultAckMessage(ackMessageReader.getValue(2));
-            boolean accepted = false;
-            boolean rejected = false;
-            boolean issueFound = false;
-            boolean severitySet = false;
-            errorType = ErrorType.UNKNOWN;
-
-            if (testCaseMessage.getActualResultAckType().equals("AA")) {
-              accepted = true;
-            } else if (testCaseMessage.getActualResultAckType().equals("AR")) {
-              rejected = true;
-            }
-
-            String assertResultText = testCaseMessage.getAssertResultText().toUpperCase();
-            if (assertResultText.equals("")) {
-              assertResultText = "*";
-            }
-            if (assertResultText.equals("*")) {
-              issueFound = true;
-            }
-
-            while (ackMessageReader.advanceToSegment("ERR")) {
-              String severity = ackMessageReader.getValue(4);
-              String userMessage = ackMessageReader.getValue(8);
-              TestError error = new TestError();
-              errorList.add(error);
-
-              if (!severity.equals("")) {
-                severitySet = true;
-              }
-
-              if (severity.equals("E")) {
-                rejected = true;
-                error.setErrorType(ErrorType.ERROR);
-              } else if (severity.equals("W")) {
-                error.setErrorType(ErrorType.WARNING);
-              } else if (severity.equals("I")) {
-                error.setErrorType(ErrorType.INFORMATION);
-              } else {
-                error.setErrorType(ErrorType.UNKNOWN);
-              }
-              error.setDescription(userMessage);
-
-              if (!assertResultText.equals("*") && !testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept")) {
-                if (userMessage.toUpperCase().startsWith(assertResultText)) {
-                  errorType = error.getErrorType();
-                  if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Warn")) {
-                    if (severity.equals("W")) {
-                      issueFound = true;
-                    }
-                  } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Skip")) {
-                    if (severity.equals("I")) {
-                      issueFound = true;
-                    }
-                  } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Error")) {
-                    if (severity.equals("E")) {
-                      issueFound = true;
-                    }
-                  } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Reject")) {
-                    issueFound = true;
-                  }
-                }
-              }
-              
-            }
-            if (testCaseMessage.getActualResultAckType().equals("AE") && !rejected) {
-              if (severitySet) {
-                accepted = true;
-                rejected = false;
-              } else {
-                accepted = false;
-                rejected = true;
-              }
-            }
-
-            passedTest = false;
-            if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept")) {
-              passedTest = accepted && !rejected;
-            } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Warn")) {
-              passedTest = issueFound && !rejected;
-            } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Skip")) {
-              passedTest = issueFound && !rejected;
-            } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Error") || testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Reject")) {
-              passedTest = issueFound && rejected;
-            } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Reject") || testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Error")) {
-              passedTest = issueFound;
-            }
-            if (errorType == ErrorType.UNKNOWN) {
-              if (accepted) {
-                errorType = ErrorType.ACCEPT;
-              } else if (rejected) {
-                errorType = ErrorType.ERROR;
-              }
-            }
-
-          }
-        }
+      String assertResultText = testCaseMessage.getAssertResultText().toUpperCase();
+      if (assertResultText.equals("")) {
+        assertResultText = "*";
       }
-
-      if (passedTest) {
-        status = "A";
-        testCaseMessage.setActualResultStatus(ACTUAL_RESULT_STATUS_PASS);
-        for (TestError error : errorList) {
-          if (status.equals("A") && error.getErrorType() == ErrorType.WARNING) {
-            // ignore skip warnings
-            if (error.getErrorType() != ErrorType.INFORMATION) {
-              status = "W";
-            }
-          }
+      if (ackMessageText == null || ackMessageText.equals("")) {
+        if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept")) {
+          passedTest = false;
+        } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Warn")) {
+          passedTest = false;
+        } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Skip")) {
+          passedTest = false;
+        } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Error")
+            || testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Reject")) {
+          passedTest = true;
+        } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Reject")
+            || testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Error")) {
+          passedTest = true;
         }
       } else {
-        testCaseMessage.setActualResultStatus(ACTUAL_RESULT_STATUS_FAIL);
-        status = "E";
+        ackMessageReader = new HL7Reader(ackMessageText);
+        if (ackMessageReader.advanceToSegment("MSH")) {
+          testCaseMessage.setActualMessageResponseType(ackMessageReader.getValue(9));
+          if (testCaseMessage.getActualMessageResponseType().equals("ACK")) {
+            AckAnalyzer ackAnalyzer = new AckAnalyzer(ackMessageText, connector.getAckType());
+            testCaseMessage.setAccepted(ackAnalyzer.isPositive());
+
+            if (ackMessageReader.advanceToSegment("MSA")) {
+              testCaseMessage.setActualResultAckType(ackMessageReader.getValue(1));
+              testCaseMessage.setActualResultAckMessage(ackMessageReader.getValue(2));
+              boolean accepted = false;
+              boolean rejected = false;
+              boolean issueFound = false;
+              boolean severitySet = false;
+              errorType = ErrorType.UNKNOWN;
+
+              if (testCaseMessage.getActualResultAckType().equals("AA")) {
+                accepted = true;
+              } else if (testCaseMessage.getActualResultAckType().equals("AR")) {
+                rejected = true;
+              }
+
+              if (assertResultText.equals("*")) {
+                issueFound = true;
+              }
+
+              while (ackMessageReader.advanceToSegment("ERR")) {
+                String severity = ackMessageReader.getValue(4);
+                String userMessage = ackMessageReader.getValue(8);
+                TestError error = new TestError();
+                errorList.add(error);
+
+                if (!severity.equals("")) {
+                  severitySet = true;
+                }
+
+                if (severity.equals("E")) {
+                  rejected = true;
+                  error.setErrorType(ErrorType.ERROR);
+                } else if (severity.equals("W")) {
+                  error.setErrorType(ErrorType.WARNING);
+                } else if (severity.equals("I")) {
+                  error.setErrorType(ErrorType.INFORMATION);
+                } else {
+                  error.setErrorType(ErrorType.UNKNOWN);
+                }
+                error.setDescription(userMessage);
+
+                if (!assertResultText.equals("*") && !testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept")) {
+                  if (userMessage.toUpperCase().startsWith(assertResultText)) {
+                    errorType = error.getErrorType();
+                    if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Warn")) {
+                      if (severity.equals("W")) {
+                        issueFound = true;
+                      }
+                    } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Skip")) {
+                      if (severity.equals("I")) {
+                        issueFound = true;
+                      }
+                    } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Error")) {
+                      if (severity.equals("E")) {
+                        issueFound = true;
+                      }
+                    } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Reject")) {
+                      issueFound = true;
+                    }
+                  }
+                }
+
+              }
+              if (testCaseMessage.getActualResultAckType().equals("AE") && !rejected) {
+                if (severitySet) {
+                  accepted = true;
+                  rejected = false;
+                } else {
+                  accepted = false;
+                  rejected = true;
+                }
+              }
+
+              passedTest = false;
+              if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept")) {
+                passedTest = issueFound && ackAnalyzer.isPositive();
+              } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Warn")) {
+                passedTest = issueFound && !rejected;
+              } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Skip")) {
+                passedTest = issueFound && !rejected;
+              } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Error")
+                  || testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Reject")) {
+                passedTest = issueFound && !ackAnalyzer.isPositive();
+              } else if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Reject")
+                  || testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept or Error")) {
+                passedTest = issueFound;
+              }
+              if (errorType == ErrorType.UNKNOWN) {
+                if (accepted) {
+                  errorType = ErrorType.ACCEPT;
+                } else if (rejected) {
+                  errorType = ErrorType.ERROR;
+                }
+              }
+
+            }
+          }
+        }
+
+        if (passedTest) {
+          status = "A";
+          testCaseMessage.setActualResultStatus(ACTUAL_RESULT_STATUS_PASS);
+          for (TestError error : errorList) {
+            if (status.equals("A") && error.getErrorType() == ErrorType.WARNING) {
+              // ignore skip warnings
+              if (error.getErrorType() != ErrorType.INFORMATION) {
+                status = "W";
+              }
+            }
+          }
+        } else {
+          testCaseMessage.setActualResultStatus(ACTUAL_RESULT_STATUS_FAIL);
+          status = "E";
+        }
       }
     }
     testCaseMessage.setActualResponseMessage(ackMessageText);
@@ -255,5 +271,4 @@ public class TestRunner
     return passedTest;
   }
 
-  
 }
