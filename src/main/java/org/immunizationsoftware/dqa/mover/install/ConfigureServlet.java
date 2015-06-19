@@ -16,6 +16,7 @@ import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.connectors.ConnectorFactory;
 import org.immunizationsoftware.dqa.tester.connectors.HttpConnector;
 import org.immunizationsoftware.dqa.tester.connectors.Connector.TransferType;
+import org.immunizationsoftware.dqa.tester.connectors.SoapConnector;
 
 public class ConfigureServlet extends ClientServlet
 {
@@ -28,6 +29,8 @@ public class ConfigureServlet extends ClientServlet
   public static final String TEMPLATE_CAIR_PROD = "CAIR Prod";
   public static final String TEMPLATE_MT_IMMTRAX_TEST = "MT imMTrax Test";
   public static final String TEMPLATE_MT_IMMTRAX_PRODUCTION = "MT imMTrax Production";
+  public static final String TEMPLATE_MN_MIIC_TEST = "MN MIIC Test";
+  public static final String TEMPLATE_MN_MIIC_PRODUCTION = "MN MIIC Production";
   public static final String TEMPLATE_NMSIIS_RAW_PROD = "NMSIIS Raw Production";
   public static final String TEMPLATE_NMSIIS_RAW_UAT = "NMSIIS Raw UAT";
   public static final String TEMPLATE_NV_WEBIZ_PRODUCTION = "NV WebIZ Production";
@@ -231,6 +234,11 @@ public class ConfigureServlet extends ClientServlet
             + "RXR-2.1*=[MAP 'LI'=>'LLFA']\n" + "remove observation 30956-7\n" + "remove empty observations\n");
         httpConnector.setAckType(AckAnalyzer.AckType.WEBIZ);
         httpConnector.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
+      } else if (templateName.equals(TEMPLATE_MN_MIIC_PRODUCTION) || templateName.equals(TEMPLATE_MN_MIIC_TEST)) {
+        SoapConnector soapConnector = (SoapConnector) connector;
+        soapConnector.setCustomTransformations("MSH-4=[OTHERID]\n" + "MSH-5=MIIC \n" + "MSH-6=MIIC \n" + "fix missing mother maiden first \n");
+        soapConnector.setAckType(AckAnalyzer.AckType.MIIC);
+        soapConnector.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
       }
     }
   }
@@ -313,6 +321,24 @@ public class ConfigureServlet extends ClientServlet
         cc.setOtheridShow(true);
         cc.setOtheridRequired(true);
         cc.setReceiverName("NV WebIZ");
+      } else if (templateName.equals(TEMPLATE_MN_MIIC_TEST) || templateName.equals(TEMPLATE_MN_MIIC_PRODUCTION)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setInstructions("Contact MN MIIC for connecting information.");
+        if (templateName.equals(TEMPLATE_MN_MIIC_PRODUCTION)) {
+          cc.setUrl("");
+        } else {
+          cc.setUrl("https://miic.health.state.mn.us/miic-ws-test/client_Service?wsdl");
+        }
+        cc.setTypeShow(false);
+        cc.setUseridLabel("User Name");
+        cc.setUseridRequired(true);
+        cc.setFacilityidShow(true);
+        cc.setOtheridLabel("MSH-4");
+        cc.setPasswordLabel("Password");
+        cc.setPasswordRequired(true);
+        cc.setOtheridShow(true);
+        cc.setOtheridRequired(true);
+        cc.setReceiverName("MN MIIC");
       } else if (templateName.equals(TEMPLATE_WA_IIS_TESTING)) {
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setUrl("https://test-fortress.wa.gov/doh/cpir/iweb/HL7Server");

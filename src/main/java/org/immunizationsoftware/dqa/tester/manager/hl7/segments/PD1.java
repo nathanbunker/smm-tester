@@ -237,7 +237,7 @@ public class PD1 extends HL7Component
     setChild(10, duplicatePatient = new CX("Duplicate Patient", UsageType.O));
     setChild(11, publicityCode = new CE("Publicity Code", UsageType.RE, Cardinality.ZERO_OR_ONE, ValueSet.HL70215));
     setChild(12, protectionIndicator = new ID("Protection Indicator", UsageType.RE, Cardinality.ZERO_OR_ONE,
-        ValueSet.HL70215));
+        ValueSet.HL70136));
     setChild(13, protectionIndicatorEffectiveDate = new DT("Protection Indicator Effective Date", UsageType.C,
         Cardinality.ZERO_OR_ONE));
     protectionIndicatorEffectiveDate.setConditionalPredicate(new IsValued(protectionIndicator, UsageType.RE,

@@ -162,8 +162,8 @@ public class ProfileServlet extends ClientServlet {
                 for (ProfileLine profileLine : profileLineList) {
                   ProfileUsageValue profileUsageValueConformance = profileUsageCompare.getProfileUsageValueMap().get(profileLine.getField());
                   if (profileUsageValueConformance != null) {
-                    CompatibilityConformance compatibility = ProfileManager.getCompatibilityConformance(profileLine.getProfileUsageValue(),
-                        profileUsageValueConformance);
+                    CompatibilityConformance compatibility = ProfileManager.getCompatibilityConformance(
+                        profileLine.getProfileUsageValue().getUsage(), profileUsageValueConformance.getUsage());
                     List<ProfileLine> pll = compatibilityMap.get(compatibility);
                     if (pll == null) {
                       pll = new ArrayList<ProfileLine>();
@@ -682,7 +682,7 @@ public class ProfileServlet extends ClientServlet {
             String link = "ProfileServlet?show=Edit&fieldName=" + URLEncoder.encode(profileField.getFieldName(), "UTF-8");
             out.println("  <tr>");
             if (profileLine.getUsage() == Usage.NOT_DEFINED
-                || (profileField.getType() != ProfileFieldType.FIELD && profileField.getType() != ProfileFieldType.FIELD_SUB_PART)) {
+                || (profileField.getType() != ProfileFieldType.FIELD && profileField.getType() != ProfileFieldType.FIELD_PART)) {
               out.println("    <td>" + profileField.getFieldName() + "</td>");
               out.println("    <td>" + profileField.getDescription() + "</td>");
             } else {

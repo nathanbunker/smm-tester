@@ -2243,6 +2243,7 @@ HL70396=NIP002,Substance refusal reason,HL70396
 HL70396=NIP003,Observation identifiers,HL70396
 HL70396=NIP004,Contraindications, Precautions, and Immunities,HL70396
 HL70396=LN,LOINC,HL70396
+HL70396=UCUM,UCUM,HL70396
 HL70125=CE,Coded Entry,HL70125
 HL70125=TS,Time Stamp (Date & Time),HL70125
 HL70203=BRN,Breed Registry Number,HL70203
