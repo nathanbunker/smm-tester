@@ -53,8 +53,7 @@ public class ProfileManager {
   public static List<ProfileLine> createProfileLines(List<ProfileField> profileFieldList, ProfileUsage profileUsage, boolean includeDataType) {
     List<ProfileLine> profileLineList = new ArrayList<ProfileLine>();
     for (ProfileField profileField : profileFieldList) {
-      if (profileField.isDataType() && !includeDataType)
-      {
+      if (profileField.isDataType() && !includeDataType) {
         continue;
       }
       ProfileUsageValue profileUsageValue = profileUsage.getProfileUsageValueMap().get(profileField);
@@ -185,10 +184,10 @@ public class ProfileManager {
 
   public void saveProfileUsage(ProfileUsage profileUsage, List<ProfileLine> profileLineList) throws IOException {
     PrintWriter out = new PrintWriter(profileUsage.getFile());
-    out.println("Field Name,Usage,Value,Comments,Notes");
+    out.println("Field Name,Usage,Value,Comments,Notes,Usage Detected");
     try {
       for (ProfileLine profileLine : profileLineList) {
-        
+
         ProfileUsageValue profileUsageValue = profileLine.getProfileUsageValue();
         if (profileUsageValue != null && profileUsageValue.getUsage() != Usage.NOT_DEFINED) {
           out.print("\"");
@@ -205,6 +204,9 @@ public class ProfileManager {
           out.println("\"");
           out.print("\"");
           out.print(profileUsageValue.getNotes().replace('"', '\''));
+          out.print("\",");
+          out.print("\"");
+          out.print(profileUsageValue.getUsageDetected());
           out.println("\"");
         }
       }
@@ -240,7 +242,7 @@ public class ProfileManager {
         valueListMap.put(fieldNameString, valueList);
       }
       in.close();
-      
+
       for (ProfileField profileField : profileFieldList) {
         List<String> valueList = valueListMap.get(profileField.getFieldName());
         if (valueList != null) {
@@ -248,6 +250,7 @@ public class ProfileManager {
           String usageValue = CvsReader.readValue(2, valueList);
           String usageComments = CvsReader.readValue(3, valueList);
           String usageNotes = CvsReader.readValue(4, valueList);
+          String usageDetectedString = CvsReader.readValue(5, valueList);
           ProfileUsageValue profileUsageValue = profileUsage.getProfileUsageValueMap().get(profileField);
           if (profileUsageValue == null) {
             profileUsageValue = new ProfileUsageValue();
@@ -465,11 +468,9 @@ public class ProfileManager {
     MessageAcceptStatus masFieldSubPart = null;
     for (ProfileLine profileLine : profileLineList) {
       ProfileField field = profileLine.getField();
-      if (field.isDataType())
-      {
+      if (field.isDataType()) {
         continue;
-      }
-      else if (field.getType() == ProfileFieldType.SEGMENT) {
+      } else if (field.getType() == ProfileFieldType.SEGMENT) {
         masSegment = determineMessageAcceptStatus(profileLine, MessageAcceptStatus.ONLY_IF_PRESENT);
         profileLine.setMessageAcceptStatus(masSegment);
       } else if (field.getType() == ProfileFieldType.FIELD) {
@@ -494,11 +495,12 @@ public class ProfileManager {
   public static MessageAcceptStatus determineMessageAcceptStatus(ProfileLine profileLine, MessageAcceptStatus masHigher) {
     MessageAcceptStatus mas = null;
     Usage usage = profileLine.getUsage();
-    if (usage == Usage.NOT_DEFINED)
-    {
+    if (usage == Usage.NOT_DEFINED) {
       usage = profileLine.getField().getTestUsage();
     }
-    if (masHigher == MessageAcceptStatus.ONLY_IF_ABSENT || usage == Usage.X) {
+    if (usage == Usage.R_SPECIAL) {
+      mas = MessageAcceptStatus.ONLY_IF_PRESENT;
+    } else if (masHigher == MessageAcceptStatus.ONLY_IF_ABSENT || usage == Usage.X) {
       mas = MessageAcceptStatus.ONLY_IF_ABSENT;
     } else if (masHigher == MessageAcceptStatus.ONLY_IF_PRESENT && usage == Usage.R) {
       mas = MessageAcceptStatus.ONLY_IF_PRESENT;
@@ -519,14 +521,16 @@ public class ProfileManager {
     return -1;
   }
 
-  public static CompatibilityConformance getCompatibilityConformance(ProfileUsageValue profileUsageValue,
-      ProfileUsageValue profileUsageValueConformance) {
+  public static CompatibilityConformance getCompatibilityConformance(Usage profileUsage,
+      Usage profileUsageConformance) {
 
-    switch (profileUsageValueConformance.getUsage()) {
+    switch (profileUsageConformance) {
     case R:
-      switch (profileUsageValue.getUsage()) {
+      switch (profileUsage) {
       case R:
         return CompatibilityConformance.COMPATIBLE;
+      case R_SPECIAL:
+        return CompatibilityConformance.CONFLICT;
       case RE:
         return CompatibilityConformance.ALLOWANCE;
       case O:
@@ -546,8 +550,9 @@ public class ProfileManager {
         return CompatibilityConformance.UNABLE_TO_DETERMINE;
       }
     case RE:
-      switch (profileUsageValue.getUsage()) {
+      switch (profileUsage) {
       case R:
+      case R_SPECIAL:
         return CompatibilityConformance.CONSTRAINT;
       case RE:
         return CompatibilityConformance.COMPATIBLE;
@@ -568,8 +573,9 @@ public class ProfileManager {
         return CompatibilityConformance.UNABLE_TO_DETERMINE;
       }
     case NOT_DEFINED:
-      switch (profileUsageValue.getUsage()) {
+      switch (profileUsage) {
       case R:
+      case R_SPECIAL:
         return CompatibilityConformance.MAJOR_CONSTRAINT;
       case RE:
         return CompatibilityConformance.CONSTRAINT;
@@ -590,8 +596,9 @@ public class ProfileManager {
         return CompatibilityConformance.UNABLE_TO_DETERMINE;
       }
     case O:
-      switch (profileUsageValue.getUsage()) {
+      switch (profileUsage) {
       case R:
+      case R_SPECIAL:
         return CompatibilityConformance.MAJOR_CONSTRAINT;
       case RE:
         return CompatibilityConformance.CONSTRAINT;
@@ -612,8 +619,9 @@ public class ProfileManager {
         return CompatibilityConformance.UNABLE_TO_DETERMINE;
       }
     case X:
-      switch (profileUsageValue.getUsage()) {
+      switch (profileUsage) {
       case R:
+      case R_SPECIAL:
         return CompatibilityConformance.MAJOR_CONFLICT;
       case RE:
         return CompatibilityConformance.MAJOR_CONFLICT;
@@ -646,6 +654,7 @@ public class ProfileManager {
     case R:
       switch (profileUsageValue.getUsage()) {
       case R:
+      case R_SPECIAL:
         return CompatibilityInteroperability.COMPATIBLE;
       case RE:
         return CompatibilityInteroperability.NO_PROBLEM;
@@ -668,6 +677,7 @@ public class ProfileManager {
     case RE:
       switch (profileUsageValue.getUsage()) {
       case R:
+      case R_SPECIAL:
         return CompatibilityInteroperability.IF_POPULATED;
       case RE:
         return CompatibilityInteroperability.COMPATIBLE;
@@ -689,8 +699,13 @@ public class ProfileManager {
       }
     case O:
     case NOT_DEFINED:
+    case R_NOT_ENFORCED:
+    case RE_NOT_USED:
+    case O_NOT_USED:
+    case X_NOT_ENFORCED:
       switch (profileUsageValue.getUsage()) {
       case R:
+      case R_SPECIAL:
         return CompatibilityInteroperability.PROBLEM;
       case RE:
         return CompatibilityInteroperability.PROBLEM;
@@ -713,6 +728,7 @@ public class ProfileManager {
     case X:
       switch (profileUsageValue.getUsage()) {
       case R:
+      case R_SPECIAL:
         return CompatibilityInteroperability.MAJOR_PROBLEM;
       case RE:
         return CompatibilityInteroperability.PROBLEM;
@@ -735,6 +751,7 @@ public class ProfileManager {
     case R_OR_RE:
       switch (profileUsageValue.getUsage()) {
       case R:
+      case R_SPECIAL:
         return CompatibilityInteroperability.IF_CONFIGURED;
       case RE:
         return CompatibilityInteroperability.IF_CONFIGURED;
@@ -757,6 +774,7 @@ public class ProfileManager {
     case R_OR_X:
       switch (profileUsageValue.getUsage()) {
       case R:
+      case R_SPECIAL:
         return CompatibilityInteroperability.IF_CONFIGURED;
       case RE:
         return CompatibilityInteroperability.IF_CONFIGURED;
@@ -779,6 +797,7 @@ public class ProfileManager {
     case RE_OR_O:
       switch (profileUsageValue.getUsage()) {
       case R:
+      case R_SPECIAL:
         return CompatibilityInteroperability.IF_POPULATED;
       case RE:
         return CompatibilityInteroperability.IF_CONFIGURED;
@@ -801,6 +820,7 @@ public class ProfileManager {
     case RE_OR_X:
       switch (profileUsageValue.getUsage()) {
       case R:
+      case R_SPECIAL:
         return CompatibilityInteroperability.IF_POPULATED;
       case RE:
         return CompatibilityInteroperability.IF_CONFIGURED;

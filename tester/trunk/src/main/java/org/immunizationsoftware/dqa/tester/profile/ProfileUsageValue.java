@@ -3,10 +3,18 @@ package org.immunizationsoftware.dqa.tester.profile;
 public class ProfileUsageValue
 {
   private Usage usage = null;
+  private Usage usageDetected = null;
   private String value = "";
   private String comments = "";
   private String notes = "";
   
+  public Usage getUsageDetected() {
+    return usageDetected;
+  }
+  public void setUsageDetected(Usage usageDetected) {
+    this.usageDetected = usageDetected;
+  }
+
   public String getNotes() {
     return notes;
   }

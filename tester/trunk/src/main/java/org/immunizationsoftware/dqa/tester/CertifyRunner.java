@@ -46,6 +46,7 @@ import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
 import org.immunizationsoftware.dqa.tester.profile.CompatibilityConformance;
 import org.immunizationsoftware.dqa.tester.profile.CompatibilityInteroperability;
 import org.immunizationsoftware.dqa.tester.profile.MessageAcceptStatus;
+import org.immunizationsoftware.dqa.tester.profile.ProfileCategory;
 import org.immunizationsoftware.dqa.tester.profile.ProfileLine;
 import org.immunizationsoftware.dqa.tester.profile.ProfileManager;
 import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
@@ -779,8 +780,10 @@ public class CertifyRunner extends Thread {
     int count;
     int countPass = 0;
     count = 0;
+    int profilingRunCount = 0;
     Map<String, TestCaseMessage> testCaseMessageMap = new HashMap<String, TestCaseMessage>();
     for (ProfileLine profileLine : profileLineList) {
+      profileLine.setUsageDetected(profileLine.getUsage());
       count++;
       TestCaseMessage testCaseMessagePresent = getPresentTestCase(profileLine, count, tcmFull);
       TestCaseMessage testCaseMessageAbsent = getAbsentTestCase(profileLine, count, tcmFull);
@@ -821,6 +824,36 @@ public class CertifyRunner extends Thread {
           } else {
             profileLine.setMessageAcceptStatusDetected(MessageAcceptStatus.IF_PRESENT_OR_ABSENT);
           }
+          if (profileLine.getMessageAcceptStatusDetected() != profileLine.getMessageAcceptStatus()) {
+            if (profileLine.getMessageAcceptStatus() == MessageAcceptStatus.ONLY_IF_PRESENT) {
+              if (profileLine.getMessageAcceptStatusDetected() == MessageAcceptStatus.IF_PRESENT_OR_ABSENT) {
+                profileLine.setUsageDetected(Usage.R_NOT_ENFORCED);
+              } else if (profileLine.getMessageAcceptStatusDetected() == MessageAcceptStatus.ONLY_IF_ABSENT) {
+                profileLine.setUsageDetected(Usage.X);
+              }
+            } else if (profileLine.getMessageAcceptStatus() == MessageAcceptStatus.IF_PRESENT_OR_ABSENT) {
+              if (profileLine.getMessageAcceptStatusDetected() == MessageAcceptStatus.ONLY_IF_PRESENT) {
+                if (profileLine.getUsage() == Usage.R) {
+                  profileLine.setUsageDetected(Usage.R_SPECIAL);
+                } else {
+                  profileLine.setUsageDetected(Usage.R);
+                }
+              } else if (profileLine.getMessageAcceptStatusDetected() == MessageAcceptStatus.ONLY_IF_ABSENT) {
+                profileLine.setUsageDetected(Usage.X);
+              }
+            } else if (profileLine.getMessageAcceptStatus() == MessageAcceptStatus.ONLY_IF_ABSENT) {
+              if (profileLine.getMessageAcceptStatusDetected() == MessageAcceptStatus.ONLY_IF_PRESENT) {
+                if (profileLine.getUsage() == Usage.R) {
+                  profileLine.setUsageDetected(Usage.R_SPECIAL);
+                } else {
+                  profileLine.setUsageDetected(Usage.R);
+                }
+              } else if (profileLine.getMessageAcceptStatusDetected() == MessageAcceptStatus.IF_PRESENT_OR_ABSENT) {
+                profileLine.setUsageDetected(Usage.X_NOT_ENFORCED);
+              }
+            }
+
+          }
           if (testCaseMessagePresent.isPassedTest() && testCaseMessageAbsent.isPassedTest()) {
             countPass++;
             profileLine.setPassed(true);
@@ -828,6 +861,7 @@ public class CertifyRunner extends Thread {
           profileLine.setHasRun(true);
           printExampleMessage(testCaseMessagePresent, "I Profiling");
           printExampleMessage(testCaseMessageAbsent, "I Profiling");
+          profilingRunCount++;
         }
       } catch (Throwable t) {
         testCaseMessagePresent.setException(t);
@@ -843,7 +877,7 @@ public class CertifyRunner extends Thread {
       }
     }
     areaScore[SUITE_I_PROFILING][0] = makeScore(countPass, profileLineList.size());
-    areaCount[SUITE_I_PROFILING][0] = profileLineList.size();
+    areaCount[SUITE_I_PROFILING][0] = profilingRunCount;
 
     areaProgress[SUITE_I_PROFILING][0] = 100;
   }
@@ -1841,7 +1875,7 @@ public class CertifyRunner extends Thread {
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.appendOriginalMessage("OBX|5|NM|6287-7^Baker's yeast IgE Ab in Serum^LN||1945||||||F\n");
-      testCaseMessage.setDescription(" : Message includes observation not typically sent to IIS");
+      testCaseMessage.setDescription("Tolerance Check : Message includes observation not typically sent to IIS");
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
@@ -2808,16 +2842,18 @@ public class CertifyRunner extends Thread {
       }
       if (profileLineList != null) {
         for (ProfileLine profileLine : profileLineList) {
-          ProfileUsageValue profileUsageValueConformance = profileUsageComparisonConformance.getProfileUsageValueMap().get(profileLine.getField());
-          if (profileUsageValueConformance != null) {
-            CompatibilityConformance compatibility = ProfileManager.getCompatibilityConformance(profileLine.getProfileUsageValue(),
-                profileUsageValueConformance);
-            List<ProfileLine> profileLineList = compatibilityMap.get(compatibility);
-            if (profileLineList == null) {
-              profileLineList = new ArrayList<ProfileLine>();
-              compatibilityMap.put(compatibility, profileLineList);
+          if (profileUsageComparisonConformance != null && profileUsageComparisonConformance.getProfileUsageValueMap() != null) {
+            ProfileUsageValue profileUsageValueConformance = profileUsageComparisonConformance.getProfileUsageValueMap().get(profileLine.getField());
+            if (profileUsageValueConformance != null) {
+              CompatibilityConformance compatibility = ProfileManager.getCompatibilityConformance(profileLine.getUsageDetected(),
+                  profileUsageValueConformance.getUsage());
+              List<ProfileLine> profileLineList = compatibilityMap.get(compatibility);
+              if (profileLineList == null) {
+                profileLineList = new ArrayList<ProfileLine>();
+                compatibilityMap.put(compatibility, profileLineList);
+              }
+              profileLineList.add(profileLine);
             }
-            profileLineList.add(profileLine);
           }
         }
         if (compatibilityMap.get(CompatibilityConformance.MAJOR_CONFLICT) != null) {
@@ -3054,7 +3090,6 @@ public class CertifyRunner extends Thread {
           out.println("    <th>Field</th>");
           out.println("    <th>Description</th>");
           out.println("    <th>Usage</th>");
-          out.println("    <th>Should Accept Message</th>");
           out.println("    <th>Detected</th>");
           out.println("    <th>Status</th>");
           out.println("    <th>Field Present</th>");
@@ -3679,33 +3714,41 @@ public class CertifyRunner extends Thread {
       out.println("</ul>");
 
       out.println("<div id=\"areaILevel1\"/>");
-      out.println("<table border=\"1\" cellspacing=\"0\">");
-      out.println("  <tr>");
-      out.println("    <th>Field</th>");
-      out.println("    <th>Description</th>");
-      out.println("    <th>Usage</th>");
-      out.println("    <th>Should Accept Message</th>");
-      out.println("    <th>Detected</th>");
-      out.println("    <th>Status</th>");
-      out.println("    <th>Field Present</th>");
-      out.println("    <th>Field Absent</th>");
-      out.println("  </tr>");
+      String segmentName = "";
       for (ProfileLine profileLine : profileLineList) {
-        if (profileLine.getUsage() != Usage.NOT_DEFINED
+        if ((profileLine.getUsage() != Usage.NOT_DEFINED && profileUsage.getCategory() != ProfileCategory.US)
             || (profileLine.getTestCaseMessagePresent() != null && profileLine.getTestCaseMessagePresent().hasIssue()
                 && profileLine.getTestCaseMessageAbsent() != null && profileLine.getTestCaseMessageAbsent().hasIssue())) {
+          if (!segmentName.equals(profileLine.getField().getSegmentName())) {
+            if (!segmentName.equals("")) {
+              out.println("</table>");
+            }
+            out.println("<h3>" + profileLine.getField().getSegmentName() + " Segment</h3>");
+            out.println("<table border=\"1\" cellspacing=\"0\">");
+            out.println("  <tr>");
+            out.println("    <th>Field</th>");
+            out.println("    <th>Description</th>");
+            out.println("    <th>Usage</th>");
+            out.println("    <th>Detected</th>");
+            out.println("    <th>Status</th>");
+            out.println("    <th>Field Present</th>");
+            out.println("    <th>Field Absent</th>");
+            out.println("  </tr>");
+            segmentName = profileLine.getField().getSegmentName();
+          }
           printProfileLine(out, toFile, profileLine);
         }
       }
       out.println("</table>");
       if (profileUsageComparisonConformance != null) {
-        out.println("<h3>Conformance to " + profileUsageComparisonConformance + "</h3>");
+        out.println("<h2>Conformance to " + profileUsageComparisonConformance + "</h2>");
         out.println("<table border=\"1\" cellspacing=\"0\">");
         out.println("  <tr>");
         out.println("    <th>Field</th>");
         out.println("    <th>Description</th>");
-        out.println("    <th>" + connector.getLabel() + " Usage</th>");
-        out.println("    <th>Comparison Usage</th>");
+        out.println("    <th>Conformance Usage</th>");
+        out.println("    <th>Detected Usage</th>");
+        out.println("    <th>Status</th>");
         out.println("  </tr>");
         for (ProfileLine profileLine : profileLineList) {
           if (profileLine.getUsage() != Usage.NOT_DEFINED) {
@@ -3865,32 +3908,17 @@ public class CertifyRunner extends Thread {
       out.println("<div id=\"areaHLevel1\"/>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
-      out.println("    <th colspan=\"2\">Conformance Tests - Level 1 - ACK Correctly Formatted</th>");
+      out.println("    <th colspan=\"2\">Conformance Tests - Level 1 - ACK Incorrectly Formatted</th>");
       out.println("  </tr>");
       for (TestCaseMessage testCaseMessage : ackAnalysisList) {
-        String classText = "nottested";
         HL7Component actualResponseMessageComponent = TestCaseMessageManager.createHL7Component(testCaseMessage);
-        if (actualResponseMessageComponent != null) {
-          classText = actualResponseMessageComponent.hasNoErrors() ? "pass" : "fail";
+        if (actualResponseMessageComponent == null || actualResponseMessageComponent.hasNoErrors()) {
+          continue;
         }
         out.println("  <tr>");
-        out.println("    <td class=\"" + classText + "\"><em>" + testCaseMessage.getDescription() + "</em></td>");
-        if (actualResponseMessageComponent != null) {
-          if (actualResponseMessageComponent.hasNoErrors()) {
-            out.println("    <td class=\"" + classText + "\">Ack meets HL7 and CDC standards.  "
-                + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
-          } else {
-            out.println("    <td class=\"" + classText + "\">Ack did not meet HL7 or CDC standards. "
-                + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
-          }
-        } else if (testCaseMessage.getException() != null) {
-          out.println("    <td class=\"fail\">");
-          out.println("Exception when transmitting message: " + testCaseMessage.getException().getMessage() + ". "
-              + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
-          out.println("</td>");
-        } else {
-          out.println("    <td class=\"" + classText + "\">not run yet</td>");
-        }
+        out.println("    <td class=\"fail\"><em>" + testCaseMessage.getDescription() + "</em></td>");
+        out.println("    <td class=\"fail\">Ack did not meet HL7 or CDC standards. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile)
+            + "</td>");
         out.println("  </tr>");
       }
       out.println("</table>");
@@ -4041,12 +4069,7 @@ public class CertifyRunner extends Thread {
     } else {
       out.println("    <td class=\"" + profileLineClassText + "\">" + profileLine.getUsage() + "</td>");
     }
-    out.println("    <td class=\"" + profileLineClassText + "\">" + profileLine.getMessageAcceptStatus() + "</td>");
-    if (profileLine.getMessageAcceptStatusDetected() == null) {
-      out.println("    <td class=\"" + profileLineClassText + "\">" + profileLine.getMessageAcceptStatusDetected() + "</td>");
-    } else {
-      out.println("    <td class=\"" + profileLineClassText + "\"></td>");
-    }
+    out.println("    <td class=\"" + profileLineClassText + "\">" + profileLine.getUsageDetected() + "</td>");
     if (profileLine.getTestCaseMessagePresent() == null || !profileLine.getTestCaseMessagePresent().hasIssue()) {
       out.println("    <td class=\"" + profileLineClassText + "\">Unable to Confirm, Present Test Not Defined</td>");
     } else if (profileLine.getTestCaseMessageAbsent() == null || !profileLine.getTestCaseMessageAbsent().hasIssue()) {
@@ -4069,8 +4092,8 @@ public class CertifyRunner extends Thread {
   public void printProfileLineComparisonConformance(PrintWriter out, boolean toFile, ProfileLine profileLine) {
     ProfileUsageValue profileUsageValue = profileUsageComparisonConformance.getProfileUsageValueMap().get(profileLine.getField());
     if (profileUsageValue != null) {
-      CompatibilityConformance compatibilityConformance = ProfileManager.getCompatibilityConformance(profileLine.getProfileUsageValue(),
-          profileUsageValue);
+      CompatibilityConformance compatibilityConformance = ProfileManager.getCompatibilityConformance(profileLine.getUsageDetected(),
+          profileUsageValue.getUsage());
       String usageClass = "";
       switch (compatibilityConformance) {
       case COMPATIBLE:
@@ -4088,12 +4111,15 @@ public class CertifyRunner extends Thread {
         usageClass = "";
         break;
       }
-      out.println("  <tr>");
-      out.println("    <td class=\"pass\">" + profileLine.getField().getFieldName() + "</td>");
-      out.println("    <td class=\"pass\">" + profileLine.getField().getDescription() + "</td>");
-      out.println("    <td class=\"" + usageClass + "\">" + compatibilityConformance + "</td>");
-      out.println("    <td class=\"" + usageClass + "\">" + profileUsageValue.getUsage() + "</td>");
-      out.println("  </tr>");
+      if (usageClass.equals("fail")) {
+        out.println("  <tr>");
+        out.println("    <td class=\"pass\">" + profileLine.getField().getFieldName() + "</td>");
+        out.println("    <td class=\"pass\">" + profileLine.getField().getDescription() + "</td>");
+        out.println("    <td class=\"" + usageClass + "\">" + profileUsageValue.getUsage() + "</td>");
+        out.println("    <td class=\"" + usageClass + "\">" + profileLine.getUsageDetected() + "</td>");
+        out.println("    <td class=\"" + usageClass + "\">" + compatibilityConformance + "</td>");
+        out.println("  </tr>");
+      }
     }
   }
 

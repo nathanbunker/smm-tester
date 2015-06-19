@@ -6,6 +6,7 @@ public class ProfileLine
 {
   private ProfileField field;
   private Usage usage = Usage.NOT_DEFINED;
+  private Usage usageDetected = Usage.NOT_DEFINED;
   private TestCaseMessage testCaseMessagePresent = null;
   private TestCaseMessage testCaseMessageAbsent = null;
   private boolean passed = false;
@@ -14,6 +15,14 @@ public class ProfileLine
   private MessageAcceptStatus messageAcceptStatusDetected = null;
   private ProfileUsageValue profileUsageValue = null;
   
+  public Usage getUsageDetected() {
+    return usageDetected;
+  }
+
+  public void setUsageDetected(Usage usageDetected) {
+    this.usageDetected = usageDetected;
+  }
+
   public ProfileLine(ProfileUsageValue profileUsageValue)
   {
     this.profileUsageValue = profileUsageValue;

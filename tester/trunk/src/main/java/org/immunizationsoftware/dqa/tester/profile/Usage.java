@@ -1,7 +1,7 @@
 package org.immunizationsoftware.dqa.tester.profile;
 
 public enum Usage {
-  R, RE, O, X, RE_OR_O, R_OR_X, RE_OR_X, R_OR_RE, R_NOT_ENFORCED, RE_NOT_USED, O_NOT_USED, X_NOT_ENFORCED, NOT_DEFINED;
+  R, RE, O, X, RE_OR_O, R_OR_X, RE_OR_X, R_OR_RE, R_SPECIAL, R_NOT_ENFORCED, RE_NOT_USED, O_NOT_USED, X_NOT_ENFORCED, NOT_DEFINED;
   public String getDescription() {
     switch (this) {
     case R:
@@ -20,6 +20,8 @@ public enum Usage {
       return "Required, but may be empty or Not supported";
     case R_OR_X:
       return "Required or Not supported";
+    case R_SPECIAL:
+      return "Required, in only in specific circumstances";
     case R_NOT_ENFORCED:
       return "Required, but not enforced";
     case RE_NOT_USED:
@@ -54,6 +56,8 @@ public enum Usage {
       return Usage.RE_OR_X;
     } else if (usageString.equalsIgnoreCase("R_OR_RE")) {
       return Usage.R_OR_RE;
+    } else if (usageString.equalsIgnoreCase("R!")) {
+      return Usage.R_SPECIAL;
     } else if (usageString.equalsIgnoreCase("R*")) {
       return Usage.R_NOT_ENFORCED;
     } else if (usageString.equalsIgnoreCase("RE*")) {
@@ -86,6 +90,8 @@ public enum Usage {
         return "RE or X";
       case R_OR_X:
         return "R or X";
+      case R_SPECIAL:
+        return "R!";
       case R_NOT_ENFORCED:
         return "R*";
       case RE_NOT_USED:

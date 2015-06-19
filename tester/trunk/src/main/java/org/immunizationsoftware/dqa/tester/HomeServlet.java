@@ -115,6 +115,10 @@ public class HomeServlet extends ClientServlet
         out.println("    <td><a href=\"interfaceProfile\">Profile Interface</a></td>");
         out.println("    <td>This is a deprecated function that is now covered by the Test IIS. </td>");
         out.println("  </tr>");
+        out.println("  <tr>");
+        out.println("    <td><a href=\"VerifyServlet\">Verify Message</a></td>");
+        out.println("    <td>This is a real time interface for verifying a message. It will produce an ACK for a given VXU or QBP.  </td>");
+        out.println("  </tr>");
         if (user.isAdmin()) {
           out.println("  <tr>");
           out.println("    <td><a href=\"CertifyHistoryServlet\">Test IIS Results</a></td>");

@@ -6,8 +6,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AckAnalyzer
-{
+public class AckAnalyzer {
 
   public static enum ErrorType {
     UNKNOWN, AUTHENTICATION, SENDER_PROBLEM, RECEIVER_PROBLEM
@@ -119,8 +118,7 @@ public class AckAnalyzer
       log("Returned result is not an acknowledgement message: first line does not start with MSH|");
     } else if (!getFieldValue("MSH", 9).equals("ACK")) {
       isNotAck = true;
-      log("Returned result is not an acknowledgement message: MSH-9 is not ACK, it is '" + getFieldValue("MSH", 9)
-          + "'");
+      log("Returned result is not an acknowledgement message: MSH-9 is not ACK, it is '" + getFieldValue("MSH", 9) + "'");
     }
     if (isNotAck) {
       ackMessage = false;
@@ -158,7 +156,17 @@ public class AckAnalyzer
         positive = !setupProblem && recordNotRejected;
       } else if (ackType.equals(AckType.MIIC)) {
         int recordRejectedPos = ackUpperCase.indexOf("REJECTED");
-        positive = recordRejectedPos == -1;
+        int pidRejectedPos = ackUpperCase.indexOf("PID #1 IGNORED");
+        positive = recordRejectedPos == -1 && pidRejectedPos == -1;
+        if (positive) {
+          int rxaRejectedPos = ackUpperCase.indexOf("RXA #");
+          if (rxaRejectedPos != -1) {
+            rxaRejectedPos = ackUpperCase.indexOf(" ", rxaRejectedPos + 5);
+            if (rxaRejectedPos != -1) {
+              positive = !ackUpperCase.substring(rxaRejectedPos + +1).startsWith("IGNORED");
+            }
+          }
+        }
         if (!positive) {
           log("The word rejected appeared in the message so the message was rejected");
         }

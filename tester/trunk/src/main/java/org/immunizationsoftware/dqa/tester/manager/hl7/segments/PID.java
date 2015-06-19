@@ -430,7 +430,7 @@ public class PID extends HL7Component
         ValueSet.HL70136));
     setChild(25, birthOrder = new NM("Birth Order", UsageType.C, Cardinality.ZERO_OR_ONE));
     birthOrder.setLength(1, 2);
-    birthOrder.setConditionalPredicate(new IsValuedAs(multipleBirthIndicator, "Y", UsageType.RE, UsageType.X));
+    birthOrder.setConditionalPredicate(new IsValuedAs(multipleBirthIndicator, "Y", UsageType.RE, UsageType.O));
     setChild(26, citizenship = new CE("Citizenship", UsageType.O));
     setChild(27, veteransMilitaryStatus = new CE("Veterans Military Status", UsageType.O));
     setChild(28, nationality = new CE("Nationality", UsageType.O));
