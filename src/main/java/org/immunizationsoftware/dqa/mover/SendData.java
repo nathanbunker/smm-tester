@@ -930,10 +930,10 @@ public class SendData extends Thread
           }
           connector.setKeyStore(keyStore);
         } catch (Exception e) {
-          System.out.println("Unable to read key store with password " + keyStorePassword);
+          System.out.println("Unable to read key store " + keyStoreFile.getAbsolutePath() + " with password " + keyStorePassword);
           e.printStackTrace();
           if (statusLogger != null) {
-            statusLogger.logError("Unable to load key store file with password '" + keyStorePassword + "'", e);
+            statusLogger.logError("Unable to load key store " + keyStoreFile.getAbsolutePath() + " with password '" + keyStorePassword + "'", e);
           }
           return false;
         }
