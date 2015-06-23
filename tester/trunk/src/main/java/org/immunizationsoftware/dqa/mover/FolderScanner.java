@@ -76,6 +76,11 @@ public class FolderScanner extends Thread
       // already found, don't look here again
       return;
     }
+    if (folder.getName().equals("_gsdata_"))
+    {
+      // this folder should not be scanned
+      return;
+    }
     managerServlet.scanForFieldDefinitions(folder);
     log("Looking in folder " + folder.getAbsolutePath());
     File configFile = new File(folder, "smm.config.txt");
