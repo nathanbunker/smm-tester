@@ -68,7 +68,7 @@ public class ORConnector extends Connector
   }
 
   public ORConnector(String label, String url) {
-    super(label, "POST");
+    super(label, "OR SOAP");
     this.url = url;
   }
 

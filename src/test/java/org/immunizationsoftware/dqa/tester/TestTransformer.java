@@ -75,6 +75,19 @@ public class TestTransformer
       + "NK1|1|Court^Maia|MTH^Mother^HL70063|\r";
 
   @Test
+  public void testTrunc() throws Exception
+  {
+    Transformer transformer = new Transformer();
+    Connector connector = ConnectorFactory.getConnector(ConnectorFactory.TYPE_POST, "Test", "");
+    String messageText = "";
+
+    messageText = "MSH|^~\\&|||||20150623104521-0600||VXU^V04^VXU_V04\rPID|\rNK1||||\r";
+    connector.setCustomTransformations("MSH-7=[TRUNC 4]\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|^~\\&|||||2015||VXU^V04^VXU_V04\rPID|\rNK1||||\r", messageText);
+    
+  }
+  @Test
   public void testClean() throws Exception {
     Transformer transformer = new Transformer();
     Connector connector = ConnectorFactory.getConnector(ConnectorFactory.TYPE_POST, "Test", "");

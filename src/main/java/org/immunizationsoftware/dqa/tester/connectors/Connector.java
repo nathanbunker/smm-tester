@@ -58,6 +58,8 @@ public abstract class Connector
         connector = new EnvisionConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_OR_SOAP)) {
         connector = new ORConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_IL_WS)) {
+        connector = new ILConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_CA_SOAP)) {
         connector = new CASoapConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_ND_SOAP)) {
@@ -114,6 +116,15 @@ public abstract class Connector
   private String purpose = "";
   private Set<String> queryResponseFieldsNotReturnedSet = null;
   private Map<String, String> scenarioTransformationsMap = new HashMap<String, String>();
+  private String segmentSeparator = "\r";
+  
+  public String getSegmentSeparator() {
+    return segmentSeparator;
+  }
+
+  public void setSegmentSeparator(String segmentSeparator) {
+    this.segmentSeparator = segmentSeparator;
+  }
 
   public boolean isDisableServerCertificateCheck() {
     return disableServerCertificateCheck;

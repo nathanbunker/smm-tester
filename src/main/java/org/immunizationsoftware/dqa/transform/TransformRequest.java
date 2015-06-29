@@ -18,7 +18,16 @@ public class TransformRequest
   private String now = null;
   private String nowNoTimezone = null;
   private String line = null;
+  private String segmentSeparator = "\r";
   
+  public String getSegmentSeparator() {
+    return segmentSeparator;
+  }
+
+  public void setSegmentSeparator(String segmentSeparator) {
+    this.segmentSeparator = segmentSeparator;
+  }
+
   public TransformRequest(String resultTextOriginal) {
     if (!resultTextOriginal.endsWith("\r")) {
       resultTextOriginal += "\r";
@@ -49,6 +58,10 @@ public class TransformRequest
 
   public void setConnector(Connector connector) {
     this.connector = connector;
+    if (this.connector != null)
+    {
+      this.segmentSeparator = this.connector.getSegmentSeparator();
+    }
   }
 
   public String getResultText() {
