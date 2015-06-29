@@ -60,6 +60,9 @@ public class Transformer {
   private static final String REP_PAT_BOY_OR_GIRL = "[BOY_OR_GIRL]";
   private static final String REP_PAT_GIRL = "[GIRL]";
   private static final String REP_PAT_BOY = "[BOY]";
+  private static final String REP_PAT_ALIAS_BOY_OR_GIRL = "[ALIAS_BOY_OR_GIRL]";
+  private static final String REP_PAT_ALIAS_GIRL = "[ALIAS_GIRL]";
+  private static final String REP_PAT_ALIAS_BOY = "[ALIAS_BOY]";
 
   private static final String REP_ENTERED_BY_FIRST = "[ENTERED_BY_FIRST]";
   private static final String REP_ENTERED_BY_LAST = "[ENTERED_BY_LAST]";
@@ -76,7 +79,7 @@ public class Transformer {
   private static final String REP_RESPONSIBLE_ORG_NAME = "[RESPONSIBLE_ORG_NAME]";
   private static final String REP_RESPONSIBLE_ORG_ID = "[RESPONSIBLE_ORG_ID]";
   private static final String REP_ADMIN_ORG_1_NAME = "[ADMIN_ORG_1_NAME]";
-  private static final String REP_ADMIN_ORG_1_ID = "[ADMIN_ORG_1_ID]";
+  private static final String REP_ADMIN_ORG_1_ID = "[ADMIN  Q_ORG_1_ID]";
   private static final String REP_ADMIN_ORG_2_NAME = "[ADMIN_ORG_2_NAME]";
   private static final String REP_ADMIN_ORG_2_ID = "[ADMIN_ORG_2_ID]";
 
@@ -945,7 +948,7 @@ public class Transformer {
         }
         handleSometimes(t);
         doReplacements(t, transformRequest);
-        resultText = setValueInHL7(resultText, t);
+        resultText = setValueInHL7(resultText, t, transformRequest);
       }
     }
     transformRequest.setResultText(resultText);
@@ -1101,14 +1104,14 @@ public class Transformer {
               motherMaidenFirst = readValueFromHL7Text("NK1#" + pos + "-2.2", resultText);
             }
             if (guardianType.equals("MTH")) {
-              resultText = setValueInHL7("PID-6.2", motherMaidenFirst, resultText);
+              resultText = setValueInHL7("PID-6.2", motherMaidenFirst, resultText, transformRequest);
               needToClear = false;
             }
           }
         }
         if (needToClear) {
-          resultText = setValueInHL7("PID-6.1", "", resultText);
-          resultText = setValueInHL7("PID-6.2", "", resultText);
+          resultText = setValueInHL7("PID-6.1", "", resultText, transformRequest);
+          resultText = setValueInHL7("PID-6.2", "", resultText, transformRequest);
         }
       }
     }
@@ -1126,10 +1129,10 @@ public class Transformer {
         if (lineResult.startsWith("OBX")) {
           String[] fields = lineResult.split("\\|");
           if (fields.length > 5 && fields[5] != null && !fields[5].startsWith("^") && !fields[5].startsWith("~") && !fields[5].equals("")) {
-            resultText += lineResult + "\r";
+            resultText += lineResult + transformRequest.getSegmentSeparator();
           }
         } else {
-          resultText += lineResult + "\r";
+          resultText += lineResult + transformRequest.getSegmentSeparator();
         }
       }
     }
@@ -1158,10 +1161,10 @@ public class Transformer {
             String[] fields = lineResult.split("\\|");
             if (fields.length <= 3 || fields[3] == null
                 || (!fields[3].equalsIgnoreCase(obsCode) && !fields[3].toLowerCase().startsWith(obsCode.toLowerCase() + "^"))) {
-              resultText += lineResult + "\r";
+              resultText += lineResult + transformRequest.getSegmentSeparator();
             }
           } else {
-            resultText += lineResult + "\r";
+            resultText += lineResult + transformRequest.getSegmentSeparator();
           }
         }
       }
@@ -1266,10 +1269,10 @@ public class Transformer {
           if (lineResult.startsWith(removeSegmentName)) {
             repeatCount++;
             if (!all && repeatCount != repeatPos) {
-              resultText += lineResult + "\r";
+              resultText += lineResult + transformRequest.getSegmentSeparator();
             }
           } else {
-            resultText += lineResult + "\r";
+            resultText += lineResult + transformRequest.getSegmentSeparator();
           }
         }
       }
@@ -1345,9 +1348,9 @@ public class Transformer {
         String insertAction = line.substring(0, nextSpace);
         line = line.substring(nextSpace).trim();
         if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_FIRST)) {
-          resultText = newSegmentName + "|\r" + resultText;
+          resultText = newSegmentName + "|" + transformRequest.getSegmentSeparator() + resultText;
         } else if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_LAST)) {
-          resultText = resultText + newSegmentName + "|\r";
+          resultText = resultText + newSegmentName + "|" + transformRequest.getSegmentSeparator();
         } else if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_AFTER) || insertAction.equalsIgnoreCase(INSERT_SEGMENT_BEFORE)) {
           int repeatPos = 0;
           int poundPos = line.indexOf("#");
@@ -1370,16 +1373,16 @@ public class Transformer {
             lineResult = lineResult.trim();
             if (lineResult.length() > 0) {
               if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_AFTER)) {
-                resultText += lineResult + "\r";
+                resultText += lineResult + transformRequest.getSegmentSeparator();
               }
               if (lineResult.startsWith(line)) {
                 repeatCount++;
                 if (repeatCount == repeatPos) {
-                  resultText += newSegmentName + "|\r";
+                  resultText += newSegmentName + "|" + transformRequest.getSegmentSeparator();
                 }
               }
               if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_BEFORE)) {
-                resultText += lineResult + "\r";
+                resultText += lineResult + transformRequest.getSegmentSeparator();
               }
             }
           }
@@ -1389,10 +1392,10 @@ public class Transformer {
     transformRequest.setResultText(resultText);
   }
 
-  public String setValueInHL7(String ref, String value, String resultText) throws IOException {
+  public String setValueInHL7(String ref, String value, String resultText, TransformRequest transformRequest) throws IOException {
     Transform transform = readHL7Reference(ref, ref.length());
     transform.value = value;
-    resultText = setValueInHL7(resultText, transform);
+    resultText = setValueInHL7(resultText, transform, transformRequest);
     return resultText;
   }
 
@@ -1445,7 +1448,7 @@ public class Transformer {
     return count;
   }
 
-  private String setValueInHL7(String resultText, Transform t) throws IOException {
+  private String setValueInHL7(String resultText, Transform t, TransformRequest transformRequest) throws IOException {
 
     BufferedReader inResult = new BufferedReader(new StringReader(resultText));
     boolean foundBoundStart = false;
@@ -1479,7 +1482,7 @@ public class Transformer {
             skip = true;
           }
           if (skip) {
-            resultText += lineResult + "\r";
+            resultText += lineResult + transformRequest.getSegmentSeparator();
             continue;
           }
         }
@@ -1638,7 +1641,7 @@ public class Transformer {
             }
           }
         }
-        resultText += lineResult + "\r";
+        resultText += lineResult + transformRequest.getSegmentSeparator();
       }
     }
     return resultText;
@@ -2093,6 +2096,10 @@ public class Transformer {
       t.value = connector.getCurrentControlId();
     } else if (t.value.toLowerCase().startsWith("[map") && t.value.endsWith("]")) {
       // do nothing
+    } else if (t.value.toLowerCase().startsWith("[trunc") && t.value.endsWith("]")) {
+      // do nothing
+    } else if (t.value.toLowerCase().startsWith("[modify") && t.value.endsWith("]")) {
+      // do nothing
     } else if (t.value.startsWith("[") && t.value.endsWith("]")) {
       String v = t.value.substring(1, t.value.length() - 1);
       t.valueTransform = readHL7Reference(v, v.length());
@@ -2158,7 +2165,13 @@ public class Transformer {
       if (j < t.value.length()) {
         p3 = t.value.substring(j);
       }
-      if (p2.equals(REP_PAT_BOY)) {
+      if (p2.equals(REP_PAT_ALIAS_BOY)) {
+        p2 = patient.getAliasBoy();
+      } else if (p2.equals(REP_PAT_ALIAS_GIRL)) {
+        p2 = patient.getAliasGirl();
+      } else if (p2.equals(REP_PAT_ALIAS_BOY_OR_GIRL)) {
+        p2 = patient.getGender().equals("F") ? patient.getAliasGirl() : patient.getAliasBoy();
+      } else if (p2.equals(REP_PAT_BOY)) {
         p2 = patient.getBoyName();
       } else if (p2.equals(REP_PAT_GIRL)) {
         p2 = patient.getGirlName();
@@ -2419,6 +2432,8 @@ public class Transformer {
         + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
     patient.setBoyName(getValue("BOY"));
     patient.setGirlName(getValue("GIRL"));
+    patient.setAliasBoy(getValue("BOY"));
+    patient.setAliasGirl(getValue("GIRL"));
     patient.setMotherName(getValue("GIRL"));
     patient.setMotherMaidenName(getValue("LAST_NAME"));
     patient.setFatherName(getValue("BOY"));

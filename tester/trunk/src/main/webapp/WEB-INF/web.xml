@@ -62,6 +62,10 @@
     <servlet-class>org.immunizationsoftware.dqa.tester.CreateTestCaseServlet</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>CatchServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.tester.CatchServlet</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>VerifyServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.tester.VerifyServlet</servlet-class>
   </servlet>
@@ -248,6 +252,10 @@
   <servlet-mapping>
     <servlet-name>ConnectServlet</servlet-name>
     <url-pattern>/ConnectServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>CatchServlet</servlet-name>
+    <url-pattern>/CatchServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>HomeServlet</servlet-name>

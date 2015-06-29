@@ -27,6 +27,8 @@ public class Patient {
     private String differentLastName = "";
     private String middleNameBoy = "";
     private String middleNameGirl = "";
+    private String aliasBoy = "";
+    private String aliasGirl = "";
     private String[] datesAny = new String[4];
     private PatientType vaccineType = null;
     private String gender = "";
@@ -70,6 +72,22 @@ public class Patient {
     private String[] adminOrg1 = null;
     private String[] adminOrg2 = null;
     
+    public String getAliasBoy() {
+      return aliasBoy;
+    }
+
+    public void setAliasBoy(String aliasBoy) {
+      this.aliasBoy = aliasBoy;
+    }
+
+    public String getAliasGirl() {
+      return aliasGirl;
+    }
+
+    public void setAliasGirl(String aliasGirl) {
+      this.aliasGirl = aliasGirl;
+    }
+
     public String getMotherSsn() {
       return motherSsn;
     }
