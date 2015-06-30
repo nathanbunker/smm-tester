@@ -432,10 +432,14 @@ public class CompareManager
     while (vxuReader.advanceToSegment("RXA")) {
       count++;
       String cvxCode = vxuReader.getValue(5);
-      String adminDate = vxuReader.getValue(3);
+      String adminDate = trunc(vxuReader.getValue(3), 8);
       if (cvxCode.equals("") || adminDate.equals("")) {
         // wouldn't expect this to be the case
         continue;
+      }
+      if (adminDate.length() > 8)
+      {
+        adminDate = adminDate.substring(0, 8);
       }
       rspReader.resetPostion();
       while (rspReader.advanceToSegment("RXA")) {
@@ -443,7 +447,7 @@ public class CompareManager
         if (rspCvxCode.equals(cvxCode)) {
           if (cvxCode.equals("998")) {
             break;
-          } else if (rspReader.getValue(3).equals(adminDate)) {
+          } else if (trunc(rspReader.getValue(3), 8).equals(adminDate)) {
             break;
           }
         }
@@ -453,8 +457,8 @@ public class CompareManager
         comparison = new Comparison();
         comparison.setHl7FieldName("RXA-3 #" + count);
         comparison.setFieldLabel("Vaccination date");
-        comparison.setOriginalValue(vxuReader.getValue(3));
-        comparison.setReturnedValue(rspReader.getValue(3));
+        comparison.setOriginalValue(trunc(vxuReader.getValue(3), 8));
+        comparison.setReturnedValue(trunc(rspReader.getValue(3), 8));
         comparison.setPriorityLevel(Comparison.PRIORITY_LEVEL_REQUIRED);
         comparisonList.add(comparison);
 
@@ -729,5 +733,14 @@ public class CompareManager
     }
 
     return comparisonList;
+  }
+  
+  private static final String trunc(String s, int length)
+  {
+    if (s != null && s.length() > length )
+    {
+      return s.substring(0, length);
+    }
+    return s;
   }
 }
