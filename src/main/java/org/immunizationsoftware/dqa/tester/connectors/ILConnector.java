@@ -14,7 +14,11 @@ import java.util.List;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
-public class ILConnector extends ORConnector {
+public class ILConnector extends ORConnector
+{
+
+  private static final String HL7_REQUEST_RESULT_START_TAG = "<HL7RequestResult>";
+  private static final String HL7_REQUEST_RESULT_END_TAG = "</HL7RequestResult>";
 
   protected ILConnector(String label, String url, String type) {
     super(label, url, type);
@@ -26,8 +30,6 @@ public class ILConnector extends ORConnector {
     this.url = url;
   }
 
-
-  
   @Override
   protected void setupFields(List<String> fields) {
     // TODO Auto-generated method stub
@@ -69,7 +71,7 @@ public class ILConnector extends ORConnector {
     return result;
 
   }
-  
+
   public String sendRequest(String request, ClientConnection conn, boolean debug) throws IOException {
     StringBuilder debugLog = null;
     if (debug) {
@@ -93,24 +95,29 @@ public class ILConnector extends ORConnector {
       urlConn.setRequestProperty("Accept", null);
       urlConn.setRequestProperty("Accept-Encoding", "gzip, deflate");
       urlConn.setRequestProperty("Expect", "100-continue");
-      urlConn.setRequestProperty("SOAPAction", "\"http://HL7_ICARE/HL7Exchange/HL7Request\"");
-      urlConn.setRequestProperty("Content-Type", "text/xml; charset=UTF-8");
+      urlConn.setRequestProperty("Content-Type",
+          "application/soap+xml; charset=UTF-8; action=\"http://HL7_ICARE/HL7Exchange/HL7Request\"");
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       String content;
 
       StringBuilder sb = new StringBuilder();
-      sb.append("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"><s:Body><HL7Request xmlns=\"http://HL7_ICARE\">");
-      sb.append("<username>");
+      sb.append("<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:hl7=\"http://HL7_ICARE\">");
+      sb.append("<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">");
+      sb.append("<wsa:To>https://icarehl7.dph.illinois.gov</wsa:To>");
+      sb.append("<wsa:Action>http://HL7_ICARE/HL7Exchange/HL7Request</wsa:Action></soap:Header>");
+      sb.append("<soap:Body>");
+      sb.append("<hl7:HL7Request>");
+      sb.append("<hl7:username>");
       sb.append(userid);
-      sb.append("</username>");
-      sb.append("<password>");
+      sb.append("</hl7:username>");
+      sb.append("<hl7:password>");
       sb.append(password);
-      sb.append("</password>");
-      sb.append("<HL7Message>");
+      sb.append("</hl7:password>");
+      sb.append("<hl7:HL7Message>");
       sb.append(replaceAmpersand(request));
-      sb.append("</HL7Message>");
-      sb.append("</HL7Request></s:Body></s:Envelope>");
+      sb.append("</hl7:HL7Message>");
+      sb.append("</hl7:HL7Request></soap:Body></soap:Envelope>");
       content = sb.toString();
 
       printout = new DataOutputStream(urlConn.getOutputStream());
@@ -126,6 +133,13 @@ public class ILConnector extends ORConnector {
         response.append('\r');
       }
       input.close();
+      String responseString = response.toString();
+      int startPos = responseString.indexOf(HL7_REQUEST_RESULT_START_TAG);
+      int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG);
+      if (startPos > 0 && endPos > startPos) {
+        responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
+        response = new StringBuilder(responseString);
+      }
       if (debug) {
         response.append("\r");
         response.append("DEBUG LOG: \r");
@@ -151,22 +165,18 @@ public class ILConnector extends ORConnector {
 
   @Override
   public String connectivityTest(String message) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    return "Not supported by IL WS";
   }
 
   @Override
   protected void makeScriptAdditions(StringBuilder sb) {
     // TODO Auto-generated method stub
-
   }
-  
-  private static String replaceAmpersand(String s)
-  {
+
+  private static String replaceAmpersand(String s) {
     String s2 = "";
     int pos = s.indexOf("&");
-    while (pos != -1)
-    {
+    while (pos != -1) {
       s2 = s2 + s.substring(0, pos);
       s2 = s2 + "&amp;";
       s = s.substring(pos + 1);
