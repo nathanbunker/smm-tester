@@ -6,7 +6,6 @@ package org.immunizationsoftware.dqa.tester.connectors;
 
 import java.util.List;
 
-import org.apache.axis2.context.ConfigurationContext;
 import org.immunizationsoftware.dqa.tester.connectors.tlep.Client_Service;
 import org.immunizationsoftware.dqa.tester.connectors.tlep.Client_ServiceStub;
 import org.immunizationsoftware.dqa.tester.connectors.tlep.ConnectivityTest;

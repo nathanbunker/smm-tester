@@ -15,6 +15,7 @@ import org.immunizationsoftware.dqa.tester.connectors.CASoapConnector;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.connectors.ConnectorFactory;
 import org.immunizationsoftware.dqa.tester.connectors.HttpConnector;
+import org.immunizationsoftware.dqa.tester.connectors.ILConnector;
 import org.immunizationsoftware.dqa.tester.connectors.Connector.TransferType;
 import org.immunizationsoftware.dqa.tester.connectors.SoapConnector;
 
@@ -23,28 +24,41 @@ public class ConfigureServlet extends ClientServlet
 
   public static final String TEMPLATE_DEFAULT_SOAP = "Default SOAP";
   public static final String TEMPLATE_DEFAULT_POST = "Default POST";
-  public static final String TEMPLATE_ASIIS_PROD = "ASIIS Production";
-  public static final String TEMPLATE_ASIIS_TEST = "ASIIS Test";
-  public static final String TEMPLATE_CAIR_TEST = "CAIR Test";
-  public static final String TEMPLATE_CAIR_PROD = "CAIR Prod";
+  public static final String TEMPLATE_AK_VACTRAK_TEST = "AK VacTrAK Test";
+  public static final String TEMPLATE_AK_VACTRAK_PROD = "AK VacTrAK Prod";
+  public static final String TEMPLATE_AZ_ASIIS_TEST = "AZ ASIIS Test";
+  public static final String TEMPLATE_AZ_ASIIS_PROD = "AZ ASIIS Prod";
+  public static final String TEMPLATE_CA_CAIR_TEST = "CA CAIR Test";
+  public static final String TEMPLATE_CA_CAIR_PROD = "CA CAIR Prod";
+  public static final String TEMPLATE_CA_SDIR_TEST = "CA SDIR Test";
+  public static final String TEMPLATE_CA_SDIR_PROD = "CA SDIR Prod";
+  public static final String TEMPLATE_IA_IRIS_TEST = "IA IRIS Test";
+  public static final String TEMPLATE_IA_IRIS_PROD = "IA IRIS Prod";
+  public static final String TEMPLATE_IL_ICARE_TEST = "IL I-Care Test";
+  public static final String TEMPLATE_IL_ICARE_PROD = "IL I-Care Prod";
   public static final String TEMPLATE_MT_IMMTRAX_TEST = "MT imMTrax Test";
-  public static final String TEMPLATE_MT_IMMTRAX_PRODUCTION = "MT imMTrax Production";
+  public static final String TEMPLATE_MT_IMMTRAX_PROD = "MT imMTrax Prod";
   public static final String TEMPLATE_MN_MIIC_TEST = "MN MIIC Test";
-  public static final String TEMPLATE_MN_MIIC_PRODUCTION = "MN MIIC Production";
-  public static final String TEMPLATE_NMSIIS_RAW_PROD = "NMSIIS Raw Production";
+  public static final String TEMPLATE_MN_MIIC_PROD = "MN MIIC Prod";
   public static final String TEMPLATE_NMSIIS_RAW_UAT = "NMSIIS Raw UAT";
-  public static final String TEMPLATE_NV_WEBIZ_PRODUCTION = "NV WebIZ Production";
-  public static final String TEMPLATE_NV_WEBIZ_TESTING = "NV WebIZ Testing";
-  public static final String TEMPLATE_WA_IIS_TESTING = "WA IIS Testing";
-  public static final String TEMPLATE_WA_IIS_PRODUCTION = "WA IIS Production";
-  public static final String TEMPLATE_VACTRAK_TESTING = "AK VacTrAK Testing";
-  public static final String TEMPLATE_VACTRAK_PRODUCTION = "AK VacTrAK Production";
+  public static final String TEMPLATE_NMSIIS_RAW_PROD = "NMSIIS Raw Prod";
+  public static final String TEMPLATE_NE_SIIS_TEST = "NE SIIS Test";
+  public static final String TEMPLATE_NE_SIIS_PROD = "NE SIIS Prod";
+  public static final String TEMPLATE_NV_WEBIZ_TEST = "NV WebIZ Test";
+  public static final String TEMPLATE_NV_WEBIZ_PROD = "NV WebIZ Prod";
+  public static final String TEMPLATE_RI_KIDSNET_TEST = "RI KIDSNET Test";
+  public static final String TEMPLATE_RI_KIDSNET_PROD = "RI KIDSNET Prod";
+  public static final String TEMPLATE_WA_IIS_TEST = "WA IIS Test";
+  public static final String TEMPLATE_WA_IIS_PROD = "WA IIS Prod";
 
-  public static final String[] TEMPLATES = { TEMPLATE_DEFAULT_SOAP, TEMPLATE_DEFAULT_POST, TEMPLATE_CAIR_TEST,
-      TEMPLATE_CAIR_PROD, TEMPLATE_VACTRAK_TESTING, TEMPLATE_VACTRAK_PRODUCTION, TEMPLATE_ASIIS_PROD,
-      TEMPLATE_ASIIS_TEST, TEMPLATE_MT_IMMTRAX_TEST, TEMPLATE_MT_IMMTRAX_PRODUCTION, TEMPLATE_NMSIIS_RAW_PROD,
-      TEMPLATE_NMSIIS_RAW_UAT, TEMPLATE_NV_WEBIZ_TESTING, TEMPLATE_NV_WEBIZ_PRODUCTION, TEMPLATE_WA_IIS_TESTING,
-      TEMPLATE_WA_IIS_PRODUCTION };
+  public static final String[] TEMPLATES = { TEMPLATE_DEFAULT_SOAP, TEMPLATE_DEFAULT_POST, TEMPLATE_AK_VACTRAK_TEST,
+      TEMPLATE_AK_VACTRAK_PROD, TEMPLATE_AZ_ASIIS_TEST, TEMPLATE_AZ_ASIIS_PROD, TEMPLATE_CA_CAIR_TEST,
+      TEMPLATE_CA_CAIR_PROD, TEMPLATE_CA_SDIR_TEST, TEMPLATE_CA_SDIR_PROD, TEMPLATE_IA_IRIS_TEST,
+      TEMPLATE_IA_IRIS_PROD, TEMPLATE_IL_ICARE_TEST, TEMPLATE_IL_ICARE_PROD, TEMPLATE_MT_IMMTRAX_TEST,
+      TEMPLATE_MT_IMMTRAX_PROD, TEMPLATE_MN_MIIC_TEST, TEMPLATE_MN_MIIC_PROD, TEMPLATE_NMSIIS_RAW_UAT,
+      TEMPLATE_NMSIIS_RAW_PROD, TEMPLATE_NE_SIIS_TEST, TEMPLATE_NE_SIIS_PROD, TEMPLATE_NV_WEBIZ_TEST,
+      TEMPLATE_NV_WEBIZ_PROD, TEMPLATE_RI_KIDSNET_TEST, TEMPLATE_RI_KIDSNET_PROD, TEMPLATE_WA_IIS_TEST,
+      TEMPLATE_WA_IIS_PROD };
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -211,16 +225,28 @@ public class ConfigureServlet extends ClientServlet
             + "BTS-1=1\n" + "FTS-2=CR\n" + "BTS-2=CR\n" + "FHS-4=[USERID]\n" + "BHS-4=[USERID]\n"
             + "insert segment IN1 before ORC if missing\n" + "insert segment IN2 after IN1 if missing\n" + "IN1-1=1\n"
             + "fix missing mother maiden first\n" + "remove observation 64994-7 if 18+\n");
-      } else if (templateName.equals(TEMPLATE_ASIIS_PROD) || templateName.equals(TEMPLATE_ASIIS_TEST)) {
+      } else if (templateName.equals(TEMPLATE_AZ_ASIIS_PROD) || templateName.equals(TEMPLATE_AZ_ASIIS_TEST)) {
         HttpConnector httpConnector = (HttpConnector) connector;
         httpConnector.setCustomTransformations("MSH-3=RPMS\n" + "MSH-4=[FACILITYID]\n" + "MSH-5=ASIIS\n" + "PV1-10=\n"
             + "fix ampersand\n");
-      } else if (templateName.equals(TEMPLATE_CAIR_TEST) || templateName.equals(TEMPLATE_CAIR_PROD)) {
+      } else if (templateName.equals(TEMPLATE_CA_CAIR_TEST) || templateName.equals(TEMPLATE_CA_CAIR_PROD)) {
         CASoapConnector caSoapConnector = (CASoapConnector) connector;
         caSoapConnector.setCustomTransformations("MSH-4=[USERID]\n" + "MSH-6=[OTHERID]\n"
             + "insert segment PD1 after PID if missing\n" + "PD1-12=[MAP ''=>'N']\n" + "MSH-7=[TRUNC 14]\n"
             + "RXA-9=[MAP ''=>'01']\n" + "run procedure Remove_Vaccination_Groups where RXA-20 equals 'RE'\n");
-      } else if (templateName.equals(TEMPLATE_NV_WEBIZ_TESTING) || templateName.equals(TEMPLATE_NV_WEBIZ_PRODUCTION)) {
+      } else if (templateName.equals(TEMPLATE_CA_SDIR_TEST) || templateName.equals(TEMPLATE_CA_SDIR_PROD)) {
+        // HttpConnector httpConnector = (HttpConnector) connector;
+        // nothing to do 
+      } else if (templateName.equals(TEMPLATE_IA_IRIS_TEST) || templateName.equals(TEMPLATE_IA_IRIS_PROD)) {
+        SoapConnector soapConnector = (SoapConnector) connector;
+        soapConnector.setAckType(AckAnalyzer.AckType.MIIC);
+        soapConnector.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
+      } else if (templateName.equals(TEMPLATE_IL_ICARE_PROD) || templateName.equals(TEMPLATE_IL_ICARE_TEST)) {
+        ILConnector ilConnector = (ILConnector) connector;
+        ilConnector.setCustomTransformations("MSH-4=[OTHERID]\n");
+        ilConnector.setAckType(AckAnalyzer.AckType.DEFAULT);
+        ilConnector.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
+      } else if (templateName.equals(TEMPLATE_NV_WEBIZ_TEST) || templateName.equals(TEMPLATE_NV_WEBIZ_PROD)) {
         HttpConnector httpConnector = (HttpConnector) connector;
         httpConnector.stripXML();
         httpConnector.setFieldName(HttpConnector.USERID, "userName");
@@ -234,11 +260,20 @@ public class ConfigureServlet extends ClientServlet
             + "RXR-2.1*=[MAP 'LI'=>'LLFA']\n" + "remove observation 30956-7\n" + "remove empty observations\n");
         httpConnector.setAckType(AckAnalyzer.AckType.WEBIZ);
         httpConnector.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
-      } else if (templateName.equals(TEMPLATE_MN_MIIC_PRODUCTION) || templateName.equals(TEMPLATE_MN_MIIC_TEST)) {
+      } else if (templateName.equals(TEMPLATE_MN_MIIC_PROD) || templateName.equals(TEMPLATE_MN_MIIC_TEST)) {
         SoapConnector soapConnector = (SoapConnector) connector;
-        soapConnector.setCustomTransformations("MSH-4=[OTHERID]\n" + "MSH-5=MIIC \n" + "MSH-6=MIIC \n" + "fix missing mother maiden first \n");
+        soapConnector.setCustomTransformations("MSH-4=[OTHERID]\n" + "MSH-5=MIIC \n" + "MSH-6=MIIC \n"
+            + "fix missing mother maiden first \n");
         soapConnector.setAckType(AckAnalyzer.AckType.MIIC);
         soapConnector.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
+      } else if (templateName.equals(TEMPLATE_NE_SIIS_PROD) || templateName.equals(TEMPLATE_NE_SIIS_TEST)) {
+        SoapConnector soapConnector = (SoapConnector) connector;
+        soapConnector.setCustomTransformations("MSH-4=[OTHERID]\n" + "remove repeat PID-3.5 valued MA\n");
+        soapConnector.setAckType(AckAnalyzer.AckType.MIIC);
+        soapConnector.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
+      } else if (templateName.equals(TEMPLATE_RI_KIDSNET_TEST) || templateName.equals(TEMPLATE_RI_KIDSNET_PROD)) {
+        HttpConnector httpConnector = (HttpConnector) connector;
+        httpConnector.setCustomTransformations("MSH-4=[FACILITYID]\n" + "MSH-22=[OTHERID]\n");
       }
     }
   }
@@ -250,7 +285,27 @@ public class ConfigureServlet extends ClientServlet
         cc.setType(ConnectorFactory.TYPE_SOAP);
       } else if (templateName.equals(TEMPLATE_DEFAULT_POST)) {
         cc.setType(ConnectorFactory.TYPE_POST);
-      } else if (templateName.equals(TEMPLATE_ASIIS_PROD)) {
+      } else if (templateName.equals(TEMPLATE_AK_VACTRAK_TEST)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("https://vactrakihub.alaska.gov/ihubtst/HL7Server");
+        cc.setFacilityidShow(false);
+        cc.setTypeShow(false);
+        cc.setInstructions("Contact AK VacTrAK to obtain username and password. ");
+        cc.setReceiverName("AK VacTrAK");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setFacilityidRequired(false);
+      } else if (templateName.equals(TEMPLATE_AK_VACTRAK_PROD)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("https://vactrakihub.alaska.gov/ihubtst/HL7Server");
+        cc.setFacilityidShow(false);
+        cc.setTypeShow(false);
+        cc.setInstructions("Contact AK VacTrAK to obtain username and password. ");
+        cc.setReceiverName("AK VacTrAK");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setFacilityidRequired(false);
+      } else if (templateName.equals(TEMPLATE_AZ_ASIIS_PROD)) {
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setUrl("https://app.azdhs.gov/phs/asiis/hl7post/");
         cc.setFacilityidShow(true);
@@ -261,7 +316,7 @@ public class ConfigureServlet extends ClientServlet
         cc.setUseridRequired(true);
         cc.setPasswordRequired(true);
         cc.setFacilityidRequired(true);
-      } else if (templateName.equals(TEMPLATE_ASIIS_TEST)) {
+      } else if (templateName.equals(TEMPLATE_AZ_ASIIS_TEST)) {
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setUrl("https://appqa.azdhs.gov/phs/asiis/hl7post/");
         cc.setFacilityidShow(true);
@@ -272,6 +327,167 @@ public class ConfigureServlet extends ClientServlet
         cc.setUseridRequired(true);
         cc.setPasswordRequired(true);
         cc.setFacilityidRequired(true);
+      } else if (templateName.equals(TEMPLATE_CA_CAIR_TEST)) {
+        cc.setType(ConnectorFactory.TYPE_CA_SOAP);
+        cc.setUrl("https://igsstag.cdph.ca.gov/submit/services/client_Service.client_ServiceHttpsSoap11Endpoint");
+        cc.setFacilityidShow(true);
+        cc.setFacilityidRequired(true);
+        cc.setTypeShow(false);
+        cc.setInstructions("Contact CAIR for Username, password and facilityID. The Registry Region Code identifies the region the immunization data should be sent to and is defined by CAIR. In addition, CAIR requires that a certificate be used, a Java Key Store must be installed in the smm transmission folder with the name of smm.jks and the password to the key store must be entered here.  ");
+        cc.setReceiverName("CAIR");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setUseridLabel("Username");
+        cc.setOtheridShow(true);
+        cc.setOtheridRequired(true);
+        cc.setOtheridLabel("Registry Region Code");
+        cc.setKeyStorePasswordRequired(true);
+        cc.setKeyStorePasswordShow(true);
+      } else if (templateName.equals(TEMPLATE_CA_CAIR_PROD)) {
+        cc.setType(ConnectorFactory.TYPE_CA_SOAP);
+        cc.setUrl("https://igs.cdph.ca.gov/submit/client_Servic.client_ServiceHttpsSoap11Endpoint");
+        cc.setFacilityidShow(true);
+        cc.setFacilityidRequired(true);
+        cc.setTypeShow(false);
+        cc.setInstructions("Contact CAIR for Username, password and facilityID. The Registry Region Code identifies the region the immunization data should be sent to and is defined by CAIR. In addition, CAIR requires that a certificate be used, a Java Key Store must be installed in the smm transmission folder with the name of smm.jks and the password to the key store must be entered here.  ");
+        cc.setReceiverName("CAIR");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setUseridLabel("Username");
+        cc.setOtheridShow(true);
+        cc.setOtheridRequired(true);
+        cc.setOtheridLabel("Registry Region Code");
+        cc.setKeyStorePasswordRequired(true);
+        cc.setKeyStorePasswordShow(true);
+      } else if (templateName.equals(TEMPLATE_CA_SDIR_TEST)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("http://www.sdirtrain.org/other/receivehl7.jsp");
+        cc.setFacilityidShow(true);
+        cc.setTypeShow(false);
+        cc.setInstructions("In order to connect to SDIR you will need a User Id, Password and Facility Id. ");
+        cc.setReceiverName("SDIR");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setFacilityidRequired(true);
+      } else if (templateName.equals(TEMPLATE_CA_SDIR_PROD)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("");
+        cc.setFacilityidShow(true);
+        cc.setTypeShow(false);
+        cc.setInstructions("In order to connect to SDIR you will need a User Id, Password and Facility Id and the URL. ");
+        cc.setReceiverName("SDIR");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setFacilityidRequired(true);
+      } else if (templateName.equals(TEMPLATE_IA_IRIS_TEST)) {
+        cc.setType(ConnectorFactory.TYPE_SOAP);
+        cc.setUrl("https://secure.iris.iowa.gov/webservices_trn/cdc");
+        cc.setInstructions("Before configuring please request keystore, keystore password, SOAP credentials, and SOAP password. SMM must be specially configured to support keystore.  ");
+        cc.setFacilityidShow(true);
+        cc.setFacilityidRequired(true);
+        cc.setFacilityidLabel("Facility");
+        cc.setTypeShow(false);
+        cc.setReceiverName("CAIR");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setUseridLabel("Username");
+      } else if (templateName.equals(TEMPLATE_IA_IRIS_PROD)) {
+        cc.setType(ConnectorFactory.TYPE_SOAP);
+        cc.setUrl("");
+        cc.setInstructions("Before configuring please request keystore, keystore password, SOAP credentials, SOAP password, and URL. SMM must be specially configured to support keystore.  ");
+        cc.setFacilityidShow(true);
+        cc.setFacilityidRequired(true);
+        cc.setFacilityidLabel("Facility");
+        cc.setTypeShow(false);
+        cc.setReceiverName("IRIS");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setUseridLabel("Username");
+      } else if (templateName.equals(TEMPLATE_IL_ICARE_TEST)) {
+        cc.setType(ConnectorFactory.TYPE_IL_WS);
+        cc.setUrl("https://icarehl7.dph.illinois.gov");
+        cc.setInstructions("Before configuring please request account and password. ");
+        cc.setFacilityidShow(false);
+        cc.setFacilityidRequired(false);
+        cc.setTypeShow(false);
+        cc.setReceiverName("I-Care");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setUseridLabel("Username");
+        cc.setOtheridRequired(true);
+        cc.setOtheridShow(true);
+        cc.setOtheridLabel("MSH-4");
+        cc.setOtherid("TEST");
+      } else if (templateName.equals(TEMPLATE_IL_ICARE_PROD)) {
+        cc.setType(ConnectorFactory.TYPE_IL_WS);
+        cc.setUrl("https://icarehl7.dph.illinois.gov");
+        cc.setInstructions("Before configuring please request account and password. ");
+        cc.setFacilityidShow(false);
+        cc.setFacilityidRequired(false);
+        cc.setTypeShow(false);
+        cc.setReceiverName("I-Care");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setUseridLabel("Username");
+        cc.setOtheridRequired(true);
+        cc.setOtheridShow(true);
+        cc.setOtheridLabel("MSH-4");
+      } else if (templateName.equals(TEMPLATE_MN_MIIC_TEST) || templateName.equals(TEMPLATE_MN_MIIC_PROD)) {
+        cc.setType(ConnectorFactory.TYPE_SOAP);
+        cc.setInstructions("Contact MN MIIC for connecting information.");
+        if (templateName.equals(TEMPLATE_MN_MIIC_PROD)) {
+          cc.setUrl("");
+        } else {
+          cc.setUrl("https://miic.health.state.mn.us/miic-ws-test/client_Service?wsdl");
+        }
+        cc.setTypeShow(false);
+        cc.setUseridLabel("User Name");
+        cc.setUseridRequired(true);
+        cc.setFacilityidShow(true);
+        cc.setOtheridLabel("MSH-4");
+        cc.setPasswordLabel("Password");
+        cc.setPasswordRequired(true);
+        cc.setOtheridShow(true);
+        cc.setOtheridRequired(true);
+        cc.setReceiverName("MN MIIC");
+      } else if (templateName.equals(TEMPLATE_MT_IMMTRAX_TEST)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("https://ejs-test.hhs.mt.gov:8443/phchub/HL7Server");
+        cc.setFacilityidShow(false);
+        cc.setTypeShow(false);
+        cc.setInstructions("Contact MT imMTrax to obtain username and password. ");
+        cc.setReceiverName("MT imMTrax");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setFacilityidRequired(false);
+      } else if (templateName.equals(TEMPLATE_MT_IMMTRAX_PROD)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("https://ejs.hhs.mt.gov:8443/phchub/HL7Server");
+        cc.setFacilityidShow(false);
+        cc.setTypeShow(false);
+        cc.setInstructions("Contact  MT imMTrax to obtain username and password. ");
+        cc.setReceiverName("MT imMTrax");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setFacilityidRequired(false);
+      } else if (templateName.equals(TEMPLATE_NE_SIIS_TEST) || templateName.equals(TEMPLATE_NE_SIIS_PROD)) {
+        cc.setType(ConnectorFactory.TYPE_SOAP);
+        cc.setInstructions("Contact NE SIIS for connecting information.");
+        if (templateName.equals(TEMPLATE_NE_SIIS_PROD)) {
+          cc.setUrl("https://nesiis-dhhs-webservice.ne.gov/prd-webservices/cdc");
+        } else {
+          cc.setUrl("https://testnesiis-dhhs-testwebservice.ne.gov/uat-webservices/cdc");
+        }
+        cc.setTypeShow(false);
+        cc.setUseridLabel("User Name");
+        cc.setUseridRequired(true);
+        cc.setFacilityidShow(true);
+        cc.setOtheridLabel("MSH-4");
+        cc.setPasswordLabel("Password");
+        cc.setPasswordRequired(true);
+        cc.setOtheridShow(true);
+        cc.setOtheridRequired(true);
+        cc.setReceiverName("NESIIS");
       } else if (templateName.equals(TEMPLATE_NMSIIS_RAW_UAT)) {
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setUrl("https://www.nmhit.org/nmsiistest/rhapsody/receive");
@@ -303,10 +519,10 @@ public class ConfigureServlet extends ClientServlet
         cc.setEnableTimeShow(true);
         cc.setEnableTimeEnd("18:00");
         cc.setEnableTimeStart("06:00");
-      } else if (templateName.equals(TEMPLATE_NV_WEBIZ_TESTING) || templateName.equals(TEMPLATE_NV_WEBIZ_PRODUCTION)) {
+      } else if (templateName.equals(TEMPLATE_NV_WEBIZ_TEST) || templateName.equals(TEMPLATE_NV_WEBIZ_PROD)) {
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setInstructions("Contact NV WebIZ for connecting information.");
-        if (templateName.equals(TEMPLATE_NV_WEBIZ_PRODUCTION)) {
+        if (templateName.equals(TEMPLATE_NV_WEBIZ_PROD)) {
           cc.setUrl("https://webiz.nv.gov/HL7EngineAuthentication/Service.asmx/ExecuteHL7Message");
         } else {
           cc.setUrl("https://webiztest.nv.gov/HL7EngineAuthentication/Service.asmx/ExecuteHL7Message");
@@ -321,25 +537,37 @@ public class ConfigureServlet extends ClientServlet
         cc.setOtheridShow(true);
         cc.setOtheridRequired(true);
         cc.setReceiverName("NV WebIZ");
-      } else if (templateName.equals(TEMPLATE_MN_MIIC_TEST) || templateName.equals(TEMPLATE_MN_MIIC_PRODUCTION)) {
+      } else if (templateName.equals(TEMPLATE_RI_KIDSNET_TEST)) {
         cc.setType(ConnectorFactory.TYPE_POST);
-        cc.setInstructions("Contact MN MIIC for connecting information.");
-        if (templateName.equals(TEMPLATE_MN_MIIC_PRODUCTION)) {
-          cc.setUrl("");
-        } else {
-          cc.setUrl("https://miic.health.state.mn.us/miic-ws-test/client_Service?wsdl");
-        }
-        cc.setTypeShow(false);
-        cc.setUseridLabel("User Name");
-        cc.setUseridRequired(true);
+        cc.setUrl("https://kidsnet.health.ri.gov/hl7processor-play/recv.hl7");
+        cc.setInstructions("Before configuring please request credentials. ");
         cc.setFacilityidShow(true);
-        cc.setOtheridLabel("MSH-4");
-        cc.setPasswordLabel("Password");
+        cc.setFacilityidRequired(true);
+        cc.setFacilityidLabel("MSH-4 Sending Facility");
+        cc.setTypeShow(false);
+        cc.setReceiverName("KIDSNET");
+        cc.setUseridRequired(true);
         cc.setPasswordRequired(true);
-        cc.setOtheridShow(true);
+        cc.setUseridLabel("Username");
         cc.setOtheridRequired(true);
-        cc.setReceiverName("MN MIIC");
-      } else if (templateName.equals(TEMPLATE_WA_IIS_TESTING)) {
+        cc.setOtheridShow(true);
+        cc.setOtheridLabel("MSH-22 Responsible Business Organization");
+      } else if (templateName.equals(TEMPLATE_RI_KIDSNET_PROD)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("");
+        cc.setInstructions("Before configuring please request credentials. ");
+        cc.setFacilityidShow(true);
+        cc.setFacilityidRequired(true);
+        cc.setFacilityidLabel("MSH-4 Sending Facility");
+        cc.setTypeShow(false);
+        cc.setReceiverName("KIDSNET");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setUseridLabel("Username");
+        cc.setOtheridRequired(true);
+        cc.setOtheridShow(true);
+        cc.setOtheridLabel("MSH-22 Responsible Business Organization");
+      } else if (templateName.equals(TEMPLATE_WA_IIS_TEST)) {
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setUrl("https://test-fortress.wa.gov/doh/cpir/iweb/HL7Server");
         cc.setFacilityidShow(false);
@@ -349,85 +577,13 @@ public class ConfigureServlet extends ClientServlet
         cc.setUseridRequired(true);
         cc.setPasswordRequired(true);
         cc.setFacilityidRequired(false);
-      } else if (templateName.equals(TEMPLATE_CAIR_TEST)) {
-        cc.setType(ConnectorFactory.TYPE_CA_SOAP);
-        cc.setUrl("https://igsstag.cdph.ca.gov/submit/services/client_Service.client_ServiceHttpsSoap11Endpoint");
-        cc.setFacilityidShow(true);
-        cc.setFacilityidRequired(true);
-        cc.setTypeShow(false);
-        cc.setInstructions("Contact CAIR for Username, password and facilityID. The Registry Region Code identifies the region the immunization data should be sent to and is defined by CAIR. In addition, CAIR requires that a certificate be used, a Java Key Store must be installed in the smm transmission folder with the name of smm.jks and the password to the key store must be entered here.  ");
-        cc.setReceiverName("CAIR");
-        cc.setUseridRequired(true);
-        cc.setPasswordRequired(true);
-        cc.setUseridLabel("Username");
-        cc.setOtheridShow(true);
-        cc.setOtheridRequired(true);
-        cc.setOtheridLabel("Registry Region Code");
-        cc.setKeyStorePasswordRequired(true);
-        cc.setKeyStorePasswordShow(true);
-      } else if (templateName.equals(TEMPLATE_CAIR_PROD)) {
-        cc.setType(ConnectorFactory.TYPE_CA_SOAP);
-        cc.setUrl("https://igs.cdph.ca.gov/submit/client_Servic.client_ServiceHttpsSoap11Endpoint");
-        cc.setFacilityidShow(true);
-        cc.setFacilityidRequired(true);
-        cc.setTypeShow(false);
-        cc.setInstructions("Contact CAIR for Username, password and facilityID. The Registry Region Code identifies the region the immunization data should be sent to and is defined by CAIR. In addition, CAIR requires that a certificate be used, a Java Key Store must be installed in the smm transmission folder with the name of smm.jks and the password to the key store must be entered here.  ");
-        cc.setReceiverName("CAIR");
-        cc.setUseridRequired(true);
-        cc.setPasswordRequired(true);
-        cc.setUseridLabel("Username");
-        cc.setOtheridShow(true);
-        cc.setOtheridRequired(true);
-        cc.setOtheridLabel("Registry Region Code");
-        cc.setKeyStorePasswordRequired(true);
-        cc.setKeyStorePasswordShow(true);
-      } else if (templateName.equals(TEMPLATE_WA_IIS_PRODUCTION)) {
+      } else if (templateName.equals(TEMPLATE_WA_IIS_PROD)) {
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setUrl("https://fortress.wa.gov/doh/cpir/iweb/HL7Server");
         cc.setFacilityidShow(false);
         cc.setTypeShow(false);
         cc.setInstructions("Contact WA IIS to obtain username and password. ");
         cc.setReceiverName("WA IIS");
-        cc.setUseridRequired(true);
-        cc.setPasswordRequired(true);
-        cc.setFacilityidRequired(false);
-      } else if (templateName.equals(TEMPLATE_VACTRAK_TESTING)) {
-        cc.setType(ConnectorFactory.TYPE_POST);
-        cc.setUrl("https://vactrakihub.alaska.gov/ihubtst/HL7Server");
-        cc.setFacilityidShow(false);
-        cc.setTypeShow(false);
-        cc.setInstructions("Contact AK VacTrAK to obtain username and password. ");
-        cc.setReceiverName("AK VacTrAK");
-        cc.setUseridRequired(true);
-        cc.setPasswordRequired(true);
-        cc.setFacilityidRequired(false);
-      } else if (templateName.equals(TEMPLATE_VACTRAK_PRODUCTION)) {
-        cc.setType(ConnectorFactory.TYPE_POST);
-        cc.setUrl("https://vactrakihub.alaska.gov/ihubtst/HL7Server");
-        cc.setFacilityidShow(false);
-        cc.setTypeShow(false);
-        cc.setInstructions("Contact AK VacTrAK to obtain username and password. ");
-        cc.setReceiverName("AK VacTrAK");
-        cc.setUseridRequired(true);
-        cc.setPasswordRequired(true);
-        cc.setFacilityidRequired(false);
-      } else if (templateName.equals(TEMPLATE_MT_IMMTRAX_TEST)) {
-        cc.setType(ConnectorFactory.TYPE_POST);
-        cc.setUrl("https://ejs-test.hhs.mt.gov:8443/phchub/HL7Server");
-        cc.setFacilityidShow(false);
-        cc.setTypeShow(false);
-        cc.setInstructions("Contact MT imMTrax to obtain username and password. ");
-        cc.setReceiverName("MT imMTrax");
-        cc.setUseridRequired(true);
-        cc.setPasswordRequired(true);
-        cc.setFacilityidRequired(false);
-      } else if (templateName.equals(TEMPLATE_MT_IMMTRAX_PRODUCTION)) {
-        cc.setType(ConnectorFactory.TYPE_POST);
-        cc.setUrl("https://ejs.hhs.mt.gov:8443/phchub/HL7Server");
-        cc.setFacilityidShow(false);
-        cc.setTypeShow(false);
-        cc.setInstructions("Contact  MT imMTrax to obtain username and password. ");
-        cc.setReceiverName("MT imMTrax");
         cc.setUseridRequired(true);
         cc.setPasswordRequired(true);
         cc.setFacilityidRequired(false);

@@ -9,6 +9,87 @@ import org.junit.Test;
 
 public class TestTransformer
 {
+  private static final String REMOVE_REPEATS_MESSAGE = "MSH|^~\\&|||||20130823111809||VXU^V04^VXU_V04|X94P18|P|2.5.1|\r"
+      + "PID|1||X94P18^^^OIS-TEST^MR~X94P18^^^OIS-TEST^MA~X94P18^^^OIS-TEST^SS||Court^Nye^^^^^L|Brazos^Maia|20130224|M|||321 Dundy St^^Haslett^MI^48840^USA^P||^PRN^PH^^^517^5489090|\r"
+      + "NK1|1|Court^Maia|MTH^Mother^HL70063|\r";
+
+  @Test
+  public void testRemoveRepeats() throws Exception {
+    Transformer transformer = new Transformer();
+    Connector connector = ConnectorFactory.getConnector(ConnectorFactory.TYPE_POST, "Test", "");
+    String messageText = "";
+    
+    // remove repeat PID-3.5 valued MA
+    // remove repeat PID-3#1
+    // remove repeat RXA-9.1 all valued 01
+
+
+    messageText = REMOVE_REPEATS_MESSAGE;
+    connector.setCustomTransformations("remove repeat PID-3.5 valued MA\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|^~\\&|||||20130823111809||VXU^V04^VXU_V04|X94P18|P|2.5.1|\r"
+        + "PID|1||X94P18^^^OIS-TEST^MR~X94P18^^^OIS-TEST^SS||Court^Nye^^^^^L|Brazos^Maia|20130224|M|||321 Dundy St^^Haslett^MI^48840^USA^P||^PRN^PH^^^517^5489090|\r"
+        + "NK1|1|Court^Maia|MTH^Mother^HL70063|\r", messageText);
+
+    messageText = REMOVE_REPEATS_MESSAGE;
+    connector.setCustomTransformations("remove repeat PID-3.5 valued MR\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|^~\\&|||||20130823111809||VXU^V04^VXU_V04|X94P18|P|2.5.1|\r"
+        + "PID|1||X94P18^^^OIS-TEST^MA~X94P18^^^OIS-TEST^SS||Court^Nye^^^^^L|Brazos^Maia|20130224|M|||321 Dundy St^^Haslett^MI^48840^USA^P||^PRN^PH^^^517^5489090|\r"
+        + "NK1|1|Court^Maia|MTH^Mother^HL70063|\r", messageText);
+
+    messageText = REMOVE_REPEATS_MESSAGE;
+    connector.setCustomTransformations("remove repeat PID-3.5 valued SS\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|^~\\&|||||20130823111809||VXU^V04^VXU_V04|X94P18|P|2.5.1|\r"
+        + "PID|1||X94P18^^^OIS-TEST^MR~X94P18^^^OIS-TEST^MA||Court^Nye^^^^^L|Brazos^Maia|20130224|M|||321 Dundy St^^Haslett^MI^48840^USA^P||^PRN^PH^^^517^5489090|\r"
+        + "NK1|1|Court^Maia|MTH^Mother^HL70063|\r", messageText);
+
+    messageText = REMOVE_REPEATS_MESSAGE;
+    connector.setCustomTransformations("remove repeat PID-3#2\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|^~\\&|||||20130823111809||VXU^V04^VXU_V04|X94P18|P|2.5.1|\r"
+        + "PID|1||X94P18^^^OIS-TEST^MR~X94P18^^^OIS-TEST^SS||Court^Nye^^^^^L|Brazos^Maia|20130224|M|||321 Dundy St^^Haslett^MI^48840^USA^P||^PRN^PH^^^517^5489090|\r"
+        + "NK1|1|Court^Maia|MTH^Mother^HL70063|\r", messageText);
+
+    messageText = REMOVE_REPEATS_MESSAGE;
+    connector.setCustomTransformations("remove repeat PID-3#1\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|^~\\&|||||20130823111809||VXU^V04^VXU_V04|X94P18|P|2.5.1|\r"
+        + "PID|1||X94P18^^^OIS-TEST^MA~X94P18^^^OIS-TEST^SS||Court^Nye^^^^^L|Brazos^Maia|20130224|M|||321 Dundy St^^Haslett^MI^48840^USA^P||^PRN^PH^^^517^5489090|\r"
+        + "NK1|1|Court^Maia|MTH^Mother^HL70063|\r", messageText);
+
+    messageText = REMOVE_REPEATS_MESSAGE;
+    connector.setCustomTransformations("remove repeat PID-3#3\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|^~\\&|||||20130823111809||VXU^V04^VXU_V04|X94P18|P|2.5.1|\r"
+        + "PID|1||X94P18^^^OIS-TEST^MR~X94P18^^^OIS-TEST^MA||Court^Nye^^^^^L|Brazos^Maia|20130224|M|||321 Dundy St^^Haslett^MI^48840^USA^P||^PRN^PH^^^517^5489090|\r"
+        + "NK1|1|Court^Maia|MTH^Mother^HL70063|\r", messageText);
+
+    messageText = REMOVE_REPEATS_MESSAGE;
+    connector.setCustomTransformations("remove repeat PID-5\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|^~\\&|||||20130823111809||VXU^V04^VXU_V04|X94P18|P|2.5.1|\r"
+        + "PID|1||X94P18^^^OIS-TEST^MR~X94P18^^^OIS-TEST^MA~X94P18^^^OIS-TEST^SS|||Brazos^Maia|20130224|M|||321 Dundy St^^Haslett^MI^48840^USA^P||^PRN^PH^^^517^5489090|\r"
+        + "NK1|1|Court^Maia|MTH^Mother^HL70063|\r", messageText);
+
+    messageText = REMOVE_REPEATS_MESSAGE;
+    connector.setCustomTransformations("remove repeat PID-5#2\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|^~\\&|||||20130823111809||VXU^V04^VXU_V04|X94P18|P|2.5.1|\r"
+        + "PID|1||X94P18^^^OIS-TEST^MR~X94P18^^^OIS-TEST^MA~X94P18^^^OIS-TEST^SS||Court^Nye^^^^^L|Brazos^Maia|20130224|M|||321 Dundy St^^Haslett^MI^48840^USA^P||^PRN^PH^^^517^5489090|\r"
+        + "NK1|1|Court^Maia|MTH^Mother^HL70063|\r", messageText);
+
+    messageText = REMOVE_REPEATS_MESSAGE;
+    connector.setCustomTransformations("remove repeat PID-2\n");
+    messageText = transformer.transform(connector, messageText);
+    assertEquals("MSH|^~\\&|||||20130823111809||VXU^V04^VXU_V04|X94P18|P|2.5.1|\r"
+        + "PID|1||X94P18^^^OIS-TEST^MR~X94P18^^^OIS-TEST^MA~X94P18^^^OIS-TEST^SS||Court^Nye^^^^^L|Brazos^Maia|20130224|M|||321 Dundy St^^Haslett^MI^48840^USA^P||^PRN^PH^^^517^5489090|\r"
+        + "NK1|1|Court^Maia|MTH^Mother^HL70063|\r", messageText);
+
+    
+
+  }
 
   @Test
   public void testTransformInsertSegments() throws Exception {
@@ -70,9 +151,7 @@ public class TestTransformer
     assertEquals("MSH|\rNK1|\r", messageText);
   }
 
-  private static final String CLEAN_TEST_BEFORE = "MSH|^~\\&|||||20130823111809||VXU^V04^VXU_V04|X94P18|P|2.5.1|\r"
-      + "PID|1||X94P18^^^OIS-TEST^MR||Court^Nye^^^^^L|Brazos^Maia|20130224|M|||321 Dundy St^^Haslett^MI^48840^USA^P||^PRN^PH^^^517^5489090|\r"
-      + "NK1|1|Court^Maia|MTH^Mother^HL70063|\r";
+  private static final String CLEAN_TEST_BEFORE = REMOVE_REPEATS_MESSAGE;
 
   @Test
   public void testTrunc() throws Exception
