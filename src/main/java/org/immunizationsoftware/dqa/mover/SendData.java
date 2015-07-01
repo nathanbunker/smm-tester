@@ -117,6 +117,7 @@ public class SendData extends Thread
         if (configFile.exists() && configFile.isFile() && configFile.canRead()) {
           try {
             setupConnector();
+            if (ManagerServlet.isScanDirectories()) {
             if (obtainLock() && okayToRun) {
               createWorkingDirs();
               createTransformer();
@@ -136,6 +137,11 @@ public class SendData extends Thread
                   deleteWorkingDir();
                 }
               }
+            }
+            }
+            else
+            {
+              // not scanning directories
             }
           } catch (ApplicationShuttingDown asd) {
             // Application is shutting down, continue on out
@@ -857,7 +863,6 @@ public class SendData extends Thread
         }
       }
     }
-
   }
 
   public File getGeneratedDir() {
