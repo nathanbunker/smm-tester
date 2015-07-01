@@ -16,7 +16,7 @@
     </init-param>
     <init-param>
       <param-name>checkIntervalInSeconds</param-name>
-      <param-value>3600</param-value>
+      <param-value>5</param-value>
     </init-param>
 
 <!-- 
@@ -29,6 +29,8 @@
       <param-value>nddevdev</param-value>
     </init-param>
      -->
+
+     
     <init-param>
       <param-name>sun.security.ssl.allowUnsafeRenegotiation</param-name>
       <param-value>true</param-value>
