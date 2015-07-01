@@ -55,6 +55,15 @@ public class ManagerServlet extends ClientServlet {
   private static File requirementTestFieldsFile = null;
   private static File requirementTestTransformsFile = null;
   private static Set<ProfileUsage> requirementTestProfileFileSet = new HashSet<ProfileUsage>();
+  private static boolean scanDirectories = true;
+
+  public static boolean isScanDirectories() {
+    return scanDirectories;
+  }
+
+  public static void setScanDirectories(boolean scanDirectories) {
+    ManagerServlet.scanDirectories = scanDirectories;
+  }
 
   private static final String REQUIREMENT_TEST_FIELDS_FILE = "SMM Requirement Test Fields.csv";
   private static final String REQUIREMENT_TEST_TRANSFORMS = "SMM Requirement Test Transforms.txt";
@@ -208,6 +217,12 @@ public class ManagerServlet extends ClientServlet {
         checkInterval = 5;
       }
       System.out.println("Check interval has been set to " + checkInterval + " seconds");
+    }
+    String folderScanEnabled = getInitParameter("folderScanEnabled");
+    if (folderScanEnabled != null)
+    {
+      scanDirectories = !folderScanEnabled.equalsIgnoreCase("false");
+      System.out.println("Folder scan has been " + (scanDirectories ? "enabled" : "disabled") + ".");
     }
     if (scanStartFolders != null) {
       String[] scanStartFolderNames = scanStartFolders.split("\\;");

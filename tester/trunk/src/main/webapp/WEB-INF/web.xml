@@ -16,7 +16,11 @@
     </init-param>
     <init-param>
       <param-name>checkIntervalInSeconds</param-name>
-      <param-value>5</param-value>
+      <param-value>3600</param-value>
+    </init-param>
+    <init-param>
+      <param-name>folderScanEnabled</param-name>
+      <param-value>false</param-value>
     </init-param>
 
 <!-- 
@@ -29,7 +33,14 @@
       <param-value>nddevdev</param-value>
     </init-param>
      -->
-
+    <init-param>
+      <param-name>keyStore</param-name>
+      <param-value>C:\data\Dropbox (AIRA)\Shared AIRA Files\Technical Assistance\IIS\IA IRIS\smm\smm.jks</param-value>
+    </init-param>
+    <init-param>
+      <param-name>keyStorePassword</param-name>
+      <param-value>y1QNUNAjNM5mIadgWZERbXLUdb5863</param-value>
+    </init-param>
      
     <init-param>
       <param-name>sun.security.ssl.allowUnsafeRenegotiation</param-name>
