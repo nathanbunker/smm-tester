@@ -46,7 +46,7 @@ public class ORConnector extends Connector
   private static String XML_START_3 = "</wsse:Username>"
       + "        <wsse:Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText\"><![CDATA[";
 
-  private static String XML_START_4 = "</wsse:Password>"
+  private static String XML_START_4 = "]]></wsse:Password>"
       + "        <wsse:Nonce EncodingType=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary\">xxxxxxxxxxxx</wsse:Nonce>"
       + "        <wsu:Created>";
 
@@ -100,6 +100,7 @@ public class ORConnector extends Connector
     if (sbuf.length() > 0) {
       result = sbuf.toString();
     }
+    
 
     while (result != null && result.length() > 0 && result.charAt(0) < ' ') {
       result = result.substring(1);
@@ -114,7 +115,7 @@ public class ORConnector extends Connector
       debugLog = new StringBuilder();
     }
     try {
-      SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
+      SSLSocketFactory factory =  setupSSLSocketFactory(debug, debugLog);
 
       HttpURLConnection urlConn;
       DataOutputStream printout;
@@ -128,7 +129,7 @@ public class ORConnector extends Connector
 
       urlConn.setRequestMethod("POST");
 
-      urlConn.setRequestProperty("Content-Type", "application/soap+xml; charset=utf-8");
+      urlConn.setRequestProperty("Content-Type", "application/soap+xml; charset=utf-8;action=\"http://vaccination.org/IVaccinationService/UpdateHistoryRequest\"");
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       urlConn.setUseCaches(false);
@@ -228,7 +229,7 @@ public class ORConnector extends Connector
 
   @Override
   public String connectivityTest(String message) throws Exception {
-    return "Connectivity test not supported for HTTPS POST connections";
+    return "Not supported yet";
   }
 
 

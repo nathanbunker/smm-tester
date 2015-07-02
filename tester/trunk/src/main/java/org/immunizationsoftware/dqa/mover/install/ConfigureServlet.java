@@ -36,12 +36,14 @@ public class ConfigureServlet extends ClientServlet
   public static final String TEMPLATE_IA_IRIS_PROD = "IA IRIS Prod";
   public static final String TEMPLATE_IL_ICARE_TEST = "IL I-Care Test";
   public static final String TEMPLATE_IL_ICARE_PROD = "IL I-Care Prod";
-  public static final String TEMPLATE_MT_IMMTRAX_TEST = "MT imMTrax Test";
-  public static final String TEMPLATE_MT_IMMTRAX_PROD = "MT imMTrax Prod";
   public static final String TEMPLATE_MN_MIIC_TEST = "MN MIIC Test";
   public static final String TEMPLATE_MN_MIIC_PROD = "MN MIIC Prod";
-  public static final String TEMPLATE_NMSIIS_RAW_UAT = "NMSIIS Raw UAT";
-  public static final String TEMPLATE_NMSIIS_RAW_PROD = "NMSIIS Raw Prod";
+  public static final String TEMPLATE_MS_MIX_TEST = "MS MIX Test";
+  public static final String TEMPLATE_MS_MIX_PROD = "MS MIX Prod";
+  public static final String TEMPLATE_MT_IMMTRAX_TEST = "MT imMTrax Test";
+  public static final String TEMPLATE_MT_IMMTRAX_PROD = "MT imMTrax Prod";
+  public static final String TEMPLATE_NM_SIIS_RAW_UAT = "NM SIIS Raw UAT";
+  public static final String TEMPLATE_NMSIIS_RAW_PROD = "NM SIIS Raw Prod";
   public static final String TEMPLATE_NE_SIIS_TEST = "NE SIIS Test";
   public static final String TEMPLATE_NE_SIIS_PROD = "NE SIIS Prod";
   public static final String TEMPLATE_NV_WEBIZ_TEST = "NV WebIZ Test";
@@ -55,10 +57,10 @@ public class ConfigureServlet extends ClientServlet
       TEMPLATE_AK_VACTRAK_PROD, TEMPLATE_AZ_ASIIS_TEST, TEMPLATE_AZ_ASIIS_PROD, TEMPLATE_CA_CAIR_TEST,
       TEMPLATE_CA_CAIR_PROD, TEMPLATE_CA_SDIR_TEST, TEMPLATE_CA_SDIR_PROD, TEMPLATE_IA_IRIS_TEST,
       TEMPLATE_IA_IRIS_PROD, TEMPLATE_IL_ICARE_TEST, TEMPLATE_IL_ICARE_PROD, TEMPLATE_MT_IMMTRAX_TEST,
-      TEMPLATE_MT_IMMTRAX_PROD, TEMPLATE_MN_MIIC_TEST, TEMPLATE_MN_MIIC_PROD, TEMPLATE_NMSIIS_RAW_UAT,
-      TEMPLATE_NMSIIS_RAW_PROD, TEMPLATE_NE_SIIS_TEST, TEMPLATE_NE_SIIS_PROD, TEMPLATE_NV_WEBIZ_TEST,
-      TEMPLATE_NV_WEBIZ_PROD, TEMPLATE_RI_KIDSNET_TEST, TEMPLATE_RI_KIDSNET_PROD, TEMPLATE_WA_IIS_TEST,
-      TEMPLATE_WA_IIS_PROD };
+      TEMPLATE_MT_IMMTRAX_PROD, TEMPLATE_MN_MIIC_TEST, TEMPLATE_MN_MIIC_PROD, TEMPLATE_MS_MIX_TEST,
+      TEMPLATE_MS_MIX_PROD, TEMPLATE_NM_SIIS_RAW_UAT, TEMPLATE_NMSIIS_RAW_PROD, TEMPLATE_NE_SIIS_TEST,
+      TEMPLATE_NE_SIIS_PROD, TEMPLATE_NV_WEBIZ_TEST, TEMPLATE_NV_WEBIZ_PROD, TEMPLATE_RI_KIDSNET_TEST,
+      TEMPLATE_RI_KIDSNET_PROD, TEMPLATE_WA_IIS_TEST, TEMPLATE_WA_IIS_PROD };
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -210,7 +212,7 @@ public class ConfigureServlet extends ClientServlet
 
   private void setupConnection(String templateName, Connector connector) {
     if (templateName != null) {
-      if (templateName.equals(TEMPLATE_NMSIIS_RAW_UAT) || templateName.equals(TEMPLATE_NMSIIS_RAW_PROD)) {
+      if (templateName.equals(TEMPLATE_NM_SIIS_RAW_UAT) || templateName.equals(TEMPLATE_NMSIIS_RAW_PROD)) {
         HttpConnector httpConnector = (HttpConnector) connector;
         httpConnector.setFacilityid("NMSIIS");
         httpConnector.setAuthenticationMethod(HttpConnector.AuthenticationMethod.HEADER);
@@ -236,7 +238,7 @@ public class ConfigureServlet extends ClientServlet
             + "RXA-9=[MAP ''=>'01']\n" + "run procedure Remove_Vaccination_Groups where RXA-20 equals 'RE'\n");
       } else if (templateName.equals(TEMPLATE_CA_SDIR_TEST) || templateName.equals(TEMPLATE_CA_SDIR_PROD)) {
         // HttpConnector httpConnector = (HttpConnector) connector;
-        // nothing to do 
+        // nothing to do
       } else if (templateName.equals(TEMPLATE_IA_IRIS_TEST) || templateName.equals(TEMPLATE_IA_IRIS_PROD)) {
         SoapConnector soapConnector = (SoapConnector) connector;
         soapConnector.setAckType(AckAnalyzer.AckType.MIIC);
@@ -274,6 +276,9 @@ public class ConfigureServlet extends ClientServlet
       } else if (templateName.equals(TEMPLATE_RI_KIDSNET_TEST) || templateName.equals(TEMPLATE_RI_KIDSNET_PROD)) {
         HttpConnector httpConnector = (HttpConnector) connector;
         httpConnector.setCustomTransformations("MSH-4=[FACILITYID]\n" + "MSH-22=[OTHERID]\n");
+      } else if (templateName.equals(TEMPLATE_MS_MIX_TEST) || templateName.equals(TEMPLATE_MS_MIX_PROD)) {
+        HttpConnector httpConnector = (HttpConnector) connector;
+        httpConnector.setCustomTransformations("MSH-4=[FACILITYID]\n");
       }
     }
   }
@@ -470,6 +475,30 @@ public class ConfigureServlet extends ClientServlet
         cc.setUseridRequired(true);
         cc.setPasswordRequired(true);
         cc.setFacilityidRequired(false);
+      } else if (templateName.equals(TEMPLATE_MS_MIX_TEST)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("https://immunizations.ms-hin.net/HttpPostForwarder/");
+        cc.setInstructions("Before configuring please request credentials. ");
+        cc.setFacilityidShow(true);
+        cc.setFacilityidRequired(true);
+        cc.setFacilityidLabel("MSH-4 Sending Facility");
+        cc.setTypeShow(false);
+        cc.setReceiverName("MIX");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setUseridLabel("Username");
+      } else if (templateName.equals(TEMPLATE_MS_MIX_PROD)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("https://immunizations.ms-hin.net/HttpPostForwarder/");
+        cc.setInstructions("Before configuring please request credentials. ");
+        cc.setFacilityidShow(true);
+        cc.setFacilityidRequired(true);
+        cc.setFacilityidLabel("MSH-4 Sending Facility");
+        cc.setTypeShow(false);
+        cc.setReceiverName("MIX");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setUseridLabel("Username");
       } else if (templateName.equals(TEMPLATE_NE_SIIS_TEST) || templateName.equals(TEMPLATE_NE_SIIS_PROD)) {
         cc.setType(ConnectorFactory.TYPE_SOAP);
         cc.setInstructions("Contact NE SIIS for connecting information.");
@@ -488,7 +517,7 @@ public class ConfigureServlet extends ClientServlet
         cc.setOtheridShow(true);
         cc.setOtheridRequired(true);
         cc.setReceiverName("NESIIS");
-      } else if (templateName.equals(TEMPLATE_NMSIIS_RAW_UAT)) {
+      } else if (templateName.equals(TEMPLATE_NM_SIIS_RAW_UAT)) {
         cc.setType(ConnectorFactory.TYPE_POST);
         cc.setUrl("https://www.nmhit.org/nmsiistest/rhapsody/receive");
         cc.setTypeShow(false);

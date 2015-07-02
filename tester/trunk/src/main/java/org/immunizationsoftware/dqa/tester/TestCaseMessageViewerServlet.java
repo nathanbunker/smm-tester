@@ -102,67 +102,6 @@ public class TestCaseMessageViewerServlet extends ClientServlet
   public static void printTestCaseMessage(PrintWriter out, TestCaseMessage testCaseMessage) {
     out.println("<h2>" + testCaseMessage.getDescription() + "</h2>");
 
-    if (testCaseMessage.getOriginalMessage() != null && !testCaseMessage.getOriginalMessage().equals("")
-        && !testCaseMessage.getOriginalMessage().equals(testCaseMessage.getMessageText())) {
-      out.println("<h3>Original Message</h3>");
-      out.println("<p>The starting point for the message, before transformations applied. </p>");
-      out.println("<pre>" + testCaseMessage.getOriginalMessage() + "</pre>");
-    }
-    if (testCaseMessage.getQuickTransformations() != null && testCaseMessage.getQuickTransformations().length > 0) {
-      out.println("<p>The following quick transformations applied to original message:</p>");
-      out.println("<pre>");
-      for (String s : testCaseMessage.getQuickTransformations()) {
-        out.println("" + s + "");
-      }
-      out.println("</pre>");
-    }
-    if (testCaseMessage.getCustomTransformations() != null && !testCaseMessage.getCustomTransformations().equals("")) {
-      out.println("<p>The following custom transformations applied to original message:</p>");
-      out.println("<pre>" + testCaseMessage.getCustomTransformations() + "</pre>");
-    }
-    if (testCaseMessage.getCauseIssues() != null && !testCaseMessage.getCauseIssues().equals("")) {
-      out.println("<p>The following issues were introduced in to this message:</p>");
-      out.println("<pre>" + testCaseMessage.getCauseIssues() + "</pre>");
-    }
-    if (testCaseMessage.getCauseIssueTransforms() != null && !testCaseMessage.getCauseIssueTransforms().equals("")) {
-      out.println("<p>The issues above resulted in these transformations:</p>");
-      out.println("<pre>" + testCaseMessage.getCauseIssueTransforms() + "</pre>");
-    }
-    out.println("<h3>Request</h3>");
-    out.println("<p>This is the base text for the request. No local transformations have been applied.</p>");
-    out.println("<pre>" + testCaseMessage.getMessageText() + "</pre>");
-
-    if (testCaseMessage.getMessageTextSent() != null && !testCaseMessage.getMessageTextSent().equals("")
-        && !testCaseMessage.getMessageTextSent().equals(testCaseMessage.getMessageText())) {
-      if (testCaseMessage.getAdditionalTransformations() != null && !testCaseMessage.getAdditionalTransformations().equals("")) {
-        out.println("<p>The following additional transformations applied to original message before sending message:</p>");
-        out.println("<pre>" + testCaseMessage.getAdditionalTransformations()+ "</pre>");
-      }
-      out.println("<h3>Message Actually Sent</h3>");
-      out.println("<p>The final message message sent was different than the request, local transformations were applied. "
-          + "These are specified in the connection settings of the connector that was used to run this test. </p>");
-
-      out.println("<pre>" + testCaseMessage.getMessageTextSent() + "</pre>");
-
-      List<Comparison> comparisonList = CompareManager.compareMessages(testCaseMessage.getMessageText(),
-          testCaseMessage.getMessageTextSent());
-      if (comparisonList.size() > 0) {
-        boolean foundImportantChanges = false;
-        for (Comparison comparison : comparisonList) {
-          if (comparison.isTested() && !comparison.isPass()
-              && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
-            foundImportantChanges = true;
-            break;
-          }
-        }
-        if (foundImportantChanges) {
-          out.println("<div id=\"changesMade\"/>");
-          out.println("<h3>Substantial Changes Made To Message Actually Sent</h3>");
-          CompareServlet.printComparison(comparisonList, out);
-        }
-      }
-    }
-
     if (testCaseMessage.isHasRun()) {
       if (testCaseMessage.getActualMessageResponseType().equals("ACK")) {
         if (testCaseMessage.isAccepted()) {
@@ -175,6 +114,28 @@ public class TestCaseMessageViewerServlet extends ClientServlet
       }
       out.println("<pre>" + testCaseMessage.getActualResponseMessage() + "</pre>");
     }
+
+    out.println("<h3>Message Sent</h3>");
+    out.println("<pre>" + testCaseMessage.getMessageTextSent() + "</pre>");
+
+    List<Comparison> comparisonList = CompareManager.compareMessages(testCaseMessage.getMessageText(),
+        testCaseMessage.getMessageTextSent());
+    if (comparisonList.size() > 0) {
+      boolean foundImportantChanges = false;
+      for (Comparison comparison : comparisonList) {
+        if (comparison.isTested() && !comparison.isPass()
+            && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
+          foundImportantChanges = true;
+          break;
+        }
+      }
+      if (foundImportantChanges) {
+        out.println("<div id=\"changesMade\"/>");
+        out.println("<h3>Substantial Changes Made To Message Actually Sent</h3>");
+        CompareServlet.printComparison(comparisonList, out);
+      }
+    }
+
     if (testCaseMessage.getException() != null) {
       out.println("<h3>Unexpected Problem Occurred</h3>");
       out.println("<p>Exception occurred: " + testCaseMessage.getException().getMessage() + "</p>");
@@ -186,57 +147,8 @@ public class TestCaseMessageViewerServlet extends ClientServlet
       out.println("<h3>Request Derived From This VXU Message</h3>");
       out.println("<pre>" + testCaseMessage.getDerivedFromVXUMessage() + "</pre>");
     }
-    if (testCaseMessage.getCustomTransformations() != null && !testCaseMessage.getCustomTransformations().equals("")) {
-      out.println("<h3>Custom Transformations Applied</h3>");
-      out.println("<pre>" + testCaseMessage.getCustomTransformations() + "</pre>");
-    }
     testCaseMessage.getErrorList();
     testCaseMessage.getTestCaseNumber();
-
-    out.println("<table>");
-    out.println("  <tr>");
-    out.println("    <th>Assert Result</th>");
-    if (testCaseMessage.getAssertResult().equals("")) {
-      if (testCaseMessage.getAssertResultText().equals("")) {
-        out.println("    <td>" + testCaseMessage.getAssertResultStatus() + "</td>");
-      } else {
-        out.println("    <td>" + testCaseMessage.getAssertResultStatus() + " - "
-            + testCaseMessage.getAssertResultText() + "</td>");
-      }
-    } else {
-      out.println("    <td>" + testCaseMessage.getAssertResult() + "</td>");
-    }
-    out.println("  </tr>");
-    if (testCaseMessage.getCauseIssues() != null && !testCaseMessage.getCauseIssues().equals("")) {
-      out.println("  <tr>");
-      out.println("    <th>Cause Issues</th>");
-      out.println("    <td>" + testCaseMessage.getCauseIssues() + "</td>");
-      out.println("  </tr>");
-    }
-
-    out.println("  <tr>");
-    out.println("    <th>Ack Type</th>");
-    out.println("    <td>" + testCaseMessage.getActualResultAckType() + "</td>");
-    out.println("  </tr>");
-    out.println("  <tr>");
-    out.println("    <th>Accepted</th>");
-    out.println("    <td>" + (testCaseMessage.isAccepted() ? "Yes" : "No") + "</td>");
-    out.println("  </tr>");
-    out.println("  <tr>");
-    out.println("    <th>Test Result Status</th>");
-    out.println("    <td>" + testCaseMessage.getActualResultStatus() + "</td>");
-    out.println("  </tr>");
-    List<TestError> errorList = testCaseMessage.getErrorList();
-    if (errorList != null) {
-      for (TestError error : errorList) {
-        out.println("  <tr>");
-        out.println("    <td>" + error.getErrorType() + "</td>");
-        out.println("    <td>" + error.getDescription() + "</td>");
-        out.println("  </tr>");
-      }
-    }
-    out.println("</table>");
-    out.println("<br/>");
 
     if (testCaseMessage.getComparisonList() != null) {
       out.println("    <div id=\"compareDetails\"/>");
