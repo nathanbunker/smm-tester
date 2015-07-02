@@ -36,6 +36,8 @@ public class ConfigureServlet extends ClientServlet
   public static final String TEMPLATE_IA_IRIS_PROD = "IA IRIS Prod";
   public static final String TEMPLATE_IL_ICARE_TEST = "IL I-Care Test";
   public static final String TEMPLATE_IL_ICARE_PROD = "IL I-Care Prod";
+  public static final String TEMPLATE_ME_PHCHUB_TEST = "ME Maine Test";
+  public static final String TEMPLATE_ME_PHCHUB_PROD = "ME Maine Prod";
   public static final String TEMPLATE_MN_MIIC_TEST = "MN MIIC Test";
   public static final String TEMPLATE_MN_MIIC_PROD = "MN MIIC Prod";
   public static final String TEMPLATE_MS_MIX_TEST = "MS MIX Test";
@@ -56,11 +58,12 @@ public class ConfigureServlet extends ClientServlet
   public static final String[] TEMPLATES = { TEMPLATE_DEFAULT_SOAP, TEMPLATE_DEFAULT_POST, TEMPLATE_AK_VACTRAK_TEST,
       TEMPLATE_AK_VACTRAK_PROD, TEMPLATE_AZ_ASIIS_TEST, TEMPLATE_AZ_ASIIS_PROD, TEMPLATE_CA_CAIR_TEST,
       TEMPLATE_CA_CAIR_PROD, TEMPLATE_CA_SDIR_TEST, TEMPLATE_CA_SDIR_PROD, TEMPLATE_IA_IRIS_TEST,
-      TEMPLATE_IA_IRIS_PROD, TEMPLATE_IL_ICARE_TEST, TEMPLATE_IL_ICARE_PROD, TEMPLATE_MT_IMMTRAX_TEST,
-      TEMPLATE_MT_IMMTRAX_PROD, TEMPLATE_MN_MIIC_TEST, TEMPLATE_MN_MIIC_PROD, TEMPLATE_MS_MIX_TEST,
-      TEMPLATE_MS_MIX_PROD, TEMPLATE_NM_SIIS_RAW_UAT, TEMPLATE_NMSIIS_RAW_PROD, TEMPLATE_NE_SIIS_TEST,
-      TEMPLATE_NE_SIIS_PROD, TEMPLATE_NV_WEBIZ_TEST, TEMPLATE_NV_WEBIZ_PROD, TEMPLATE_RI_KIDSNET_TEST,
-      TEMPLATE_RI_KIDSNET_PROD, TEMPLATE_WA_IIS_TEST, TEMPLATE_WA_IIS_PROD };
+      TEMPLATE_IA_IRIS_PROD, TEMPLATE_IL_ICARE_TEST, TEMPLATE_IL_ICARE_PROD, TEMPLATE_ME_PHCHUB_TEST,
+      TEMPLATE_ME_PHCHUB_PROD, TEMPLATE_MT_IMMTRAX_TEST, TEMPLATE_MT_IMMTRAX_PROD, TEMPLATE_MN_MIIC_TEST,
+      TEMPLATE_MN_MIIC_PROD, TEMPLATE_MS_MIX_TEST, TEMPLATE_MS_MIX_PROD, TEMPLATE_NM_SIIS_RAW_UAT,
+      TEMPLATE_NMSIIS_RAW_PROD, TEMPLATE_NE_SIIS_TEST, TEMPLATE_NE_SIIS_PROD, TEMPLATE_NV_WEBIZ_TEST,
+      TEMPLATE_NV_WEBIZ_PROD, TEMPLATE_RI_KIDSNET_TEST, TEMPLATE_RI_KIDSNET_PROD, TEMPLATE_WA_IIS_TEST,
+      TEMPLATE_WA_IIS_PROD };
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -279,6 +282,9 @@ public class ConfigureServlet extends ClientServlet
       } else if (templateName.equals(TEMPLATE_MS_MIX_TEST) || templateName.equals(TEMPLATE_MS_MIX_PROD)) {
         HttpConnector httpConnector = (HttpConnector) connector;
         httpConnector.setCustomTransformations("MSH-4=[FACILITYID]\n");
+      } else if (templateName.equals(TEMPLATE_MS_MIX_TEST) || templateName.equals(TEMPLATE_MS_MIX_PROD)) {
+        HttpConnector httpConnector = (HttpConnector) connector;
+        httpConnector.setFieldName(HttpConnector.FACILITYID, "PROFILEID");
       }
     }
   }
@@ -437,6 +443,30 @@ public class ConfigureServlet extends ClientServlet
         cc.setOtheridRequired(true);
         cc.setOtheridShow(true);
         cc.setOtheridLabel("MSH-4");
+      } else if (templateName.equals(TEMPLATE_ME_PHCHUB_TEST)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("https://portaltest.maine.gov/phchub/HL7Server");
+        cc.setInstructions("Before configuring please request credentials. ");
+        cc.setFacilityidShow(true);
+        cc.setFacilityidRequired(true);
+        cc.setFacilityidLabel("Profile Id");
+        cc.setTypeShow(false);
+        cc.setReceiverName("PHCHUB");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setUseridLabel("Username");
+      } else if (templateName.equals(TEMPLATE_ME_PHCHUB_PROD)) {
+        cc.setType(ConnectorFactory.TYPE_POST);
+        cc.setUrl("");
+        cc.setInstructions("Before configuring please request credentials. ");
+        cc.setFacilityidShow(true);
+        cc.setFacilityidRequired(true);
+        cc.setFacilityidLabel("Profile Id");
+        cc.setTypeShow(false);
+        cc.setReceiverName("PHCHUB");
+        cc.setUseridRequired(true);
+        cc.setPasswordRequired(true);
+        cc.setUseridLabel("Username");
       } else if (templateName.equals(TEMPLATE_MN_MIIC_TEST) || templateName.equals(TEMPLATE_MN_MIIC_PROD)) {
         cc.setType(ConnectorFactory.TYPE_SOAP);
         cc.setInstructions("Contact MN MIIC for connecting information.");
