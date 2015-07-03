@@ -690,18 +690,27 @@ public class ProfileServlet extends ClientServlet {
               out.println("    <td><a href=\"" + link + "\">" + profileField.getDescription() + "</a></td>");
             }
             Usage selectedUsage = profileLine.getUsage();
+            String usageValue = profileLine.getProfileUsageValue().getValue();
+            String comments = profileLine.getProfileUsageValue().getComments();
+            String notes = profileLine.getProfileUsageValue().getNotes();
             if (copyFromItemList != null) {
               for (ProfileLine profileLineCopy : copyFromItemList) {
                 if (profileLine.getField().getType() == ProfileFieldType.FIELD) {
                   if (profileLine.getField().getPosInSegment() == profileLineCopy.getField().getPosInSegment()
                       && profileLine.getField().getSpecialName().equals(profileLineCopy.getField().getSpecialName())) {
                     selectedUsage = profileLineCopy.getUsage();
+                    usageValue = profileLineCopy.getProfileUsageValue().getValue();
+                    comments = profileLineCopy.getProfileUsageValue().getComments();
+                    notes = profileLineCopy.getProfileUsageValue().getNotes();
                   }
                 } else {
                   if (profileLine.getField().getDataTypePos() == profileLineCopy.getField().getDataTypePos()
                       && profileField.getType() == profileLineCopy.getField().getType()
                       && profileField.getCodeValue().equals(profileLineCopy.getField().getCodeValue())) {
                     selectedUsage = profileLineCopy.getUsage();
+                    usageValue = profileLineCopy.getProfileUsageValue().getValue();
+                    comments = profileLineCopy.getProfileUsageValue().getComments();
+                    notes = profileLineCopy.getProfileUsageValue().getNotes();
                   }
                 }
               }
@@ -731,11 +740,11 @@ public class ProfileServlet extends ClientServlet {
               out.println("  <input type=\"hidden\" name=\"fieldName\" value=\"" + fieldName + "\"/>");
             }
             out.println("    <td><input type=\"text\" size=\"5\" name=\"value" + profileField.getPos() + "\" value=\""
-                + profileLine.getProfileUsageValue().getValue() + "\"/></td>");
+                + usageValue + "\"/></td>");
             out.println("    <td><input type=\"text\" size=\"20\" name=\"comments" + profileField.getPos() + "\" value=\""
-                + profileLine.getProfileUsageValue().getComments() + "\"/></td>");
+                + comments + "\"/></td>");
             out.println("    <td><input type=\"text\" size=\"20\" name=\"notes" + profileField.getPos() + "\" value=\""
-                + profileLine.getProfileUsageValue().getNotes() + "\"/></td>");
+                + notes + "\"/></td>");
             out.println("  </tr>");
           }
         }
