@@ -609,7 +609,7 @@ public class CertifyRunner extends Thread
         PrintWriter out = new PrintWriter(new FileWriter(reportFile));
         String title = "IIS Testing Report";
         ClientServlet.printHtmlHeadForFile(out, title);
-        out.println("    <h3>IIS Testing Results for " + connector.getLabel() + "</h3>");
+        out.println("    <h1>IIS Testing Results for " + connector.getLabel() + "</h1>");
         printReport(out, true);
         ClientServlet.printHtmlFootForFile(out);
         out.close();
@@ -1679,7 +1679,7 @@ public class CertifyRunner extends Thread
     for (int i = 1; i <= 4; i++) {
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
-      testCaseMessage.setDescription("Mulitiple Birth: First of " + i);
+      testCaseMessage.setDescription("Multiple Birth is First of " + i);
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
       if (i == 1) {
@@ -1702,7 +1702,7 @@ public class CertifyRunner extends Thread
     for (int i = 2; i <= 4; i++) {
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
-      testCaseMessage.setDescription("Mulitiple Birth: Last of " + i);
+      testCaseMessage.setDescription("Multiple Birth is Last of " + i);
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
 
@@ -1715,60 +1715,8 @@ public class CertifyRunner extends Thread
       register(testCaseMessage);
     }
 
-    count = 0;
-    masterCount++;
-    {
-      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_CHILD);
-      testCaseMessage.setDescription("Death Recorded Without Date");
-      testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + ".1");
-      testCaseMessage.appendCustomTransformation("PID-30=Y");
-
-      statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      transformer.transform(testCaseMessage);
-      testCaseMessage.setAssertResult("Accept - *");
-      register(testCaseMessage);
-
-      testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_CHILD);
-      testCaseMessage.setDescription("Death Recorded With Date");
-      testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + ".2");
-      testCaseMessage.appendCustomTransformation("PID-29=[TODAY]");
-      testCaseMessage.appendCustomTransformation("PID-30=Y");
-
-      statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      transformer.transform(testCaseMessage);
-      testCaseMessage.setAssertResult("Accept - *");
-      register(testCaseMessage);
-
-      testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
-      testCaseMessage.setDescription("Patient Not Deceased");
-      testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + ".3");
-      testCaseMessage.appendCustomTransformation("PID-30=N");
-
-      statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      transformer.transform(testCaseMessage);
-      testCaseMessage.setAssertResult("Accept - *");
-      register(testCaseMessage);
 
       areaCount[SUITE_B_INTERMEDIATE][0] = statusCheckTestCaseIntermediateList.size();
-    }
-
-    // {
-    // TestCaseMessage testCaseMessage =
-    // ScenarioManager.createTestCaseMessage(SCENARIO_ADD_DELETE);
-    // testCaseMessage.setDescription("Vaccination Added and then Deleted");
-    // testCaseMessage.setTestCaseSet(testCaseSet);
-    // testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" +
-    // makeTwoDigits(masterCount) + ".1");
-    //
-    // statusCheckTestCaseIntermediateList.add(testCaseMessage);
-    // transformer.transform(testCaseMessage);
-    // testCaseMessage.setAssertResult("Accept - *");
-    // register(testCaseMessage);
-    //
-    // }
   }
 
   private List<ForecastTestPanel> forecastTestPanelList = new ArrayList<ForecastTestPanel>();
@@ -2979,85 +2927,102 @@ public class CertifyRunner extends Thread
       overallScore += reportScore[REPORT_7_PERFORM] * 0.05;
       overallScore += reportScore[REPORT_8_ACK] * 0.05;
 
-      out.println("<p>This report gives a thumbnail view of how the interface responds when receiving VXU messages. "
+      out.println("<p>This report gives quick view of how the interface responds when receiving VXU messages. "
           + "This report is preliminary and to be used to inform both national and local standardization efforts. This report is "
-          + "not a complete nor final view on the quality or abilities of an IIS interface. </p>");
+          + "not a complete nor definitive statement on the quality or abilities of an IIS interface. </p>");
+      out.println("<h3>Limitations of Report</h3>");
+      out.println("<p>This report has been generated for information purposes as the preliminary first step to assessing HL7 capabilities at the IIS level."
+          + "This report has the following severe limitations: </p>");
+      out.println("<ul>");
+      out.println("  <li>This report is preliminary and exploratory so includes tests where there is yet no definitive standard on the correct response expected from the IIS. </li>");
+      out.println("  <li>This report may have technical issues that are yet to be discovered and fixed. </li>");
+      out.println("  <li>Due to the variance and differences in acknowledgement messages returned from IIS, the report may not accurately report whether a VXU was actually accepted or not. </li>");
+      out.println("</ul>");
+      out.println("<h3>Purposes of Report</h3>");
+      out.println("<p>The primary purpose of this report is to provide information at the national level about how IIS are currently operating. "
+          + "This information will be used primarily to recommend improvements to the national standard. IIS may also use some of the information "
+          + "in this report to inform changes to the IIS. However, IIS should take care to note that this report is preliminary and differences or problems noted "
+          + "do not assert that the IIS is operating incorrectly or needs to be changed. As such this report should be reviewed as preliminary and with the "
+          + "expectation that the information gained in this report will be used to inform improvements to the standards and the development of a standardized testing process. "
+          + "These improvements are likely to take several years and involve input from the entire community, this report is built to support the first step in this process.    </p>");
+      out.println("<p><a href=\"IIS Testing Report Detail.html\">Detailed Report</a></p>");
       out.println("<h2>Overall Score</h2>");
       out.println("<p>This score is to designed to show improvements over time and point to areas that need to be addressed in "
           + "either the national or local standard. The score is designed to be very sensitive thus a high score is difficult to achieve. "
           + " </p>");
+      out.println("<h3>Limitations of Score</h3>");
+      out.println("<p>This score can not be used to compare one IIS to another, nor is the score definitive in meaning. This score was developed to aid in readability of the report."
+          + "It should only be used help focus the reader "
+          + "on sections of interest and to provide a way of detecting when major changes occur across time to a particular IIS. </p>");
+      out.println("<p>Overall score:");
+      out.printf("%.0f", (overallScore * 100));
+      out.println("%</p>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
       out.println("    <th>Report Section</th>");
-      out.println("    <th>Score</th>");
       out.println("    <th>Weight</th>");
-      out.println("  </tr>");
-      out.println("  <tr>");
-      out.println("    <td>Overall Score</td>");
-      out.println("    <td>");
-      out.printf("%.1f", (overallScore * 100));
-      out.println("%</td>");
-      out.println("    <td>&nbsp;</td>");
+      out.println("    <th>Score</th>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>Interoperability</td>");
-      out.println("    <td>");
-      out.printf("%.1f", (reportScore[REPORT_1_INTEROP] * 100));
-      out.println("%</td>");
       out.println("    <td>40%</td>");
+      out.println("    <td>");
+      out.printf("%.0f", (reportScore[REPORT_1_INTEROP] * 100));
+      out.println("%</td>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>Coded Values</td>");
-      out.println("    <td>");
-      out.printf("%.1f", (reportScore[REPORT_2_CODED] * 100));
-      out.println("%</td>");
       out.println("    <td>20%</td>");
+      out.println("    <td>");
+      out.printf("%.0f", (reportScore[REPORT_2_CODED] * 100));
+      out.println("%</td>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>Local Requirement</td>");
-      out.println("    <td>");
-      out.printf("%.1f", (reportScore[REPORT_3_LOCAL] * 100));
-      out.println("%</td>");
       out.println("    <td>10%</td>");
+      out.println("    <td>");
+      out.printf("%.0f", (reportScore[REPORT_3_LOCAL] * 100));
+      out.println("%</td>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>National Compatibility</td>");
-      out.println("    <td>");
-      out.printf("%.1f", (reportScore[REPORT_4_NATIONAL] * 100));
-      out.println("%</td>");
       out.println("    <td>10%</td>");
+      out.println("    <td>");
+      out.printf("%.0f", (reportScore[REPORT_4_NATIONAL] * 100));
+      out.println("%</td>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>Tolerance Test</td>");
-      out.println("    <td>");
-      out.printf("%.1f", (reportScore[REPORT_5_TOLERANCE] * 100));
-      out.println("%</td>");
       out.println("    <td>5%</td>");
+      out.println("    <td>");
+      out.printf("%.0f", (reportScore[REPORT_5_TOLERANCE] * 100));
+      out.println("%</td>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>EHR Example Test</td>");
-      out.println("    <td>");
-      out.printf("%.1f", (reportScore[REPORT_6_EHR] * 100));
-      out.println("%</td>");
       out.println("    <td>5%</td>");
+      out.println("    <td>");
+      out.printf("%.0f", (reportScore[REPORT_6_EHR] * 100));
+      out.println("%</td>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>Performance Test</td>");
-      out.println("    <td>");
-      out.printf("%.1f", (reportScore[REPORT_7_PERFORM] * 100));
-      out.println("%</td>");
       out.println("    <td>5%</td>");
+      out.println("    <td>");
+      out.printf("%.0f", (reportScore[REPORT_7_PERFORM] * 100));
+      out.println("%</td>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>Acknowledgment Conformance Test</td>");
-      out.println("    <td>");
-      out.printf("%.1f", (reportScore[REPORT_8_ACK] * 100));
-      out.println("%</td>");
       out.println("    <td>5%</td>");
+      out.println("    <td>");
+      out.printf("%.0f", (reportScore[REPORT_8_ACK] * 100));
+      out.println("%</td>");
       out.println("  </tr>");
       out.println("</table>");
 
       out.println("<h3>Setup</h3>");
+      out.println("<p>Here is some connection details that were used to connect to IIS to create report. </p>");
 
       if (!connector.getCustomTransformations().equals("")) {
         out.println("<p>This interface requires customized Transformations to modify each message before transmitting "
@@ -3662,15 +3627,15 @@ public class CertifyRunner extends Thread
       out.println("</ul>");
 
       out.println("<div id=\"areaBLevel1\"/>");
-      out.println("<table border=\"1\" cellspacing=\"0\">");
-      out.println("  <tr>");
-      out.println("    <th colspan=\"2\">Intermediate Tests - Level 1 - Accepting Core Data</th>");
-      out.println("  </tr>");
+      out.println("<h3>Intermediate Tests - Level 1 - Accepting Core Data</h3>");
+      String previousFieldName = "";
       for (TestCaseMessage testCaseMessage : statusCheckTestCaseIntermediateList) {
-        printTestCaseMessageDetailsUpdate(out, toFile, testCaseMessage);
+        previousFieldName = printTestCaseMessageDetailsUpdate(out, toFile, testCaseMessage, previousFieldName);
       }
-      out.println("</table>");
-      out.println("</br>");
+      if (!previousFieldName.equals(""))
+      {
+        out.println("</ul>");
+      }
     }
     if (areaProgress[SUITE_B_INTERMEDIATE][1] > 0) {
 
@@ -4116,6 +4081,40 @@ public class CertifyRunner extends Thread
       out.println("    <td class=\"" + classText + "\">not run yet</td>");
     }
     out.println("  </tr>");
+  }
+
+  public String printTestCaseMessageDetailsUpdate(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage,
+      String previousFieldName) {
+    String classText = "nottested";
+    if (testCaseMessage.isHasRun()) {
+      classText = testCaseMessage.isAccepted() ? "pass" : "fail";
+    }
+    String fieldName = testCaseMessage.getDescription();
+    String fieldValue = "";
+    int isPos = fieldName.indexOf(" is ");
+    if (isPos != -1) {
+      fieldValue = fieldName.substring(isPos + 4).trim();
+      fieldName = fieldName.substring(0, isPos).trim();
+    }
+    if (!previousFieldName.equals(fieldName)) {
+      if (!previousFieldName.equals("")) {
+        out.println("</ul>");
+      }
+      out.println("<p>" + fieldName + ":</p>");
+      out.println("<ul>");
+    }
+    out.println("    <li class=\"" + classText + "\">" + fieldValue);
+    if (testCaseMessage.isHasRun()) {
+      if (testCaseMessage.isAccepted()) {
+        out.println(" - accepted " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+      } else {
+        out.println(" - NOT accepted. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+      }
+    } else {
+      out.println(" - not run yet");
+    }
+    out.println("  </li>");
+    return fieldName;
   }
 
   public void printProfileLine(PrintWriter out, boolean toFile, ProfileLine profileLine) {
