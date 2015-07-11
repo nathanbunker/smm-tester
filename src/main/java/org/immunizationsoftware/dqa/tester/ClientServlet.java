@@ -160,6 +160,7 @@ public class ClientServlet extends HttpServlet
     out.println("       a:visited { text-decoration:none; color: #2B3E42;}");
     out.println("       a:hover {  background: #FFFFFF; text-decoration:none; border-style: solid; border-color: #2B3E42; border-width: 1px; color: #2B3E42;}");
     out.println("       a:active {text-decoration:none; color: #2B3E42; }");
+    out.println("       .boxLinks { margin-bottom: 2px; font-size: 12pt; font-weight: normal; align-content: flex-end; height: 50px; border-width: 1px; border-style: solid; background-color:#AAAAAA; color: #2B3E42; padding-left: 3px; padding-right: 3px; border-color: #222222;");
     out.println("    </style>");
     out.println("  </head>");
     out.println("  <body>");
