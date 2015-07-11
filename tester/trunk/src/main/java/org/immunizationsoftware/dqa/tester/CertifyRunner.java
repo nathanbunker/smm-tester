@@ -64,6 +64,8 @@ import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
 
 public class CertifyRunner extends Thread
 {
+  private static final String REPORT_EXPLANATION_URL = "http://localhost:8282/reportExplanation.html";
+  
   private static final String QUERY_TYPE_QBP = "Q";
   private static final String QUERY_TYPE_VXQ = "V";
   private static final String QUERY_TYPE_NONE = "N";
@@ -85,6 +87,7 @@ public class CertifyRunner extends Thread
       statusMessageList.add(sdf.format(new Date()) + " " + status);
     }
   }
+  
 
   public static final int SUITE_A_BASIC = 0;
   public static final int SUITE_B_INTERMEDIATE = 1;
@@ -2930,91 +2933,64 @@ public class CertifyRunner extends Thread
       out.println("<p>This report gives quick view of how the interface responds when receiving VXU messages. "
           + "This report is preliminary and to be used to inform both national and local standardization efforts. This report is "
           + "not a complete nor definitive statement on the quality or abilities of an IIS interface. </p>");
-      out.println("<h3>Limitations of Report</h3>");
-      out.println("<p>This report has been generated for information purposes as the preliminary first step to assessing HL7 capabilities at the IIS level."
-          + "This report has the following severe limitations: </p>");
       out.println("<ul>");
-      out.println("  <li>This report is preliminary and exploratory so includes tests where there is yet no definitive standard on the correct response expected from the IIS. </li>");
-      out.println("  <li>This report may have technical issues that are yet to be discovered and fixed. </li>");
-      out.println("  <li>Due to the variance and differences in acknowledgement messages returned from IIS, the report may not accurately report whether a VXU was actually accepted or not. </li>");
+      out.println("  <li><a href=\"" + REPORT_EXPLANATION_URL + "\">How to Read This Report</a></li>");
+      out.println("  <li><a href=\"IIS Testing Report Detail.html\">Detailed Run Log</a></li>");
       out.println("</ul>");
-      out.println("<h3>Purposes of Report</h3>");
-      out.println("<p>The primary purpose of this report is to provide information at the national level about how IIS are currently operating. "
-          + "This information will be used primarily to recommend improvements to the national standard. IIS may also use some of the information "
-          + "in this report to inform changes to the IIS. However, IIS should take care to note that this report is preliminary and differences or problems noted "
-          + "do not assert that the IIS is operating incorrectly or needs to be changed. As such this report should be reviewed as preliminary and with the "
-          + "expectation that the information gained in this report will be used to inform improvements to the standards and the development of a standardized testing process. "
-          + "These improvements are likely to take several years and involve input from the entire community, this report is built to support the first step in this process.    </p>");
-      out.println("<p><a href=\"IIS Testing Report Detail.html\">Detailed Report</a></p>");
-      out.println("<h2>Overall Score</h2>");
-      out.println("<p>This score is to designed to show improvements over time and point to areas that need to be addressed in "
-          + "either the national or local standard. The score is designed to be very sensitive thus a high score is difficult to achieve. "
-          + " </p>");
-      out.println("<h3>Limitations of Score</h3>");
-      out.println("<p>This score can not be used to compare one IIS to another, nor is the score definitive in meaning. This score was developed to aid in readability of the report."
-          + "It should only be used help focus the reader "
-          + "on sections of interest and to provide a way of detecting when major changes occur across time to a particular IIS. </p>");
-      out.println("<p>Overall score:");
+      
+      out.println("<h2>Overall Score: ");
       out.printf("%.0f", (overallScore * 100));
-      out.println("%</p>");
+      out.println("%</h2>");
+      out.println("<p><span class=\"boxLinks\"><a href=\"" + REPORT_EXPLANATION_URL + "#overallScore\">how to read this section</a></span></p>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
       out.println("    <th>Report Section</th>");
-      out.println("    <th>Weight</th>");
       out.println("    <th>Score</th>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>Interoperability</td>");
-      out.println("    <td>40%</td>");
       out.println("    <td>");
       out.printf("%.0f", (reportScore[REPORT_1_INTEROP] * 100));
       out.println("%</td>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>Coded Values</td>");
-      out.println("    <td>20%</td>");
       out.println("    <td>");
       out.printf("%.0f", (reportScore[REPORT_2_CODED] * 100));
       out.println("%</td>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>Local Requirement</td>");
-      out.println("    <td>10%</td>");
       out.println("    <td>");
       out.printf("%.0f", (reportScore[REPORT_3_LOCAL] * 100));
       out.println("%</td>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>National Compatibility</td>");
-      out.println("    <td>10%</td>");
       out.println("    <td>");
       out.printf("%.0f", (reportScore[REPORT_4_NATIONAL] * 100));
       out.println("%</td>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>Tolerance Test</td>");
-      out.println("    <td>5%</td>");
       out.println("    <td>");
       out.printf("%.0f", (reportScore[REPORT_5_TOLERANCE] * 100));
       out.println("%</td>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>EHR Example Test</td>");
-      out.println("    <td>5%</td>");
       out.println("    <td>");
       out.printf("%.0f", (reportScore[REPORT_6_EHR] * 100));
       out.println("%</td>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>Performance Test</td>");
-      out.println("    <td>5%</td>");
       out.println("    <td>");
       out.printf("%.0f", (reportScore[REPORT_7_PERFORM] * 100));
       out.println("%</td>");
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td>Acknowledgment Conformance Test</td>");
-      out.println("    <td>5%</td>");
       out.println("    <td>");
       out.printf("%.0f", (reportScore[REPORT_8_ACK] * 100));
       out.println("%</td>");
@@ -3023,12 +2999,6 @@ public class CertifyRunner extends Thread
 
       out.println("<h3>Setup</h3>");
       out.println("<p>Here is some connection details that were used to connect to IIS to create report. </p>");
-
-      if (!connector.getCustomTransformations().equals("")) {
-        out.println("<p>This interface requires customized Transformations to modify each message before transmitting "
-            + "them to the IIS. These transformations can range from setting the correct submitter facility in the "
-            + "message header to modifying the structure of the HL7 message to meet local requirements. </p>");
-      }
 
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
@@ -3053,7 +3023,9 @@ public class CertifyRunner extends Thread
       if (!connector.getCustomTransformations().equals("") || connector.getScenarioTransformationsMap().size() > 0) {
         out.println("<h3>Custom Transformations</h3>");
         if (!connector.getCustomTransformations().equals("")) {
-          out.println("  <h4>Overall</h4>");
+          out.println("<p>This interface requires customized Transformations to modify each message before transmitting "
+              + "them to the IIS. These transformations can range from setting the correct submitter facility in the "
+              + "message header to modifying the structure of the HL7 message to meet local requirements. </p>");
           out.println("  <pre>" + connector.getCustomTransformations() + "</pre>");
         }
         List<String> scenarioList = new ArrayList<String>(connector.getScenarioTransformationsMap().keySet());
@@ -3064,7 +3036,12 @@ public class CertifyRunner extends Thread
         }
       }
 
-      out.println("<h2>Interoperability Test</h2>");
+      out.println("<h2>Interoperability</h2>");
+      out.println("<p><span class=\"boxLinks\">");
+      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#interoperability\">how to read this section</a> ");
+      out.println("  &amp; ");
+      out.println("  <a href=\"IIS Testing Report Detail.html#areaALevel1\">more details</a></span>");
+      out.println("</p>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
       out.println("    <th>Test</th>");
@@ -3074,12 +3051,13 @@ public class CertifyRunner extends Thread
         printTestCaseMessageDetailsUpdate(out, toFile, testCaseMessage);
       }
       out.println("</table>");
-      out.println("<p><a href=\"IIS Testing Report Detail.html#areaALevel1\">More Details</a></p>");
 
-      out.println("<h2>Coded Values Test</h2>");
-      out.println("<p>For every coded value listed in the CDC Implementation a single test message was submitted with this coded value. "
-          + "In most cases IIS should accept coded values listed in the CDC Implementation guide without rejecting messages. Messages that"
-          + " were rejected are listed here. </p>");
+      out.println("<h2>Coded Values</h2>");
+      out.println("<p><span class=\"boxLinks\">");
+      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#codedValues\">how to read this section</a> ");
+      out.println("  &amp; ");
+      out.println("  <a href=\"IIS Testing Report Detail.html#areaBLevel1\">more details</a></span>");
+      out.println("</p>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
       out.println("    <th>Test</th>");
@@ -3092,10 +3070,13 @@ public class CertifyRunner extends Thread
       }
       out.println("</table>");
 
-      out.println("<p><a href=\"IIS Testing Report Detail.html#areaBLevel1\">More Details</a></p>");
-
       if (areaProgress[SUITE_I_PROFILING][0] > 0) {
-        out.println("<h2>Local Requirement Test</h2>");
+        out.println("<h2>Local Requirements</h2>");
+        out.println("<p><span class=\"boxLinks\">");
+        out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#localRequirements\">how to read this section</a> ");
+        out.println("  &amp; ");
+        out.println("  <a href=\"IIS Testing Report Detail.html#areaILevel1\">more details</a></span>");
+        out.println("</p>");
         if (reportScore[REPORT_3_LOCAL] == 1.0) {
           out.println("<p>All local requirements tested were confirmed.</p>");
         } else {
@@ -3116,11 +3097,12 @@ public class CertifyRunner extends Thread
           }
           out.println("</table>");
         }
-        out.println("<p><a href=\"IIS Testing Report Detail.html#areaILevel1\">More Details</a></p>");
 
         if (profileUsageComparisonConformance != null) {
-
-          out.println("<h2>National Compatibility Test</h2>");
+          out.println("<h2>National Compatibility</h2>");
+          out.println("<p><span class=\"boxLinks\">");
+          out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#nationalCompatibility\">how to read this section</a> </span>");
+          out.println("</p>");
           printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONFLICT,
               "Local Standard has Major Conflict with National Standards");
           printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONFLICT,
@@ -3137,6 +3119,11 @@ public class CertifyRunner extends Thread
       }
 
       out.println("<h2>Tolerance Test</h2>");
+      out.println("<p><span class=\"boxLinks\">");
+      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#tolerance\">how to read this section</a> ");
+      out.println("  &amp; ");
+      out.println("  <a href=\"IIS Testing Report Detail.html#areaDLevel1\">more details</a></span>");
+      out.println("</p>");
       if (reportScore[REPORT_5_TOLERANCE] == 1.0) {
         out.println("<p>All tolerance messages were accepted. IIS is tolerant of unusual and unexpected message formats or values.</p>");
       } else {
@@ -3153,9 +3140,13 @@ public class CertifyRunner extends Thread
         }
         out.println("</table>");
       }
-      out.println("<p><a href=\"IIS Testing Report Detail.html#areaDLevel1\">More Details</a></p>");
 
       out.println("<h2>EHR Example Test</h2>");
+      out.println("<p><span class=\"boxLinks\">");
+      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#ehrExamples\">how to read this section</a> ");
+      out.println("  &amp; ");
+      out.println("  <a href=\"IIS Testing Report Detail.html#areaDLevel1\">more details</a></span>");
+      out.println("</p>");
       if (reportScore[REPORT_6_EHR] == 1.0) {
         out.println("<p>All EHR sample messages were accepted. </p>");
       } else {
@@ -3172,11 +3163,14 @@ public class CertifyRunner extends Thread
         }
         out.println("</table>");
       }
-      out.println("<p><a href=\"IIS Testing Report Detail.html#areaDLevel1\">More Details</a></p>");
+      out.println("<p><a href=\"IIS Testing Report Detail.html#areaDLevel1\">more details</a></p>");
 
       out.println("<h2>Performance Test</h2>");
+      out.println("<p><span class=\"boxLinks\">");
+      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#performance\">how to read this section</a> </span>");
+      out.println("</p>");
       if (areaScore[SUITE_G_PERFORMANCE][0] < 3000) {
-        out.println("    <p>Performance was acceptable: ");
+        out.println("    <p>Performance was as fast as normally expected: ");
         out.printf("%.2fs processing time for each update</p>", (areaScore[SUITE_G_PERFORMANCE][0] / 1000.0));
       } else {
         out.println("    <p>Performance was slower than was anticipated: ");
@@ -3184,6 +3178,11 @@ public class CertifyRunner extends Thread
       }
 
       out.println("<h2>Acknowledgment Conformance Test</h2>");
+      out.println("<p><span class=\"boxLinks\">");
+      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#acknowledgmentConformance\">how to read this section</a> ");
+      out.println("  &amp; ");
+      out.println("  <a href=\"IIS Testing Report Detail.html#areaHLevel1\">more details</a></span>");
+      out.println("</p>");
       if (reportScore[REPORT_6_EHR] == 1.0) {
         out.println("<p>All response messages (ACKs) conformed to expectations.</p>");
       } else {
@@ -3207,9 +3206,7 @@ public class CertifyRunner extends Thread
           }
         }
       }
-      out.println("<p><a href=\"IIS Testing Report Detail.html#areaHLevel1\">More Details</a></p>");
     }
-    out.println("<p><a href=\"IIS Testing Report Detail.html\">See Full Report</a></p>");
   }
 
   public void printConformanceCompatibility(PrintWriter out,
@@ -3221,7 +3218,7 @@ public class CertifyRunner extends Thread
       out.println("    <th>Field</th>");
       out.println("    <th>Description</th>");
       out.println("    <th>CDC Usage</th>");
-      out.println("    <th>Local Usage</th>");
+      out.println("    <th>Detected Usage</th>");
       out.println("  </tr>");
       for (ProfileLine profileLine : compatibilityMap.get(c)) {
         ProfileUsageValue profileUsageValueConformance = profileUsageComparisonConformance.getProfileUsageValueMap()
@@ -3231,7 +3228,7 @@ public class CertifyRunner extends Thread
           out.println("    <td>" + profileLine.getField().getFieldName() + "</td>");
           out.println("    <td>" + profileLine.getField().getDescription() + "</td>");
           out.println("    <td>" + profileUsageValueConformance.getUsage() + "</td>");
-          out.println("    <td>" + profileLine.getUsage() + "</td>");
+          out.println("    <td>" + profileLine.getUsageDetected() + "</td>");
           out.println("  </tr>");
         }
       }
@@ -3828,7 +3825,7 @@ public class CertifyRunner extends Thread
     }
 
     if (areaProgress[SUITE_D_EXCEPTIONAL][0] > 0) {
-      out.println("<h2>Exceptional Interoperability Tests</h2>");
+      out.println("<h2>Tolerance and EHR Example Tests</h2>");
       out.println("<p><b>Purpose</b>: Test to see if the IIS can allow for minor differences. </p>");
       out.println("<p><b>Requirements</b>: IIS must be able to accept input outside of what the IIS "
           + "expects which does not directly impact HL7 message structure or the quality of core IIS fields. "

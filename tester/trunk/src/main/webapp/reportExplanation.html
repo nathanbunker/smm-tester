@@ -1,0 +1,369 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>OIS Immunization Messaging Client</title>
+        <link rel="stylesheet" type="text/css" href="index.css" />
+    </head>
+    <body>
+    <h1>How To Read This Report</h1>
+    <p>This page describes how to read the IIS Test Results. This report gives quick view of 
+    how the interface responds when receiving VXU messages. This report is preliminary and to 
+    be used to inform both national and local standardization efforts. This report is not a 
+    complete nor definitive statement on the quality or abilities of an IIS interface. </p>
+    
+    <h3>General Limitations of Report</h3>
+    <p>This report has been generated for information purposes as the preliminary first step 
+    to assessing HL7 capabilities at the IIS level. This report has the following critical 
+    limitations, which must be carefully noted:</p>
+    <ul>
+      <li>This report is preliminary and exploratory so includes tests where there is yet no 
+      definitive standard on the correct response expected from the IIS.</li>
+      <li>This report may have technical issues that are yet to be discovered and fixed.</li>
+      <li>Due to the variance and differences in acknowledgement messages returned from IIS, 
+      the report may not accurately report whether a VXU was actually accepted or not.</li>
+    </ul>
+    
+    <h3>Purposes of Report</h3>
+    <p>The primary purpose of this report is to provide information at the national level about 
+    how IIS are currently operating. This information will be used primarily to recommend 
+    improvements to the national standard. IIS may also use some of the information in this 
+    report to inform changes to the IIS. However, IIS should take care to note that this 
+    report is preliminary and differences or problems noted do not assert that the IIS is 
+    operating incorrectly or needs to be changed. As such this report should be reviewed as 
+    preliminary and with the expectation that the information gained in this report will be 
+    used to inform improvements to the standards and the development of a standardized 
+    testing process. These improvements are likely to take several years and involve 
+    input from the entire community, this report is built to support the first step in this 
+    process.</p>
+    
+    <h3>IIS Interopability Testing Project</h3>
+    <p>This report is a key aspect of the American Immunization Registry Association (AIRA) Interopability
+    Testing project. The following diagram shows the process that is being followed in this project: </p>
+    <img src="IIS Gap Analysis Process.png" width="700"/>
+    <p>The milestones are described as follows:</p>
+    <ul>
+      <li><b>IIS Agrees to Real-time Testing</b>: 
+        IIS signed up for real-time testing.</li>
+      <li><b>Guide Received</b>: 
+        Guide is received by AIRA. AIRA can now record local requirements. </li>
+      <li><b>Credentials Received</b>: 
+        Credentials and connecting information is received by AIRA. AIRA can now connect to IIS for testing. </li>
+      <li><b>Local Requirements Recorded</b>: 
+        AIRA reads the local requirements guide and records key details, such as which fields are required, in the AIRA
+        testing system. </li>
+      <li><b>Connected to IIS</b>: 
+        AIRA configures the testing system to connect to the IIS test system. Once complete AIRA is able to submit
+        HL7 VXU messages and receive acknowledgements from the IIS. </li>
+      <li><b>Configure Automated Report</b>: 
+        The AIRA testing system is setup to create the automated report this document describes. </li>
+      <li><b>Feedback Document Created</b>: 
+        AIRA staff will use the information in the automated report to generate a feedback document for the IIS. </li>
+      <li><b>EHR Configuration Documented</b>: 
+        At some point AIRA will use this information to provide configuration guidance to EHR systems working to 
+        connect to IIS in general. </li>
+      <li><b>Feedback Shared with IIS</b>: 
+        Feedback document and the original report will be shared with the IIS. AIRA will be sharing results each month as reports 
+        are automatically run.</li>
+    </ul>
+    
+    <div id="overallScore"/>
+    <h2> Overall Score</h2>
+    <p>This score is to designed to show improvements over time and point to areas that need 
+    to be addressed in either the national or local standard. The score is designed to be 
+    very sensitive thus most, if not all IIS, are not expected to necessarily receive a good 
+    score at this point in the process.</p>
+    
+    <h3>Limitations of Score</h3>
+    <p>This score can not be used to compare one IIS to another, nor is the score definitive 
+    in meaning. This score was developed to aid in readability of the report. It should only 
+    be used help focus the reader on sections of interest and to provide a way of detecting 
+    when major changes occur across time to a particular IIS.</p>
+    
+    <h3>Report Sections</h3>
+    <p>The report is made of eight sections. Each section has a score and these are weighted 
+    and added together for an overall score. Here is the breakdown:</p>
+    
+    <table border="1" cellspacing="0">
+      <tr>
+        <th>Report Section</th>
+        <th>Weight</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td>Interoperability</td>
+        <td>40%</td>
+        <td>IIS must accept all 7 NIST test message (original Interoperability Status Check)</td>
+      </tr>
+      <tr>
+        <td>Coded Values</td>
+        <td>20%</td>
+        <td>IIS should accept codes defined by CDC in the implementation guide</td>
+      </tr>
+      <tr>
+        <td>Local Requirement</td>
+        <td>10%</td>
+        <td>IIS should support locally defined requirements</td>
+      </tr>
+      <tr>
+        <td>National Compatibility</td>
+        <td>10%</td>
+        <td>IIS should operate in a way that is compatible with national standards</td>
+      </tr>
+      <tr>
+        <td>Tolerance Test</td>
+        <td>5%</td>
+        <td>IIS should tolerate some expected or common issues</td>
+      </tr>
+      <tr>
+        <td>EHR Example Test</td>
+        <td>5%</td>
+        <td>IIS should accept messages typically sent by certified EHR systems</td>
+      </tr>
+      <tr>
+        <td>Performance Test</td>
+        <td>5%</td>
+        <td>IIS should respond to ACK messages within a reasonable amount of time</td>
+      </tr>
+      <tr>
+        <td>Acknowledgment Conformance Test</td>
+        <td>5%</td>
+        <td>IIS should send ACK messages that conform to national requirements.</td>
+      </tr>
+    </table>
+    
+    <div id="interoperability"/>
+    <h2>Interoperability</h2> 
+    <p>This is the automated version of the IIS Interoperability Status Check. The 
+    score is the percentage of tests that were accepted without having the messages 
+    changed so much that the original core data is not sent to the IIS.</p>
+    <p>Please note that a score of 100% does not indicate that the IIS is completely 
+    interoperable. It only indicates that the testing interface can be configured in 
+    such a way that all data sent was apparently accepted. Analysis of configuration 
+    taken to connect needs to be reviewed manually to evaluate the changes made in 
+    context of national standards and NIST testing. </p>
+
+
+    <div id="codedValues"/>
+    <h2>Coded Values</h2> 
+    <p>For just about every coded value in the guide a message is sent to verify if 
+    the IIS will accept the message with the code in it. The score for this section 
+    is on a logarithmic scale, such that every message rejected dramatically reduces 
+    the score at first and then less so as the number increases. This means that it 
+    is expected that IIS will accept most if not all codes, and missing even a few 
+    drastically reduces the score. </p>
+
+    <div id="localRequirements"/>
+    <h2>Local Requirements</h2> 
+    <p>The test compares the documented Usage according to your IG against the detected Usage 
+    discovered through testing with your interface. Difference are shown in the table below.</p>
+    <h3>Discovery Process</h3>
+    <p>The local requirements gathered previous to testing are used to create a set 
+    of test cases, messages with and without each field. In this way the tester can 
+    determine whether a field:</p>
+    <ul>
+      <li>Must be present</li>
+      <li>May or may not be present</li>
+      <li>Must be absent</li>
+    </ul>
+    <p>By doing this testing the process can verify R, RE, O, and X requirements. 
+    (Although this testing process cannot verify the difference between RE and O.) </p>
+    
+    <h3>Conditional Status</h3>
+    <p>HL7 guides use a special conditional status (e.g. C(R/X) or C(R/O)) to indicate 
+    status for fields that must be populated when certain conditions are met. The testing
+    process being used by AIRA does not directly support testing conditional fields. 
+    Conditional fields are expressed by two or more tests that together express the 
+    different situations when the field may be required. </p>
+    <p> For example, PID-25 Birth Order has a status of C(RE/O). When PID-30 is valued
+    Y, indicating the patient is part of a multiple birth, then PID-25 has an effective
+    status of RE and the birth order should be populated if known. Otherwise 
+    birth order is an optional field. In the AIRA testing process this field is 
+    represented by two different tests: </p>
+    <ul>
+      <li>PID-25 Single, status O</li>
+      <li>PID-25 Multiple, status RE</li>
+    </ul>
+    <p>In this way the AIRA testing system can test the requirements for this field in
+    both situations. Implementation guide authors should continue to use conditional 
+    status but be aware that this report breaks them down in this manner. </p>
+    
+    <h3>Special Status Codes</h3>
+    <p>The status field indicates the ideal and the intended  use of the field but does
+    not capture certain aspects of implemented systems that are sometimes documented
+    in the implementation guide and which are certainly noticed when interacting with 
+    real HL7 interfaces. To capture some of these concepts the AIRA testing process
+    has invented the following temporary status codes: </p>
+    <ul>
+      <li><b>R* Required, but not enforced</b>: 
+        The guide indicates the field is required but if the field is left empty the IIS 
+        will still accept the message. For example, PID-1 is documented as required by the IIS
+        but the IIS will accept messages with no value in PID-1. Please note that 
+        IIS may accept a message even if a required field is not valued. The standard only
+        indicates that an IIS "shall" return an error (which can also be a warning) when a 
+        required field is empty. While
+        it is recommended that the IIS at least indicate that required fields were missing, 
+        the IIS is free to continue to accept part or all of the data that was sent. 
+        </li>
+      <li><b>RE* Required, but may be empty and is not read</b>:
+        The guide indicates the field should be valued if known, but that the IIS is not
+        reading this field. For example, PID-22 Ethnic Group is documented as required if known
+        by the IIS, but the IIS has not yet implemented support for reading it. However the IIS
+        plans to implement the field in the future.  
+        </li>
+      <li><b>O* Optional, and is not read</b>:
+        The guide indicates that the field may be valued but the IIS does not read the field. 
+        For example, the PID-15 Primary Language field is documented as optional by the IIS
+        but the IIS does not read this field. The data may be sent by the data will 
+        never be recorded by the IIS. </li>
+      <li><b>X* Not supported, but not enforced</b>:
+        The guide indicates that a field must not be valued but the IIS will accept the 
+        message even if it is valued. For example, PID-2 Patienet ID is documented as not supported,
+        by the IIS, but the IIS will not generate an error if PID-2 is valued. Please note that
+        HL7 standards indicate that an IIS "may" generate an error if a not supported field 
+        is valued. This means not supported fields are valued.  </li>
+    </ul>
+    
+    <h3>Explanation of Results</h3>
+    <p>To save space only tests that were not successful are shown in the table. The columns
+    are described as follows:</p>
+    <ul>
+      <li><b>Field</b>: 
+        The name of the field being tested. Please note that for testing purposes the fields may be prepended
+        or appended with modifiers that qualify that the field is being tested under specific circumstances. For 
+        example "Admin RXA-6" indicates the testing results when RXA-6 was being tested when reporting 
+        and administered vaccination.  </li>
+      <li><b>Description</b>:
+        Human readable description of the field. Please note that because this table has been truncated, and
+        not all rows shown, the
+        descriptions preceded by the indent and dash may not flow under the row directly above. </li>
+      <li><b>Usage</b>: 
+        The usage as indicated in the local implementation guide. </li>
+      <li><b>Detected</b>: 
+        The usage that the testing has detected. Please note that there are limitations to what 
+        can be detected (testing can not yet differentiate between how an IIS process RE and O fields) and how 
+        well the testing process reads the acknowledgment (variance in acknowledgements means that it is difficult for the 
+        tester to always understand exactly what happened.)</li>
+      <li><b>Status</b>:
+        This field indicates whether the Usage matches what was documented in the local guide. In this report
+        the table is truncated so that all rows shown are inconsistent. </li>
+      <li><b>Field Present</b>: 
+        Reports on status of the test case to submit a message with the field valued. From here the user can
+        click through to see the message that was submitted and the details of why the test failed. </li>
+      <li><b>Field Absent</b>: 
+        Reports on status of the test case to submit a message with the field NOT valued. From here the user can
+        click through to see the message that was submitted and the details of why the test failed. </li>
+    </ul>
+
+    <div id="nationalCompatibility"/>
+    <h2>National Compatibility</h2> 
+    <p>This test differs from the previous ones in that it does not run any tests 
+    against the IIS. In this case it compares the <em>detected local requirements</em> against the 
+    national requirements to look for differences and incompatibilities. </p>
+    <h3>Detected Local Requirements</h3>
+    <p>This section uses the local requirements as they have been modified by the previous testing phase.
+    The modifications to the local requirements is termed "detected local requirements". These detected status
+    are temporary, only used for the report and this next section and are not stored for future use.  
+    </p>
+    <h3>Identified Compatibility Issues</h3>
+    <p>If the detected local standard matches the national standard, no details are given here. If they 
+    detected local standard differs from the national standard it is categorized according to severity
+    and reported here. Please note that this report is automated and preliminary and should only be 
+    used to identify potential problems. More investigation will be needed to confirm the issues that
+    are found here. </p>
+    <ul>
+      <li><b>Local Standard has Major Conflict with National Standards (MAJOR CONFLICT)</b>: 
+        Stated local requirement conflicts with national requirements. Conformance to the 
+        local specification will mean non-conformance to national specification. Nationally 
+        certified systems will not be interoperable with local system. </li>
+      <li><b>Local Standard Conflicts with National Standards (CONFLICT)</b>: 
+        Stated local requirement conflicts with national requirements. Conformance to the 
+        local specification will mean non-conformance to national specification. However, 
+        interoperability is still possible for nationally certified systems.</li>
+      <li><b>Local Standard Defines Hard Constraint on National Standard (MAJOR CONSTRAINT)</b>: 
+        Stated local requirement goes beyond national requirement, nationally certified 
+        systems have not been tested to support this requirement. Local constraints are 
+        allowed by the national standard. Interoperability will probably require changes 
+        to meet local requirements. </li>
+      <li><b>Local Standard Defines Constraint on National Standard (CONSTRAINT)</b>: 
+        Stated local requirement goes beyond national requirement, nationally certified 
+        systems have not been tested to support this requirement. Local constraints are 
+        allowed by the national standard. Interoperability may still be possible. </li>
+      <li><b>Local Standard Loosens National Constraints (ALLOWANCE)</b>: 
+        Stated local requirement allows for non-standard usage, meaning that national 
+        requirements were relaxed, nationally certified messages should be accepted 
+        but local guide is not in conformance with national standard. </li>
+    </ul>
+    
+    <h3>Reading the Tables</h3>
+    <p>Each table column should be read as follows: </p>
+    <ul>
+      <li><b>Field</b>: 
+        The name of the field. </li>
+      <li><b>Description</b>: 
+        The human readable description of the field. Please note that the indented fields 
+        with dashes may not necessarily flow under the row shown above it. </li>
+      <li><b>CDC Usage</b>: 
+        The national usage as defined in the CDC implementation guide. </li>
+      <li><b>Detected Usage</b>: 
+        The detected local usage. </li>
+    </ul>
+    
+    <h3>Generating the Score</h3>
+    <p>The scoring for this section is as follows:</p>
+    <ul>
+      <li>If there is at least one CONFLICT then the total score is reduced by 5% (but score can not go below 0%)</li>
+      <li>If there is at least one MAJOR CONFLICT then total score is 0%</li>
+      <li>or if there is at least one MAJOR CONSTRAIT then the total score is 70%</li>
+      <li>or if there is at least one CONSTRAINT then the total score is 80%</li>
+      <li>or if there is at least one ALLOWANCE then the total score is 90%</li>
+      <li>or the score is 100%</li>
+    </ul>
+    <p>The idea behind this scoring scheme is that MAJOR CONFLICTS means the local site is 
+    completely incompatible with the national standard and any EHR that successfully meets 
+    the local requirements will not be able to meet national requirements. If there is a 
+    MAJOR CONSTRAINT then the local site has legally added local requirements that must 
+    be implemented but which are not required at the national level. If there is a 
+    CONSTRAINT interoperability is still possible with some provisos. If there is an 
+    ALLOWANCE the local site has relaxed requirements and important information may be 
+    lost in the exchange but the IIS should still be interoperable. </p>
+
+    <div id="tolerance"/>
+    <h2>Tolerance</h2> 
+    <p>There are a small set of messages that have minor issues that should or could be 
+    ignored by the IIS. Some of these are future functionality that may be seen in the 
+    future. During testing in 2013 it was shown that many IIS were unprepared to ignore 
+    OBX segments they didn't recognize. This test ensures that IIS are ready for changes 
+    that may come in the future. The score for this section is based on a percentage of 
+    messages accepted. It is not expected that IIS would accept all the tolerance 
+    messages as there is not a clear definition of what should or should not be accepted. </p>
+
+    <div id="ehrExamples"/>
+    <h2>EHR Examples</h2> 
+    <p>A set of EHR example messages are sent. The score is a percentage of accepted messages. </p>
+
+    <div id="performance"/>
+    <h2>Performance</h2> 
+    <p>There is no set standard for performance. It has been observed that many IIS are able 
+    to respond to updates within one or two seconds, while some others can take much longer. 
+    While a slow response time is not necessarily an interoperability problem, it is most
+    useful if an IIS is able to respond quickly. For the purposes of the report the average
+    response time standard has been set at three seconds. It should be further noted that
+    this performance is not necessarily indicative of performance on the IIS machine in 
+    production. This information is provided only because it can be easily observed during
+    testing and so is being reported here for the benefit of the IIS and other partners.  
+    </p>
+    <p>This scoring of this section looks at the performance of all updates sent in the previous tests. 
+    Currently the score is 100% if the messages were responded to within 3 seconds on average. 
+    If the average response was between 3 and 6 seconds then score is a linear percentage with 
+    3 seconds at 100% and 6 seconds at 0%.  </p>
+
+    <div id="acknowledgmentConformance"/>
+    <h2>Acknowledgement Conformance</h2> 
+    <p>This section looks at all of the acknowledgements received back and verifies if they meet the 
+    standard for format. The score is the percentage of messages that had no issues in format. </p>
+
+    </body>
+</html>
