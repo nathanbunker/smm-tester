@@ -158,6 +158,8 @@ public class CertifyServlet extends ClientServlet
     PrintWriter out = response.getWriter();
     try {
       printHtmlHead(out, MENU_HEADER_TEST, request);
+      
+      CertifyHistoryServlet.printViewMenu(out, "", true);
 
       if (problem != null) {
         out.println("<p>" + problem + "</p>");

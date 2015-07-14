@@ -336,22 +336,22 @@ public class ProfileManager {
       String line = in.readLine();
       List<String> valueList = CvsReader.readValuesFromCsv(line);
 
-      int posPosInSegment = findPosition("Pos in Seg", valueList);
-      int posPosInField = findPosition("Pos in Field", valueList);
-      int posPosInSubField = findPosition("Pos in Sub Field", valueList);
-      int posSpecialSection = findPosition("Special Section", valueList);
-      int posSpecialName = findPosition("Special Name", valueList);
-      int posDataType = findPosition("Data Type", valueList);
-      int posDataTypeDef = findPosition("Data Type Def", valueList);
-      int posDataTypePos = findPosition("Data Type Pos", valueList);
-      int posTableName = findPosition("Table Name", valueList);
-      int posType = findPosition("Type", valueList);
-      int posSegmentName = findPosition("Segment", valueList);
-      int posDescription = findPosition("Description", valueList);
-      int posCodeValue = findPosition("Code Value", valueList);
-      int posCodeLabel = findPosition("Code Label", valueList);
-      int posTestUsage = findPosition("Test Usage", valueList);
-      int posBaseUsage = findPosition("Base Usage", valueList);
+      int posPosInSegment = CvsReader.findPosition("Pos in Seg", valueList);
+      int posPosInField = CvsReader.findPosition("Pos in Field", valueList);
+      int posPosInSubField = CvsReader.findPosition("Pos in Sub Field", valueList);
+      int posSpecialSection = CvsReader.findPosition("Special Section", valueList);
+      int posSpecialName = CvsReader.findPosition("Special Name", valueList);
+      int posDataType = CvsReader.findPosition("Data Type", valueList);
+      int posDataTypeDef = CvsReader.findPosition("Data Type Def", valueList);
+      int posDataTypePos = CvsReader.findPosition("Data Type Pos", valueList);
+      int posTableName = CvsReader.findPosition("Table Name", valueList);
+      int posType = CvsReader.findPosition("Type", valueList);
+      int posSegmentName = CvsReader.findPosition("Segment", valueList);
+      int posDescription = CvsReader.findPosition("Description", valueList);
+      int posCodeValue = CvsReader.findPosition("Code Value", valueList);
+      int posCodeLabel = CvsReader.findPosition("Code Label", valueList);
+      int posTestUsage = CvsReader.findPosition("Test Usage", valueList);
+      int posBaseUsage = CvsReader.findPosition("Base Usage", valueList);
       while ((line = in.readLine()) != null) {
         valueList = CvsReader.readValuesFromCsv(line);
         int posInSegment = CvsReader.readValueInt(posPosInSegment, valueList);
@@ -508,17 +508,6 @@ public class ProfileManager {
       mas = MessageAcceptStatus.IF_PRESENT_OR_ABSENT;
     }
     return mas;
-  }
-
-  private static int findPosition(String headerName, List<String> valueList) {
-    int pos = 0;
-    for (String value : valueList) {
-      if (value.equalsIgnoreCase(headerName)) {
-        return pos;
-      }
-      pos++;
-    }
-    return -1;
   }
 
   public static CompatibilityConformance getCompatibilityConformance(Usage profileUsage,

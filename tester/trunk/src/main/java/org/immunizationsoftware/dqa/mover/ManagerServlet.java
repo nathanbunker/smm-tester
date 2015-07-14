@@ -41,6 +41,7 @@ public class ManagerServlet extends ClientServlet {
   private static Set<File> registeredFolders = new HashSet<File>();
   private static Set<SendData> sendDataSet = new HashSet<SendData>();
   private static Map<Integer, SendData> sendDataMap = new HashMap<Integer, SendData>();
+  private static Map<String, SendData> sendDataMapByLabel = new HashMap<String, SendData>();
   private static int nextSendDataInternalId = 1;
   private static String instanceSystemId = "";
   private static String stableSystemId = "";
@@ -53,6 +54,7 @@ public class ManagerServlet extends ClientServlet {
   private static ShutdownInterceptor shutdownInterceptor;
   private static File softwareDir = null;
   private static File requirementTestFieldsFile = null;
+  private static File iisParticipantResponsesAndAccountInfoFile = null;
   private static File requirementTestTransformsFile = null;
   private static Set<ProfileUsage> requirementTestProfileFileSet = new HashSet<ProfileUsage>();
   private static boolean scanDirectories = true;
@@ -66,6 +68,7 @@ public class ManagerServlet extends ClientServlet {
   }
 
   private static final String REQUIREMENT_TEST_FIELDS_FILE = "SMM Requirement Test Fields.csv";
+  private static final String IIS_PARTICIPANT_RESPONSES_AND_ACCOUNT_INFO = "IIS Participant Responses and Account Info.csv";
   private static final String REQUIREMENT_TEST_TRANSFORMS = "SMM Requirement Test Transforms.txt";
   private static final String REQUIREMENT_TEST_PROFILE_START = "SMM Requirement ";
   private static final String REQUIREMENT_TEST_PROFILE_END = ".csv";
@@ -76,6 +79,10 @@ public class ManagerServlet extends ClientServlet {
 
   public static File getRequirementTestFieldsFile() {
     return requirementTestFieldsFile;
+  }
+
+  public static File getIisParticipantResponsesAndAccountInfoFile() {
+    return iisParticipantResponsesAndAccountInfoFile;
   }
 
   public static File getRequirementTestTransformsFile() {
@@ -163,6 +170,22 @@ public class ManagerServlet extends ClientServlet {
     }
     sendData.start();
   }
+  
+  public static void registerLabel(SendData sendData)
+  {
+    if (sendData.getConnector() != null) {
+      sendDataMapByLabel.put(sendData.getConnector().getLabel(), sendData);
+    }
+  }
+  
+  public static SendData getSendDatayByLabel(String label)
+  {
+    return sendDataMapByLabel.get(label);
+  }
+
+  public static Map<String, SendData> getSendDataMapByLabel() {
+    return sendDataMapByLabel;
+  }
 
   public static SendData getSendData(int internalId) {
     return sendDataMap.get(internalId);
@@ -244,6 +267,15 @@ public class ManagerServlet extends ClientServlet {
                   System.out.println("Found " + requirementTestFieldsFile);
                 }
               }
+              if (iisParticipantResponsesAndAccountInfoFile == null) {
+                iisParticipantResponsesAndAccountInfoFile = new File(scanStartFile, IIS_PARTICIPANT_RESPONSES_AND_ACCOUNT_INFO);
+                if (!iisParticipantResponsesAndAccountInfoFile.exists()) {
+                  iisParticipantResponsesAndAccountInfoFile = null;
+                } else {
+                  System.out.println("Found " + iisParticipantResponsesAndAccountInfoFile);
+                }
+              }
+
               if (requirementTestTransformsFile == null) {
                 requirementTestTransformsFile = new File(scanStartFile, REQUIREMENT_TEST_TRANSFORMS);
                 if (!requirementTestTransformsFile.exists()) {
