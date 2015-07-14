@@ -710,7 +710,7 @@ public class SendData extends Thread
     if (!readKeyStore()) {
       throw new Exception("Unable to read key store");
     }
-
+    ManagerServlet.registerLabel(this);
   }
 
   private boolean obtainLock() throws TransmissionException, IOException {
