@@ -10,13 +10,13 @@
     <body>
     <h1>How To Read This Report</h1>
     <p>This page describes how to read the IIS Test Results. This report gives quick view of 
-    how the interface responds when receiving VXU messages. This report is preliminary and to 
+    how the IIS interface responds when receiving VXU messages. This report is preliminary and to 
     be used to inform both national and local standardization efforts. This report is not a 
     complete nor definitive statement on the quality or abilities of an IIS interface. </p>
     
     <h3>General Limitations of Report</h3>
-    <p>This report has been generated for information purposes as the preliminary first step 
-    to assessing HL7 capabilities at the IIS level. This report has the following critical 
+    <p>This report has been generated for informational purposes as the preliminary first step 
+    to assessing HL7 capabilities and requirements at the IIS level. This report has the following critical 
     limitations, which must be carefully noted:</p>
     <ul>
       <li>This report is preliminary and exploratory so includes tests where there is yet no 
@@ -40,7 +40,7 @@
     process.</p>
     
     <h3>IIS Interopability Testing Project</h3>
-    <p>This report is a key aspect of the American Immunization Registry Association (AIRA) Interopability
+    <p>This report is a key aspect of the American Immunization Registry Association (AIRA) Interoperability
     Testing project. The following diagram shows the process that is being followed in this project: </p>
     <img src="IIS Gap Analysis Process.png" width="700"/>
     <p>The milestones are described as follows:</p>
@@ -103,9 +103,9 @@
         <td>IIS should accept codes defined by CDC in the implementation guide</td>
       </tr>
       <tr>
-        <td>Local Requirement</td>
+        <td>Local Requirement Implementation</td>
         <td>10%</td>
-        <td>IIS should support locally defined requirements</td>
+        <td>IIS should support and enforce requirements defined in local guide</td>
       </tr>
       <tr>
         <td>National Compatibility</td>
@@ -125,7 +125,7 @@
       <tr>
         <td>Performance Test</td>
         <td>5%</td>
-        <td>IIS should respond to ACK messages within a reasonable amount of time</td>
+        <td>IIS should respond to VXU messages within a reasonable amount of time</td>
       </tr>
       <tr>
         <td>Acknowledgment Conformance Test</td>
@@ -142,7 +142,7 @@
     <p>Please note that a score of 100% does not indicate that the IIS is completely 
     interoperable. It only indicates that the testing interface can be configured in 
     such a way that all data sent was apparently accepted. Analysis of configuration 
-    taken to connect needs to be reviewed manually to evaluate the changes made in 
+    taken to produce an acceptable message needs to be reviewed manually to evaluate the changes made in 
     context of national standards and NIST testing. </p>
 
 
@@ -158,7 +158,7 @@
     <div id="localRequirements"/>
     <h2>Local Requirements</h2> 
     <p>The test compares the documented Usage according to your IG against the detected Usage 
-    discovered through testing with your interface. Difference are shown in the table below.</p>
+    discovered through testing with your interface. Difference are shown in a table.</p>
     <h3>Discovery Process</h3>
     <p>The local requirements gathered previous to testing are used to create a set 
     of test cases, messages with and without each field. In this way the tester can 
@@ -190,13 +190,15 @@
     both situations. Implementation guide authors should continue to use conditional 
     status but be aware that this report breaks them down in this manner. </p>
     
-    <h3>Special Status Codes</h3>
-    <p>The status field indicates the ideal and the intended  use of the field but does
+    <h3>Special Usage Values</h3>
+    <p>The usage Values (e.g.: R, RE, O, X) indicate the ideal and the intended use of the field but does
     not capture certain aspects of implemented systems that are sometimes documented
     in the implementation guide and which are certainly noticed when interacting with 
     real HL7 interfaces. To capture some of these concepts the AIRA testing process
     has invented the following temporary status codes: </p>
     <ul>
+        <li><b>R! I saw this one one time, but don't recall what it means.</b> After doing some code searching, I think it means Required in certain situations.  But isn't that just a C(R/?) requirement?</li>
+        <li><b>[Usage] I see this often, but wasn't sure what it meant</b>: Maybe that these are pulled from the national standard?</li>
       <li><b>R* Required, but not enforced</b>: 
         The guide indicates the field is required but if the field is left empty the IIS 
         will still accept the message. For example, PID-1 is documented as required by the IIS
@@ -210,13 +212,13 @@
       <li><b>RE* Required, but may be empty and is not read</b>:
         The guide indicates the field should be valued if known, but that the IIS is not
         reading this field. For example, PID-22 Ethnic Group is documented as required if known
-        by the IIS, but the IIS has not yet implemented support for reading it. However the IIS
+        by the IIS, but the IIS has not yet implemented support for reading it. The IIS may or may not have
         plans to implement the field in the future.  
         </li>
       <li><b>O* Optional, and is not read</b>:
         The guide indicates that the field may be valued but the IIS does not read the field. 
         For example, the PID-15 Primary Language field is documented as optional by the IIS
-        but the IIS does not read this field. The data may be sent by the data will 
+        but the IIS does not read this field. The data may be sent but the data will 
         never be recorded by the IIS. </li>
       <li><b>X* Not supported, but not enforced</b>:
         The guide indicates that a field must not be valued but the IIS will accept the 
@@ -227,14 +229,14 @@
     </ul>
     
     <h3>Explanation of Results</h3>
-    <p>To save space only tests that were not successful are shown in the table. The columns
+    <p>To save space only tests where inconsistencies between the Local IG and IIS Interface are shown in the table. The columns
     are described as follows:</p>
     <ul>
       <li><b>Field</b>: 
         The name of the field being tested. Please note that for testing purposes the fields may be prepended
         or appended with modifiers that qualify that the field is being tested under specific circumstances. For 
         example "Admin RXA-6" indicates the testing results when RXA-6 was being tested when reporting 
-        and administered vaccination.  </li>
+        an administered vaccination.  </li>
       <li><b>Description</b>:
         Human readable description of the field. Please note that because this table has been truncated, and
         not all rows shown, the
@@ -268,7 +270,7 @@
     are temporary, only used for the report and this next section and are not stored for future use.  
     </p>
     <h3>Identified Compatibility Issues</h3>
-    <p>If the detected local standard matches the national standard, no details are given here. If they 
+    <p>If the detected local standard matches the national standard, no details are given here. If the 
     detected local standard differs from the national standard it is categorized according to severity
     and reported here. Please note that this report is automated and preliminary and should only be 
     used to identify potential problems. More investigation will be needed to confirm the issues that
@@ -314,9 +316,9 @@
     <h3>Generating the Score</h3>
     <p>The scoring for this section is as follows:</p>
     <ul>
-      <li>If there is at least one CONFLICT then the total score is reduced by 5% (but score can not go below 0%)</li>
       <li>If there is at least one MAJOR CONFLICT then total score is 0%</li>
-      <li>or if there is at least one MAJOR CONSTRAIT then the total score is 70%</li>
+      <li>If there is at least one CONFLICT then the total score is reduced by 5% (but score can not go below 0%)</li>
+      <li>or if there is at least one MAJOR CONSTRAINT then the total score is 70%</li>
       <li>or if there is at least one CONSTRAINT then the total score is 80%</li>
       <li>or if there is at least one ALLOWANCE then the total score is 90%</li>
       <li>or the score is 100%</li>
