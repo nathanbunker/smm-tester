@@ -1182,4 +1182,15 @@ public class SendData extends Thread
       return messageNumberString.substring(messageNumberString.length() - 5);
     }
   }
+  
+  public String[] getTestReportNames() {
+    File testCaseDir = this.getTestCaseDir();
+    String[] testNames = testCaseDir.list(new FilenameFilter() {
+      public boolean accept(File dir, String name) {
+        File file = new File(dir, name);
+        return file.isDirectory() && name.startsWith("IIS Test Report ") && name.length() > 16;
+      }
+    });
+    return testNames;
+  }
 }

@@ -11,12 +11,12 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>OIS Immunization Messaging Client</title>
+        <title>AIRA Immunization Messaging Client</title>
         <link rel="stylesheet" type="text/css" href="index.css" />
     </head>
     <body>
         <%=org.openimmunizationsoftware.pt.pt.servlet.ClientServlet.makeMenu(request, "Documentation")%>
-        <h1>OIS IIS HL7 Tester</h1>
+        <h1>AIRA IIS HL7 Tester</h1>
 
         <h2>Contents</h2>
         <ul>

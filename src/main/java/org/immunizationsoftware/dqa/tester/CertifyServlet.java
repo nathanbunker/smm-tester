@@ -4,6 +4,7 @@
  */
 package org.immunizationsoftware.dqa.tester;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
@@ -24,8 +26,7 @@ import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
  * 
  * @author nathan
  */
-public class CertifyServlet extends ClientServlet
-{
+public class CertifyServlet extends ClientServlet {
 
   /**
    * 
@@ -98,16 +99,24 @@ public class CertifyServlet extends ClientServlet
           }
           if (!profileUsageIdForInteroperabilityString.equals("")) {
             int profileUsageId = Integer.parseInt(profileUsageIdForInteroperabilityString);
-            certifyRunner.setProfileUsageComparisonInteroperability(profileManager.getProfileUsageList().get(
-                profileUsageId - 1));
+            certifyRunner.setProfileUsageComparisonInteroperability(profileManager.getProfileUsageList().get(profileUsageId - 1));
           }
           if (!profileUsageIdForConformanceString.equals("")) {
             int profileUsageId = Integer.parseInt(profileUsageIdForConformanceString);
-            certifyRunner.setProfileUsageComparisonConformance(profileManager.getProfileUsageList().get(
-                profileUsageId - 1));
+            certifyRunner.setProfileUsageComparisonConformance(profileManager.getProfileUsageList().get(profileUsageId - 1));
           }
         }
 
+        String runAgainst = request.getParameter("runAgainst");
+        if (runAgainst != null && !runAgainst.equals("")) {
+          SendData sendData = user.getSendData();
+          if (sendData != null) {
+            File runAgainstFolder = new File(sendData.getTestCaseDir(), runAgainst);
+            if (runAgainstFolder.exists() && runAgainstFolder.isDirectory()) {
+              certifyRunner.setRunAgainstFolder(runAgainstFolder);
+            }
+          }
+        }
         session.setAttribute("certifyRunner", certifyRunner);
         certifyRunner.start();
       }
@@ -153,12 +162,19 @@ public class CertifyServlet extends ClientServlet
     }
   }
 
-  private void doGet(HttpServletRequest request, HttpServletResponse response, HttpSession session, String problem)
-      throws IOException {
+  private void doGet(HttpServletRequest request, HttpServletResponse response, HttpSession session, String problem) throws IOException {
+
+    String username = (String) session.getAttribute("username");
+    Authenticate.User user = (Authenticate.User) session.getAttribute("user");
+    if (username == null) {
+      response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
+    }
+
     PrintWriter out = response.getWriter();
+
     try {
       printHtmlHead(out, MENU_HEADER_TEST, request);
-      
+
       CertifyHistoryServlet.printViewMenu(out, "", true);
 
       if (problem != null) {
@@ -216,6 +232,21 @@ public class CertifyServlet extends ClientServlet
         out.println("            <input type=\"checkbox\" name=\"pauseBeforeQuerying\" value=\"true\"/> Pause");
         out.println("          </td>");
         out.println("        </tr>");
+        SendData sendData = user.getSendData();
+        if (sendData != null) {
+          out.println("        <tr>");
+          out.println("          <td>Run Against</td>");
+          out.println("          <td>");
+          out.println("            <select name=\"runAgainst\">");
+          out.println("              <option value=\"\">Realtime Interface</option>");
+          String[] testNames = sendData.getTestReportNames();
+          for (String testName : testNames) {
+            out.println("              <option value=\"" + testName + "\">" + testName + "</option>");
+          }
+          out.println("          </td>");
+          out.println("        </tr>");
+        }
+
         out.println("        <tr>");
         out.println("          <td colspan=\"2\">Tests to Run</td>");
         out.println("        </tr>");
@@ -227,7 +258,7 @@ public class CertifyServlet extends ClientServlet
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input type=\"checkbox\" name=\"runB\" value=\"true\"/> Intermediate");
+        out.println("            <input type=\"checkbox\" name=\"runB\" value=\"true\" checked=\"true\"/> Intermediate");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
@@ -239,9 +270,9 @@ public class CertifyServlet extends ClientServlet
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td valign=\"top\">");
-        out.println("            <input type=\"checkbox\" name=\"runI\" value=\"true\"/> Profiling");
+        out.println("            <input type=\"checkbox\" name=\"runI\" value=\"true\" checked=\"true\"/> Profiling");
         out.println("          </td>");
-        int profileUsageId = 0;
+        int profileUsageId = profileManager.getProfileUsageList().size();
         if (session.getAttribute("profileUsageId") != null) {
           profileUsageId = (Integer) session.getAttribute("profileUsageId");
         }
@@ -269,7 +300,11 @@ public class CertifyServlet extends ClientServlet
           int i = 0;
           for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
             i++;
-            out.println("              <option value=\"" + i + "\">" + profileUsage + "</option>");
+            if (profileUsage.toString().equals("US - Base")) {
+              out.println("              <option value=\"" + i + "\" selected=\"true\">" + profileUsage + "</option>");
+            } else {
+              out.println("              <option value=\"" + i + "\">" + profileUsage + "</option>");
+            }
           }
         }
         out.println("            </select>");
@@ -289,7 +324,7 @@ public class CertifyServlet extends ClientServlet
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input type=\"checkbox\" name=\"runD\" value=\"true\"/> Exceptional");
+        out.println("            <input type=\"checkbox\" name=\"runD\" value=\"true\" checked=\"true\"/> Exceptional");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
@@ -302,11 +337,10 @@ public class CertifyServlet extends ClientServlet
         out.println("            <select multiple size=\"5\" name=\"forecastTestPanelId\">");
         for (ForecastTestPanel forecastTestPanel : forecastTestPanelList) {
           if (forecastTestPanel.isStandard()) {
-            out.println("              <option value=\"" + forecastTestPanel.getId() + "\" selected" + ">"
-                + forecastTestPanel.getLabel() + "</option>");
+            out.println("              <option value=\"" + forecastTestPanel.getId() + "\" selected" + ">" + forecastTestPanel.getLabel()
+                + "</option>");
           } else {
-            out.println("              <option value=\"" + forecastTestPanel.getId() + "\">"
-                + forecastTestPanel.getLabel() + "</option>");
+            out.println("              <option value=\"" + forecastTestPanel.getId() + "\">" + forecastTestPanel.getLabel() + "</option>");
           }
         }
         out.println("            ");

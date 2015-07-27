@@ -7,8 +7,6 @@ package org.immunizationsoftware.dqa.tester.connectors;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
@@ -60,6 +58,8 @@ public abstract class Connector
         connector = new ORConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_IL_WS)) {
         connector = new ILConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_MO_SOAP)) {
+        connector = new MOConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_CA_SOAP)) {
         connector = new CASoapConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_ND_SOAP)) {
@@ -117,6 +117,32 @@ public abstract class Connector
   private Set<String> queryResponseFieldsNotReturnedSet = null;
   private Map<String, String> scenarioTransformationsMap = new HashMap<String, String>();
   private String segmentSeparator = "\r";
+  
+  public Connector(Connector copy) {
+    this.label = copy.label;
+    this.type = copy.type;
+    this.userid = copy.userid;
+    this.otherid = copy.otherid;
+    this.password = copy.password;
+    this.facilityid = copy.facilityid;
+    this.url = copy.url;
+    this.currentFilename = copy.currentFilename;
+    this.currentControlId = copy.currentControlId;
+    this.enableTimeStart = copy.enableTimeStart;
+    this.enableTimeEnd = copy.enableTimeEnd;
+    this.disableServerCertificateCheck = copy.disableServerCertificateCheck;
+    this.transferType = copy.transferType;
+    this.customTransformations = copy.customTransformations;
+    this.quickTransformations = copy.quickTransformations;
+    this.keyStore = copy.keyStore;
+    this.keyStorePassword = copy.keyStorePassword;
+    this.ackType = copy.ackType;
+    this.otherConnectorMap = copy.otherConnectorMap;
+    this.purpose = copy.purpose;
+    this.queryResponseFieldsNotReturnedSet = copy.queryResponseFieldsNotReturnedSet;
+    this.scenarioTransformationsMap = copy.scenarioTransformationsMap;
+    this.segmentSeparator = copy.segmentSeparator;
+  }
   
   public String getSegmentSeparator() {
     return segmentSeparator;
@@ -642,6 +668,20 @@ public abstract class Connector
       // ignore
     }
 
+  }
+
+  
+  protected static String replaceAmpersand(String s) {
+    String s2 = "";
+    int pos = s.indexOf("&");
+    while (pos != -1) {
+      s2 = s2 + s.substring(0, pos);
+      s2 = s2 + "&amp;";
+      s = s.substring(pos + 1);
+      pos = s.indexOf("&");
+    }
+    s2 = s2 + s;
+    return s2;
   }
 
 }

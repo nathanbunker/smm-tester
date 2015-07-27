@@ -14,8 +14,11 @@ import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.SoftwareVersion;
 import org.immunizationsoftware.dqa.mover.ManagerServlet;
+import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
 import org.immunizationsoftware.dqa.tester.profile.ProfileManager;
+import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 
 /**
  * 
@@ -127,10 +130,9 @@ public class ClientServlet extends HttpServlet
   }
 
   public static void printFooter(PrintWriter out) {
-    out.println("    <p>Open Immunization Software - IIS HL7 Tester &amp; Simple Message Mover - Version "
+    out.println("    <p>American Immunization Registry Association - IIS HL7 Tester &amp; Simple Message Mover - Version "
         + SoftwareVersion.VERSION
-        + "<br>"
-        + "For questions or support please contact <a href=\"http://openimmunizationsoftare.net\">Nathan Bunker</a>.</p>");
+        + "</p>");
 
   }
 
@@ -202,5 +204,31 @@ public class ClientServlet extends HttpServlet
     out.println("          </td>");
     out.println("        </tr>");
     return connectorSelected;
+  }
+  
+  protected void switchParticipantResponse(HttpSession session, Authenticate.User user, ParticipantResponse participantResponse) throws IOException {
+    String folderName = participantResponse.getFolderName();
+    if (!folderName.equals("")) {
+      SendData sendData = ManagerServlet.getSendDatayByLabel(folderName);
+      if (sendData != null && sendData.getConnector() != null) {
+        ConnectServlet.addNewConnection(session, user, "", sendData.getInternalId(), true);
+      }
+    }
+    String guideName = participantResponse.getGuideName();
+    if (!guideName.equals("")) {
+      initProfileManager(false);
+      int profileUsageId = 0;
+      int i = 0;
+      for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
+        i++;
+        if (profileUsage.toString().equalsIgnoreCase(guideName)) {
+          profileUsageId = i;
+          break;
+        }
+      }
+      if (profileUsageId > 0) {
+        session.setAttribute("profileUsageId", profileUsageId);
+      }
+    }
   }
 }

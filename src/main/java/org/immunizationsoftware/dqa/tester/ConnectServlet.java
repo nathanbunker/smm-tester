@@ -84,25 +84,8 @@ public class ConnectServlet extends ClientServlet
           addConnection(request, session);
         } else if (action.equals("Switch"))
         {
-          CreateTestCaseServlet.getTestCaseMessageMap(session).clear();
           int internalId = Integer.parseInt(request.getParameter("sendDataInternalId"));
-          if (internalId == 0)
-          {
-            user.setSendData(null);
-          } else
-          {
-            SendData sendData = ManagerServlet.getSendData(internalId);
-            user.setSendData(sendData);
-            ConnectServlet.addConnector(sendData.getConnector(), session);
-            try
-            {
-              CreateTestCaseServlet.loadTestCases(session);
-            } catch (Exception e)
-            {
-              e.printStackTrace();
-              message = "Unable to load test cases: " + e.getMessage();
-            }
-          }
+          message = addNewConnection(session, user, message, internalId, false);
         }
       }
       if (message != null)
@@ -253,6 +236,32 @@ public class ConnectServlet extends ClientServlet
         out.close();
       }
     }
+  }
+
+  public static String addNewConnection(HttpSession session, Authenticate.User user, String message, int internalId, boolean removeOtherConnections) {
+    CreateTestCaseServlet.getTestCaseMessageMap(session).clear();
+    if (internalId == 0)
+    {
+      user.setSendData(null);
+    } else
+    {
+      SendData sendData = ManagerServlet.getSendData(internalId);
+      user.setSendData(sendData);
+      if (removeOtherConnections)
+      {
+        getConnectors(session).clear();
+      }
+      ConnectServlet.addConnector(sendData.getConnector(), session);
+      try
+      {
+        CreateTestCaseServlet.loadTestCases(session);
+      } catch (Exception e)
+      {
+        e.printStackTrace();
+        message = "Unable to load test cases: " + e.getMessage();
+      }
+    }
+    return message;
   }
 
   protected static List<TestCaseMessage> getSelectedTestCaseMessageList(HttpServletRequest request, HttpSession session)

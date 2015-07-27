@@ -192,7 +192,7 @@ public class Authenticate {
             addUser("Pear", "ZVmKNItmWxNr0U8");
             addUser("Pineapple", "Q1HkUKcCROr2gDN");
             addUser("Plum", "2M7632L8Df011GQ", "Rob Savage", "hzv3@cdc.gov");
-            addUser("Pomegranate", "aGWBac39r113uYB");
+            addUser("Pomegranate", "aGWBac39r113uYB", "Rob Snelick", "robert.snelick@nist.gov", true);
             addUser("Pomelo", "mR5nOH16HwQSW6e");
             addUser("Rambutan", "m62w2K9D73w9g6z");
             addUser("Raspberry", "A432p3tPo17IcFr");

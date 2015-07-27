@@ -4,7 +4,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>OIS Immunization Messaging Client</title>
+        <title>AIRA Immunization Messaging Client</title>
         <link rel="stylesheet" type="text/css" href="index.css" />
     </head>
     <body>
@@ -113,22 +113,22 @@
         <td>IIS should operate in a way that is compatible with national standards</td>
       </tr>
       <tr>
-        <td>Tolerance Test</td>
+        <td>Tolerance</td>
         <td>5%</td>
         <td>IIS should tolerate some expected or common issues</td>
       </tr>
       <tr>
-        <td>EHR Example Test</td>
+        <td>EHR Examples</td>
         <td>5%</td>
         <td>IIS should accept messages typically sent by certified EHR systems</td>
       </tr>
       <tr>
-        <td>Performance Test</td>
+        <td>Performance</td>
         <td>5%</td>
         <td>IIS should respond to VXU messages within a reasonable amount of time</td>
       </tr>
       <tr>
-        <td>Acknowledgment Conformance Test</td>
+        <td>Acknowledgment Conformance</td>
         <td>5%</td>
         <td>IIS should send ACK messages that conform to national requirements.</td>
       </tr>
@@ -156,7 +156,7 @@
     drastically reduces the score. </p>
 
     <div id="localRequirements"/>
-    <h2>Local Requirements</h2> 
+    <h2>Local Requirement Implementation</h2> 
     <p>The test compares the documented Usage according to your IG against the detected Usage 
     discovered through testing with your interface. Difference are shown in a table.</p>
     <h3>Discovery Process</h3>
@@ -197,8 +197,6 @@
     real HL7 interfaces. To capture some of these concepts the AIRA testing process
     has invented the following temporary status codes: </p>
     <ul>
-        <li><b>R! I saw this one one time, but don't recall what it means.</b> After doing some code searching, I think it means Required in certain situations.  But isn't that just a C(R/?) requirement?</li>
-        <li><b>[Usage] I see this often, but wasn't sure what it meant</b>: Maybe that these are pulled from the national standard?</li>
       <li><b>R* Required, but not enforced</b>: 
         The guide indicates the field is required but if the field is left empty the IIS 
         will still accept the message. For example, PID-1 is documented as required by the IIS
@@ -208,6 +206,15 @@
         required field is empty. While
         it is recommended that the IIS at least indicate that required fields were missing, 
         the IIS is free to continue to accept part or all of the data that was sent. 
+        </li>
+      <li><b>R! Required, and enforced even though it is contained in an RE or O element</b>: 
+        The testing process assumes that required elements of required, but may be empty or optional fields
+        can actually be left empty and the message will be accepted. (For example, if the IIS requires the
+        mother's maiden first name in PID-6 but PID-6 is RE, and the sender only submits the mother's maiden last name, 
+        the IIS is expected to continue processing the rest of the message. If however, the message is not accepted
+        when this field is empty is empty is required as R! to indicate that the requirement for the field to be
+        present does not follow the expected hierarchy. Submitters should be careful to include this required field
+        if any part of the containing element is sent, or otherwise leave the entire field empty.   
         </li>
       <li><b>RE* Required, but may be empty and is not read</b>:
         The guide indicates the field should be valued if known, but that the IIS is not
@@ -226,6 +233,10 @@
         by the IIS, but the IIS will not generate an error if PID-2 is valued. Please note that
         HL7 standards indicate that an IIS "may" generate an error if a not supported field 
         is valued. This means not supported fields are valued.  </li>
+      <li><b>[R], [RE], [O], [X]</b>: The brackets indicate the requirement was not 
+        documented at the local level and has been assumed from the national level for the purposes of testing. 
+        IIS are not expected to document all requirements at the local level, in fact IIS have been encouraged
+        to keep local documentation to a minimum. </li>
     </ul>
     
     <h3>Explanation of Results</h3>
@@ -253,10 +264,20 @@
         the table is truncated so that all rows shown are inconsistent. </li>
       <li><b>Field Present</b>: 
         Reports on status of the test case to submit a message with the field valued. From here the user can
-        click through to see the message that was submitted and the details of why the test failed. </li>
+        click through to see the message that was submitted and the details of why the test failed. 'Expected 
+        Response' indicates that the message was accepted or rejected as is expected for the status field. 
+        'Unexpected Response' indicates that the message was not accepted or rejected as is expected for the 
+        status field. (For example PID-2 should be empty but the message was accepted with it valued.) 
+        Please note that this indicates the assumption from the documented behavior was not met, and does 
+        not of itself indicate that the IIS is operating incorrectly. </li>
       <li><b>Field Absent</b>: 
         Reports on status of the test case to submit a message with the field NOT valued. From here the user can
-        click through to see the message that was submitted and the details of why the test failed. </li>
+        click through to see the message that was submitted and the details of why the test failed. 'Expected 
+        Response' indicates that the message was accepted or rejected as is expected for the status field. 
+        'Unexpected Response' indicates that the message was not accepted or rejected as is expected for the 
+        status field. (For example PID-5 was empty but the message was accepted anyways.) 
+        Please note that this indicates the assumption from the documented behavior was not met, and does 
+        not of itself indicate that the IIS is operating incorrectly. </li>
     </ul>
 
     <div id="nationalCompatibility"/>

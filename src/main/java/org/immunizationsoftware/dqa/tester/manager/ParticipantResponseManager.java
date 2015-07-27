@@ -31,6 +31,7 @@ public class ParticipantResponseManager {
     int posRecordRequirementsStatus = CvsReader.findPosition("Record Requirements Status", valueList);
     int posConnecttoIISStatus = CvsReader.findPosition("Connect to IIS Status", valueList);
     int posComments = CvsReader.findPosition("Comments", valueList);
+    int posGuideName = CvsReader.findPosition("Guide Name", valueList);
 
     while ((line = in.readLine()) != null) {
       valueList = CvsReader.readValuesFromCsv(line);
@@ -52,6 +53,7 @@ public class ParticipantResponseManager {
       participantResponse.setRecordRequirementsStatus(CvsReader.readValue(posRecordRequirementsStatus, valueList));
       participantResponse.setConnecttoIISStatus(CvsReader.readValue(posConnecttoIISStatus, valueList));
       participantResponse.setComments(CvsReader.readValue(posComments, valueList));
+      participantResponse.setGuideName(CvsReader.readValue(posGuideName, valueList));
       if (participantResponseMap != null) {
         String mapPos = participantResponse.getMap();
         if (!mapPos.equals("")) {

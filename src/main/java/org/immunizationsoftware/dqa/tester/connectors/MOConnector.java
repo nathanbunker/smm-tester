@@ -14,19 +14,19 @@ import java.util.List;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
-public class ILConnector extends ORConnector
+public class MOConnector extends ORConnector
 {
 
-  private static final String HL7_REQUEST_RESULT_START_TAG = "<HL7RequestResult>";
-  private static final String HL7_REQUEST_RESULT_END_TAG = "</HL7RequestResult>";
+  private static final String HL7_REQUEST_RESULT_START_TAG = "<SMVHL7VAL_x0028__x0029_Result>";
+  private static final String HL7_REQUEST_RESULT_END_TAG = "</SMVHL7VAL_x0028__x0029_Result>";
 
-  protected ILConnector(String label, String url, String type) {
+  protected MOConnector(String label, String url, String type) {
     super(label, url, type);
     this.url = url;
   }
 
-  public ILConnector(String label, String url) {
-    super(label, url, ConnectorFactory.TYPE_IL_WS);
+  public MOConnector(String label, String url) {
+    super(label, url, ConnectorFactory.TYPE_MO_SOAP);
     this.url = url;
   }
 
@@ -92,32 +92,29 @@ public class ILConnector extends ORConnector
 
       urlConn.setRequestMethod("POST");
 
-      urlConn.setRequestProperty("Accept", null);
-      urlConn.setRequestProperty("Accept-Encoding", "gzip, deflate");
-      urlConn.setRequestProperty("Expect", "100-continue");
       urlConn.setRequestProperty("Content-Type",
-          "application/soap+xml; charset=UTF-8; action=\"http://HL7_ICARE/HL7Exchange/HL7Request\"");
+          "application/soap+xml; charset=utf-8");
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       String content;
 
       StringBuilder sb = new StringBuilder();
-      sb.append("<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:hl7=\"http://HL7_ICARE\">");
-      sb.append("<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">");
-      sb.append("<wsa:To>https://icarehl7.dph.illinois.gov</wsa:To>");
-      sb.append("<wsa:Action>http://HL7_ICARE/HL7Exchange/HL7Request</wsa:Action></soap:Header>");
-      sb.append("<soap:Body>");
-      sb.append("<hl7:HL7Request>");
-      sb.append("<hl7:username>");
-      sb.append(userid);
-      sb.append("</hl7:username>");
-      sb.append("<hl7:password>");
-      sb.append(password);
-      sb.append("</hl7:password>");
-      sb.append("<hl7:HL7Message>");
-      sb.append(replaceAmpersand(request));
-      sb.append("</hl7:HL7Message>");
-      sb.append("</hl7:HL7Request></soap:Body></soap:Envelope>");
+      sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+      sb.append("<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">");
+      sb.append("  <soap12:Header>");
+      sb.append("    <HL7SoapHeader xmlns=\"http://tempuri.org/SMVAX_ProviderInterface_EXT_WS/ProviderInterface_EXT_WS\">");
+      sb.append("      <USERID>" + userid + "</USERID>");
+      sb.append("      <PASSWORD1>" + password + "</PASSWORD1>");
+      sb.append("      <PASSWORD2>" + otherid + "</PASSWORD2>");
+      sb.append("      <FACILITYID>" + facilityid + "</FACILITYID>");
+      sb.append("      <MESSAGEDATA>" + replaceAmpersand(request) + "</MESSAGEDATA>");
+      sb.append("    </HL7SoapHeader>");
+      sb.append("  </soap12:Header>");
+      sb.append("  <soap12:Body>");
+      sb.append("    <SMVHL7VAL_x0028__x0029_ xmlns=\"http://tempuri.org/SMVAX_ProviderInterface_EXT_WS/ProviderInterface_EXT_WS\" />");
+      sb.append("  </soap12:Body>");
+      sb.append("</soap12:Envelope>");
+      
       content = sb.toString();
 
       printout = new DataOutputStream(urlConn.getOutputStream());
@@ -165,13 +162,12 @@ public class ILConnector extends ORConnector
 
   @Override
   public String connectivityTest(String message) throws Exception {
-    return "Not supported by IL WS";
+    return "Not supported by MO SOAP interface";
   }
 
   @Override
   protected void makeScriptAdditions(StringBuilder sb) {
     // TODO Auto-generated method stub
   }
-
 
 }

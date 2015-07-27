@@ -15,8 +15,7 @@ import org.immunizationsoftware.dqa.SoftwareVersion;
  * 
  * @author nathan
  */
-public class ClientServlet extends HttpServlet
-{
+public class ClientServlet extends HttpServlet {
 
   protected static SoftwareType getSoftwareType(HttpServletRequest request) {
     String softwareType = request.getParameter("softwareType");
@@ -28,8 +27,7 @@ public class ClientServlet extends HttpServlet
     return SoftwareType.SMM;
   }
 
-  protected static void printHtmlHead(PrintWriter out, SoftwareType softwareType, String title,
-      HttpServletRequest request) {
+  protected static void printHtmlHead(PrintWriter out, SoftwareType softwareType, String title, HttpServletRequest request) {
     out.println("<html>");
     out.println("  <head>");
     out.println("    <title>" + title + "</title>");
@@ -64,14 +62,11 @@ public class ClientServlet extends HttpServlet
     return makeMenu(request, "&nbsp;", softwareType);
   }
 
-  private static final String[][] MENU_SMM = { { "index.html", "Simple Message Mover" },
-      { "PrepareServlet", "1. Prepare" }, { "ConfigureServlet", "2. Configure" }, { "InstallServlet", "3. Install" },
-      { "DownloadServlet", "4. Download SMM" } };
+  private static final String[][] MENU_SMM = { { "index.html", "Simple Message Mover" }, { "PrepareServlet", "1. Prepare" },
+      { "ConfigureServlet", "2. Configure" }, { "InstallServlet", "3. Install" }, { "DownloadServlet", "4. Download SMM" } };
 
-  private static final String[][] MENU_TESTER = { { "indexTester.html?", "IIS HL7 Tester" },
-      { "PrepareServlet?softwareType=Tester", "1. Prepare" },
-      { "ConfigureServlet?softwareType=Tester", "2. Configure" },
-      { "InstallServlet?softwareType=Tester", "3. Install" },
+  private static final String[][] MENU_TESTER = { { "indexTester.html?", "IIS HL7 Tester" }, { "PrepareServlet?softwareType=Tester", "1. Prepare" },
+      { "ConfigureServlet?softwareType=Tester", "2. Configure" }, { "InstallServlet?softwareType=Tester", "3. Install" },
       { "DownloadServlet?softwareType=Tester", "4. Download Tester" } };
 
   public static String makeMenu(HttpServletRequest request, String title, SoftwareType softwareType) {
@@ -104,10 +99,8 @@ public class ClientServlet extends HttpServlet
   }
 
   public static void printFooter(PrintWriter out) {
-    out.println("    <p>Open Immunization Software - IIS HL7 Tester &amp; Simple Message Mover - Version "
-        + SoftwareVersion.VERSION
-        + "<br>"
-        + "For questions or support please contact <a href=\"http://openimmunizationsoftare.org/\">Nathan Bunker</a>.</p>");
+    out.println("    <p>American Immunization Registry Association - IIS HL7 Tester &amp; Simple Message Mover - Version " + SoftwareVersion.VERSION
+        + "</p>");
 
   }
 

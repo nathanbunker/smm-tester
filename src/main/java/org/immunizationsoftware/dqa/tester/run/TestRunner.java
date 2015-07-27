@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.immunizationsoftware.dqa.mover.AckAnalyzer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.connectors.RunAgainstConnector;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 import org.immunizationsoftware.dqa.transform.TestError;
@@ -118,6 +119,14 @@ public class TestRunner {
     startTime = System.currentTimeMillis();
     ackMessageText = connector.submitMessage(message, false);
     endTime = System.currentTimeMillis();
+
+    if (connector instanceof RunAgainstConnector) {
+      RunAgainstConnector rac = (RunAgainstConnector) connector;
+      if (rac.getOriginalRequestMessage() != null) {
+        testCaseMessage.setMessageTextSent(rac.getOriginalRequestMessage());
+        testCaseMessage.setMessageText(rac.getOriginalRequestMessage());
+      }
+    }
 
     errorList = new ArrayList<TestError>();
     if (!testCaseMessage.getAssertResult().equalsIgnoreCase("")) {
