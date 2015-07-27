@@ -68,7 +68,7 @@ public class ProfileServlet extends ClientServlet {
           session.setAttribute("profileUsageId", profileUsageId);
         }
         ProfileUsage profileUsageCompare = null;
-        int profileUsageIdCompare = 0;
+        int profileUsageIdCompare = profileManager.getProfileUsageList().size();
         String profileUsageIdCompareString = request.getParameter("profileUsageIdCompare");
         if (profileUsageIdCompareString != null && !profileUsageIdCompareString.equals("")) {
           profileUsageIdCompare = Integer.parseInt(profileUsageIdCompareString);

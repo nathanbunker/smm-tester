@@ -213,6 +213,13 @@ public class TransformerTest extends TestCase {
     testTransform("clear PID-5#2\n", CLEAR1_ORIGINAL, CLEAR1_FINALC2);
     testTransform("clear PID-5.2\n", CLEAR1_ORIGINAL, CLEAR1_FINALD);
   }
+  
+  public void testInsertSegment()
+  {
+    testTransform("insert segment PID if missing\n", TEST1_ORIGINAL, TEST1_ORIGINAL);
+    testTransform("insert segment RXA if missing\n", TEST1_ORIGINAL, TEST1_ORIGINAL);
+    testTransform("insert segment RXA#2 if missing\n", TEST1_ORIGINAL, TEST1_ORIGINAL);
+  }
 
   private void testTransform(String transform, String originalMessage, String finalMessage) {
     Transformer transformer = new Transformer();

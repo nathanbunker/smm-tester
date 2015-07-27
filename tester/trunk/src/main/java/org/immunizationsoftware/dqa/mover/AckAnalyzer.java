@@ -157,7 +157,7 @@ public class AckAnalyzer {
       } else if (ackType.equals(AckType.MIIC)) {
         int recordRejectedPos = ackUpperCase.indexOf("REJECTED");
         int pidRejectedPos = ackUpperCase.indexOf("PID #1 IGNORED");
-        positive = recordRejectedPos == -1 && pidRejectedPos == -1;
+        positive = ackUpperCase.startsWith("MSH|^~\\&|") && recordRejectedPos == -1 && pidRejectedPos == -1;
         if (positive) {
           int rxaRejectedPos = ackUpperCase.indexOf("RXA #");
           if (rxaRejectedPos != -1) {

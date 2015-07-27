@@ -20,13 +20,16 @@ import static org.immunizationsoftware.dqa.transform.ScenarioManager.createTestC
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -36,7 +39,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
+import org.immunizationsoftware.dqa.mover.ManagerServlet;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.connectors.RunAgainstConnector;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
@@ -63,7 +68,7 @@ import org.immunizationsoftware.dqa.transform.forecast.ForecastTestEvent;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
 
 public class CertifyRunner extends Thread {
-  private static final String REPORT_EXPLANATION_URL = "http://localhost:8282/reportExplanation.html";
+  private static final String REPORT_EXPLANATION_URL = "http://ois-pt.org/tester/reportExplanation.html";
 
   private static final String QUERY_TYPE_QBP = "Q";
   private static final String QUERY_TYPE_VXQ = "V";
@@ -140,6 +145,7 @@ public class CertifyRunner extends Thread {
   }
 
   private Map<String, PrintWriter> exampleOutSet = new HashMap<String, PrintWriter>();
+  private Map<String, PrintWriter> exampleAckOutSet = new HashMap<String, PrintWriter>();
 
   public boolean isRun(int suite) {
     return run[suite];
@@ -258,9 +264,21 @@ public class CertifyRunner extends Thread {
 
       testCaseMessageBase = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessageBase.setTestCaseSet(testCaseSet);
-      testCaseMessageBase.setTestCaseNumber(uniqueMRNBase + "BASE");
+      testCaseMessageBase.setTestCaseCategoryId("BASE");
+      testCaseMessageBase.setTestCaseNumber(uniqueMRNBase + testCaseMessageBase.getTestCaseCategoryId());
 
       testStarted = new Date();
+
+      if (runAgainstFolder != null) {
+        connector = new RunAgainstConnector(connector, runAgainstFolder);
+        logStatus("Running test against previously received responses in this forder: " + runAgainstFolder);
+        if (queryConnector != null) {
+          queryConnector = new RunAgainstConnector(queryConnector, runAgainstFolder);
+          ;
+        }
+      } else {
+        logStatus("Connecting directly to real-time interface");
+      }
 
       if (run[SUITE_A_BASIC]) {
 
@@ -276,6 +294,7 @@ public class CertifyRunner extends Thread {
         updateBasic();
         printReportToFile();
       }
+
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
@@ -532,13 +551,17 @@ public class CertifyRunner extends Thread {
       for (PrintWriter exampleOut : exampleOutSet.values()) {
         exampleOut.close();
       }
+      for (PrintWriter exampleAckOut : exampleAckOutSet.values()) {
+        exampleAckOut.close();
+      }
       logStatus("IIS Test Finished");
     }
   }
 
   public void prepareProfiling() throws Exception {
     tcmFull.setTestCaseSet(testCaseSet);
-    tcmFull.setTestCaseNumber(uniqueMRNBase + "I." + paddWithZeros(0, 3));
+    tcmFull.setTestCaseCategoryId("I." + paddWithZeros(0, 3));
+    tcmFull.setTestCaseNumber(uniqueMRNBase + tcmFull.getTestCaseCategoryId());
     tcmFull.setDescription("Full Record");
     transformer.transform(tcmFull);
     register(tcmFull);
@@ -570,6 +593,28 @@ public class CertifyRunner extends Thread {
           exampleFile = new File(testCaseDir, "Example Messages " + name + "" + testCaseMessage.getForecastTestPanel().getLabel() + ".hl7");
         } else {
           exampleFile = new File(testCaseDir, "Example Messages " + name + ".hl7");
+        }
+        try {
+          return new PrintWriter(exampleFile);
+        } catch (IOException ioe) {
+          ioe.printStackTrace();
+          logStatus("Unable to write examples out: " + ioe);
+        }
+      }
+    }
+    return null;
+  }
+
+  public PrintWriter setupAckFile(String name, TestCaseMessage testCaseMessage) {
+    if (testCaseMessage != null) {
+      File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessage, session);
+      if (testCaseDir != null) {
+        logStatus("Saving example");
+        File exampleFile;
+        if (testCaseMessage.getForecastTestPanel() != null) {
+          exampleFile = new File(testCaseDir, "Example Messages " + name + "" + testCaseMessage.getForecastTestPanel().getLabel() + ".ack.hl7");
+        } else {
+          exampleFile = new File(testCaseDir, "Example Messages " + name + ".ack.hl7");
         }
         try {
           return new PrintWriter(exampleFile);
@@ -617,6 +662,26 @@ public class CertifyRunner extends Thread {
         // unable to save, continue as normal
       }
 
+      logStatus("Looking to see if SMM analysis can be written");
+      File smmAnalysisDir = ManagerServlet.getSmmAnalysisFolder();
+      if (smmAnalysisDir != null && areaProgress[SUITE_A_BASIC][0] > 0 && areaProgress[SUITE_B_INTERMEDIATE][0] > 0
+          && areaProgress[SUITE_D_EXCEPTIONAL][0] > 0 && areaProgress[SUITE_G_PERFORMANCE][0] > 0 && areaProgress[SUITE_H_CONFORMANCE][0] > 0
+          && areaProgress[SUITE_I_PROFILING][0] > 0) {
+        logStatus("Writing SMM Analysis");
+        File analysisFile = new File(smmAnalysisDir, "Analysis Report.html");
+        try {
+          PrintWriter out = new PrintWriter(new FileWriter(analysisFile));
+          String title = "IIS Testing Analysis";
+          ClientServlet.printHtmlHeadForFile(out, title);
+          out.println("    <h1>IIS Testing Analysis</h1>");
+          printAnalysis(out, true);
+          ClientServlet.printHtmlFootForFile(out);
+          out.close();
+        } catch (IOException ioe) {
+          ioe.printStackTrace();
+          // unable to save, continue as normal
+        }
+      }
     }
   }
 
@@ -707,7 +772,8 @@ public class CertifyRunner extends Thread {
 
           TestCaseMessage testCaseMessage = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
           testCaseMessage.setTestCaseSet(testCaseSet);
-          testCaseMessage.setTestCaseNumber(uniqueMRNBase + "C" + priority + "." + paddWithZeros(count, 3));
+          testCaseMessage.setTestCaseCategoryId("C." + makeTwoDigits(priority) + "." + paddWithZeros(count, 3));
+          testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
           profileTestCaseLists[i].add(testCaseMessage);
           testCaseMessage.setDescription(issue.getName());
           testCaseMessage.addCauseIssues(issue.getName());
@@ -730,7 +796,7 @@ public class CertifyRunner extends Thread {
             }
           }
           testCaseMessage.setHasRun(true);
-          CreateTestCaseServlet.saveTestCase(testCaseMessage, session);
+          saveTestCase(testCaseMessage);
           areaProgress[SUITE_C_ADVANCED][i] = makeScore(count, issueList.size());
           if (!keepRunning) {
             status = STATUS_STOPPED;
@@ -748,7 +814,8 @@ public class CertifyRunner extends Thread {
   private TestCaseMessage getPresentTestCase(ProfileLine profileLine, int count, TestCaseMessage defaultTestCaseMessage) {
     TestCaseMessage testCaseMessage = ProfileManager.getPresentTestCase(profileLine.getField(), defaultTestCaseMessage);
     testCaseMessage.setTestCaseSet(testCaseSet);
-    testCaseMessage.setTestCaseNumber(uniqueMRNBase + "I.P" + paddWithZeros(count, 5));
+    testCaseMessage.setTestCaseCategoryId("I." + makeTwoDigits(1) + "." + paddWithZeros(count, 5));
+    testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
     testCaseMessage.setDescription("Field " + profileLine.getField().getFieldName() + " is present");
     transformer.transform(testCaseMessage);
     if (profileLine.getMessageAcceptStatus() == MessageAcceptStatus.ONLY_IF_PRESENT) {
@@ -764,7 +831,8 @@ public class CertifyRunner extends Thread {
   private TestCaseMessage getAbsentTestCase(ProfileLine profileLine, int count, TestCaseMessage defaultTestCaseMessage) {
     TestCaseMessage testCaseMessage = ProfileManager.getAbsentTestCase(profileLine.getField(), defaultTestCaseMessage);
     testCaseMessage.setTestCaseSet(testCaseSet);
-    testCaseMessage.setTestCaseNumber(uniqueMRNBase + "I.A" + paddWithZeros(count, 5));
+    testCaseMessage.setTestCaseCategoryId("I." + makeTwoDigits(2) + "." + paddWithZeros(count, 5));
+    testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
     transformer.transform(testCaseMessage);
     testCaseMessage.setDescription("Field " + profileLine.getField().getFieldName() + " is absent");
     if (profileLine.getMessageAcceptStatus() == MessageAcceptStatus.ONLY_IF_PRESENT) {
@@ -870,11 +938,11 @@ public class CertifyRunner extends Thread {
       }
       testCaseMessagePresent.setHasRun(true);
       if (profileLine.isHasRun()) {
-        CreateTestCaseServlet.saveTestCase(testCaseMessagePresent, session);
+        saveTestCase(testCaseMessagePresent);
       }
       testCaseMessageAbsent.setHasRun(true);
       if (profileLine.isHasRun()) {
-        CreateTestCaseServlet.saveTestCase(testCaseMessageAbsent, session);
+        saveTestCase(testCaseMessageAbsent);
       }
       areaProgress[SUITE_I_PROFILING][0] = makeScore(count, profileLineList.size());
       if (!keepRunning) {
@@ -907,7 +975,8 @@ public class CertifyRunner extends Thread {
       count++;
       TestCaseMessage testCaseMessage = createTestCaseMessage(scenario);
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "A1." + count);
+      testCaseMessage.setTestCaseCategoryId("A." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseBasicList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -919,15 +988,29 @@ public class CertifyRunner extends Thread {
   }
 
   public void printExampleMessage(TestCaseMessage testCaseMessage, String type) {
-    PrintWriter exampleOut = exampleOutSet.get(type);
-    if (exampleOut == null) {
-      exampleOut = setupExampleFile(type, testCaseMessage);
+    {
+      PrintWriter exampleOut = exampleOutSet.get(type);
+      if (exampleOut == null) {
+        exampleOut = setupExampleFile(type, testCaseMessage);
+        if (exampleOut != null) {
+          exampleOutSet.put(type, exampleOut);
+        }
+      }
       if (exampleOut != null) {
-        exampleOutSet.put(type, exampleOut);
+        exampleOut.print(testCaseMessage.getMessageTextSent());
       }
     }
-    if (exampleOut != null) {
-      exampleOut.print(testCaseMessage.getMessageTextSent());
+    {
+      PrintWriter exampleAckOut = exampleAckOutSet.get(type);
+      if (exampleAckOut == null) {
+        exampleAckOut = setupAckFile(type, testCaseMessage);
+        if (exampleAckOut != null) {
+          exampleAckOutSet.put(type, exampleAckOut);
+        }
+      }
+      if (exampleAckOut != null) {
+        exampleAckOut.print(testCaseMessage.getActualResponseMessage());
+      }
     }
   }
 
@@ -936,6 +1019,7 @@ public class CertifyRunner extends Thread {
     int testPass = 0;
     TestRunner testRunner = new TestRunner();
     count = 0;
+    int testAccepted = 0;
     for (TestCaseMessage testCaseMessage : statusCheckTestCaseBasicList) {
       count++;
       try {
@@ -944,8 +1028,11 @@ public class CertifyRunner extends Thread {
         testCaseMessage.setMajorChangesMade(!verifyNoMajorChangesMade(testCaseMessage));
         totalUpdateCount++;
         totalUpdateTime += testRunner.getTotalRunTime();
-        if (pass && !testCaseMessage.isMajorChangesMade()) {
-          testPass++;
+        if (pass) {
+          testAccepted++;
+          if (!testCaseMessage.isMajorChangesMade()) {
+            testPass++;
+          }
         }
         testCaseMessage.setErrorList(testRunner.getErrorList());
         printExampleMessage(testCaseMessage, "A Basic");
@@ -953,7 +1040,7 @@ public class CertifyRunner extends Thread {
         testCaseMessage.setException(t);
       }
       areaProgress[SUITE_A_BASIC][0] = makeScore(count, statusCheckTestCaseBasicList.size());
-      CreateTestCaseServlet.saveTestCase(testCaseMessage, session);
+      saveTestCase(testCaseMessage);
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
@@ -962,6 +1049,10 @@ public class CertifyRunner extends Thread {
     areaScore[SUITE_A_BASIC][0] = makeScore(testPass, statusCheckTestCaseBasicList.size());
     areaProgress[SUITE_A_BASIC][0] = 100;
 
+    if (testAccepted == 0) {
+      logStatus("None of the basic messages were accepted. Stopping test process. ");
+      keepRunning = false;
+    }
   }
 
   private boolean verifyNoMajorChangesMade(TestCaseMessage testCaseMessage) {
@@ -1001,7 +1092,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Sex is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("PID-8=" + certifyItem.getCode());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
@@ -1017,7 +1109,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Race is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("PID-10=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PID-10.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-10.3=" + certifyItem.getTable());
@@ -1036,7 +1129,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Race is " + certifyItem.getLabel() + " (Random value from CDC full set)");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("PID-10=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PID-10.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-10.3=" + certifyItem.getTable());
@@ -1055,7 +1149,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Ethnicity is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("PID-22=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PID-22.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-22.3=" + certifyItem.getTable());
@@ -1079,7 +1174,8 @@ public class CertifyRunner extends Thread {
 
       testCaseMessage.setDescription("Information Source is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("RXA-9=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-9.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-9.3=" + certifyItem.getTable());
@@ -1098,7 +1194,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("VFC Status is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("OBX-5=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("OBX-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("OBX-5.3=" + certifyItem.getTable());
@@ -1117,7 +1214,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_6_P_VARICELLA_HISTORY_CHILD);
       testCaseMessage.setDescription("History of Disease is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("OBX-5=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("OBX-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("OBX-5.3=" + certifyItem.getTable());
@@ -1136,7 +1234,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Registry Status is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("PD1-16=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PD1-17=[NOW]");
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
@@ -1154,7 +1253,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_5_P_REFUSED_TODDLER);
       testCaseMessage.setDescription("Refusal Reason is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("RXA-18=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-18.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-18.3=" + certifyItem.getTable());
@@ -1173,7 +1273,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Relationship is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("NK1-3.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("NK1-3.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("NK1-3.3=" + certifyItem.getTable());
@@ -1192,7 +1293,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_TWO_MONTHS_OLD);
       testCaseMessage.setDescription("Historical vaccination is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
@@ -1211,7 +1313,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_TWO_YEARS_OLD);
       testCaseMessage.setDescription("Historical vaccination is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
@@ -1230,7 +1333,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_FOUR_YEARS_OLD);
       testCaseMessage.setDescription("Historical vaccination is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
@@ -1249,7 +1353,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_TWELVE_YEARS_OLD);
       testCaseMessage.setDescription("Historical vaccination is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
@@ -1291,7 +1396,8 @@ public class CertifyRunner extends Thread {
               testCaseMessage.setDescription("Vaccination administered at " + adminChecks[i][0] + " of age is " + certifyItem.getLabel() + " ("
                   + productCi.getCode() + ")");
               testCaseMessage.setTestCaseSet(testCaseSet);
-              testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+              testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+              testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
               testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
               testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
               testCaseMessage.appendCustomTransformation("RXA-5.3=CVX");
@@ -1313,7 +1419,8 @@ public class CertifyRunner extends Thread {
                   testCaseMessage.setDescription("Vaccination administered at " + adminChecks[i][0] + " of age is CPT " + cptCi.getLabel() + " ("
                       + productCi.getCode() + ")");
                   testCaseMessage.setTestCaseSet(testCaseSet);
-                  testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+                  testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+                  testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
                   testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
                   testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
                   testCaseMessage.appendCustomTransformation("RXA-5.3=CVX");
@@ -1344,7 +1451,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Body Route is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("RXR-1.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXR-1.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXR-1.3=" + certifyItem.getTable());
@@ -1363,7 +1471,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Body Site is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("RXR-2.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXR-2.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXR-2.3=" + certifyItem.getTable());
@@ -1382,7 +1491,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Additional Address Type is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("PID-11.1#2=PID-11.1");
       testCaseMessage.appendCustomTransformation("PID-11.2#2=PID-11.2");
       testCaseMessage.appendCustomTransformation("PID-11.3#2=PID-11.3");
@@ -1404,7 +1514,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Additional Name Type is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("PID-5.1#2=[FATHER]");
       testCaseMessage.appendCustomTransformation("PID-5.2#2=[LAST_DIFFERENT]");
       testCaseMessage.appendCustomTransformation("PID-5.7#2=" + certifyItem.getCode());
@@ -1423,7 +1534,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Phone Telcommunications Use Code is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       if (certifyItem.getCode().equalsIgnoreCase("NET")) {
         testCaseMessage.appendCustomTransformation("PID-13.3#2=X.400");
         testCaseMessage.appendCustomTransformation("PID-13.4#2=[EMAIL]");
@@ -1449,7 +1561,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Phone Telcommunications Equipment Type is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       if (certifyItem.getCode().equals("BP")) {
         testCaseMessage.appendCustomTransformation("PID-13.2#2=BPN");
         testCaseMessage.appendCustomTransformation("PID-13.3#2=" + certifyItem.getCode());
@@ -1483,7 +1596,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Person Id Type is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       if (certifyItem.getCode().equals("MA")) {
         testCaseMessage.appendCustomTransformation("PID-3.1#2=[MEDICAID]");
       } else if (certifyItem.getCode().equals("SS")) {
@@ -1509,7 +1623,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Publicity Code is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("PD1-11.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PD1-11.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PD1-11.3=" + certifyItem.getTable());
@@ -1529,7 +1644,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("County Code is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("PID-11.4=" + certifyItem.getTable());
       testCaseMessage.appendCustomTransformation("PID-11.9=" + certifyItem.getCode());
 
@@ -1548,7 +1664,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Primary Language is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("PID-15.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PID-15.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-15.3=" + certifyItem.getTable());
@@ -1558,34 +1675,6 @@ public class CertifyRunner extends Thread {
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
     }
-
-    // certifyItems = certify.getCertifyItemList(Certify.FIELD_LANGUAGE_FULL);
-    // count = 0;
-    // masterCount++;
-    // {
-    // Certify.CertifyItem certifyItem = certifyItems.get((int)
-    // (System.currentTimeMillis() % certifyItems.size()));
-    // count++;
-    // TestCaseMessage testCaseMessage =
-    // ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
-    // testCaseMessage.setDescription("Primary Language is " +
-    // certifyItem.getLabel()
-    // + " (Random value from CDC full set)");
-    // testCaseMessage.setTestCaseSet(testCaseSet);
-    // testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" +
-    // makeTwoDigits(masterCount) + "." + count);
-    // testCaseMessage.appendCustomTransformation("PID-15.1=" +
-    // certifyItem.getCode());
-    // testCaseMessage.appendCustomTransformation("PID-15.2=" +
-    // certifyItem.getLabel());
-    // testCaseMessage.appendCustomTransformation("PID-15.3=" +
-    // certifyItem.getTable());
-    //
-    // statusCheckTestCaseIntermediateList.add(testCaseMessage);
-    // transformer.transform(testCaseMessage);
-    // testCaseMessage.setAssertResult("Accept - *");
-    // register(testCaseMessage);
-    // }
 
     certifyItems = certify.getCertifyItemList(Certify.FIELD_COMPLETION);
     count = 0;
@@ -1607,7 +1696,8 @@ public class CertifyRunner extends Thread {
 
       testCaseMessage.setDescription("Vaccination completion is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("RXA-20.1=" + completionStatus);
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
@@ -1625,7 +1715,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Vaccination Action Code is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("RXA-21=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
@@ -1643,7 +1734,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Vaccination Action is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("RXA-21=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
@@ -1661,7 +1753,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Vaccination Administering Provider's Degree is " + certifyItem.getLabel());
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("RXA-10.2=[LAST_DIFFERENT]");
       testCaseMessage.appendCustomTransformation("RXA-10.3=[FATHER]");
       testCaseMessage.appendCustomTransformation("RXA-10.21=" + certifyItem.getCode());
@@ -1679,7 +1772,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Multiple Birth is First of " + i);
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       if (i == 1) {
         testCaseMessage.appendCustomTransformation("PID-24=N");
         testCaseMessage.appendCustomTransformation("PID-25=");
@@ -1702,7 +1796,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Multiple Birth is Last of " + i);
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "B" + makeTwoDigits(masterCount) + "." + count);
+      testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
 
       testCaseMessage.appendCustomTransformation("PID-24=Y");
       testCaseMessage.appendCustomTransformation("PID-25=" + i);
@@ -1721,6 +1816,15 @@ public class CertifyRunner extends Thread {
   private ProfileUsage profileUsageComparisonInteroperability = null;
   private ProfileUsage profileUsageComparisonConformance = null;
   private ProfileManager profileManager = null;
+  private File runAgainstFolder = null;
+
+  public File getRunAgainstFolder() {
+    return runAgainstFolder;
+  }
+
+  public void setRunAgainstFolder(File runAgainstFolder) {
+    this.runAgainstFolder = runAgainstFolder;
+  }
 
   public void setProfileUsage(ProfileUsage profileUsage) {
     this.profileUsage = profileUsage;
@@ -1777,7 +1881,8 @@ public class CertifyRunner extends Thread {
           testCaseMessage.appendOriginalMessage(sb.toString());
           testCaseMessage.setDescription(testPanel.getLabel() + ": " + forecastTestCase.getCategoryName() + ": " + forecastTestCase.getDescription());
           testCaseMessage.setTestCaseSet(testCaseSet);
-          testCaseMessage.setTestCaseNumber(uniqueMRNBase + "F1." + count);
+          testCaseMessage.setTestCaseCategoryId("F." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+          testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
           testCaseMessage.setQuickTransformations(new String[] { "2.5.1", (forecastTestCase.getPatientSex().equals("M") ? "BOY" : "GIRL"), "ADDRESS",
               "PHONE", "MOTHER", "RACE", "ETHNICITY" });
           testCaseMessage.appendCustomTransformation("PID-7=" + forecastTestCase.getPatientDob());
@@ -1830,7 +1935,8 @@ public class CertifyRunner extends Thread {
       testCaseMessage.appendOriginalMessage("OBX|5|NM|6287-7^Baker's yeast IgE Ab in Serum^LN||1945||||||F\n");
       testCaseMessage.setDescription("Tolerance Check : Message includes observation not typically sent to IIS");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
+      testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1844,7 +1950,8 @@ public class CertifyRunner extends Thread {
       testCaseMessage.appendCustomTransformation("RXA-3=" + sdf.format(new Date()));
       testCaseMessage.setDescription("Tolerance Check: RXA-3 contains a time component");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
+      testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1858,7 +1965,8 @@ public class CertifyRunner extends Thread {
           .appendCustomTransformation("RXA-5.2=This is a very long description for a vaccine, that normally you shouldn't expect to see, but since this field should not be read by the receiver it should cause no problem, furthermore HL7 allows this field to have up to 999 characters, which should not cause a problem to the receiver. Also this tests to verify that the receiver is not trying to verify the text of the vaccine. ");
       testCaseMessage.setDescription("Tolerance Check: Message includes description for vaccine that is extremely long");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
+      testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1871,7 +1979,8 @@ public class CertifyRunner extends Thread {
       testCaseMessage.appendCustomTransformation("PID-3.4=LOCAL_FACILITY_ASSIGNED_ID");
       testCaseMessage.setDescription("Tolerance Check: Patient identifier assigning authority is very long");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
+      testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1884,7 +1993,8 @@ public class CertifyRunner extends Thread {
       testCaseMessage.appendOriginalMessage("YES|This|is|a|segment^you^should^never^see|in|production\n");
       testCaseMessage.setDescription("Tolerance Check: Message includes segment not defined by HL7");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
+      testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1896,7 +2006,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Tolerance Check: Hospital service code is set to a non-standard value");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
+      testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("PV1-10=AMB");
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
       transformer.transform(testCaseMessage);
@@ -1909,7 +2020,8 @@ public class CertifyRunner extends Thread {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Future Functionality Check: Observation at patient level (HL7 2.8 capability)");
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
+      testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("insert segment OBX after NK1");
       testCaseMessage.appendCustomTransformation("OBX-1=1");
       testCaseMessage.appendCustomTransformation("OBX-2=59784-9");
@@ -1929,7 +2041,7 @@ public class CertifyRunner extends Thread {
     // TODO add examples of message construction issues that should be ignored
 
     try {
-
+      count = 0;
       BufferedReader in = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("exampleCertifiedMessages.txt")));
       String line;
       StringBuilder sb = new StringBuilder();
@@ -1976,7 +2088,8 @@ public class CertifyRunner extends Thread {
 
     testCaseMessage.setDescription("Certified Message: " + (previousDescription == null ? "Unidentified EHR" : previousDescription));
     testCaseMessage.setTestCaseSet(testCaseSet);
-    testCaseMessage.setTestCaseNumber(uniqueMRNBase + "E1." + count);
+    testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(2) + "." + makeTwoDigits(count));
+    testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
     statusCheckTestCaseExceptionalList.add(testCaseMessage);
     transformer.transform(testCaseMessage);
     testCaseMessage.setAssertResult("Accept - *");
@@ -2096,7 +2209,7 @@ public class CertifyRunner extends Thread {
         testCaseMessage.setException(t);
       }
       areaProgress[SUITE_B_INTERMEDIATE][0] = makeScore(count, statusCheckTestCaseIntermediateList.size());
-      CreateTestCaseServlet.saveTestCase(testCaseMessage, session);
+      saveTestCase(testCaseMessage);
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
@@ -2127,7 +2240,7 @@ public class CertifyRunner extends Thread {
         testCaseMessage.setException(t);
       }
       areaProgress[SUITE_D_EXCEPTIONAL][0] = makeScore(count, statusCheckTestCaseExceptionalList.size());
-      CreateTestCaseServlet.saveTestCase(testCaseMessage, session);
+      saveTestCase(testCaseMessage);
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
@@ -2159,7 +2272,7 @@ public class CertifyRunner extends Thread {
         testCaseMessage.setException(t);
       }
       areaProgress[SUITE_E_FORECAST_PREP][0] = makeScore(count, statusCheckTestCaseForecastPrepList.size());
-      CreateTestCaseServlet.saveTestCase(testCaseMessage, session);
+      saveTestCase(testCaseMessage);
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
@@ -2185,7 +2298,8 @@ public class CertifyRunner extends Thread {
       queryTestCaseMessage.setDescription("Query for " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
-      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + "A3." + count);
+      queryTestCaseMessage.setTestCaseCategoryId("A." + makeTwoDigits(3) + "." + makeTwoDigits(count));
+      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       statusCheckQueryTestCaseBasicList.add(queryTestCaseMessage);
       register(queryTestCaseMessage);
       try {
@@ -2218,7 +2332,7 @@ public class CertifyRunner extends Thread {
       }
       areaProgress[SUITE_A_BASIC][2] = makeScore(count, statusCheckTestCaseBasicList.size());
       areaProgress[SUITE_A_BASIC][1] = areaProgress[SUITE_A_BASIC][2];
-      CreateTestCaseServlet.saveTestCase(queryTestCaseMessage, session);
+      saveTestCase(queryTestCaseMessage);
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
@@ -2253,7 +2367,8 @@ public class CertifyRunner extends Thread {
       queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
-      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + "BQ01." + count);
+      queryTestCaseMessage.setTestCaseCategoryId("BQ." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       statusCheckQueryTestCaseIntermediateList.add(queryTestCaseMessage);
       register(queryTestCaseMessage);
     }
@@ -2268,7 +2383,8 @@ public class CertifyRunner extends Thread {
       queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
-      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + "D3." + count);
+      queryTestCaseMessage.setTestCaseCategoryId("D." + makeTwoDigits(3) + "." + makeTwoDigits(count));
+      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       statusCheckQueryTestCaseTolerantList.add(queryTestCaseMessage);
       register(queryTestCaseMessage);
     }
@@ -2283,7 +2399,8 @@ public class CertifyRunner extends Thread {
       queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
-      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + "I3." + count);
+      queryTestCaseMessage.setTestCaseCategoryId("I." + makeTwoDigits(3) + "." + makeTwoDigits(count));
+      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       statusCheckQueryTestCaseProfilingList.add(queryTestCaseMessage);
       register(queryTestCaseMessage);
     }
@@ -2298,7 +2415,8 @@ public class CertifyRunner extends Thread {
       queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
-      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + "E3." + count);
+      queryTestCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(3) + "." + makeTwoDigits(count));
+      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       queryTestCaseMessage.setForecastTestCase(testCaseMessage.getForecastTestCase());
       statusCheckQueryTestCaseForecastPrepList.add(queryTestCaseMessage);
       register(queryTestCaseMessage);
@@ -2359,7 +2477,7 @@ public class CertifyRunner extends Thread {
       }
       areaProgress[suite][2] = makeScore(count, testCaseMessageList.size());
       areaProgress[suite][1] = areaProgress[suite][2];
-      CreateTestCaseServlet.saveTestCase(queryTestCaseMessage, session);
+      saveTestCase(queryTestCaseMessage);
       if (!keepRunning) {
         status = STATUS_STOPPED;
         return;
@@ -2371,6 +2489,11 @@ public class CertifyRunner extends Thread {
     areaScore[suite][2] = makeScore(testQueryPassOptional, testQueryCountOptional);
     areaCount[suite][1] = testQueryCountRequired;
     areaCount[suite][2] = testQueryCountOptional;
+  }
+
+  private void saveTestCase(TestCaseMessage tcm) {
+    CreateTestCaseServlet.saveTestCase(tcm, session);
+    CreateTestCaseServlet.saveAnalysis(tcm, connector, session);
   }
 
   public boolean fieldNotSupported(Comparison comparison) {
@@ -2755,7 +2878,7 @@ public class CertifyRunner extends Thread {
 
   public void printReport(PrintWriter out, boolean toFile) {
     if (testFinished == null) {
-      out.println("<p>Test in progress, unable to provide final report. See supporting details for current progress. </p>");
+      out.println("<p>Test in progress, unable to provide final report. <a href=\"IIS Testing Report Detail.html\">See supporting details for current progress. </a></p>");
     } else {
       reportScore[REPORT_1_INTEROP] = 0.0;
       reportScore[REPORT_2_CODED] = 0.0;
@@ -2887,6 +3010,10 @@ public class CertifyRunner extends Thread {
       out.println("<p>This report gives quick view of how the interface responds when receiving VXU messages. "
           + "This report is preliminary and to be used to inform both national and local standardization efforts. This report is "
           + "not a complete nor definitive statement on the quality or abilities of an IIS interface. </p>");
+      out.println("<font size=\"+2\" style=\"color: red;\"><em>DRAFT REPORT &#8212; DO NOT DISTRIBUTE</em></font>");
+      out.println("<p>This report is not ready for general distribution. "
+          + "It is provided by ARIA to local IIS with the request to provide feedback on improvements to the report.   "
+          + "The reader should not draw any final conclusions. <p>");
       out.println("<ul>");
       out.println("  <li><a href=\"" + REPORT_EXPLANATION_URL + "\">How to Read This Report</a></li>");
       out.println("  <li><a href=\"IIS Testing Report Detail.html\">Detailed Run Log</a></li>");
@@ -2895,7 +3022,7 @@ public class CertifyRunner extends Thread {
       out.println("<h2>Overall Score: ");
       out.printf("%.0f", (overallScore * 100));
       out.println("%</h2>");
-      out.println("<p><span class=\"boxLinks\"><a href=\"" + REPORT_EXPLANATION_URL + "#overallScore\">how to read this section</a></span></p>");
+      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#overallScore\">How to read this section...</a></p>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
       out.println("    <th>Report Section</th>");
@@ -2918,7 +3045,7 @@ public class CertifyRunner extends Thread {
       printBar(out, reportScore[REPORT_2_CODED]);
       out.println("  </tr>");
       out.println("  <tr>");
-      out.println("    <td><a href=\"#localRequirements\">Local Requirement</a></td>");
+      out.println("    <td><a href=\"#localRequirements\">Local Requirement Implementation</a></td>");
       out.println("    <td>");
       out.printf("%.0f", (reportScore[REPORT_3_LOCAL] * 100));
       out.println("%</td>");
@@ -2939,7 +3066,7 @@ public class CertifyRunner extends Thread {
       printBar(out, reportScore[REPORT_5_TOLERANCE]);
       out.println("  </tr>");
       out.println("  <tr>");
-      out.println("    <td><a href=\"#ehrExample\">EHR Example</a></td>");
+      out.println("    <td><a href=\"#ehrExample\">EHR Examples</a></td>");
       out.println("    <td>");
       out.printf("%.0f", (reportScore[REPORT_6_EHR] * 100));
       out.println("%</td>");
@@ -3002,11 +3129,7 @@ public class CertifyRunner extends Thread {
 
       out.println("<div id=\"interoperability\"/>");
       out.println("<h2>Interoperability</h2>");
-      out.println("<p><span class=\"boxLinks\">");
-      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#interoperability\">how to read this section</a> ");
-      out.println("  &amp; ");
-      out.println("  <a href=\"IIS Testing Report Detail.html#areaALevel1\">more details</a></span>");
-      out.println("</p>");
+      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#interoperability\">How to read this section...</a></p>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
       out.println("    <th>Test</th>");
@@ -3016,34 +3139,34 @@ public class CertifyRunner extends Thread {
         printTestCaseMessageDetailsUpdate(out, toFile, testCaseMessage);
       }
       out.println("</table>");
+      out.println("<p><a href=\"IIS Testing Report Detail.html#areaALevel1\">See detailed test results</a></p>");
 
       out.println("<div id=\"codedValues\"/>");
       out.println("<h2>Coded Values</h2>");
-      out.println("<p><span class=\"boxLinks\">");
-      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#codedValues\">how to read this section</a> ");
-      out.println("  &amp; ");
-      out.println("  <a href=\"IIS Testing Report Detail.html#areaBLevel1\">more details</a></span>");
-      out.println("</p>");
-      out.println("<table border=\"1\" cellspacing=\"0\">");
-      out.println("  <tr>");
-      out.println("    <th>Test</th>");
-      out.println("    <th>Result</th>");
-      out.println("  </tr>");
-      for (TestCaseMessage testCaseMessage : statusCheckTestCaseIntermediateList) {
-        if (testCaseMessage.isHasRun() && !testCaseMessage.isPassedTest()) {
-          printTestCaseMessageDetailsUpdate(out, toFile, testCaseMessage);
+      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#codedValues\">How to read this section...</a></p>");
+      {
+        if (reportScore[REPORT_2_CODED] == 1.0) {
+          out.println("<p>All coded value messages were accepted. </p>");
+        } else {
+          out.println("<table border=\"1\" cellspacing=\"0\">");
+          out.println("  <tr>");
+          out.println("    <th>Test</th>");
+          out.println("    <th>Result</th>");
+          out.println("  </tr>");
+          for (TestCaseMessage testCaseMessage : statusCheckTestCaseIntermediateList) {
+            if (testCaseMessage.isHasRun() && !testCaseMessage.isPassedTest()) {
+              printTestCaseMessageDetailsUpdate(out, toFile, testCaseMessage);
+            }
+          }
+          out.println("</table>");
         }
       }
-      out.println("</table>");
+      out.println("<p><a href=\"IIS Testing Report Detail.html#areaBLevel1\">See detailed test results</a></p>");
 
       if (areaProgress[SUITE_I_PROFILING][0] > 0) {
         out.println("<div id=\"localRequirements\"/>");
-        out.println("<h2>Local Requirements</h2>");
-        out.println("<p><span class=\"boxLinks\">");
-        out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#localRequirements\">how to read this section</a> ");
-        out.println("  &amp; ");
-        out.println("  <a href=\"IIS Testing Report Detail.html#areaILevel1\">more details</a></span>");
-        out.println("</p>");
+        out.println("<h2>Local Requirement Implementation</h2>");
+        out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#localRequirements\">How to read this section...</a></p>");
         if (reportScore[REPORT_3_LOCAL] == 1.0) {
           out.println("<p>All local requirements tested were confirmed.</p>");
         } else {
@@ -3064,13 +3187,12 @@ public class CertifyRunner extends Thread {
           }
           out.println("</table>");
         }
+        out.println("<p><a href=\"IIS Testing Report Detail.html#areaILevel1\">See detailed test results</a></p>");
 
         if (profileUsageComparisonConformance != null) {
           out.println("<div id=\"nationalCompatibility\"/>");
           out.println("<h2>National Compatibility</h2>");
-          out.println("<p><span class=\"boxLinks\">");
-          out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#nationalCompatibility\">how to read this section</a> </span>");
-          out.println("</p>");
+          out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#nationalCompatibility\">How to read this section...</a> </span></p>");
           printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONFLICT,
               "Local Standard has Major Conflict with National Standards");
           printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONFLICT, "Local Standard Conflicts with National Standards");
@@ -3085,11 +3207,7 @@ public class CertifyRunner extends Thread {
 
       out.println("<div id=\"tolerance\"/>");
       out.println("<h2>Tolerance</h2>");
-      out.println("<p><span class=\"boxLinks\">");
-      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#tolerance\">how to read this section</a> ");
-      out.println("  &amp; ");
-      out.println("  <a href=\"IIS Testing Report Detail.html#areaDLevel1\">more details</a></span>");
-      out.println("</p>");
+      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#tolerance\">How to read this section...</a></p>");
       if (reportScore[REPORT_5_TOLERANCE] == 1.0) {
         out.println("<p>All tolerance messages were accepted. IIS is tolerant of unusual and unexpected message formats or values.</p>");
       } else {
@@ -3105,14 +3223,11 @@ public class CertifyRunner extends Thread {
         }
         out.println("</table>");
       }
+      out.println("<p><a href=\"IIS Testing Report Detail.html#areaDLevel1\">See detailed test results</a></p>");
 
       out.println("<div id=\"ehrExample\"/>");
-      out.println("<h2>EHR Example</h2>");
-      out.println("<p><span class=\"boxLinks\">");
-      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#ehrExamples\">how to read this section</a> ");
-      out.println("  &amp; ");
-      out.println("  <a href=\"IIS Testing Report Detail.html#areaDLevel1\">more details</a></span>");
-      out.println("</p>");
+      out.println("<h2>EHR Examples</h2>");
+      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#ehrExamples\">How to read this section...</a></p>");
       if (reportScore[REPORT_6_EHR] == 1.0) {
         out.println("<p>All EHR sample messages were accepted. </p>");
       } else {
@@ -3128,13 +3243,11 @@ public class CertifyRunner extends Thread {
         }
         out.println("</table>");
       }
-      out.println("<p><a href=\"IIS Testing Report Detail.html#areaDLevel1\">more details</a></p>");
+      out.println("<p><a href=\"IIS Testing Report Detail.html#areaDLevel1\">See detailed test results</a></p>");
 
       out.println("<div id=\"performance\"/>");
       out.println("<h2>Performance</h2>");
-      out.println("<p><span class=\"boxLinks\">");
-      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#performance\">how to read this section</a> </span>");
-      out.println("</p>");
+      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#performance\">How to read this section...</a></p>");
       if (areaScore[SUITE_G_PERFORMANCE][0] < 3000) {
         out.println("    <p>Performance was as fast as normally expected: ");
         out.printf("%.2fs processing time for each update</p>", (areaScore[SUITE_G_PERFORMANCE][0] / 1000.0));
@@ -3145,11 +3258,7 @@ public class CertifyRunner extends Thread {
 
       out.println("<div id=\"acknowledgmentConformance\"/>");
       out.println("<h2>Acknowledgment Conformance</h2>");
-      out.println("<p><span class=\"boxLinks\">");
-      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#acknowledgmentConformance\">how to read this section</a> ");
-      out.println("  &amp; ");
-      out.println("  <a href=\"IIS Testing Report Detail.html#areaHLevel1\">more details</a></span>");
-      out.println("</p>");
+      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#acknowledgmentConformance\">How to read this section...</a></p>");
       if (reportScore[REPORT_6_EHR] == 1.0) {
         out.println("<p>All response messages (ACKs) conformed to expectations.</p>");
       } else {
@@ -3173,6 +3282,9 @@ public class CertifyRunner extends Thread {
           }
         }
       }
+      out.println("<p><a href=\"IIS Testing Report Detail.html#areaHLevel1\">See detailed test results</a></p>");
+      out.println("<div style=\"position: fixed; bottom: 0; right: 0; background-color: red; color: white; font-size: 180%; font-weight: bold; padding-left: 5px; padding-right 5px; \">DRAFT REPORT &#8212; DO NOT DISTRIBUTE</div>");
+
     }
   }
 
@@ -3711,16 +3823,11 @@ public class CertifyRunner extends Thread {
           + "</p>");
     }
     if (areaProgress[SUITE_I_PROFILING][0] > 0) {
+      out.println("<div id=\"areaILevel1\"/>");
       out.println("<h2>Profiling Tests</h2>");
       out.println("<p><b>Purpose</b>: Test to see if the IIS is consistent with interface specification. </p>");
-      out.println("<p><b>Requirements</b>: IIS should implement interface consistent with its own requirements. </p>");
-      out.println("<ul>");
-      out.println("  <li>Level 1: IIS must respond to updates consistent with its interface specification. </li>");
-      out.println("  <li>Level 2: Not yet defined.</li>");
-      out.println("  <li>Level 3: Support IIS has for comparison system. </li>");
-      out.println("</ul>");
+      out.println("<p><b>Requirements</b>: IIS should implement interface consistent with its own stated requirements. </p>");
 
-      out.println("<div id=\"areaILevel1\"/>");
       String segmentName = "";
       for (ProfileLine profileLine : profileLineList) {
         if ((profileLine.getUsage() != Usage.NOT_DEFINED && profileUsage.getCategory() != ProfileCategory.US)
@@ -3806,7 +3913,8 @@ public class CertifyRunner extends Thread {
     }
 
     if (areaProgress[SUITE_D_EXCEPTIONAL][0] > 0) {
-      out.println("<h2>Tolerance and EHR Example Tests</h2>");
+      out.println("<div id=\"areaDLevel1\"/>");
+      out.println("<h2>Tolerance and EHR Examples</h2>");
       out.println("<p><b>Purpose</b>: Test to see if the IIS can allow for minor differences. </p>");
       out.println("<p><b>Requirements</b>: IIS must be able to accept input outside of what the IIS "
           + "expects which does not directly impact HL7 message structure or the quality of core IIS fields. "
@@ -3817,7 +3925,6 @@ public class CertifyRunner extends Thread {
       out.println("  <li>Level 3: The IIS may return all IIS 2013-2017 Core Data that was submitted for Level 1 testing. </li>");
       out.println("</ul>");
 
-      out.println("<div id=\"areaDLevel1\"/>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
       out.println("    <th colspan=\"2\">Tolerance Tests - Level 1 - Allows minor differences</th>");
@@ -3967,7 +4074,164 @@ public class CertifyRunner extends Thread {
       out.println("</table>");
       out.println("</br>");
     }
+  }
 
+  private static class ConsolidateResults {
+    String filename = null;
+    int acceptCount = 0;
+    int notAcceptCount = 0;
+
+    public String makeLink() {
+      return " <font size=\"-1\"><a href=\"" + filename + "\">" + acceptCount + " accepted / " + notAcceptCount + " not accepted</a></font>";
+    }
+  }
+
+  private ConsolidateResults consolidate(TestCaseMessage tcm) throws IOException {
+    ConsolidateResults cr = new ConsolidateResults();
+    String filenameStart = "TCA-" + tcm.getTestCaseCategoryId();
+    cr.filename = filenameStart + ".html";
+    final String filenameEnd = "-" + tcm.getTestCaseCategoryId() + ".part.html";
+    File smmAnalysisDir = ManagerServlet.getSmmAnalysisFolder();
+    File fileOut = new File(smmAnalysisDir, cr.filename);
+    PrintWriter out = new PrintWriter(new FileWriter(fileOut));
+    String[] filePartNames = smmAnalysisDir.list(new FilenameFilter() {
+      public boolean accept(File dir, String name) {
+        return name.startsWith("TCAP-") && name.endsWith(filenameEnd);
+      }
+    });
+    Arrays.sort(filePartNames);
+    String title = "Analysis of " + tcm.getDescription();
+    ClientServlet.printHtmlHeadForFile(out, title);
+    out.println("    <h2>" + title + "</h2>");
+
+    out.println("<h3>Message Sent</h3>");
+    out.println("<p>Here is an example of one of the messages that was submitted to each IIS. (Every IIS "
+        + "received the same message with slightly different data and perhaps additional configurations " + "required by the IIS.)</p>");
+    out.println("<pre>" + tcm.getMessageTextSent() + "</pre>");
+
+    for (String filePartName : filePartNames) {
+      BufferedReader in = new BufferedReader(new FileReader(new File(smmAnalysisDir, filePartName)));
+      String line;
+      while ((line = in.readLine()) != null) {
+        out.println(line);
+        if (line.indexOf("<span class=\"pass\">Accepted</span></h3>") > 0) {
+          cr.acceptCount++;
+        } else if (line.indexOf("<span class=\"fail\">NOT Accepted</span></h3>") > 0) {
+          cr.notAcceptCount++;
+        }
+      }
+      in.close();
+    }
+    ClientServlet.printHtmlFootForFile(out);
+    out.close();
+    return cr;
+  }
+
+  public void printAnalysis(PrintWriter out, boolean toFile) throws IOException {
+
+    if (areaProgress[SUITE_A_BASIC][0] > 0) {
+      out.println("<h2>Basic Interoperability Tests</h2>");
+      out.println("<div id=\"areaALevel1\"/>");
+      out.println("<ul>");
+      for (TestCaseMessage testCaseMessage : statusCheckTestCaseBasicList) {
+        ConsolidateResults cr = consolidate(testCaseMessage);
+        out.println("  <li>" + testCaseMessage.getDescription() + cr.makeLink() + "</li>");
+      }
+      out.println("</ul>");
+    }
+
+    if (areaProgress[SUITE_B_INTERMEDIATE][0] > 0) {
+
+      out.println("<div id=\"areaBLevel1\"/>");
+      out.println("<h2>Intermediate Tests - Level 1 - Accepting Core Data</h2>");
+      String previousFieldName = "";
+      for (TestCaseMessage testCaseMessage : statusCheckTestCaseIntermediateList) {
+        previousFieldName = printTestCaseMessageDetailsUpdateForAnalysis(out, toFile, testCaseMessage, previousFieldName);
+      }
+      if (!previousFieldName.equals("")) {
+        out.println("</ul>");
+      }
+    }
+
+    for (int i = 0; i < areaScore[SUITE_C_ADVANCED].length; i++) {
+      if (profileTestCaseLists[i] == null || areaProgress[SUITE_C_ADVANCED][i] < 100) {
+        continue;
+      }
+
+      int priority = i + 1;
+      out.println("<div id=\"areaCLevel" + priority + "\"/>");
+      if (i == 0) {
+        out.println("    <h2>Advanced Tests - Level " + priority + " - High Priority</h2>");
+      } else if (i == 1) {
+        out.println("    <h2>Advanced Tests - Level " + priority + " - Medium Priority</h2>");
+      } else {
+        out.println("    <h2>Advanced Tests - Level " + priority + " - Low Priority </h2>");
+      }
+      out.println("<ul>");
+      for (TestCaseMessage testCaseMessage : profileTestCaseLists[i]) {
+        ConsolidateResults cr = consolidate(testCaseMessage);
+        out.println("  <li>" + testCaseMessage.getDescription() + cr.makeLink() + "</li>");
+      }
+      out.println("</ul>");
+    }
+    if (areaProgress[SUITE_I_PROFILING][0] > 0) {
+
+      out.println("<div id=\"areaILevel1\"/>");
+      String segmentName = "";
+      for (ProfileLine profileLine : profileLineList) {
+        if ((profileLine.getUsage() != Usage.NOT_DEFINED && profileUsage.getCategory() != ProfileCategory.US)
+            || (profileLine.getTestCaseMessagePresent() != null && profileLine.getTestCaseMessagePresent().hasIssue()
+                && profileLine.getTestCaseMessageAbsent() != null && profileLine.getTestCaseMessageAbsent().hasIssue())) {
+          if (!segmentName.equals(profileLine.getField().getSegmentName())) {
+            if (!segmentName.equals("")) {
+              out.println("</table>");
+            }
+            out.println("<h2>" + profileLine.getField().getSegmentName() + " Segment</h2>");
+            out.println("<table border=\"1\" cellspacing=\"0\">");
+            out.println("  <tr>");
+            out.println("    <th>Field</th>");
+            out.println("    <th>Description</th>");
+            out.println("    <th>Usage</th>");
+            out.println("    <th>Field Present</th>");
+            out.println("    <th>Field Absent</th>");
+            out.println("  </tr>");
+            segmentName = profileLine.getField().getSegmentName();
+          }
+
+          out.println("  <tr>");
+          out.println("    <td>" + profileLine.getField().getFieldName() + "</td>");
+          out.println("    <td>" + profileLine.getField().getDescription() + "</td>");
+          out.println("    <td>" + profileLine.getField().getTestUsage() + "</td>");
+          if (profileLine.getTestCaseMessagePresent() == null) {
+            out.println("    <td>-</td>");
+          } else {
+            ConsolidateResults cr = consolidate(profileLine.getTestCaseMessagePresent());
+            out.println("    <td>" + cr.makeLink() + "</td>");
+          }
+          if (profileLine.getTestCaseMessageAbsent() == null) {
+            out.println("    <td>-</td>");
+          } else {
+            ConsolidateResults cr = consolidate(profileLine.getTestCaseMessageAbsent());
+            out.println("    <td>" + cr.makeLink() + "</td>");
+          }
+          out.println("  </tr>");
+        }
+      }
+      out.println("</table>");
+      out.println("</br>");
+    }
+
+    if (areaProgress[SUITE_D_EXCEPTIONAL][0] > 0) {
+
+      out.println("<div id=\"areaDLevel1\"/>");
+      out.println("<h2>Tolerance Tests - Level 1 - Allows minor differences</h2>");
+      out.println("<ul>");
+      for (TestCaseMessage testCaseMessage : statusCheckTestCaseExceptionalList) {
+        ConsolidateResults cr = consolidate(testCaseMessage);
+        out.println("    <li>" + testCaseMessage.getDescription() + cr.makeLink() + "</li>");
+      }
+      out.println("</ul>");
+    }
   }
 
   public void printTestCaseMessageDetailsQueryOptional(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage) {
@@ -4093,6 +4357,27 @@ public class CertifyRunner extends Thread {
     return fieldName;
   }
 
+  public String printTestCaseMessageDetailsUpdateForAnalysis(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage,
+      String previousFieldName) throws IOException {
+    ConsolidateResults cr = consolidate(testCaseMessage);
+    String fieldName = testCaseMessage.getDescription();
+    String fieldValue = "";
+    int isPos = fieldName.indexOf(" is ");
+    if (isPos != -1) {
+      fieldValue = fieldName.substring(isPos + 4).trim();
+      fieldName = fieldName.substring(0, isPos).trim();
+    }
+    if (!previousFieldName.equals(fieldName)) {
+      if (!previousFieldName.equals("")) {
+        out.println("</ul>");
+      }
+      out.println("<p>" + fieldName + ":</p>");
+      out.println("<ul>");
+    }
+    out.println("    <li>" + fieldValue + cr.makeLink() + "</li>");
+    return fieldName;
+  }
+
   public void printProfileLine(PrintWriter out, boolean toFile, ProfileLine profileLine) {
 
     String profileLineClassText = "nottested";
@@ -4209,18 +4494,17 @@ public class CertifyRunner extends Thread {
         classText = testPassed ? "pass" : "fail";
         if (testPassed) {
           if (testCaseMessage == tcmFull) {
-            out.println("    <td class=\"" + classText + "\">General Test Passed " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile)
-                + "</td>");
+            out.println("    <td class=\"" + classText + "\">Expected Response" + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
           } else {
-            out.println("    <td class=\"" + classText + "\">Specific Test Passed " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile)
-                + "</td>");
+            out.println("    <td class=\"" + classText + "\">Expected Response " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
           }
         } else {
           if (testCaseMessage == tcmFull) {
             out.println("    <td class=\"" + classText + "\">General Test Failed " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile)
                 + "</td>");
           } else {
-            out.println("    <td class=\"" + classText + "\">Test Failed " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+            out.println("    <td class=\"" + classText + "\">Unexpected Response " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile)
+                + "</td>");
           }
         }
 

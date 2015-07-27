@@ -5,6 +5,7 @@ public class ConnectorFactory {
   public static final String TYPE_SOAP = "SOAP";
   public static final String TYPE_POST = "POST";
   public static final String TYPE_IL_WS = "IL WS";
+  public static final String TYPE_MO_SOAP = "MO SOAP";
   public static final String TYPE_NM_SOAP = "NM SOAP";
   public static final String TYPE_HI_SOAP = "HI SOAP";
   public static final String TYPE_ENVISION_SOAP = "Envision SOAP";
@@ -12,7 +13,7 @@ public class ConnectorFactory {
   public static final String TYPE_CA_SOAP = "CA SOAP";
   public static final String TYPE_ND_SOAP = "ND SOAP";
 
-  public static final String[][] TYPES = { { TYPE_SOAP, "SOAP" }, { TYPE_POST, "POST" }, { TYPE_CA_SOAP, "CA SOAP" }, { TYPE_ND_SOAP, "ND SOAP" },
+  public static final String[][] TYPES = { { TYPE_SOAP, "SOAP" }, { TYPE_POST, "POST" }, { TYPE_CA_SOAP, "CA SOAP" }, { TYPE_MO_SOAP, "MO SOAP" },{ TYPE_ND_SOAP, "ND SOAP" },
       { TYPE_NM_SOAP, "NM SOAP" }, { TYPE_ENVISION_SOAP, "Envision SOAP" }, { TYPE_HI_SOAP, "HI SOAP (same standard as SOAP)" },
       { TYPE_IL_WS, "IL WS" } };
 
@@ -32,6 +33,8 @@ public class ConnectorFactory {
       connector = new ORConnector(label, url);
     } else if (type.equals(TYPE_IL_WS)) {
       connector = new ILConnector(label, url);
+    } else if (type.equals(TYPE_MO_SOAP)) {
+      connector = new MOConnector(label, url);
     } else if (type.equals(TYPE_CA_SOAP)) {
       connector = new CASoapConnector(label, url);
     } else if (type.equals(TYPE_ND_SOAP)) {

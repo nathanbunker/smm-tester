@@ -36,6 +36,7 @@ pre {background:#F7F3E8; padding:4px; margin: 2px; }
 .smallTitle {padding-right: 5px; padding-left: 5px; border-style:solid; border-width: 1px; border-color: #747E80;}
 .boxed {border-collapse: collapse; border-width: 1px; border-style: solid; padding-left:5px; padding-right:5px;}
 .different {background:#FF9999;}
+.blank {background-color: #F0F0F0;}
 
 
 a:link.hl7 {    background: #F7F3E8; text-decoration:none;  border-style: solid; border-color: #F7F3E8; border-width: 1px; color: #000;}

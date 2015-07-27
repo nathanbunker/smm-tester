@@ -97,6 +97,7 @@ public class TestCaseMessage
 
   private String testCaseSet = "";
   private String testCaseNumber = "";
+  private String testCaseCategoryId = "";
   private String description = "";
   private String expectedResult = "";
   private String messageText = "";
@@ -134,6 +135,15 @@ public class TestCaseMessage
   private ForecastTestPanel forecastTestPanel = null;
   private String scenario = "";
 
+  public String getTestCaseCategoryId() {
+    return testCaseCategoryId;
+  }
+
+  public void setTestCaseCategoryId(String testCaseCategoryId) {
+    this.testCaseCategoryId = testCaseCategoryId;
+  }
+  
+  
   public String getAdditionalTransformations() {
     return additionalTransformations;
   }

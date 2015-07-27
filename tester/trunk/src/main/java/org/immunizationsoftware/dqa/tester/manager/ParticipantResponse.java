@@ -17,6 +17,15 @@ public class ParticipantResponse {
   private String recordRequirementsStatus = "";
   private String connecttoIISStatus = "";
   private String comments = "";
+  private String guideName = "";
+
+  public String getGuideName() {
+    return guideName;
+  }
+
+  public void setGuideName(String guideName) {
+    this.guideName = guideName;
+  }
 
   public String getOrganizationName() {
     return organizationName;
