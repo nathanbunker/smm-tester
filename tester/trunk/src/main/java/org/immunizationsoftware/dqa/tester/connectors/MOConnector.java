@@ -78,7 +78,8 @@ public class MOConnector extends ORConnector
       debugLog = new StringBuilder();
     }
     try {
-      SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
+      //SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
+      SSLSocketFactory factory = null;
 
       HttpURLConnection urlConn;
       DataOutputStream printout;
@@ -100,20 +101,21 @@ public class MOConnector extends ORConnector
 
       StringBuilder sb = new StringBuilder();
       sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-      sb.append("<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">");
-      sb.append("  <soap12:Header>");
-      sb.append("    <HL7SoapHeader xmlns=\"http://tempuri.org/SMVAX_ProviderInterface_EXT_WS/ProviderInterface_EXT_WS\">");
-      sb.append("      <USERID>" + userid + "</USERID>");
-      sb.append("      <PASSWORD1>" + password + "</PASSWORD1>");
-      sb.append("      <PASSWORD2>" + otherid + "</PASSWORD2>");
-      sb.append("      <FACILITYID>" + facilityid + "</FACILITYID>");
-      sb.append("      <MESSAGEDATA>" + replaceAmpersand(request) + "</MESSAGEDATA>");
-      sb.append("    </HL7SoapHeader>");
-      sb.append("  </soap12:Header>");
-      sb.append("  <soap12:Body>");
-      sb.append("    <SMVHL7VAL_x0028__x0029_ xmlns=\"http://tempuri.org/SMVAX_ProviderInterface_EXT_WS/ProviderInterface_EXT_WS\" />");
-      sb.append("  </soap12:Body>");
-      sb.append("</soap12:Envelope>");
+      sb.append("<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:prov=\"http://tempuri.org/SMVAX_ProviderInterface_EXT_WS/ProviderInterface_EXT_WS\">");
+      sb.append("  <soap:Header>");
+      sb.append("    <prov:HL7SoapHeader>");
+      sb.append("      <prov:USERID>" + userid + "</prov:USERID>");
+      sb.append("      <prov:PASSWORD1>" + password + "</prov:PASSWORD1>");
+      sb.append("      <prov:PASSWORD2>" + otherid + "</prov:PASSWORD2>");
+      sb.append("      <prov:FACILITYID>" + facilityid + "</prov:FACILITYID>");
+      sb.append("      <prov:MESSAGEDATA>" + replaceAmpersand(request) + "</prov:MESSAGEDATA>");
+      sb.append("    </prov:HL7SoapHeader>");
+      sb.append("  </soap:Header>");
+      sb.append("  <soap:Body>");
+      sb.append("    <prov:SMVHL7_x0028__x0029_/>");  // This one works, but has the same ACK for everything I submitted.
+      //sb.append("    <prov:SMVHL7VAL_x0028__x0029_/>");  This one currently times out, but was the suggested one by MO.
+      sb.append("  </soap:Body>");
+      sb.append("</soap:Envelope>");
       
       content = sb.toString();
 
@@ -144,7 +146,7 @@ public class MOConnector extends ORConnector
       }
       return response.toString();
     } catch (IOException e) {
-      if (debug) {
+      if (true) {
         StringWriter stringWriter = new StringWriter();
         PrintWriter out = new PrintWriter(stringWriter);
         out.println("Unable to complete request");
