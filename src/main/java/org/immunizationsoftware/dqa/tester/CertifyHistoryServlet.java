@@ -490,8 +490,8 @@ public class CertifyHistoryServlet extends ClientServlet
             }
           }
           out.println("  </select>");
-          out.println("</p>");
-          out.println("<p>Transport <select name=\"transport\">");
+          out.println("<br/>");
+          out.println("Transport <select name=\"transport\">");
           for (String transportSelect : transportList) {
             if (transport.equals(transportSelect)) {
               out.println("    <option value=\"" + transportSelect + "\" selected=\"true\">" + transportSelect
@@ -511,8 +511,8 @@ public class CertifyHistoryServlet extends ClientServlet
             }
           }
           out.println("  </select>");
-          out.println("</p>");
-          out.println("<p>Phase 1 <select name=\"phase1\">");
+          out.println("<br/>");
+          out.println("Phase 1 <select name=\"phase1\">");
           for (String phase1Select : phase1List) {
             if (phase1.equals(phase1Select)) {
               out.println("    <option value=\"" + phase1Select + "\" selected=\"true\">" + phase1Select + "</option>");
@@ -530,8 +530,8 @@ public class CertifyHistoryServlet extends ClientServlet
             }
           }
           out.println("  </select>");
-          out.println("</p>");
-          out.println("<p>NIST Status <select name=\"nistStatus\">");
+          out.println("<br/>");
+          out.println("NIST Status <select name=\"nistStatus\">");
           for (String nistStatusSelect : nistStatusList) {
             if (nistStatus.equals(nistStatusSelect)) {
               out.println("    <option value=\"" + nistStatus + "\" selected=\"true\">" + nistStatus + "</option>");
@@ -549,6 +549,7 @@ public class CertifyHistoryServlet extends ClientServlet
             }
           }
           out.println("  </select>");
+          out.println("<br/>");
           out.println("<input type=\"submit\" name=\"submit\" value=\"Refresh\"/></p>");
           out.println("<input type=\"hidden\" name=\"view\" value=\"" + view + "\"/>");
           out.println("</form>");

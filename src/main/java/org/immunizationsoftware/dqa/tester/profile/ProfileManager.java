@@ -676,7 +676,7 @@ public class ProfileManager
       case RE_NOT_USED:
         return CompatibilityConformance.CONFLICT;
       case O_NOT_USED:
-        return CompatibilityConformance.CONFLICT;
+        return CompatibilityConformance.COMPATIBLE;
       case X_NOT_ENFORCED:
         return CompatibilityConformance.COMPATIBLE;
       default:
