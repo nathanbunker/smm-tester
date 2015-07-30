@@ -105,6 +105,10 @@ public class TestCaseMessageViewerServlet extends ClientServlet
     out.println("<h3>Message Sent</h3>");
     out.println("<pre>" + testCaseMessage.getMessageTextSent() + "</pre>");
 
+    if (!testCaseMessage.getAdditionalTransformations().equals("")) {
+      out.println("<h4>Additional Transformations Applied</h4>");
+      out.println("<pre>" + testCaseMessage.getAdditionalTransformations() + "</pre>");
+    }
     if (testCaseMessage.isHasRun()) {
       if (testCaseMessage.getActualMessageResponseType().equals("ACK")) {
         if (testCaseMessage.isAccepted()) {
@@ -116,6 +120,11 @@ public class TestCaseMessageViewerServlet extends ClientServlet
         out.println("<h3>Response Received</h3>");
       }
       out.println("<pre>" + testCaseMessage.getActualResponseMessage() + "</pre>");
+      if (!testCaseMessage.getMessageAcceptStatusDebug().equals("")) {
+        out.println("<h4>Logic For Expectation</h4>");
+        out.println("<pre>" + testCaseMessage.getMessageAcceptStatusDebug() + "</pre>");
+      }
+
     }
 
     List<Comparison> comparisonList = CompareManager.compareMessages(testCaseMessage.getMessageText(),

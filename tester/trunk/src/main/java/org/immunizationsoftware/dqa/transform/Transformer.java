@@ -672,7 +672,11 @@ public class Transformer
           quickTransforms += "MSH-11=P\n";
           quickTransforms += "MSH-12=2.5.1\n";
           quickTransforms += "PID-1=1\n";
-          quickTransforms += "PID-3.1=" + actualTestCase + "\n";
+          if (actualTestCase.length() > 15) {
+            quickTransforms += "PID-3.1=" + actualTestCase.substring(actualTestCase.length() - 15) + "\n";
+          } else {
+            quickTransforms += "PID-3.1=" + actualTestCase + "\n";
+          }
           quickTransforms += "PID-3.4=AIRA-TEST\n";
           quickTransforms += "PID-3.5=MR\n";
           quickTransforms += "NK1-1=1\n";
@@ -706,7 +710,11 @@ public class Transformer
           quickTransforms += "MSH-11=P\n";
           quickTransforms += "MSH-12=2.3.1\n";
           quickTransforms += "PID-1=1\n";
-          quickTransforms += "PID-3.1=" + actualTestCase + "\n";
+          if (actualTestCase.length() > 15) {
+            quickTransforms += "PID-3.1=" + actualTestCase.substring(actualTestCase.length() - 15) + "\n";
+          } else {
+            quickTransforms += "PID-3.1=" + actualTestCase + "\n";
+          }
           quickTransforms += "PID-3.5=MR\n";
           quickTransforms += "NK1-1=1\n";
           quickTransforms += "NK1#2-1=2\n";
@@ -1358,8 +1366,7 @@ public class Transformer
                       }
                       tildeEndPos = nextTilde;
                       if (tildeStartPos == 0) {
-                        if (tildeEndPos < fieldOriginal.length())
-                        {
+                        if (tildeEndPos < fieldOriginal.length()) {
                           tildeEndPos++;
                         }
                         fieldFinal = fieldOriginal.substring(tildeEndPos);
@@ -1406,8 +1413,7 @@ public class Transformer
                     if (foundIt) {
                       tildeEndPos = nextTilde;
                       if (tildeStartPos == 0) {
-                        if (tildeEndPos < fieldOriginal.length())
-                        {
+                        if (tildeEndPos < fieldOriginal.length()) {
                           tildeEndPos++;
                         }
                         fieldFinal = fieldOriginal.substring(tildeEndPos);
@@ -1434,13 +1440,13 @@ public class Transformer
     line = line.substring(INSERT_SEGMENT.length()).trim();
     if (line.length() > 3 && line.indexOf(" ") == 3) {
       String newSegmentName = line.substring(0, 3);
-      boolean okayToInsertSegment = true;
+      boolean insertIfMissing = false;
       int segmentIfMissingPos = line.indexOf(INSERT_SEGMENT_IF_MISSING);
       if (segmentIfMissingPos > 0) {
-        okayToInsertSegment = !hasSegment(newSegmentName, resultText);
+        insertIfMissing = true;
         line = line.substring(0, segmentIfMissingPos - 1);
       }
-      if (okayToInsertSegment) {
+      {
         if (newSegmentName.equals("FHS") || newSegmentName.equals("BHS")) {
           BufferedReader inResult = new BufferedReader(new StringReader(resultText));
           String lineResult;
@@ -1487,6 +1493,7 @@ public class Transformer
           } else {
             newSegmentName += "|^~\\&";
           }
+          inResult.close();
         }
         line = line.substring(3).trim();
         int nextSpace = line.indexOf(" ");
@@ -1508,7 +1515,6 @@ public class Transformer
           } else {
             try {
               repeatPos = Integer.parseInt(line.substring(poundPos + 1).trim());
-
             } catch (NumberFormatException nfe) {
               repeatPos = 1;
             }
@@ -1516,9 +1522,12 @@ public class Transformer
           }
           BufferedReader inResult = new BufferedReader(new StringReader(resultText));
           resultText = "";
+          String lineResultPrevious = "";
           String lineResult;
+          String lineResultPeak = inResult.readLine();
           int repeatCount = 0;
-          while ((lineResult = inResult.readLine()) != null) {
+          while ((lineResult = lineResultPeak) != null) {
+            lineResultPeak = inResult.readLine();
             lineResult = lineResult.trim();
             if (lineResult.length() > 0) {
               if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_AFTER)) {
@@ -1527,14 +1536,26 @@ public class Transformer
               if (lineResult.startsWith(line)) {
                 repeatCount++;
                 if (repeatCount == repeatPos) {
-                  resultText += newSegmentName + "|" + transformRequest.getSegmentSeparator();
+                  boolean okayToInsert = true;
+                  if (insertIfMissing) {
+                    if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_AFTER)) {
+                      okayToInsert = lineResultPeak == null || !lineResultPeak.startsWith(newSegmentName);
+                    } else if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_BEFORE)) {
+                      okayToInsert = !lineResultPrevious.startsWith(newSegmentName);
+                    }
+                  }
+                  if (okayToInsert) {
+                    resultText += newSegmentName + "|" + transformRequest.getSegmentSeparator();
+                  }
                 }
               }
               if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_BEFORE)) {
                 resultText += lineResult + transformRequest.getSegmentSeparator();
               }
             }
+            lineResultPrevious = lineResult;
           }
+          inResult.close();
         }
       }
     }
