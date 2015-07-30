@@ -12,6 +12,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.immunizationsoftware.dqa.tester.profile.ProfileUsageValue;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestCase;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
 
@@ -134,7 +135,18 @@ public class TestCaseMessage
   private ForecastTestCase forecastTestCase = null;
   private ForecastTestPanel forecastTestPanel = null;
   private String scenario = "";
+  private String messageAcceptStatusDebug = "";
 
+  public String getMessageAcceptStatusDebug() {
+    return messageAcceptStatusDebug;
+  }
+
+  public void setMessageAcceptStatusDebug(String messageAcceptStatusDebug) {
+    this.messageAcceptStatusDebug = messageAcceptStatusDebug;
+  }
+
+
+  
   public String getTestCaseCategoryId() {
     return testCaseCategoryId;
   }

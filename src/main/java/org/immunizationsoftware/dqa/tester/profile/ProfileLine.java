@@ -13,8 +13,17 @@ public class ProfileLine
   private boolean hasRun = false;
   private MessageAcceptStatus messageAcceptStatus = null;
   private MessageAcceptStatus messageAcceptStatusDetected = null;
+  private String messageAcceptStatusDebug = "";
   private ProfileUsageValue profileUsageValue = null;
-  
+
+  public String getMessageAcceptStatusDebug() {
+    return messageAcceptStatusDebug;
+  }
+
+  public void setMessageAcceptStatusDebug(String messageAcceptStatusDebug) {
+    this.messageAcceptStatusDebug = messageAcceptStatusDebug;
+  }
+
   public Usage getUsageDetected() {
     return usageDetected;
   }
@@ -23,8 +32,7 @@ public class ProfileLine
     this.usageDetected = usageDetected;
   }
 
-  public ProfileLine(ProfileUsageValue profileUsageValue)
-  {
+  public ProfileLine(ProfileUsageValue profileUsageValue) {
     this.profileUsageValue = profileUsageValue;
   }
 
@@ -99,9 +107,5 @@ public class ProfileLine
   public void setUsage(String usageString) {
     this.usage = Usage.readUsage(usageString);
   }
-
-  
-
-  
 
 }

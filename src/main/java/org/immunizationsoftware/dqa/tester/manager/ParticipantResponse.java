@@ -18,6 +18,33 @@ public class ParticipantResponse {
   private String connecttoIISStatus = "";
   private String comments = "";
   private String guideName = "";
+  private String transport = "";
+  private String querySupport = "";
+  private String nistStatus = "";
+
+  public String getTransport() {
+    return transport;
+  }
+
+  public void setTransport(String transport) {
+    this.transport = transport;
+  }
+
+  public String getQuerySupport() {
+    return querySupport;
+  }
+
+  public void setQuerySupport(String querySupport) {
+    this.querySupport = querySupport;
+  }
+
+  public String getNistStatus() {
+    return nistStatus;
+  }
+
+  public void setNistStatus(String nistStatus) {
+    this.nistStatus = nistStatus;
+  }
 
   public String getGuideName() {
     return guideName;

@@ -22,7 +22,8 @@ import org.immunizationsoftware.dqa.mover.ManagerServlet;
 import org.immunizationsoftware.dqa.tester.manager.CvsReader;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 
-public class ProfileManager {
+public class ProfileManager
+{
 
   public static final String USE_FULL_TEST_CASE = "Use Full Test Case";
   private static final String ABSENT = " Absent";
@@ -42,7 +43,8 @@ public class ProfileManager {
 
   public ProfileManager() throws IOException {
     readProfileFields(ManagerServlet.getRequirementTestFieldsFile());
-    profileUsageList = ProfileManager.readProfileUsage(ManagerServlet.getRequirementTestProfileFileSet(), profileFieldList);
+    profileUsageList = ProfileManager.readProfileUsage(ManagerServlet.getRequirementTestProfileFileSet(),
+        profileFieldList);
     ProfileManager.readTransforms(ManagerServlet.getRequirementTestTransformsFile(), profileFieldList);
   }
 
@@ -50,7 +52,8 @@ public class ProfileManager {
     return createProfileLines(profileFieldList, profileUsage, includeDataType);
   }
 
-  public static List<ProfileLine> createProfileLines(List<ProfileField> profileFieldList, ProfileUsage profileUsage, boolean includeDataType) {
+  public static List<ProfileLine> createProfileLines(List<ProfileField> profileFieldList, ProfileUsage profileUsage,
+      boolean includeDataType) {
     List<ProfileLine> profileLineList = new ArrayList<ProfileLine>();
     for (ProfileField profileField : profileFieldList) {
       if (profileField.isDataType() && !includeDataType) {
@@ -115,7 +118,8 @@ public class ProfileManager {
     writeTransforms(ManagerServlet.getRequirementTestTransformsFile(), profileFieldList);
   }
 
-  public static void writeTransforms(File profileTransformFile, List<ProfileField> profileFieldList) throws FileNotFoundException, IOException {
+  public static void writeTransforms(File profileTransformFile, List<ProfileField> profileFieldList)
+      throws FileNotFoundException, IOException {
     PrintWriter out = new PrintWriter(new FileWriter(profileTransformFile));
     for (ProfileField profileField : profileFieldList) {
       out.println("======================================================================");
@@ -130,7 +134,8 @@ public class ProfileManager {
     out.close();
   }
 
-  public static void readTransforms(File profileTransformFile, List<ProfileField> profileFieldList) throws FileNotFoundException, IOException {
+  public static void readTransforms(File profileTransformFile, List<ProfileField> profileFieldList)
+      throws FileNotFoundException, IOException {
     Map<String, ProfileField> profileFieldMap = new HashMap<String, ProfileField>();
     for (ProfileField profileField : profileFieldList) {
       profileFieldMap.put(profileField.getFieldName().toUpperCase(), profileField);
@@ -215,8 +220,8 @@ public class ProfileManager {
     }
   }
 
-  public static List<ProfileUsage> readProfileUsage(Set<ProfileUsage> requirementTestProfileFileSet, List<ProfileField> profileFieldList)
-      throws FileNotFoundException, IOException {
+  public static List<ProfileUsage> readProfileUsage(Set<ProfileUsage> requirementTestProfileFileSet,
+      List<ProfileField> profileFieldList) throws FileNotFoundException, IOException {
     List<ProfileUsage> profileUsageList = new ArrayList<ProfileUsage>();
 
     List<ProfileUsage> profileUsageToLoad = new ArrayList<ProfileUsage>(requirementTestProfileFileSet);
@@ -288,22 +293,24 @@ public class ProfileManager {
       fieldName = profileField.getSegmentName() + "-" + profileField.getPosInSegment();
       break;
     case FIELD_PART:
-      fieldName = profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "." + profileField.getPosInField();
+      fieldName = profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "."
+          + profileField.getPosInField();
       break;
     case FIELD_PART_VALUE:
-      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "." + profileField.getPosInField() + " " + profileField
-          .getCodeValue());
+      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "."
+          + profileField.getPosInField() + " " + profileField.getCodeValue());
       break;
     case FIELD_SUB_PART:
-      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "." + profileField.getPosInField() + "." + profileField
-          .getPosInSubField());
+      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "."
+          + profileField.getPosInField() + "." + profileField.getPosInSubField());
       break;
     case FIELD_SUB_PART_VALUE:
-      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "." + profileField.getPosInField() + "."
-          + profileField.getPosInSubField() + " " + profileField.getCodeValue());
+      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "."
+          + profileField.getPosInField() + "." + profileField.getPosInSubField() + " " + profileField.getCodeValue());
       break;
     case FIELD_VALUE:
-      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + " " + profileField.getCodeValue());
+      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + " " + profileField
+          .getCodeValue());
       break;
     case SEGMENT:
       fieldName = (profileField.getSegmentName());
@@ -466,52 +473,96 @@ public class ProfileManager {
     MessageAcceptStatus masField = null;
     MessageAcceptStatus masFieldPart = null;
     MessageAcceptStatus masFieldSubPart = null;
+    String masSegmentDebug = "";
+    String masFieldDebug = "";
+    String masFieldPartDebug = "";
+    String masFieldSubPartDebug = "";
     for (ProfileLine profileLine : profileLineList) {
+      StringBuilder debug = new StringBuilder();
       ProfileField field = profileLine.getField();
       if (field.isDataType()) {
         continue;
       } else if (field.getType() == ProfileFieldType.SEGMENT) {
-        masSegment = determineMessageAcceptStatus(profileLine, MessageAcceptStatus.ONLY_IF_PRESENT);
+        masSegment = determineMessageAcceptStatus(profileLine, MessageAcceptStatus.ONLY_IF_PRESENT, debug);
         profileLine.setMessageAcceptStatus(masSegment);
+        masSegmentDebug = debug.toString();
       } else if (field.getType() == ProfileFieldType.FIELD) {
-        masField = determineMessageAcceptStatus(profileLine, masSegment);
+        debug.append(masSegmentDebug);
+        masField = determineMessageAcceptStatus(profileLine, masSegment, debug);
         profileLine.setMessageAcceptStatus(masField);
+        masFieldDebug = debug.toString();
       } else if (field.getType() == ProfileFieldType.FIELD_PART) {
-        masFieldPart = determineMessageAcceptStatus(profileLine, masField);
+        debug.append(masFieldDebug);
+        masFieldPart = determineMessageAcceptStatus(profileLine, masField, debug);
         profileLine.setMessageAcceptStatus(masFieldPart);
+        masFieldPartDebug = debug.toString();
       } else if (field.getType() == ProfileFieldType.FIELD_SUB_PART) {
-        masFieldSubPart = determineMessageAcceptStatus(profileLine, masFieldPart);
+        debug.append(masFieldPartDebug);
+        masFieldSubPart = determineMessageAcceptStatus(profileLine, masFieldPart, debug);
         profileLine.setMessageAcceptStatus(masFieldSubPart);
+        masFieldSubPartDebug = debug.toString();
       } else if (field.getType() == ProfileFieldType.FIELD_VALUE) {
-        profileLine.setMessageAcceptStatus(determineMessageAcceptStatus(profileLine, masField));
+        debug.append(masFieldSubPartDebug);
+        profileLine.setMessageAcceptStatus(determineMessageAcceptStatus(profileLine, masField, debug));
       } else if (field.getType() == ProfileFieldType.FIELD_PART_VALUE) {
-        profileLine.setMessageAcceptStatus(determineMessageAcceptStatus(profileLine, masFieldPart));
+        debug.append(masFieldDebug);
+        profileLine.setMessageAcceptStatus(determineMessageAcceptStatus(profileLine, masFieldPart, debug));
       } else if (field.getType() == ProfileFieldType.FIELD_SUB_PART_VALUE) {
-        profileLine.setMessageAcceptStatus(determineMessageAcceptStatus(profileLine, masFieldSubPart));
+        debug.append(masFieldPartDebug);
+        profileLine.setMessageAcceptStatus(determineMessageAcceptStatus(profileLine, masFieldSubPart, debug));
       }
+      if (profileLine.getMessageAcceptStatus() == MessageAcceptStatus.ONLY_IF_PRESENT) {
+        debug.append("Accept only if present: Message is only accepted when this concept is valued. ");
+      } else if (profileLine.getMessageAcceptStatus() == MessageAcceptStatus.IF_PRESENT_OR_ABSENT) {
+        debug.append("Accept if present or absent: Message is accepted whether or not this concept is valued. ");
+      } else if (profileLine.getMessageAcceptStatus() == MessageAcceptStatus.ONLY_IF_ABSENT) {
+        debug.append("Accept only if absent: Message is accepted only if this concept is left unvalued. ");
+      }
+      debug.append("");
+      profileLine.setMessageAcceptStatusDebug(debug.toString());
     }
   }
 
-  public static MessageAcceptStatus determineMessageAcceptStatus(ProfileLine profileLine, MessageAcceptStatus masHigher) {
+  public static MessageAcceptStatus determineMessageAcceptStatus(ProfileLine profileLine,
+      MessageAcceptStatus masHigher, StringBuilder debug) {
+    if (debug != null) {
+      debug.append("Determining accept status of concept " + profileLine.getField().getFieldName() + "\n");
+    }
     MessageAcceptStatus mas = null;
     Usage usage = profileLine.getUsage();
+    debug.append(" + Usage = " + usage + " \n");
     if (usage == Usage.NOT_DEFINED) {
       usage = profileLine.getField().getTestUsage();
+      if (debug != null) {
+        debug.append(" + Usage is not defined, taking usage from base standard. Usage = " + usage + " \n");
+      }
+    }
+    if (masHigher == MessageAcceptStatus.ONLY_IF_PRESENT) {
+      debug.append(" + Containing concept: Required or message will not be accepted. \n");
+    } else if (masHigher == MessageAcceptStatus.IF_PRESENT_OR_ABSENT) {
+      debug.append(" + Containing concept: Optional, may or may not be sent and message will still be accepted. \n");
+    } else if (masHigher == MessageAcceptStatus.ONLY_IF_ABSENT) {
+      debug.append(" + Containing concept: Must never be sent or message will not be accepted. \n");
     }
     if (usage == Usage.R_SPECIAL) {
+      debug
+          .append(" + Message will only be accepted if this concept is present when any part of the containing concept is messaged even though this containing concept is optional. \n");
       mas = MessageAcceptStatus.ONLY_IF_PRESENT;
     } else if (masHigher == MessageAcceptStatus.ONLY_IF_ABSENT || usage == Usage.X) {
+      debug.append(" + Message will only be accepted if this concept is not messaged. \n");
       mas = MessageAcceptStatus.ONLY_IF_ABSENT;
     } else if (masHigher == MessageAcceptStatus.ONLY_IF_PRESENT && usage == Usage.R) {
+      debug
+          .append(" + Message will only be accepted if this concept is messaged because this concept and its containing concept is required. \n");
       mas = MessageAcceptStatus.ONLY_IF_PRESENT;
     } else {
+      debug.append(" + Message should be accepted with or without this concept being messaged. \n");
       mas = MessageAcceptStatus.IF_PRESENT_OR_ABSENT;
     }
     return mas;
   }
 
-  public static CompatibilityConformance getCompatibilityConformance(Usage profileUsage,
-      Usage profileUsageConformance) {
+  public static CompatibilityConformance getCompatibilityConformance(Usage profileUsage, Usage profileUsageConformance) {
 
     switch (profileUsageConformance) {
     case R:
