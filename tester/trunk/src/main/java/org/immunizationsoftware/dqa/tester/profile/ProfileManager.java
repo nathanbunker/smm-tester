@@ -63,6 +63,8 @@ public class ProfileManager
       if (profileUsageValue == null) {
         profileUsageValue = new ProfileUsageValue();
         profileUsageValue.setUsage(Usage.NOT_DEFINED);
+        profileUsageValue.setEnforcement(Enforcement.NOT_DEFINED);
+        profileUsageValue.setImplementation(Implementation.NOT_DEFINED);
         profileUsage.getProfileUsageValueMap().put(profileField, profileUsageValue);
       }
       ProfileLine profileLine = new ProfileLine(profileUsageValue);
@@ -189,7 +191,7 @@ public class ProfileManager
 
   public void saveProfileUsage(ProfileUsage profileUsage, List<ProfileLine> profileLineList) throws IOException {
     PrintWriter out = new PrintWriter(profileUsage.getFile());
-    out.println("Field Name,Usage,Value,Comments,Notes,Usage Detected");
+    out.println("Field Name,Usage,Value,Comments,Notes,Usage Detected,Enforcement,Implementation");
     try {
       for (ProfileLine profileLine : profileLineList) {
 
@@ -206,12 +208,20 @@ public class ProfileManager
           out.print("\",");
           out.print("\"");
           out.print(profileUsageValue.getComments().replace('"', '\''));
-          out.println("\"");
+          out.print("\",");
           out.print("\"");
           out.print(profileUsageValue.getNotes().replace('"', '\''));
           out.print("\",");
           out.print("\"");
-          out.print(profileUsageValue.getUsageDetected());
+          if (profileUsageValue.getUsageDetected() != null) {
+            out.print(profileUsageValue.getUsageDetected());
+          }
+          out.print("\",");
+          out.print("\"");
+          out.print(profileUsageValue.getEnforcement());
+          out.print("\",");
+          out.print("\"");
+          out.print(profileUsageValue.getImplementation());
           out.println("\"");
         }
       }
@@ -256,12 +266,17 @@ public class ProfileManager
           String usageComments = CvsReader.readValue(3, valueList);
           String usageNotes = CvsReader.readValue(4, valueList);
           String usageDetectedString = CvsReader.readValue(5, valueList);
+          String enforcementString = CvsReader.readValue(6, valueList);
+          String implementationString = CvsReader.readValue(7, valueList);
           ProfileUsageValue profileUsageValue = profileUsage.getProfileUsageValueMap().get(profileField);
           if (profileUsageValue == null) {
             profileUsageValue = new ProfileUsageValue();
             profileUsage.getProfileUsageValueMap().put(profileField, profileUsageValue);
           }
+          profileUsageValue.setUsageDetected(Usage.readUsage(usageDetectedString));
           profileUsageValue.setUsage(Usage.readUsage(usageString.toUpperCase()));
+          profileUsageValue.setEnforcement(Enforcement.readEnforcement(enforcementString));
+          profileUsageValue.setImplementation(Implementation.readImplementation(implementationString));
           profileUsageValue.setValue(usageValue);
           profileUsageValue.setComments(usageComments);
           profileUsageValue.setNotes(usageNotes);

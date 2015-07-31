@@ -22,6 +22,8 @@ import javax.servlet.http.HttpSession;
 import org.eclipse.jetty.server.Request;
 import org.immunizationsoftware.dqa.tester.profile.CompatibilityConformance;
 import org.immunizationsoftware.dqa.tester.profile.CompatibilityInteroperability;
+import org.immunizationsoftware.dqa.tester.profile.Enforcement;
+import org.immunizationsoftware.dqa.tester.profile.Implementation;
 import org.immunizationsoftware.dqa.tester.profile.MessageAcceptStatus;
 import org.immunizationsoftware.dqa.tester.profile.ProfileField;
 import org.immunizationsoftware.dqa.tester.profile.ProfileFieldType;
@@ -33,7 +35,8 @@ import org.immunizationsoftware.dqa.tester.profile.Usage;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 import org.immunizationsoftware.dqa.transform.Transformer;
 
-public class ProfileServlet extends ClientServlet {
+public class ProfileServlet extends ClientServlet
+{
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -99,7 +102,8 @@ public class ProfileServlet extends ClientServlet {
               for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
                 i++;
                 if (profileUsageId == i) {
-                  out.println("              <option value=\"" + i + "\" selected=\"true\">" + profileUsage + "</option>");
+                  out.println("              <option value=\"" + i + "\" selected=\"true\">" + profileUsage
+                      + "</option>");
                   profileUsageSelected = profileUsage;
                 } else {
                   out.println("              <option value=\"" + i + "\">" + profileUsage + "</option>");
@@ -125,7 +129,8 @@ public class ProfileServlet extends ClientServlet {
               for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
                 i++;
                 if (profileUsageIdCompare == i) {
-                  out.println("              <option value=\"" + i + "\" selected=\"true\">" + profileUsage + "</option>");
+                  out.println("              <option value=\"" + i + "\" selected=\"true\">" + profileUsage
+                      + "</option>");
                   profileUsageCompare = profileUsage;
                 } else {
                   out.println("              <option value=\"" + i + "\">" + profileUsage + "</option>");
@@ -137,9 +142,11 @@ public class ProfileServlet extends ClientServlet {
             out.println("          <td>");
             String checked = "";
             checked = comparisonType.equals("C") ? " checked=\"checked\"" : "";
-            out.println("            <input type=\"radio\" name=\"comparisonType\" value=\"C\"" + checked + "> Conformance");
+            out.println("            <input type=\"radio\" name=\"comparisonType\" value=\"C\"" + checked
+                + "> Conformance");
             checked = comparisonType.equals("I") ? " checked=\"checked\"" : "";
-            out.println("            <input type=\"radio\" name=\"comparisonType\" value=\"I\"" + checked + "> Interoperability");
+            out.println("            <input type=\"radio\" name=\"comparisonType\" value=\"I\"" + checked
+                + "> Interoperability");
             out.println("            <input type=\"submit\" name=\"show\" value=\"Compare\"/>");
             out.println("          </td>");
             out.println("        </tr>");
@@ -160,10 +167,11 @@ public class ProfileServlet extends ClientServlet {
 
                 Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap = new HashMap<CompatibilityConformance, List<ProfileLine>>();
                 for (ProfileLine profileLine : profileLineList) {
-                  ProfileUsageValue profileUsageValueConformance = profileUsageCompare.getProfileUsageValueMap().get(profileLine.getField());
+                  ProfileUsageValue profileUsageValueConformance = profileUsageCompare.getProfileUsageValueMap().get(
+                      profileLine.getField());
                   if (profileUsageValueConformance != null) {
-                    CompatibilityConformance compatibility = ProfileManager.getCompatibilityConformance(
-                        profileLine.getProfileUsageValue().getUsage(), profileUsageValueConformance.getUsage());
+                    CompatibilityConformance compatibility = ProfileManager.getCompatibilityConformance(profileLine
+                        .getProfileUsageValue().getUsage(), profileUsageValueConformance.getUsage());
                     List<ProfileLine> pll = compatibilityMap.get(compatibility);
                     if (pll == null) {
                       pll = new ArrayList<ProfileLine>();
@@ -173,7 +181,8 @@ public class ProfileServlet extends ClientServlet {
                   }
                 }
 
-                out.println("<h2>Conformance of " + profileUsageSelected + " in regards to " + profileUsageCompare + "</h2>");
+                out.println("<h2>Conformance of " + profileUsageSelected + " in regards to " + profileUsageCompare
+                    + "</h2>");
                 out.println("<table border=\"1\" cellspacing=\"0\">");
                 out.println("  <tr>");
                 out.println("    <th>Conformance</th>");
@@ -188,22 +197,26 @@ public class ProfileServlet extends ClientServlet {
                 printTotalRow(out, compatibilityMap, CompatibilityConformance.NOT_DEFINED);
                 out.println("</table>");
 
-                printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONFLICT, profileUsageSelected,
-                    profileUsageCompare);
-                printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONFLICT, profileUsageSelected, profileUsageCompare);
-                printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONSTRAINT, profileUsageSelected,
-                    profileUsageCompare);
-                printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONSTRAINT, profileUsageSelected, profileUsageCompare);
-                printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.ALLOWANCE, profileUsageSelected, profileUsageCompare);
-                printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.UNABLE_TO_DETERMINE, profileUsageSelected,
-                    profileUsageCompare);
+                printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONFLICT,
+                    profileUsageSelected, profileUsageCompare);
+                printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONFLICT,
+                    profileUsageSelected, profileUsageCompare);
+                printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONSTRAINT,
+                    profileUsageSelected, profileUsageCompare);
+                printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONSTRAINT,
+                    profileUsageSelected, profileUsageCompare);
+                printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.ALLOWANCE,
+                    profileUsageSelected, profileUsageCompare);
+                printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.UNABLE_TO_DETERMINE,
+                    profileUsageSelected, profileUsageCompare);
               } else {
                 Map<CompatibilityInteroperability, List<ProfileLine>> compatibilityMap = new HashMap<CompatibilityInteroperability, List<ProfileLine>>();
                 for (ProfileLine profileLine : profileLineList) {
-                  ProfileUsageValue profileUsageValueConformance = profileUsageCompare.getProfileUsageValueMap().get(profileLine.getField());
+                  ProfileUsageValue profileUsageValueConformance = profileUsageCompare.getProfileUsageValueMap().get(
+                      profileLine.getField());
                   if (profileUsageValueConformance != null) {
-                    CompatibilityInteroperability compatibility = ProfileManager.getCompatibilityInteroperability(profileLine.getProfileUsageValue(),
-                        profileUsageValueConformance);
+                    CompatibilityInteroperability compatibility = ProfileManager.getCompatibilityInteroperability(
+                        profileLine.getProfileUsageValue(), profileUsageValueConformance);
                     List<ProfileLine> pll = compatibilityMap.get(compatibility);
                     if (pll == null) {
                       pll = new ArrayList<ProfileLine>();
@@ -213,7 +226,8 @@ public class ProfileServlet extends ClientServlet {
                   }
                 }
 
-                out.println("<h2>Interoperability of " + profileUsageSelected + " with " + profileUsageCompare + "</h2>");
+                out.println("<h2>Interoperability of " + profileUsageSelected + " with " + profileUsageCompare
+                    + "</h2>");
                 out.println("<table border=\"1\" cellspacing=\"0\">");
                 out.println("  <tr>");
                 out.println("    <th>Conformance</th>");
@@ -228,16 +242,16 @@ public class ProfileServlet extends ClientServlet {
                 printTotalRow(out, compatibilityMap, CompatibilityInteroperability.MAJOR_PROBLEM);
                 out.println("</table>");
 
-                printConformanceInteroperability(out, compatibilityMap, CompatibilityInteroperability.MAJOR_PROBLEM, profileUsageSelected,
-                    profileUsageCompare);
-                printConformanceInteroperability(out, compatibilityMap, CompatibilityInteroperability.PROBLEM, profileUsageSelected,
-                    profileUsageCompare);
-                printConformanceInteroperability(out, compatibilityMap, CompatibilityInteroperability.IF_CONFIGURED, profileUsageSelected,
-                    profileUsageCompare);
-                printConformanceInteroperability(out, compatibilityMap, CompatibilityInteroperability.IF_POPULATED, profileUsageSelected,
-                    profileUsageCompare);
-                printConformanceInteroperability(out, compatibilityMap, CompatibilityInteroperability.DATA_LOSS, profileUsageSelected,
-                    profileUsageCompare);
+                printConformanceInteroperability(out, compatibilityMap, CompatibilityInteroperability.MAJOR_PROBLEM,
+                    profileUsageSelected, profileUsageCompare);
+                printConformanceInteroperability(out, compatibilityMap, CompatibilityInteroperability.PROBLEM,
+                    profileUsageSelected, profileUsageCompare);
+                printConformanceInteroperability(out, compatibilityMap, CompatibilityInteroperability.IF_CONFIGURED,
+                    profileUsageSelected, profileUsageCompare);
+                printConformanceInteroperability(out, compatibilityMap, CompatibilityInteroperability.IF_POPULATED,
+                    profileUsageSelected, profileUsageCompare);
+                printConformanceInteroperability(out, compatibilityMap, CompatibilityInteroperability.DATA_LOSS,
+                    profileUsageSelected, profileUsageCompare);
               }
             }
           } else if (show.equals("View")) {
@@ -316,8 +330,10 @@ public class ProfileServlet extends ClientServlet {
                     if (profileLine.getUsage() != Usage.NOT_DEFINED) {
                       out.println("  <tr>");
                       out.println("    <td>" + profileField.getFieldName() + "</td>");
-                      if (profileField.getType() == ProfileFieldType.FIELD_PART || profileField.getType() == ProfileFieldType.FIELD_SUB_PART
-                          || profileField.getType() == ProfileFieldType.FIELD_VALUE || profileField.getType() == ProfileFieldType.FIELD_PART_VALUE
+                      if (profileField.getType() == ProfileFieldType.FIELD_PART
+                          || profileField.getType() == ProfileFieldType.FIELD_SUB_PART
+                          || profileField.getType() == ProfileFieldType.FIELD_VALUE
+                          || profileField.getType() == ProfileFieldType.FIELD_PART_VALUE
                           || profileField.getType() == ProfileFieldType.FIELD_SUB_PART_VALUE) {
                         out.println("    <td>&nbsp;" + profileField.getDescription() + "</td>");
                       } else {
@@ -332,8 +348,10 @@ public class ProfileServlet extends ClientServlet {
                       } else {
                         out.println("    <td>-</td>");
                       }
-                      String link = "ProfileServlet?show=transforms&fieldName=" + URLEncoder.encode(profileField.getFieldName(), "UTF-8");
-                      if (!profileLine.getField().isTransformPresentDefined() || !profileLine.getField().isTransformAbsentDefined()) {
+                      String link = "ProfileServlet?show=transforms&fieldName="
+                          + URLEncoder.encode(profileField.getFieldName(), "UTF-8");
+                      if (!profileLine.getField().isTransformPresentDefined()
+                          || !profileLine.getField().isTransformAbsentDefined()) {
                         out.println("    <td><a href=\"" + link + "\">-</a></td>");
                       } else {
                         out.println("    <td><a href=\"" + link + "\">Defined</a></td>");
@@ -364,8 +382,10 @@ public class ProfileServlet extends ClientServlet {
               if (!profileLine.getProfileUsageValue().getNotes().equals("")) {
                 out.println("  <tr>");
                 out.println("    <td>" + profileField.getFieldName() + "</td>");
-                if (profileField.getType() == ProfileFieldType.FIELD_PART || profileField.getType() == ProfileFieldType.FIELD_SUB_PART
-                    || profileField.getType() == ProfileFieldType.FIELD_VALUE || profileField.getType() == ProfileFieldType.FIELD_PART_VALUE
+                if (profileField.getType() == ProfileFieldType.FIELD_PART
+                    || profileField.getType() == ProfileFieldType.FIELD_SUB_PART
+                    || profileField.getType() == ProfileFieldType.FIELD_VALUE
+                    || profileField.getType() == ProfileFieldType.FIELD_PART_VALUE
                     || profileField.getType() == ProfileFieldType.FIELD_SUB_PART_VALUE) {
                   out.println("    <td>&nbsp;" + profileField.getDescription() + "</td>");
                 } else {
@@ -389,8 +409,13 @@ public class ProfileServlet extends ClientServlet {
               for (ProfileLine profileLine : profileLineList) {
                 int pos = profileLine.getField().getPos();
                 String usage = request.getParameter("usage" + pos);
+                String enforcement = request.getParameter("enforcement" + pos);
+                String implementation = request.getParameter("implementation" + pos);
                 if (usage != null && !usage.equals("")) {
                   profileLine.getProfileUsageValue().setUsage(Usage.readUsage(usage));
+                  profileLine.getProfileUsageValue().setEnforcement(Enforcement.readEnforcement(enforcement));
+                  profileLine.getProfileUsageValue().setImplementation(
+                      Implementation.readImplementation(implementation));
                   profileLine.setUsage(profileLine.getProfileUsageValue().getUsage());
                   String value = request.getParameter("value" + pos);
                   String comments = request.getParameter("comments" + pos);
@@ -479,7 +504,8 @@ public class ProfileServlet extends ClientServlet {
                 String transformedMessage = null;
                 String originalMessage = formatMessage(tcmFull.getMessageText());
                 if (testCaseMessagePresent != tcmFull) {
-                  transformedMessage = formatMessage(transformer.transformAddition(tcmFull, testCaseMessagePresent.getAdditionalTransformations()));
+                  transformedMessage = formatMessage(transformer.transformAddition(tcmFull,
+                      testCaseMessagePresent.getAdditionalTransformations()));
                 }
                 out.println("<p>Starting Message</p>");
                 if (transformedMessage != null) {
@@ -492,10 +518,11 @@ public class ProfileServlet extends ClientServlet {
                 out.println("  <textarea name=\"additionalTransformations\" cols=\"70\" rows=\"10\" wrap=\"off\">"
                     + testCaseMessagePresent.getAdditionalTransformations() + "</textarea></td>");
                 out.println("  <br/>");
-                out.println("  <input type=\"checkbox\" name=\"tcmFull\" value=\"true\"" + (testCaseMessagePresent == tcmFull ? " checked" : "")
-                    + "/> Use Full Message");
+                out.println("  <input type=\"checkbox\" name=\"tcmFull\" value=\"true\""
+                    + (testCaseMessagePresent == tcmFull ? " checked" : "") + "/> Use Full Message");
                 out.println("  <input type=\"hidden\" name=\"show\" value=\"transforms\"/>");
-                out.println("  <input type=\"hidden\" name=\"fieldName\" value=\"" + profileFieldSelected.getFieldName() + "\"/>");
+                out.println("  <input type=\"hidden\" name=\"fieldName\" value=\""
+                    + profileFieldSelected.getFieldName() + "\"/>");
                 out.println("  <input type=\"hidden\" name=\"edit\" value=\"present\"/>");
                 out.println("  <br/>");
                 out.println("  <input type=\"submit\" name=\"action\" value=\"Refresh\"/>");
@@ -513,8 +540,8 @@ public class ProfileServlet extends ClientServlet {
                 } else {
                   out.println("<pre>" + testCaseMessagePresent.getAdditionalTransformations() + "</pre>");
                 }
-                String link = "ProfileServlet?show=transforms&fieldName=" + URLEncoder.encode(profileFieldSelected.getFieldName(), "UTF-8")
-                    + "&edit=present";
+                String link = "ProfileServlet?show=transforms&fieldName="
+                    + URLEncoder.encode(profileFieldSelected.getFieldName(), "UTF-8") + "&edit=present";
                 out.println("<p><a href=\"" + link + "\">Edit</a></p>");
               }
               out.println("<h3>Absent Test Case</h3>");
@@ -540,7 +567,8 @@ public class ProfileServlet extends ClientServlet {
                 String transformedMessage = null;
                 String originalMessage = formatMessage(tcmFull.getMessageText());
                 if (testCaseMessageAbsent != tcmFull) {
-                  transformedMessage = formatMessage(transformer.transformAddition(tcmFull, testCaseMessageAbsent.getAdditionalTransformations()));
+                  transformedMessage = formatMessage(transformer.transformAddition(tcmFull,
+                      testCaseMessageAbsent.getAdditionalTransformations()));
                 }
                 out.println("<p>Starting Message</p>");
                 if (transformedMessage != null) {
@@ -553,11 +581,12 @@ public class ProfileServlet extends ClientServlet {
                 out.println("  <textarea name=\"additionalTransformations\" cols=\"70\" rows=\"10\" wrap=\"off\">"
                     + testCaseMessageAbsent.getAdditionalTransformations() + "</textarea></td>");
                 out.println("  <input type=\"hidden\" name=\"show\" value=\"transforms\"/>");
-                out.println("  <input type=\"hidden\" name=\"fieldName\" value=\"" + profileFieldSelected.getFieldName() + "\"/>");
+                out.println("  <input type=\"hidden\" name=\"fieldName\" value=\""
+                    + profileFieldSelected.getFieldName() + "\"/>");
                 out.println("  <input type=\"hidden\" name=\"edit\" value=\"absent\"/>");
                 out.println("  <br/>");
-                out.println("  <input type=\"checkbox\" name=\"tcmFull\" value=\"true\"" + (testCaseMessageAbsent == tcmFull ? " checked" : "")
-                    + "/> Use Full Message");
+                out.println("  <input type=\"checkbox\" name=\"tcmFull\" value=\"true\""
+                    + (testCaseMessageAbsent == tcmFull ? " checked" : "") + "/> Use Full Message");
                 out.println("  <br/>");
                 out.println("  <input type=\"submit\" name=\"action\" value=\"Refresh\"/>");
                 out.println("  <input type=\"submit\" name=\"action\" value=\"Save\"/>");
@@ -574,8 +603,8 @@ public class ProfileServlet extends ClientServlet {
                 } else {
                   out.println("<pre>" + testCaseMessageAbsent.getAdditionalTransformations() + "</pre>");
                 }
-                String link = "ProfileServlet?show=transforms&fieldName=" + URLEncoder.encode(profileFieldSelected.getFieldName(), "UTF-8")
-                    + "&edit=absent";
+                String link = "ProfileServlet?show=transforms&fieldName="
+                    + URLEncoder.encode(profileFieldSelected.getFieldName(), "UTF-8") + "&edit=absent";
                 out.println("<p><a href=\"" + link + "\">Edit</a></p>");
               }
             }
@@ -589,20 +618,23 @@ public class ProfileServlet extends ClientServlet {
     }
   }
 
-  private void printEditTable(PrintWriter out, List<ProfileLine> profileLineList, ProfileLine profileLineSelected, String fieldName,
-      ProfileLine copyFrom) throws UnsupportedEncodingException {
+  private void printEditTable(PrintWriter out, List<ProfileLine> profileLineList, ProfileLine profileLineSelected,
+      String fieldName, ProfileLine copyFrom) throws UnsupportedEncodingException {
     out.println("<h3>" + profileLineSelected.getField().getDescription() + " Table</h3>");
     out.println("<form action=\"ProfileServlet\" method=\"POST\">");
     out.println("<table border=\"1\" cellspacing=\"0\">");
     out.println("  <tr>");
     out.println("    <th colspan=\"3\">US Base Standard</th>");
-    out.println("    <th colspan=\"4\">Local Standard</th>");
+    out.println("    <th colspan=\"5\">Local Standard</th>");
+    out.println("    <td><input type=\"submit\" name=\"action\" value=\"Save\"/></td>");
     out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th>Field Name</th>");
     out.println("    <th>Description</th>");
     out.println("    <th>Usage</th>");
     out.println("    <th>Usage</th>");
+    out.println("    <th>Enforcement</th>");
+    out.println("    <th>Implementation</th>");
     out.println("    <th>Value</th>");
     out.println("    <th>Comments</th>");
     out.println("    <th>Testing Notes</th>");
@@ -662,7 +694,8 @@ public class ProfileServlet extends ClientServlet {
           if (profileLineCopy.getField().getType() == copyFrom.getField().getType()) {
             foundCopy = false;
           } else {
-            if (profileLineCopy.getField().getType() == profileFieldType1 || profileLineCopy.getField().getType() == profileFieldType2) {
+            if (profileLineCopy.getField().getType() == profileFieldType1
+                || profileLineCopy.getField().getType() == profileFieldType2) {
               copyFromItemList.add(profileLineCopy);
             }
           }
@@ -679,7 +712,8 @@ public class ProfileServlet extends ClientServlet {
           found = false;
         } else {
           if (profileField.getType() == profileFieldType1 || profileField.getType() == profileFieldType2) {
-            String link = "ProfileServlet?show=Edit&fieldName=" + URLEncoder.encode(profileField.getFieldName(), "UTF-8");
+            String link = "ProfileServlet?show=Edit&fieldName="
+                + URLEncoder.encode(profileField.getFieldName(), "UTF-8");
             out.println("  <tr>");
             if (profileLine.getUsage() == Usage.NOT_DEFINED
                 || (profileField.getType() != ProfileFieldType.FIELD && profileField.getType() != ProfileFieldType.FIELD_PART)) {
@@ -691,6 +725,8 @@ public class ProfileServlet extends ClientServlet {
             }
             Usage selectedUsage = profileLine.getUsage();
             String usageValue = profileLine.getProfileUsageValue().getValue();
+            Enforcement selectedEnforcement = profileLine.getProfileUsageValue().getEnforcement();
+            Implementation selectedImplementation = profileLine.getProfileUsageValue().getImplementation();
             String comments = profileLine.getProfileUsageValue().getComments();
             String notes = profileLine.getProfileUsageValue().getNotes();
             if (copyFromItemList != null) {
@@ -699,6 +735,8 @@ public class ProfileServlet extends ClientServlet {
                   if (profileLine.getField().getPosInSegment() == profileLineCopy.getField().getPosInSegment()
                       && profileLine.getField().getSpecialName().equals(profileLineCopy.getField().getSpecialName())) {
                     selectedUsage = profileLineCopy.getUsage();
+                    selectedEnforcement = profileLineCopy.getProfileUsageValue().getEnforcement();
+                    selectedImplementation = profileLineCopy.getProfileUsageValue().getImplementation();
                     usageValue = profileLineCopy.getProfileUsageValue().getValue();
                     comments = profileLineCopy.getProfileUsageValue().getComments();
                     notes = profileLineCopy.getProfileUsageValue().getNotes();
@@ -708,6 +746,8 @@ public class ProfileServlet extends ClientServlet {
                       && profileField.getType() == profileLineCopy.getField().getType()
                       && profileField.getCodeValue().equals(profileLineCopy.getField().getCodeValue())) {
                     selectedUsage = profileLineCopy.getUsage();
+                    selectedEnforcement = profileLineCopy.getProfileUsageValue().getEnforcement();
+                    selectedImplementation = profileLineCopy.getProfileUsageValue().getImplementation();
                     usageValue = profileLineCopy.getProfileUsageValue().getValue();
                     comments = profileLineCopy.getProfileUsageValue().getComments();
                     notes = profileLineCopy.getProfileUsageValue().getNotes();
@@ -739,10 +779,34 @@ public class ProfileServlet extends ClientServlet {
             if (fieldName != null) {
               out.println("  <input type=\"hidden\" name=\"fieldName\" value=\"" + fieldName + "\"/>");
             }
+            out.println("    <td>");
+            out.println("      <select name=\"enforcement" + profileField.getPos() + "\">");
+            for (Enforcement enforcement : Enforcement.values()) {
+              if (enforcement == selectedEnforcement) {
+                out.println("        <option value=\"" + enforcement + "\" selected=\"true\">" + enforcement.getDescription()
+                    + "</option>");
+              } else {
+                out.println("        <option value=\"" + enforcement + "\">" + enforcement.getDescription() + " " + "</option>");
+              }
+            }
+            out.println("      </select>");
+            out.println("    </td>");
+            out.println("    <td>");
+            out.println("      <select name=\"implementation" + profileField.getPos() + "\">");
+            for (Implementation implementation : Implementation.values()) {
+              if (implementation == selectedImplementation) {
+                out.println("        <option value=\"" + implementation + "\" selected=\"true\">" + implementation.getDescription()
+                    + "</option>");
+              } else {
+                out.println("        <option value=\"" + implementation + "\">" + implementation.getDescription() + " " + "</option>");
+              }
+            }
+            out.println("      </select>");
+            out.println("    </td>");
             out.println("    <td><input type=\"text\" size=\"5\" name=\"value" + profileField.getPos() + "\" value=\""
                 + usageValue + "\"/></td>");
-            out.println("    <td><input type=\"text\" size=\"20\" name=\"comments" + profileField.getPos() + "\" value=\""
-                + comments + "\"/></td>");
+            out.println("    <td><input type=\"text\" size=\"20\" name=\"comments" + profileField.getPos()
+                + "\" value=\"" + comments + "\"/></td>");
             out.println("    <td><input type=\"text\" size=\"20\" name=\"notes" + profileField.getPos() + "\" value=\""
                 + notes + "\"/></td>");
             out.println("  </tr>");
@@ -778,7 +842,8 @@ public class ProfileServlet extends ClientServlet {
       out.println("      <select name=\"copyFrom\">");
       out.println("        <option value=\"\">select</option>");
       for (ProfileLine profileLine : copyFromList) {
-        out.println("        <option value=\"" + profileLine.getField().getPos() + "\">" + profileLine.getField().getFieldName() + "</option>");
+        out.println("        <option value=\"" + profileLine.getField().getPos() + "\">"
+            + profileLine.getField().getFieldName() + "</option>");
       }
       out.println("      </select>");
       out.println("<input type=\"submit\" name=\"action\" value=\"Copy\"/>");
@@ -794,13 +859,16 @@ public class ProfileServlet extends ClientServlet {
     out.println("<table border=\"1\" cellspacing=\"0\">");
     out.println("  <tr>");
     out.println("    <th colspan=\"3\">US Base Standard</th>");
-    out.println("    <th colspan=\"4\">Local Standard</th>");
+    out.println("    <th colspan=\"5\">Local Standard</th>");
+    out.println("    <td><input type=\"submit\" name=\"action\" value=\"Save\"/></td>");
     out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th>Field Name</th>");
     out.println("    <th>Description</th>");
     out.println("    <th>Usage</th>");
     out.println("    <th>Usage</th>");
+    out.println("    <th>Enforcement</th>");
+    out.println("    <th>Implementation</th>");
     out.println("    <th>Value</th>");
     out.println("    <th>Comments</th>");
     out.println("    <th>Testing Notes</th>");
@@ -810,7 +878,8 @@ public class ProfileServlet extends ClientServlet {
       if (profileField.getType() == profileFieldType1 || profileField.getType() == profileFieldType2) {
         String link = "ProfileServlet?show=Edit&fieldName=" + URLEncoder.encode(profileField.getFieldName(), "UTF-8");
         out.println("  <tr>");
-        if (profileLine.getUsage() == Usage.NOT_DEFINED || profileLine.getField().getType() == ProfileFieldType.SEGMENT_GROUP) {
+        if (profileLine.getUsage() == Usage.NOT_DEFINED
+            || profileLine.getField().getType() == ProfileFieldType.SEGMENT_GROUP) {
           out.println("    <td>" + profileField.getFieldName() + "</td>");
           out.println("    <td>" + profileField.getDescription() + "</td>");
         } else {
@@ -828,12 +897,35 @@ public class ProfileServlet extends ClientServlet {
         out.println("    <td class=\"" + classType + "\">" + profileField.getTestUsage() + "</td>");
         out.println("    <td>");
         out.println("      <select name=\"usage" + profileField.getPos() + "\">");
-        out.println("        <option value=\"\">select</option>");
         for (Usage usage : Usage.values()) {
           if (usage == profileLine.getUsage()) {
             out.println("        <option value=\"" + usage + "\" selected=\"true\">" + usage + "</option>");
           } else {
             out.println("        <option value=\"" + usage + "\">" + usage + "</option>");
+          }
+        }
+        out.println("      </select>");
+        out.println("    </td>");
+        out.println("    <td>");
+        out.println("      <select name=\"enforcement" + profileField.getPos() + "\">");
+        for (Enforcement enforcement : Enforcement.values()) {
+          if (enforcement == profileLine.getProfileUsageValue().getEnforcement()) {
+            out.println("        <option value=\"" + enforcement + "\" selected=\"true\">" + enforcement.getDescription()
+                + "</option>");
+          } else {
+            out.println("        <option value=\"" + enforcement + "\">" + enforcement.getDescription() + " " + "</option>");
+          }
+        }
+        out.println("      </select>");
+        out.println("    </td>");
+        out.println("    <td>");
+        out.println("      <select name=\"implementation" + profileField.getPos() + "\">");
+        for (Implementation implementation : Implementation.values()) {
+          if (implementation == profileLine.getProfileUsageValue().getImplementation()) {
+            out.println("        <option value=\"" + implementation + "\" selected=\"true\">" + implementation.getDescription()
+                + "</option>");
+          } else {
+            out.println("        <option value=\"" + implementation + "\">" + implementation.getDescription() + " " + "</option>");
           }
         }
         out.println("      </select>");
@@ -875,7 +967,8 @@ public class ProfileServlet extends ClientServlet {
     return false;
   }
 
-  public void printTotalRow(PrintWriter out, Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap, CompatibilityConformance c) {
+  public void printTotalRow(PrintWriter out, Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap,
+      CompatibilityConformance c) {
     List<ProfileLine> pl = compatibilityMap.get(c);
     if (pl != null && pl.size() > 0) {
       out.println("  <tr>");
@@ -885,7 +978,8 @@ public class ProfileServlet extends ClientServlet {
     }
   }
 
-  public void printTotalRow(PrintWriter out, Map<CompatibilityInteroperability, List<ProfileLine>> compatibilityMap, CompatibilityInteroperability c) {
+  public void printTotalRow(PrintWriter out, Map<CompatibilityInteroperability, List<ProfileLine>> compatibilityMap,
+      CompatibilityInteroperability c) {
     List<ProfileLine> pl = compatibilityMap.get(c);
     if (pl != null && pl.size() > 0) {
       out.println("  <tr>");
@@ -920,8 +1014,8 @@ public class ProfileServlet extends ClientServlet {
     if (lastDiffPos < firstDiffPos) {
       lastDiffPos = firstDiffPos + 1;
     }
-    return message.substring(0, firstDiffPos) + "<b class=\"different\">" + message.substring(firstDiffPos, lastDiffPos) + "</b>"
-        + message.substring(lastDiffPos);
+    return message.substring(0, firstDiffPos) + "<b class=\"different\">"
+        + message.substring(firstDiffPos, lastDiffPos) + "</b>" + message.substring(lastDiffPos);
   }
 
   private static String addHovers(String message) throws IOException {
@@ -991,8 +1085,9 @@ public class ProfileServlet extends ClientServlet {
     return sb.toString();
   }
 
-  private void printConformanceCompatibility(PrintWriter out, Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap,
-      CompatibilityConformance c, ProfileUsage profileUsageSelected, ProfileUsage profileUsageCompare) {
+  private void printConformanceCompatibility(PrintWriter out,
+      Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap, CompatibilityConformance c,
+      ProfileUsage profileUsageSelected, ProfileUsage profileUsageCompare) {
     if (compatibilityMap.get(c) != null) {
       out.println("<h3>" + c + "</h3>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
@@ -1003,7 +1098,8 @@ public class ProfileServlet extends ClientServlet {
       out.println("    <th>" + profileUsageSelected + "</th>");
       out.println("  </tr>");
       for (ProfileLine profileLine : compatibilityMap.get(c)) {
-        ProfileUsageValue profileUsageValueConformance = profileUsageCompare.getProfileUsageValueMap().get(profileLine.getField());
+        ProfileUsageValue profileUsageValueConformance = profileUsageCompare.getProfileUsageValueMap().get(
+            profileLine.getField());
         if (profileUsageValueConformance != null) {
           out.println("  <tr>");
           out.println("    <td>" + profileLine.getField().getFieldName() + "</td>");
@@ -1017,8 +1113,9 @@ public class ProfileServlet extends ClientServlet {
     }
   }
 
-  private void printConformanceInteroperability(PrintWriter out, Map<CompatibilityInteroperability, List<ProfileLine>> compatibilityMap,
-      CompatibilityInteroperability c, ProfileUsage profileUsageSelected, ProfileUsage profileUsageCompare) {
+  private void printConformanceInteroperability(PrintWriter out,
+      Map<CompatibilityInteroperability, List<ProfileLine>> compatibilityMap, CompatibilityInteroperability c,
+      ProfileUsage profileUsageSelected, ProfileUsage profileUsageCompare) {
     if (compatibilityMap.get(c) != null) {
       out.println("<h3>" + c + "</h3>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
@@ -1029,7 +1126,8 @@ public class ProfileServlet extends ClientServlet {
       out.println("    <th>" + profileUsageCompare + "</th>");
       out.println("  </tr>");
       for (ProfileLine profileLine : compatibilityMap.get(c)) {
-        ProfileUsageValue profileUsageValueConformance = profileUsageCompare.getProfileUsageValueMap().get(profileLine.getField());
+        ProfileUsageValue profileUsageValueConformance = profileUsageCompare.getProfileUsageValueMap().get(
+            profileLine.getField());
         if (profileUsageValueConformance != null) {
           out.println("  <tr>");
           out.println("    <td>" + profileLine.getField().getFieldName() + "</td>");
