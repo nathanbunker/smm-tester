@@ -7,7 +7,21 @@ public class ProfileUsageValue
   private String value = "";
   private String comments = "";
   private String notes = "";
+  private Enforcement enforcement = Enforcement.NOT_DEFINED;
+  private Implementation implementation = Implementation.NOT_DEFINED;
   
+  public Enforcement getEnforcement() {
+    return enforcement;
+  }
+  public void setEnforcement(Enforcement enforcement) {
+    this.enforcement = enforcement;
+  }
+  public Implementation getImplementation() {
+    return implementation;
+  }
+  public void setImplementation(Implementation implementation) {
+    this.implementation = implementation;
+  }
   public Usage getUsageDetected() {
     return usageDetected;
   }
