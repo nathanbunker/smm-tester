@@ -275,7 +275,7 @@ public class CertifyRunner extends Thread
         transformer = new Transformer(testDataFile);
       }
 
-      uniqueMRNBase = "" + System.currentTimeMillis() % 1000000 + (uniqueMRNBaseInc++);
+      uniqueMRNBase = Transformer.makeBase62Number(System.currentTimeMillis() % 1000000 + uniqueMRNBaseInc++) + "-";
       willQuery = queryType != null && (queryType.equals(QUERY_TYPE_QBP) || queryType.equals(QUERY_TYPE_VXQ));
 
       testCaseMessageBase = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
@@ -652,7 +652,11 @@ public class CertifyRunner extends Thread
         PrintWriter out = new PrintWriter(new FileWriter(detailReportFile));
         String title = "IIS Testing Report Detail";
         ClientServlet.printHtmlHeadForFile(out, title);
-        out.println("    <h3>IIS Testing Results Details for " + connector.getLabel() + "</h3>");
+        out.println("<h1>Detialed Run Log for " + connector.getLabel() + "</h1>");
+        out.println("<p>This detail run log gives complete details on what was tested. For a summary and condensed view see the IIS Testing Results. </p>");
+        out.println("<ul>");
+        out.println("  <li><a href=\"IIS Testing Report.html\">IIS Testing Results</a></li>");
+        out.println("</ul>");
         printResults(out);
         out.println("    <h3>IIS Testing Details</h3>");
         printProgressDetails(out, true);
@@ -871,6 +875,7 @@ public class CertifyRunner extends Thread
     TestRunner testRunner = new TestRunner();
     int count;
     int countPass = 0;
+    int countTested = 0;
     count = 0;
     int profilingRunCount = 0;
     Map<String, TestCaseMessage> testCaseMessageMap = new HashMap<String, TestCaseMessage>();
@@ -950,6 +955,7 @@ public class CertifyRunner extends Thread
             countPass++;
             profileLine.setPassed(true);
           }
+          countTested++;
           profileLine.setHasRun(true);
           printExampleMessage(testCaseMessagePresent, "I Profiling");
           printExampleMessage(testCaseMessageAbsent, "I Profiling");
@@ -972,7 +978,9 @@ public class CertifyRunner extends Thread
         return;
       }
     }
-    areaScore[SUITE_I_PROFILING][0] = makeScore(countPass, profileLineList.size());
+    if (countTested > 0) {
+      areaScore[SUITE_I_PROFILING][0] = makeScore(countPass, countTested);
+    }
     areaCount[SUITE_I_PROFILING][0] = profilingRunCount;
 
     areaProgress[SUITE_I_PROFILING][0] = 100;

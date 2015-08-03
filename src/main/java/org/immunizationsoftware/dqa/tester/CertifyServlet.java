@@ -114,9 +114,14 @@ public class CertifyServlet extends ClientServlet
         if (runAgainst != null && !runAgainst.equals("")) {
           SendData sendData = user.getSendData();
           if (sendData != null) {
-            File runAgainstFolder = new File(sendData.getTestCaseDir(), runAgainst);
+            File runAgainstFolder = new File(sendData.getRootDir(), runAgainst);
             if (runAgainstFolder.exists() && runAgainstFolder.isDirectory()) {
               certifyRunner.setRunAgainstFolder(runAgainstFolder);
+            } else {
+              File testCaseDir = sendData.getTestCaseDir(false);
+              if (testCaseDir != null) {
+                runAgainstFolder = new File(testCaseDir, runAgainst);
+              }
             }
           }
         }

@@ -9,7 +9,8 @@ import java.util.List;
 
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 
-public class RunAgainstConnector extends Connector {
+public class RunAgainstConnector extends Connector
+{
 
   private File testFolder = null;
   private String originalRequestMessage = "";
@@ -54,27 +55,31 @@ public class RunAgainstConnector extends Connector {
     findOriginalMessage(messageControlId);
     if (originalRequestMessage == null) {
       if (messageControlId.startsWith("-A.")) {
+        String messageControlIdTry = null;
         if (messageControlId.equals("-A.01.01")) {
-          messageControlId = "NIST-IZ-001.00";
-          findOriginalMessage(messageControlId);
+          messageControlIdTry = "NIST-IZ-001.00";
+          findOriginalMessage(messageControlIdTry);
         } else if (messageControlId.equals("-A.01.02")) {
-          messageControlId = "NIST-IZ-004.00";
-          findOriginalMessage(messageControlId);
+          messageControlIdTry = "NIST-IZ-004.00";
+          findOriginalMessage(messageControlIdTry);
         } else if (messageControlId.equals("-A.01.03")) {
-          messageControlId = "NIST-IZ-007.00";
-          findOriginalMessage(messageControlId);
+          messageControlIdTry = "NIST-IZ-007.00";
+          findOriginalMessage(messageControlIdTry);
         } else if (messageControlId.equals("-A.01.04")) {
-          messageControlId = "NIST-IZ-010.00";
-          findOriginalMessage(messageControlId);
+          messageControlIdTry = "NIST-IZ-010.00";
+          findOriginalMessage(messageControlIdTry);
         } else if (messageControlId.equals("-A.01.05")) {
-          messageControlId = "NIST-IZ-013.00";
-          findOriginalMessage(messageControlId);
+          messageControlIdTry = "NIST-IZ-013.00";
+          findOriginalMessage(messageControlIdTry);
         } else if (messageControlId.equals("-A.01.06")) {
-          messageControlId = "NIST-IZ-016.00";
-          findOriginalMessage(messageControlId);
+          messageControlIdTry = "NIST-IZ-016.00";
+          findOriginalMessage(messageControlIdTry);
         } else if (messageControlId.equals("-A.01.07")) {
-          messageControlId = "NIST-IZ-019.00";
-          findOriginalMessage(messageControlId);
+          messageControlIdTry = "NIST-IZ-019.00";
+          findOriginalMessage(messageControlIdTry);
+        }
+        if (originalRequestMessage != null) {
+          messageControlId = messageControlIdTry;
         }
       }
     }

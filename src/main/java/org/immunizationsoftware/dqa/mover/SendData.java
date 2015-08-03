@@ -864,7 +864,7 @@ public class SendData extends Thread
   }
 
   public File getGeneratedDir() {
-    File testDir = getTestDir();
+    File testDir = getTestDir(true);
     File generatedDir = new File(testDir, GENERATED_FOLDER);
     if (!generatedDir.exists()) {
       generatedDir.mkdir();
@@ -872,19 +872,31 @@ public class SendData extends Thread
     return generatedDir;
   }
 
-  public File getTestDir() {
+  public File getTestDir(boolean makeDirIfNotExist) {
     File testDir = new File(rootDir, TEST_FOLDER);
     if (!testDir.exists()) {
-      testDir.mkdir();
+      if (makeDirIfNotExist) {
+        testDir.mkdir();
+      } else {
+        return null;
+      }
     }
     return testDir;
   }
 
-  public File getTestCaseDir() {
-    File testDir = getTestDir();
+  public File getTestCaseDir(boolean makeDirIfNotExist) {
+    File testDir = getTestDir(makeDirIfNotExist);
+    if (testDir == null)
+    {
+      return null;
+    }
     File testCaseDir = new File(testDir, TEST_CASES_FOLDER);
     if (!testCaseDir.exists()) {
-      testCaseDir.mkdir();
+      if (makeDirIfNotExist) {
+        testCaseDir.mkdir();
+      } else {
+        return null;
+      }
     }
     return testCaseDir;
   }
@@ -1184,13 +1196,16 @@ public class SendData extends Thread
   }
 
   public String[] getTestReportNames() {
-    File testCaseDir = this.getTestCaseDir();
-    String[] testNamesArchive = testCaseDir.list(new FilenameFilter() {
-      public boolean accept(File dir, String name) {
-        File file = new File(dir, name);
-        return file.isDirectory() && name.startsWith("IIS Test Report ") && name.length() > 16;
-      }
-    });
+    File testCaseDir = this.getTestCaseDir(false);
+    String[] testNamesArchive = null;
+    if (testCaseDir != null) {
+      testNamesArchive = testCaseDir.list(new FilenameFilter() {
+        public boolean accept(File dir, String name) {
+          File file = new File(dir, name);
+          return file.isDirectory() && name.startsWith("IIS Test Report ") && name.length() > 16;
+        }
+      });
+    }
 
     String[] testNamesNew = rootDir.list(new FilenameFilter() {
       public boolean accept(File dir, String name) {
@@ -1198,6 +1213,9 @@ public class SendData extends Thread
         return file.isDirectory() && name.startsWith("IIS Test Report ") && name.length() > 16;
       }
     });
+    if (testNamesArchive == null) {
+      return testNamesNew;
+    }
     String[] testNames = new String[testNamesArchive.length + testNamesNew.length];
     System.arraycopy(testNamesArchive, 0, testNames, 0, testNamesArchive.length);
     System.arraycopy(testNamesNew, 0, testNames, testNamesArchive.length, testNamesNew.length);
