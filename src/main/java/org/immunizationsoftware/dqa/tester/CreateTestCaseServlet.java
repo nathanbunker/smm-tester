@@ -537,24 +537,6 @@ public class CreateTestCaseServlet extends ClientServlet
     return testMessageMap;
   }
 
-  protected static void saveForecastResults(TestCaseMessage testCaseMessage, HttpSession session, String results) {
-    if (testCaseMessage.getTestCaseNumber() != null && !testCaseMessage.getTestCaseNumber().equals("")) {
-      Authenticate.User user = (Authenticate.User) session.getAttribute("user");
-      if (user != null && user.hasSendData()) {
-        File testCaseDir = getOrCreateTestCaseDir(testCaseMessage, user);
-        File testCaseFile = new File(testCaseDir, "TC-" + testCaseMessage.getTestCaseNumber() + ".forecast-results.txt");
-        try {
-          PrintWriter out = new PrintWriter(new FileWriter(testCaseFile));
-          out.print(results);
-          out.close();
-        } catch (IOException ioe) {
-          ioe.printStackTrace();
-          // unable to save, continue as normal
-        }
-      }
-    }
-  }
-
   protected static void saveTestCase(TestCaseMessage testCaseMessage, HttpSession session) {
     if (testCaseMessage.getTestCaseNumber() != null && !testCaseMessage.getTestCaseNumber().equals("")) {
       Authenticate.User user = (Authenticate.User) session.getAttribute("user");
@@ -574,27 +556,31 @@ public class CreateTestCaseServlet extends ClientServlet
   }
 
   protected static void saveTestCaseHtml(TestCaseMessage testCaseMessage, HttpSession session) {
-    if (testCaseMessage.getTestCaseNumber() != null && !testCaseMessage.getTestCaseNumber().equals("")) {
-      Authenticate.User user = (Authenticate.User) session.getAttribute("user");
-      if (user != null && user.hasSendData()) {
-        File testCaseDir = getOrCreateTestCaseDir(testCaseMessage, user);
-        File testCaseFile = new File(testCaseDir, "TC-" + testCaseMessage.getTestCaseNumber() + ".html");
-        try {
-          PrintWriter out = new PrintWriter(new FileWriter(testCaseFile));
-          String title = "Test Case Message " + testCaseMessage.getTestCaseNumber() + ": "
-              + testCaseMessage.getDescription();
-          ClientServlet.printHtmlHeadForFile(out, title);
-          out.println("<p>[Return to <a href=\"IIS Testing Report.html\"/>IIS Test Report</a>] [View <a href=\"TC-"
-              + testCaseMessage.getTestCaseNumber() + ".txt\"/>Test Case Source</a>]</p>");
-
-          TestCaseMessageViewerServlet.printTestCaseMessage(out, testCaseMessage);
-          ClientServlet.printHtmlFootForFile(out);
-          out.close();
-        } catch (IOException ioe) {
-          ioe.printStackTrace();
-          // unable to save, continue as normal
-        }
+    Authenticate.User user = (Authenticate.User) session.getAttribute("user");
+    if (user != null && user.hasSendData()) {
+      File testCaseDir = getOrCreateTestCaseDir(testCaseMessage, user);
+      if (testCaseMessage.getTestCaseNumber() != null && !testCaseMessage.getTestCaseNumber().equals("")) {
+        saveTestCaseHtml(testCaseMessage, testCaseDir);
       }
+    }
+  }
+
+  public static void saveTestCaseHtml(TestCaseMessage testCaseMessage, File testCaseDir) {
+    File testCaseFile = new File(testCaseDir, "TC-" + testCaseMessage.getTestCaseNumber() + ".html");
+    try {
+      PrintWriter out = new PrintWriter(new FileWriter(testCaseFile));
+      String title = "Test Case Message " + testCaseMessage.getTestCaseNumber() + ": "
+          + testCaseMessage.getDescription();
+      ClientServlet.printHtmlHeadForFile(out, title);
+      out.println("<p>[Return to <a href=\"IIS Testing Report.html\"/>IIS Test Report</a>] [View <a href=\"TC-"
+          + testCaseMessage.getTestCaseNumber() + ".txt\"/>Test Case Source</a>]</p>");
+
+      TestCaseMessageViewerServlet.printTestCaseMessage(out, testCaseMessage);
+      ClientServlet.printHtmlFootForFile(out);
+      out.close();
+    } catch (IOException ioe) {
+      ioe.printStackTrace();
+      // unable to save, continue as normal
     }
   }
 
@@ -659,17 +645,6 @@ public class CreateTestCaseServlet extends ClientServlet
     return null;
   }
 
-  public static File getTestCaseDir(TestCaseMessage testCaseMessage, HttpSession session) {
-    if (testCaseMessage.getTestCaseNumber() != null && !testCaseMessage.getTestCaseNumber().equals("")) {
-      Authenticate.User user = (Authenticate.User) session.getAttribute("user");
-      if (user != null && user.hasSendData()) {
-        File testCaseDir = getOrCreateTestCaseDir(testCaseMessage, user);
-        return testCaseDir;
-      }
-    }
-    return null;
-  }
-
   protected static void loadTestCases(HttpSession session) throws ServletException, IOException {
     Authenticate.User user = (Authenticate.User) session.getAttribute("user");
     if (user != null && user.hasSendData()) {
@@ -690,15 +665,28 @@ public class CreateTestCaseServlet extends ClientServlet
 
   public static List<File> listIISTestReports(SendData sendData) {
     List<File> fileList = new ArrayList<File>();
-    File testCaseDir = sendData.getTestCaseDir();
-    File[] dirs = testCaseDir.listFiles(new FileFilter() {
-      public boolean accept(File arg0) {
-        return arg0.isDirectory() && arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
+    {
+      File testCaseDir = sendData.getTestCaseDir();
+      File[] dirs = testCaseDir.listFiles(new FileFilter() {
+        public boolean accept(File arg0) {
+          return arg0.isDirectory() && arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
+        }
+      });
+      for (File dir : dirs) {
+        fileList.add(dir);
       }
-    });
-    for (File dir : dirs) {
-      fileList.add(dir);
     }
+    {
+      File[] dirs = sendData.getRootDir().listFiles(new FileFilter() {
+        public boolean accept(File arg0) {
+          return arg0.isDirectory() && arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
+        }
+      });
+      for (File dir : dirs) {
+        fileList.add(dir);
+      }
+    }
+
     Collections.sort(fileList);
     return fileList;
   }

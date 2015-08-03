@@ -118,29 +118,27 @@ public class SendData extends Thread
           try {
             setupConnector();
             if (ManagerServlet.isScanDirectories()) {
-            if (obtainLock() && okayToRun) {
-              createWorkingDirs();
-              createTransformer();
-              if (notDisabled()) {
-                if (workDirIsEmpty()) {
-                  if (lookForFilesToProcess()) {
-                    prepareDataToSend();
-                  } else {
-                    setupReciprocalBatchRequest();
+              if (obtainLock() && okayToRun) {
+                createWorkingDirs();
+                createTransformer();
+                if (notDisabled()) {
+                  if (workDirIsEmpty()) {
+                    if (lookForFilesToProcess()) {
+                      prepareDataToSend();
+                    } else {
+                      setupReciprocalBatchRequest();
+                    }
+                  }
+
+                  sendData();
+                  if (scanStatus != ScanStatus.PROBLEM) {
+                    setScanStatus(ScanStatus.WAITING);
+                    resetProblemRetryCount();
+                    deleteWorkingDir();
                   }
                 }
-
-                sendData();
-                if (scanStatus != ScanStatus.PROBLEM) {
-                  setScanStatus(ScanStatus.WAITING);
-                  resetProblemRetryCount();
-                  deleteWorkingDir();
-                }
               }
-            }
-            }
-            else
-            {
+            } else {
               // not scanning directories
             }
           } catch (ApplicationShuttingDown asd) {
@@ -331,7 +329,7 @@ public class SendData extends Thread
   public void incErrorCount() {
     errorCount++;
   }
-  
+
   private int retryCount = 0;
   private static final long SEC = 1000;
   private static final long MIN = 60 * SEC;
@@ -935,10 +933,12 @@ public class SendData extends Thread
           }
           connector.setKeyStore(keyStore);
         } catch (Exception e) {
-          System.out.println("Unable to read key store " + keyStoreFile.getAbsolutePath() + " with password " + keyStorePassword);
+          System.out.println("Unable to read key store " + keyStoreFile.getAbsolutePath() + " with password "
+              + keyStorePassword);
           e.printStackTrace();
           if (statusLogger != null) {
-            statusLogger.logError("Unable to load key store " + keyStoreFile.getAbsolutePath() + " with password '" + keyStorePassword + "'", e);
+            statusLogger.logError("Unable to load key store " + keyStoreFile.getAbsolutePath() + " with password '"
+                + keyStorePassword + "'", e);
           }
           return false;
         }
@@ -1182,15 +1182,25 @@ public class SendData extends Thread
       return messageNumberString.substring(messageNumberString.length() - 5);
     }
   }
-  
+
   public String[] getTestReportNames() {
     File testCaseDir = this.getTestCaseDir();
-    String[] testNames = testCaseDir.list(new FilenameFilter() {
+    String[] testNamesArchive = testCaseDir.list(new FilenameFilter() {
       public boolean accept(File dir, String name) {
         File file = new File(dir, name);
         return file.isDirectory() && name.startsWith("IIS Test Report ") && name.length() > 16;
       }
     });
+
+    String[] testNamesNew = rootDir.list(new FilenameFilter() {
+      public boolean accept(File dir, String name) {
+        File file = new File(dir, name);
+        return file.isDirectory() && name.startsWith("IIS Test Report ") && name.length() > 16;
+      }
+    });
+    String[] testNames = new String[testNamesArchive.length + testNamesNew.length];
+    System.arraycopy(testNamesArchive, 0, testNames, 0, testNamesArchive.length);
+    System.arraycopy(testNamesNew, 0, testNames, testNamesArchive.length, testNamesNew.length);
     return testNames;
   }
 }
