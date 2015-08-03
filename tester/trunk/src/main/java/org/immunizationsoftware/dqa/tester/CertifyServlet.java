@@ -26,7 +26,8 @@ import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
  * 
  * @author nathan
  */
-public class CertifyServlet extends ClientServlet {
+public class CertifyServlet extends ClientServlet
+{
 
   /**
    * 
@@ -99,11 +100,13 @@ public class CertifyServlet extends ClientServlet {
           }
           if (!profileUsageIdForInteroperabilityString.equals("")) {
             int profileUsageId = Integer.parseInt(profileUsageIdForInteroperabilityString);
-            certifyRunner.setProfileUsageComparisonInteroperability(profileManager.getProfileUsageList().get(profileUsageId - 1));
+            certifyRunner.setProfileUsageComparisonInteroperability(profileManager.getProfileUsageList().get(
+                profileUsageId - 1));
           }
           if (!profileUsageIdForConformanceString.equals("")) {
             int profileUsageId = Integer.parseInt(profileUsageIdForConformanceString);
-            certifyRunner.setProfileUsageComparisonConformance(profileManager.getProfileUsageList().get(profileUsageId - 1));
+            certifyRunner.setProfileUsageComparisonConformance(profileManager.getProfileUsageList().get(
+                profileUsageId - 1));
           }
         }
 
@@ -162,7 +165,8 @@ public class CertifyServlet extends ClientServlet {
     }
   }
 
-  private void doGet(HttpServletRequest request, HttpServletResponse response, HttpSession session, String problem) throws IOException {
+  private void doGet(HttpServletRequest request, HttpServletResponse response, HttpSession session, String problem)
+      throws IOException {
 
     String username = (String) session.getAttribute("username");
     Authenticate.User user = (Authenticate.User) session.getAttribute("user");
@@ -268,60 +272,62 @@ public class CertifyServlet extends ClientServlet {
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
-        out.println("        <tr>");
-        out.println("          <td valign=\"top\">");
-        out.println("            <input type=\"checkbox\" name=\"runI\" value=\"true\" checked=\"true\"/> Profiling");
-        out.println("          </td>");
-        int profileUsageId = profileManager.getProfileUsageList().size();
-        if (session.getAttribute("profileUsageId") != null) {
-          profileUsageId = (Integer) session.getAttribute("profileUsageId");
-        }
-        out.println("          <td>");
-        out.println("            Verify requirements:");
-        {
-          out.println("            <select name=\"profileUsageId\">");
-          out.println("              <option value=\"\">select</option>");
-          int i = 0;
-          for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
-            i++;
-            if (profileUsageId == i) {
-              out.println("              <option value=\"" + i + "\" selected=\"true\">" + profileUsage + "</option>");
-            } else {
+        if (profileManager != null) {
+          out.println("        <tr>");
+          out.println("          <td valign=\"top\">");
+          out.println("            <input type=\"checkbox\" name=\"runI\" value=\"true\" checked=\"true\"/> Profiling");
+          out.println("          </td>");
+          int profileUsageId = profileManager.getProfileUsageList().size();
+          if (session.getAttribute("profileUsageId") != null) {
+            profileUsageId = (Integer) session.getAttribute("profileUsageId");
+          }
+          out.println("          <td>");
+          out.println("            Verify requirements:");
+          {
+            out.println("            <select name=\"profileUsageId\">");
+            out.println("              <option value=\"\">select</option>");
+            int i = 0;
+            for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
+              i++;
+              if (profileUsageId == i) {
+                out.println("              <option value=\"" + i + "\" selected=\"true\">" + profileUsage + "</option>");
+              } else {
+                out.println("              <option value=\"" + i + "\">" + profileUsage + "</option>");
+              }
+            }
+          }
+          out.println("            </select>");
+          out.println("            <br/>");
+          out.println("            Compare for conformance:");
+          {
+            out.println("            <select name=\"profileUsageIdForConformance\">");
+            out.println("              <option value=\"\">select</option>");
+            int i = 0;
+            for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
+              i++;
+              if (profileUsage.toString().equals("US - Base")) {
+                out.println("              <option value=\"" + i + "\" selected=\"true\">" + profileUsage + "</option>");
+              } else {
+                out.println("              <option value=\"" + i + "\">" + profileUsage + "</option>");
+              }
+            }
+          }
+          out.println("            </select>");
+          out.println("            <br/>");
+          out.println("            Compare for interoperability: ");
+          {
+            out.println("            <select name=\"profileUsageIdForInteroperability\">");
+            out.println("              <option value=\"\">select</option>");
+            int i = 0;
+            for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
+              i++;
               out.println("              <option value=\"" + i + "\">" + profileUsage + "</option>");
             }
           }
+          out.println("            </select>");
+          out.println("          </td>");
+          out.println("        </tr>");
         }
-        out.println("            </select>");
-        out.println("            <br/>");
-        out.println("            Compare for conformance:");
-        {
-          out.println("            <select name=\"profileUsageIdForConformance\">");
-          out.println("              <option value=\"\">select</option>");
-          int i = 0;
-          for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
-            i++;
-            if (profileUsage.toString().equals("US - Base")) {
-              out.println("              <option value=\"" + i + "\" selected=\"true\">" + profileUsage + "</option>");
-            } else {
-              out.println("              <option value=\"" + i + "\">" + profileUsage + "</option>");
-            }
-          }
-        }
-        out.println("            </select>");
-        out.println("            <br/>");
-        out.println("            Compare for interoperability: ");
-        {
-          out.println("            <select name=\"profileUsageIdForInteroperability\">");
-          out.println("              <option value=\"\">select</option>");
-          int i = 0;
-          for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
-            i++;
-            out.println("              <option value=\"" + i + "\">" + profileUsage + "</option>");
-          }
-        }
-        out.println("            </select>");
-        out.println("          </td>");
-        out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
         out.println("            <input type=\"checkbox\" name=\"runD\" value=\"true\" checked=\"true\"/> Exceptional");
@@ -337,10 +343,11 @@ public class CertifyServlet extends ClientServlet {
         out.println("            <select multiple size=\"5\" name=\"forecastTestPanelId\">");
         for (ForecastTestPanel forecastTestPanel : forecastTestPanelList) {
           if (forecastTestPanel.isStandard()) {
-            out.println("              <option value=\"" + forecastTestPanel.getId() + "\" selected" + ">" + forecastTestPanel.getLabel()
-                + "</option>");
+            out.println("              <option value=\"" + forecastTestPanel.getId() + "\" selected" + ">"
+                + forecastTestPanel.getLabel() + "</option>");
           } else {
-            out.println("              <option value=\"" + forecastTestPanel.getId() + "\">" + forecastTestPanel.getLabel() + "</option>");
+            out.println("              <option value=\"" + forecastTestPanel.getId() + "\">"
+                + forecastTestPanel.getLabel() + "</option>");
           }
         }
         out.println("            ");

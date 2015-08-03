@@ -228,7 +228,7 @@ public class ConfigureServlet extends ClientServlet
             + "insert segment BHS first\n" + "insert segment BTS last\n" + "insert segment FHS first\n"
             + "insert segment FTS last\n" + "FHS-8=CR\n" + "BSH-8=CR\n" + "FHS-9=[FILENAME]\n" + "FTS-1=1\n"
             + "BTS-1=1\n" + "FTS-2=CR\n" + "BTS-2=CR\n" + "FHS-4=[USERID]\n" + "BHS-4=[USERID]\n"
-            + "insert segment IN1 before ORC if missing\n" + "insert segment IN2 after IN1 if missing\n" + "IN1-1=1\n"
+            + "insert segment IN1,IN2 before ORC if missing\n" + "insert segment IN2 after IN1 if missing\n" + "IN1-1=1\n"
             + "fix missing mother maiden first\n" + "remove observation 64994-7 if 18+\n");
       } else if (templateName.equals(TEMPLATE_AZ_ASIIS_PROD) || templateName.equals(TEMPLATE_AZ_ASIIS_TEST)) {
         HttpConnector httpConnector = (HttpConnector) connector;

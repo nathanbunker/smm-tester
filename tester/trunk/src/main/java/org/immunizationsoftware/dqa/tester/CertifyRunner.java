@@ -40,6 +40,7 @@ import java.util.Map;
 import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.mover.ManagerServlet;
+import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.connectors.RunAgainstConnector;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
@@ -247,6 +248,8 @@ public class CertifyRunner extends Thread
   private SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
   private Transformer transformer;
+  private SendData sendData;
+  private File testDir;
 
   @Override
   public void run() {
@@ -254,7 +257,18 @@ public class CertifyRunner extends Thread
     status = STATUS_STARTED;
     try {
 
-      File testDataFile = CreateTestCaseServlet.getTestDataFile((Authenticate.User) session.getAttribute("user"));
+      Authenticate.User user = (Authenticate.User) session.getAttribute("user");
+      sendData = user.getSendData();
+      if (sendData == null) {
+        testDir = null;
+      } else {
+        testDir = new File(sendData.getRootDir(), testCaseSet);
+        if (!testDir.exists()) {
+          testDir.mkdir();
+        }
+      }
+
+      File testDataFile = CreateTestCaseServlet.getTestDataFile(user);
       if (testDataFile == null) {
         transformer = new Transformer();
       } else {
@@ -587,15 +601,14 @@ public class CertifyRunner extends Thread
 
   public PrintWriter setupExampleFile(String name, TestCaseMessage testCaseMessage) {
     if (testCaseMessage != null) {
-      File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessage, session);
-      if (testCaseDir != null) {
+      if (testDir != null) {
         logStatus("Saving example");
         File exampleFile;
         if (testCaseMessage.getForecastTestPanel() != null) {
-          exampleFile = new File(testCaseDir, "Example Messages " + name + ""
+          exampleFile = new File(testDir, "Example Messages " + name + ""
               + testCaseMessage.getForecastTestPanel().getLabel() + ".hl7");
         } else {
-          exampleFile = new File(testCaseDir, "Example Messages " + name + ".hl7");
+          exampleFile = new File(testDir, "Example Messages " + name + ".hl7");
         }
         try {
           return new PrintWriter(exampleFile);
@@ -609,16 +622,15 @@ public class CertifyRunner extends Thread
   }
 
   public PrintWriter setupAckFile(String name, TestCaseMessage testCaseMessage) {
-    if (testCaseMessage != null) {
-      File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessage, session);
-      if (testCaseDir != null) {
+    if (testCaseMessage != null && sendData != null) {
+      if (testDir != null) {
         logStatus("Saving example");
         File exampleFile;
         if (testCaseMessage.getForecastTestPanel() != null) {
-          exampleFile = new File(testCaseDir, "Example Messages " + name + ""
+          exampleFile = new File(testDir, "Example Messages " + name + ""
               + testCaseMessage.getForecastTestPanel().getLabel() + ".ack.hl7");
         } else {
-          exampleFile = new File(testCaseDir, "Example Messages " + name + ".ack.hl7");
+          exampleFile = new File(testDir, "Example Messages " + name + ".ack.hl7");
         }
         try {
           return new PrintWriter(exampleFile);
@@ -633,10 +645,9 @@ public class CertifyRunner extends Thread
 
   public void printReportToFile() {
 
-    File testCaseDir = CreateTestCaseServlet.getTestCaseDir(testCaseMessageBase, session);
-    if (testCaseDir != null) {
+    if (testDir != null) {
       logStatus("Writing out final report");
-      File detailReportFile = new File(testCaseDir, "IIS Testing Report Detail.html");
+      File detailReportFile = new File(testDir, "IIS Testing Report Detail.html");
       try {
         PrintWriter out = new PrintWriter(new FileWriter(detailReportFile));
         String title = "IIS Testing Report Detail";
@@ -652,7 +663,7 @@ public class CertifyRunner extends Thread
         // unable to save, continue as normal
       }
 
-      File reportFile = new File(testCaseDir, "IIS Testing Report.html");
+      File reportFile = new File(testDir, "IIS Testing Report.html");
       try {
         PrintWriter out = new PrintWriter(new FileWriter(reportFile));
         String title = "IIS Testing Report";
@@ -2492,7 +2503,21 @@ public class CertifyRunner extends Thread
             try {
               String results = forecastTesterManager.reportForecastResults(queryTestCaseMessage.getForecastTestCase(),
                   rspMessage, connector.getTchForecastTesterSoftwareId());
-              CreateTestCaseServlet.saveForecastResults(queryTestCaseMessage, session, results);
+              if (queryTestCaseMessage.getTestCaseNumber() != null
+                  && !queryTestCaseMessage.getTestCaseNumber().equals("")) {
+                if (testDir != null) {
+                  File testCaseFile = new File(testDir, "TC-" + queryTestCaseMessage.getTestCaseNumber()
+                      + ".forecast-results.txt");
+                  try {
+                    PrintWriter out = new PrintWriter(new FileWriter(testCaseFile));
+                    out.print(results);
+                    out.close();
+                  } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                    // unable to save, continue as normal
+                  }
+                }
+              }
             } catch (Exception e) {
               e.printStackTrace();
             }
@@ -2518,7 +2543,9 @@ public class CertifyRunner extends Thread
   }
 
   private void saveTestCase(TestCaseMessage tcm) {
-    CreateTestCaseServlet.saveTestCaseHtml(tcm, session);
+    if (testDir != null) {
+      CreateTestCaseServlet.saveTestCaseHtml(tcm, testDir);
+    }
     CreateTestCaseServlet.saveAnalysis(tcm, connector, session);
   }
 
