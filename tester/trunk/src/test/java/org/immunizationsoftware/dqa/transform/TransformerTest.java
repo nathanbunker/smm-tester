@@ -1,5 +1,8 @@
 package org.immunizationsoftware.dqa.transform;
 
+import static org.junit.Assert.assertEquals;
+
+import org.immunizationsoftware.dqa.tester.CertifyRunner;
 import org.junit.Test;
 
 import junit.framework.TestCase;
@@ -387,5 +390,20 @@ public class TransformerTest extends TestCase
     testCaseMessage.setCustomTransformations(transform);
     transformer.transform(testCaseMessage);
     assertEquals(finalMessage, testCaseMessage.getMessageText());
+  }
+  
+  @Test
+  public void testMakeBase62Number() {
+    assertEquals("0", Transformer.makeBase62Number(0));
+    assertEquals("1", Transformer.makeBase62Number(1));
+    assertEquals("2", Transformer.makeBase62Number(2));
+    assertEquals("9", Transformer.makeBase62Number(9));
+    assertEquals("a", Transformer.makeBase62Number(10));
+    assertEquals("z", Transformer.makeBase62Number(35));
+    assertEquals("A", Transformer.makeBase62Number(36));
+    assertEquals("10", Transformer.makeBase62Number(62));
+    assertEquals("20", Transformer.makeBase62Number(62 * 2));
+    assertEquals("2a", Transformer.makeBase62Number(62 * 2 + 10));
+    System.out.println("'6449390' = '" + Transformer.makeBase62Number(6449390) + "'");
   }
 }

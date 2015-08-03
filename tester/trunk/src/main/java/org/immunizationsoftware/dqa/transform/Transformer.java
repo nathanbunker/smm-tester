@@ -668,7 +668,7 @@ public class Transformer
           quickTransforms += "MSH-9.1=VXU\n";
           quickTransforms += "MSH-9.2=V04\n";
           quickTransforms += "MSH-9.3=VXU_V04\n";
-          quickTransforms += "MSH-10=" + actualTestCase + "." + (System.currentTimeMillis() % 10000) + "\n";
+          quickTransforms += "MSH-10=" + actualTestCase + "." + makeBase62Number(System.currentTimeMillis() % 10000) + "\n";
           quickTransforms += "MSH-11=P\n";
           quickTransforms += "MSH-12=2.5.1\n";
           quickTransforms += "PID-1=1\n";
@@ -2785,4 +2785,24 @@ public class Transformer
     }
     return birthCount;
   }
+  
+  public static String makeBase62Number(long number) {
+    String s = "";
+    if (number == 0) {
+      return "0";
+    }
+    while (number != 0) {
+      long a = number % 62;
+      if (a < 10) {
+        s = a + s;
+      } else if (a < 36) {
+        s = (char) (a - 10 + 97) + s;
+      } else {
+        s = (char) (a - 10 - 26 + 65) + s;
+      }
+      number = (number - a) / 62;
+    }
+    return s;
+  }
+
 }

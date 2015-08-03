@@ -624,7 +624,7 @@ public class CreateTestCaseServlet extends ClientServlet
   }
 
   public static File getOrCreateTestCaseDir(TestCaseMessage testCaseMessage, Authenticate.User user) {
-    File testCaseDir = user.getSendData().getTestCaseDir();
+    File testCaseDir = user.getSendData().getTestCaseDir(true);
     if (!testCaseMessage.getTestCaseSet().equals("")) {
       testCaseDir = new File(testCaseDir, testCaseMessage.getTestCaseSet());
       if (!testCaseDir.exists()) {
@@ -635,7 +635,7 @@ public class CreateTestCaseServlet extends ClientServlet
   }
 
   public static File getTestDataFile(Authenticate.User user) {
-    File testCaseDir = user.getSendData().getTestDir();
+    File testCaseDir = user.getSendData().getTestDir(false);
     if (testCaseDir != null) {
       File testDataFile = new File(testCaseDir, "test-data.txt");
       if (testDataFile.exists()) {
@@ -648,16 +648,18 @@ public class CreateTestCaseServlet extends ClientServlet
   protected static void loadTestCases(HttpSession session) throws ServletException, IOException {
     Authenticate.User user = (Authenticate.User) session.getAttribute("user");
     if (user != null && user.hasSendData()) {
-      File testCaseDir = user.getSendData().getTestCaseDir();
-      readTestCases(session, testCaseDir);
-      File[] dirs = testCaseDir.listFiles(new FileFilter() {
-        public boolean accept(File arg0) {
-          return arg0.isDirectory() && !arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
-        }
-      });
-      if (dirs != null) {
-        for (File dir : dirs) {
-          readTestCases(session, dir);
+      File testCaseDir = user.getSendData().getTestCaseDir(false);
+      if (testCaseDir != null) {
+        readTestCases(session, testCaseDir);
+        File[] dirs = testCaseDir.listFiles(new FileFilter() {
+          public boolean accept(File arg0) {
+            return arg0.isDirectory() && !arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
+          }
+        });
+        if (dirs != null) {
+          for (File dir : dirs) {
+            readTestCases(session, dir);
+          }
         }
       }
     }
@@ -666,14 +668,16 @@ public class CreateTestCaseServlet extends ClientServlet
   public static List<File> listIISTestReports(SendData sendData) {
     List<File> fileList = new ArrayList<File>();
     {
-      File testCaseDir = sendData.getTestCaseDir();
-      File[] dirs = testCaseDir.listFiles(new FileFilter() {
-        public boolean accept(File arg0) {
-          return arg0.isDirectory() && arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
+      File testCaseDir = sendData.getTestCaseDir(false);
+      if (testCaseDir != null) {
+        File[] dirs = testCaseDir.listFiles(new FileFilter() {
+          public boolean accept(File arg0) {
+            return arg0.isDirectory() && arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
+          }
+        });
+        for (File dir : dirs) {
+          fileList.add(dir);
         }
-      });
-      for (File dir : dirs) {
-        fileList.add(dir);
       }
     }
     {

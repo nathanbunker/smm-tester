@@ -106,14 +106,16 @@ public class CertifyHistoryServlet extends ClientServlet
         String iis = paths[1];
         String report = paths[2];
         String fileName = paths[3];
-        
+
         SendData sendData = ManagerServlet.getSendDatayByLabel(iis);
         if (sendData != null && sendData.getConnector() != null) {
           if (sendData.getConnector().getLabel().equals(iis)) {
             File dir = new File(sendData.getRootDir(), report);
-            if (!dir.exists())
-            {
-              dir = new File(sendData.getTestCaseDir(), report);
+            if (!dir.exists()) {
+              File testCaseDir = sendData.getTestCaseDir(false);
+              if (testCaseDir != null) {
+                dir = new File(dir, report);
+              }
             }
             if (dir.exists()) {
               File file = new File(dir, fileName);
