@@ -1,7 +1,7 @@
 body {font-family: Tahoma, Geneva, sans-serif; background:#D5E1DD}
-p {width:650px; color:#2B3E42;}
-ol {width:650px; color:#2B3E42;}
-li {width:650px; color:#2B3E42;}
+p {width:720px; color:#2B3E42;}
+ol {width:720px; color:#2B3E42;}
+li {width:720px; color:#2B3E42;}
 td {
 	color:#2B3E42;
 	padding-left: 5px; 
@@ -14,6 +14,11 @@ a:hover {  background: #FFFFFF; text-decoration:none; border-style: solid; borde
 a:active {text-decoration:none; color: #2B3E42; }
 .viewMenu {width:1080px; padding:0px; background-color:#DEDBD1; margin: 0px; border-color: #2B3E42; border-width: 1px; border-style: solid}
 
+.dashTable {
+	vertical-align: top;
+	border: 1px solid black;
+	border-collapse: collapse;
+}
 
 a:link.menuLink {padding:5px; color:#2B3E42; text-decoration:none}
 a:visited.menuLink {padding:5px; color:#2B3E42; text-decoration:none}

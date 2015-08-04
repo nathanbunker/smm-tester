@@ -21,6 +21,33 @@ public class ParticipantResponse {
   private String transport = "";
   private String querySupport = "";
   private String nistStatus = "";
+  private String accessPasscode = "";
+  private int col = 0;
+  private int row = 0;
+
+  public int getCol() {
+    return col;
+  }
+
+  public void setCol(int col) {
+    this.col = col;
+  }
+
+  public int getRow() {
+    return row;
+  }
+
+  public void setRow(int row) {
+    this.row = row;
+  }
+
+  public String getAccessPasscode() {
+    return accessPasscode;
+  }
+
+  public void setAccessPasscode(String accessPasscode) {
+    this.accessPasscode = accessPasscode;
+  }
 
   public String getTransport() {
     return transport;

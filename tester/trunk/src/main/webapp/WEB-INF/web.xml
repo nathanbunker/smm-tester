@@ -23,7 +23,8 @@
       <param-value>false</param-value>
     </init-param>
 
-<!-- 
+<!--
+ 
     <init-param>
       <param-name>keyStore</param-name>
       <param-value>smm.jks</param-value>
@@ -32,16 +33,18 @@
       <param-name>keyStorePassword</param-name>
       <param-value>changeme</param-value>
     </init-param>
+     -->
+    
     <init-param>
       <param-name>keyStore</param-name>
-      <param-value>C:\Users\Nathan Bunker\Dropbox (AIRA)\Shared AIRA Files\Technical Assistance\IIS\IA IRIS\smm\smm.jks</param-value>
+      <param-value>C:\test\smm\IA IRIS\12908.jks</param-value>
     </init-param>
     <init-param>
       <param-name>keyStorePassword</param-name>
-      <param-value>y1QNUNAjNM5mIadgWZERbXLUdb5863</param-value>
+      <param-value>agBq5XZzYTOTU1gynpu34w8YzGdG4x</param-value>
     </init-param>
+    
 
-     -->
      
     <init-param>
       <param-name>sun.security.ssl.allowUnsafeRenegotiation</param-name>
@@ -91,6 +94,10 @@
   <servlet>
     <servlet-name>ProfileDownloadServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.tester.ProfileDownloadServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>DashboardServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.tester.DashboardServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>GenerateDataServlet</servlet-name>
@@ -184,6 +191,10 @@
     <servlet-name>dqa.install.DownloadServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.install.DownloadServlet</servlet-class>
   </servlet>
+  <servlet-mapping>
+    <servlet-name>DashboardServlet</servlet-name>
+    <url-pattern>/dash</url-pattern>
+  </servlet-mapping>
   <servlet-mapping>
     <servlet-name>CreateTestCaseServlet</servlet-name>
     <url-pattern>/CreateTestCaseServlet</url-pattern>

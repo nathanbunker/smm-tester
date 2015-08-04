@@ -58,6 +58,8 @@ public abstract class Connector
         connector = new ORConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_IL_WS)) {
         connector = new ILConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_MA_SOAP)) {
+        connector = new MAConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_MO_SOAP)) {
         connector = new MOConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_CA_SOAP)) {

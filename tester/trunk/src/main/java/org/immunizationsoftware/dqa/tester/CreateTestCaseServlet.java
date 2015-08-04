@@ -572,8 +572,7 @@ public class CreateTestCaseServlet extends ClientServlet
       String title = "Test Case Message " + testCaseMessage.getTestCaseNumber() + ": "
           + testCaseMessage.getDescription();
       ClientServlet.printHtmlHeadForFile(out, title);
-      out.println("<p>[Return to <a href=\"IIS Testing Report.html\"/>IIS Test Report</a>] [View <a href=\"TC-"
-          + testCaseMessage.getTestCaseNumber() + ".txt\"/>Test Case Source</a>]</p>");
+      out.println("<p>[Return to <a href=\"IIS Testing Report.html\"/>IIS Test Report</a>]</p>");
 
       TestCaseMessageViewerServlet.printTestCaseMessage(out, testCaseMessage);
       ClientServlet.printHtmlFootForFile(out);
