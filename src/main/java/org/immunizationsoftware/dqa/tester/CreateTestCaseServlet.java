@@ -667,8 +667,19 @@ public class CreateTestCaseServlet extends ClientServlet
   public static List<File> listIISTestReports(SendData sendData) {
     List<File> fileList = new ArrayList<File>();
     {
+      File[] dirs = sendData.getRootDir().listFiles(new FileFilter() {
+        public boolean accept(File arg0) {
+          return arg0.isDirectory() && arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
+        }
+      });
+      for (File dir : dirs) {
+        fileList.add(dir);
+      }
+    }
+    {
       File testCaseDir = sendData.getTestCaseDir(false);
-      if (testCaseDir != null) {
+      if (testCaseDir != null) 
+      {
         File[] dirs = testCaseDir.listFiles(new FileFilter() {
           public boolean accept(File arg0) {
             return arg0.isDirectory() && arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
@@ -677,16 +688,6 @@ public class CreateTestCaseServlet extends ClientServlet
         for (File dir : dirs) {
           fileList.add(dir);
         }
-      }
-    }
-    {
-      File[] dirs = sendData.getRootDir().listFiles(new FileFilter() {
-        public boolean accept(File arg0) {
-          return arg0.isDirectory() && arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
-        }
-      });
-      for (File dir : dirs) {
-        fileList.add(dir);
       }
     }
 
