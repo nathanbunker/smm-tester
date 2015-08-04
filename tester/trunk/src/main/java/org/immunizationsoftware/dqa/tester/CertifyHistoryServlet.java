@@ -111,11 +111,10 @@ public class CertifyHistoryServlet extends ClientServlet
         if (sendData != null && sendData.getConnector() != null) {
           if (sendData.getConnector().getLabel().equals(iis)) {
             File dir = new File(sendData.getRootDir(), report);
-            if (!dir.exists()) {
+            if (!dir.exists())
+            {
               File testCaseDir = sendData.getTestCaseDir(false);
-              if (testCaseDir != null) {
-                dir = new File(dir, report);
-              }
+              dir = new File(testCaseDir, report);
             }
             if (dir.exists()) {
               File file = new File(dir, fileName);

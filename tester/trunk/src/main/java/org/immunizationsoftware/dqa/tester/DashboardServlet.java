@@ -4,25 +4,21 @@
  */
 package org.immunizationsoftware.dqa.tester;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.mover.ManagerServlet;
 import org.immunizationsoftware.dqa.mover.SendData;
@@ -191,10 +187,29 @@ public class DashboardServlet extends ClientServlet
         List<File> fileList = CreateTestCaseServlet.listIISTestReports(sendData);
         if (fileList.size() > 0) {
           out.println("      <br/>");
+          out.println("      <br/>Reports Available");
           for (File file : fileList) {
             String link = "CertifyHistoryServlet/" + sendData.getConnector().getLabel() + "/" + file.getName()
                 + "/IIS Testing Report.html";
-            out.println("        <br/>&nbsp;- <a href=\"" + link + "\" target=\"_blank\">" + file.getName() + "</a>");
+            String display = file.getName();
+            if (display.startsWith("IIS Test Report ")) {
+              display = display.substring("IIS Test Report ".length()).trim();
+              if (display.startsWith("-")) {
+                display = display.substring(1).trim();
+              } else if (display.length() == 16) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
+                try {
+                  Date reportDate = sdf.parse(display);
+                  sdf = new SimpleDateFormat("MM/dd/yyyy");
+                  display = sdf.format(reportDate);
+                } catch (Exception e) {
+                  // not good format, don't convert
+                }
+              }
+            }
+            if (!display.equals("Manual Phase 1")) {
+              out.println("        <br/>&nbsp;- <a href=\"" + link + "\" target=\"_blank\">" + display + "</a>");
+            }
           }
         }
       }
