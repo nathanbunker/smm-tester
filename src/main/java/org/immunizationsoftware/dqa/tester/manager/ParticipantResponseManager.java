@@ -35,6 +35,7 @@ public class ParticipantResponseManager {
     int posTransport = CvsReader.findPosition("Transport", valueList);
     int posQuerySupport = CvsReader.findPosition("Query Support", valueList);
     int posNistStatus = CvsReader.findPosition("NIST Status", valueList);
+    int posAccessPasscode = CvsReader.findPosition("Access Passcode", valueList);
 
     while ((line = in.readLine()) != null) {
       valueList = CvsReader.readValuesFromCsv(line);
@@ -60,6 +61,7 @@ public class ParticipantResponseManager {
       participantResponse.setTransport(CvsReader.readValue(posTransport, valueList));
       participantResponse.setQuerySupport(CvsReader.readValue(posQuerySupport, valueList));
       participantResponse.setNistStatus(CvsReader.readValue(posNistStatus, valueList));
+      participantResponse.setAccessPasscode(CvsReader.readValue(posAccessPasscode, valueList));
       if (participantResponseMap != null) {
         String mapPos = participantResponse.getMap();
         if (!mapPos.equals("")) {
@@ -79,6 +81,8 @@ public class ParticipantResponseManager {
             posRow--;
             if (participantResponseMap.length > posCol && participantResponseMap[posCol].length > posRow) {
               participantResponseMap[posCol][posRow] = participantResponse;
+              participantResponse.setCol(posCol);
+              participantResponse.setRow(posRow);
             }
           }
         }

@@ -196,26 +196,9 @@ public class CertifyHistoryServlet extends ClientServlet
           int col = Integer.parseInt(request.getParameter("col"));
           int row = Integer.parseInt(request.getParameter("row"));
           ParticipantResponse participantResponse = participantResponseMap[col][row];
-          out.println("<h2>" + participantResponse.getOrganizationName() + "</h2>");
-          out.println("<p>Platform: " + participantResponse.getPlatform());
-          out.println("<br/>Vendor: " + participantResponse.getVendor());
-          out.println("<br/>Transport: " + participantResponse.getTransport());
-          out.println("<br/>Query Support: " + participantResponse.getTransport() + "</p>");
-          out.println("<p>" + participantResponse.getInternalComments() + "</p>");
-          out.println("<h3>Phase 1</h3>");
-          out.println("<p>Participation: " + participantResponse.getPhaseIParticipation());
-          out.println("<br/>Status: " + participantResponse.getPhase1Status() + "</p>");
-          out.println("<p>" + participantResponse.getPhase1Comments() + "</p>");
-          out.println("<h3>Phase 2</h3>");
-          out.println("<p>Participation: " + participantResponse.getPhaseIIParticipation());
-          out.println("<br/>Status: " + participantResponse.getPhaseIIStatus() + "</p>");
-          out.println("<p>" + participantResponse.getPhaseIIComments() + "</p>");
-          out.println("<p>Record Requirements Status: " + participantResponse.getRecordRequirementsStatus() + "</p>");
-          out.println("<p>Connect to IIS Status: " + participantResponse.getConnecttoIISStatus() + "</p>");
-          out.println("<p>" + participantResponse.getComments() + "</p>");
-          if (participantResponse.getIHS().equalsIgnoreCase("Yes")) {
-            out.println("<p>IIS serves IHS population</p>");
-          }
+          DashboardServlet.printDashboard(out, participantResponse);
+          out.println("<p><a href=\"dash?col=" + col + "&row=" + row + "&accessPasscode="
+              + participantResponse.getAccessPasscode() + "\">Dashboard Link</a></p>");
           switchParticipantResponse(session, user, participantResponse);
           // List<ParticipantResponse> participantResponseScheduledList =
           // (List<ParticipantResponse>) session
@@ -276,6 +259,8 @@ public class CertifyHistoryServlet extends ClientServlet
           if (nistStatus == null) {
             nistStatus = ALL;
           }
+          String dashboardLink = "dash?a=v";
+          int dashboardLinkCount = 1;
           out.println("<h2>" + view + "</h2>");
           out.println("<table>");
           Map<String, Integer> statusLabelCountMap = new HashMap<String, Integer>();
@@ -325,6 +310,9 @@ public class CertifyHistoryServlet extends ClientServlet
               } else if (greyOut) {
                 out.println("<td width=\"90\" style=\"border-style:solid; border-width: 1px; \">&nbsp;</td>");
               } else {
+                dashboardLink += "&c" + dashboardLinkCount + "=" + col + "&r" + dashboardLinkCount + "=" + row + "&a"
+                    + dashboardLinkCount + "=" + participantResponse.getAccessPasscode();
+                dashboardLinkCount++;
                 String organizationName = participantResponse.getOrganizationName();
                 String status = "pass";
                 String comment = "";
@@ -559,6 +547,8 @@ public class CertifyHistoryServlet extends ClientServlet
           out.println("<input type=\"submit\" name=\"submit\" value=\"Refresh\"/></p>");
           out.println("<input type=\"hidden\" name=\"view\" value=\"" + view + "\"/>");
           out.println("</form>");
+
+          out.println("<p><a href=\"" + dashboardLink + "\">Dashboard Link</a></p>");
         }
       } else {
         for (SendData sendData : ManagerServlet.getSendDataList()) {
