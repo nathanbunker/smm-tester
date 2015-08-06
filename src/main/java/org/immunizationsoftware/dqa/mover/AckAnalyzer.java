@@ -13,7 +13,7 @@ public class AckAnalyzer {
   };
 
   public static enum AckType {
-    DEFAULT, NMSIIS, ALERT, WEBIZ, MIIC
+    DEFAULT, NMSIIS, ALERT, WEBIZ, MIIC, IRIS, VIIS
   };
 
   private ErrorType errorType = null;
@@ -155,6 +155,38 @@ public class AckAnalyzer {
         }
         positive = !setupProblem && recordNotRejected;
       } else if (ackType.equals(AckType.MIIC)) {
+        int recordRejectedPos = ackUpperCase.indexOf("REJECTED");
+        int pidRejectedPos = ackUpperCase.indexOf("PID #1 IGNORED");
+        positive = ackUpperCase.startsWith("MSH|^~\\&|") && recordRejectedPos == -1 && pidRejectedPos == -1;
+        if (positive) {
+          int rxaRejectedPos = ackUpperCase.indexOf("RXA #");
+          if (rxaRejectedPos != -1) {
+            rxaRejectedPos = ackUpperCase.indexOf(" ", rxaRejectedPos + 5);
+            if (rxaRejectedPos != -1) {
+              positive = !ackUpperCase.substring(rxaRejectedPos + +1).startsWith("IGNORED");
+            }
+          }
+        }
+        if (!positive) {
+          log("The word rejected appeared in the message so the message was rejected");
+        }
+      } else if (ackType.equals(AckType.VIIS)) {
+        int recordRejectedPos = ackUpperCase.indexOf("REJECTED");
+        int pidRejectedPos = ackUpperCase.indexOf("PID #1 IGNORED");
+        positive = ackUpperCase.startsWith("MSH|^~\\&|") && recordRejectedPos == -1 && pidRejectedPos == -1;
+        if (positive) {
+          int rxaRejectedPos = ackUpperCase.indexOf("RXA #");
+          if (rxaRejectedPos != -1) {
+            rxaRejectedPos = ackUpperCase.indexOf(" ", rxaRejectedPos + 5);
+            if (rxaRejectedPos != -1) {
+              positive = !ackUpperCase.substring(rxaRejectedPos + +1).startsWith("IGNORED");
+            }
+          }
+        }
+        if (!positive) {
+          log("The word rejected appeared in the message so the message was rejected");
+        }
+      } else if (ackType.equals(AckType.IRIS)) {
         int recordRejectedPos = ackUpperCase.indexOf("REJECTED");
         int pidRejectedPos = ackUpperCase.indexOf("PID #1 IGNORED");
         positive = ackUpperCase.startsWith("MSH|^~\\&|") && recordRejectedPos == -1 && pidRejectedPos == -1;

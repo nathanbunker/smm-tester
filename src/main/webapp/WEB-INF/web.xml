@@ -33,8 +33,8 @@
       <param-name>keyStorePassword</param-name>
       <param-value>changeme</param-value>
     </init-param>
-     -->
     
+     -->
     <init-param>
       <param-name>keyStore</param-name>
       <param-value>C:\test\smm\IA IRIS\12908.jks</param-value>
