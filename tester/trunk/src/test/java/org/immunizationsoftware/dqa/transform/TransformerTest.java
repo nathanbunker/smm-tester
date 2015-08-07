@@ -23,6 +23,16 @@ public class TransformerTest extends TestCase
     assertEquals("I'm great", Transformer.createTokenList("'I''m great'").removeFirst());
 
   }
+  
+  @Test
+  public void testReadValue()
+  {
+    assertEquals("Burt", Transformer.readField(TEST1_ORIGINAL, "PID-5.1"));
+    assertEquals("Burt", Transformer.readField(TEST1_ORIGINAL, "PID-5"));
+    assertEquals("20150303154321-0500", Transformer.readField(TEST1_ORIGINAL, "MSH-7"));
+    assertEquals("", Transformer.readField(TEST1_ORIGINAL, "PID-100"));
+    assertEquals("", Transformer.readField(TEST1_ORIGINAL, "ZZZ-1"));
+  }
 
   private static final String TEST1_ORIGINAL = "MSH|^~\\&|||||20150303154321-0500||VXU^V04^VXU_V04|G98P76.1245|P|2.5.1|\r"
       + "PID|1||G98P76^^^OIS-TEST^MR||Burt^Callis^G^^^^L|Copeland^Lona|20020222|M|||374 Refugio Ln^^Woodland Park^MI^49309^USA^P||^PRN^PH^^^231^5679656|\r"
