@@ -481,6 +481,18 @@ public class Transformer
     return transform(messageText, transforms, PatientType.NONE, connector);
   }
 
+  public static String readField(String message, String reference) {
+    Transform t = readHL7Reference(reference, reference.length());
+    if (t == null) {
+      return "";
+    }
+    try {
+      return getValueFromHL7(message, t);
+    } catch (IOException ioe) {
+      throw new IllegalArgumentException(ioe);
+    }
+  }
+
   public void transform(TestCaseMessage testCaseMessage) {
     String actualTestCase = testCaseMessage.getTestCaseNumber();
     if (actualTestCase.equals("")) {
@@ -668,7 +680,8 @@ public class Transformer
           quickTransforms += "MSH-9.1=VXU\n";
           quickTransforms += "MSH-9.2=V04\n";
           quickTransforms += "MSH-9.3=VXU_V04\n";
-          quickTransforms += "MSH-10=" + actualTestCase + "." + makeBase62Number(System.currentTimeMillis() % 10000) + "\n";
+          quickTransforms += "MSH-10=" + actualTestCase + "." + makeBase62Number(System.currentTimeMillis() % 10000)
+              + "\n";
           quickTransforms += "MSH-11=P\n";
           quickTransforms += "MSH-12=2.5.1\n";
           quickTransforms += "PID-1=1\n";
@@ -2785,7 +2798,7 @@ public class Transformer
     }
     return birthCount;
   }
-  
+
   public static String makeBase62Number(long number) {
     String s = "";
     if (number == 0) {
