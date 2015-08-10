@@ -18,8 +18,8 @@ import org.apache.commons.codec.binary.Base64;
 public class MAConnector extends ORConnector
 {
 
-  private static final String HL7_REQUEST_RESULT_START_TAG = "<urn:submitSingleMessageResponse xmlns:urn=\"urn:cdc:iisb:2011\">";
-  private static final String HL7_REQUEST_RESULT_END_TAG = "</urn:submitSingleMessageResponse>";
+  private static final String HL7_REQUEST_RESULT_START_TAG = "<urn:return>"; // "<urn:submitSingleMessageResponse xmlns:urn=\"urn:cdc:iisb:2011\">";
+  private static final String HL7_REQUEST_RESULT_END_TAG = "</urn:return>"; // "</urn:submitSingleMessageResponse>";
 
   protected MAConnector(String label, String url, String type) {
     super(label, url, type);
@@ -167,7 +167,7 @@ public class MAConnector extends ORConnector
 
   @Override
   public String connectivityTest(String message) throws Exception {
-    return "Not supported by MO SOAP interface";
+    return "Not supported by MA SOAP interface";
   }
 
   @Override
