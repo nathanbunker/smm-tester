@@ -112,8 +112,8 @@ public class MOConnector extends ORConnector
       sb.append("    </prov:HL7SoapHeader>");
       sb.append("  </soap:Header>");
       sb.append("  <soap:Body>");
-      sb.append("    <prov:SMVHL7_x0028__x0029_/>");  // This one works, but has the same ACK for everything I submitted.
-      //sb.append("    <prov:SMVHL7VAL_x0028__x0029_/>");  This one currently times out, but was the suggested one by MO.
+      // sb.append("    <prov:SMVHL7_x0028__x0029_/>");  // This one works, but has the same ACK for everything I submitted.
+      sb.append("    <prov:SMVHL7VAL_x0028__x0029_/>"); // This one currently times out, but was the suggested one by MO.
       sb.append("  </soap:Body>");
       sb.append("</soap:Envelope>");
       
@@ -143,6 +143,8 @@ public class MOConnector extends ORConnector
         response.append("\r");
         response.append("DEBUG LOG: \r");
         response.append(debugLog);
+        response.append("MESSAGE SENT: \r");
+        response.append(content.replaceAll("\\&", "&amp;").replaceAll("\\<", "&lt;").replaceAll("\\>", "&gt;"));
       }
       return response.toString();
     } catch (IOException e) {

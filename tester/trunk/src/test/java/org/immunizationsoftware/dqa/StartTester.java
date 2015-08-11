@@ -118,6 +118,7 @@ public class StartTester
     try
     {
       System.out.println(">>> STARTING EMBEDDED JETTY SERVER, PORT 8282, PRESS ANY KEY TO STOP");
+      System.out.println("--> java.version = " + System.getProperty("java.version"));
       server.start();
       System.in.read();
       System.out.println(">>> STOPPING EMBEDDED JETTY SERVER");

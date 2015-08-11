@@ -6,7 +6,8 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AckAnalyzer {
+public class AckAnalyzer
+{
 
   public static enum ErrorType {
     UNKNOWN, AUTHENTICATION, SENDER_PROBLEM, RECEIVER_PROBLEM
@@ -118,7 +119,8 @@ public class AckAnalyzer {
       log("Returned result is not an acknowledgement message: first line does not start with MSH|");
     } else if (!getFieldValue("MSH", 9).equals("ACK")) {
       isNotAck = true;
-      log("Returned result is not an acknowledgement message: MSH-9 is not ACK, it is '" + getFieldValue("MSH", 9) + "'");
+      log("Returned result is not an acknowledgement message: MSH-9 is not ACK, it is '" + getFieldValue("MSH", 9)
+          + "'");
     }
     if (isNotAck) {
       ackMessage = false;
@@ -171,9 +173,16 @@ public class AckAnalyzer {
           log("The word rejected appeared in the message so the message was rejected");
         }
       } else if (ackType.equals(AckType.VIIS)) {
-        int recordRejectedPos = ackUpperCase.indexOf("REJECTED");
-        int pidRejectedPos = ackUpperCase.indexOf("PID #1 IGNORED");
-        positive = ackUpperCase.startsWith("MSH|^~\\&|") && recordRejectedPos == -1 && pidRejectedPos == -1;
+        String[] rejectPhrases = { "Unsupported HL7 version or trigger".toUpperCase(), "REJECTED", "PID #1 IGNORED", "BAD MESSAGE"};
+
+        positive = ackUpperCase.startsWith("MSH|^~\\&|");
+        for (String rejectPhrase : rejectPhrases) {
+          int pos = ackUpperCase.indexOf(rejectPhrase);
+          if (pos > 0) {
+            positive = false;
+            break;
+          }
+        }
         if (positive) {
           int rxaRejectedPos = ackUpperCase.indexOf("RXA #");
           if (rxaRejectedPos != -1) {
@@ -187,6 +196,8 @@ public class AckAnalyzer {
           log("The word rejected appeared in the message so the message was rejected");
         }
       } else if (ackType.equals(AckType.IRIS)) {
+        // IA defines 5 levels of errors: None, Low, Moderate, High, and
+        // Critical
         int recordRejectedPos = ackUpperCase.indexOf("REJECTED");
         int pidRejectedPos = ackUpperCase.indexOf("PID #1 IGNORED");
         positive = ackUpperCase.startsWith("MSH|^~\\&|") && recordRejectedPos == -1 && pidRejectedPos == -1;
