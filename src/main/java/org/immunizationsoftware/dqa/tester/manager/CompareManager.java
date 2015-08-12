@@ -23,7 +23,19 @@ public class CompareManager
     comparison.setHl7FieldName("PID-3.1");
     comparison.setFieldLabel("MRN");
     comparison.setOriginalValue(vxuReader.getValueBySearchingRepeats(3, 1, "MR", 5));
+    if (comparison.getOriginalValue().equals("")) {
+      comparison.setOriginalValue(vxuReader.getValueBySearchingRepeats(3, 1, "PI", 5));
+      if (comparison.getOriginalValue().equals("")) {
+        comparison.setOriginalValue(vxuReader.getValueBySearchingRepeats(3, 1, "", 5));
+      }
+    }
     comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 1, "MR", 5));
+    if (comparison.getReturnedValue().equals("")) {
+      comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 1, "PI", 5));
+      if (comparison.getReturnedValue().equals("")) {
+        comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 1, "", 5));
+      }
+    }
     comparison.setPriorityLevel(Comparison.PRIORITY_LEVEL_OPTIONAL);
     comparisonList.add(comparison);
 
@@ -437,8 +449,7 @@ public class CompareManager
         // wouldn't expect this to be the case
         continue;
       }
-      if (adminDate.length() > 8)
-      {
+      if (adminDate.length() > 8) {
         adminDate = adminDate.substring(0, 8);
       }
       rspReader.resetPostion();
@@ -734,11 +745,9 @@ public class CompareManager
 
     return comparisonList;
   }
-  
-  private static final String trunc(String s, int length)
-  {
-    if (s != null && s.length() > length )
-    {
+
+  private static final String trunc(String s, int length) {
+    if (s != null && s.length() > length) {
       return s.substring(0, length);
     }
     return s;
