@@ -31,6 +31,7 @@ public class CASoapConnector extends HttpConnector
 
   @Override
   public String submitMessage(String message, boolean debug) throws Exception {
+    System.setProperty("https.protocols", "TLSv1");
     ClientConnection cc = new ClientConnection();
     cc.setUserId(userid);
     cc.setPassword(password);
