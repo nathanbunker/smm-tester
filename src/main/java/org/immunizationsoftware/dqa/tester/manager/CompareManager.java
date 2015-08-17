@@ -59,7 +59,19 @@ public class CompareManager
     comparison.setHl7FieldName("PID-3.4");
     comparison.setFieldLabel("MRN Assigning Authority");
     comparison.setOriginalValue(vxuReader.getValueBySearchingRepeats(3, 4, "MR", 5));
+    if (comparison.getOriginalValue().equals("")) {
+      comparison.setOriginalValue(vxuReader.getValueBySearchingRepeats(3, 4, "PI", 5));
+      if (comparison.getOriginalValue().equals("")) {
+        comparison.setOriginalValue(vxuReader.getValueBySearchingRepeats(3, 4, "", 5));
+      }
+    }
     comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 4, "MR", 5));
+    if (comparison.getReturnedValue().equals("")) {
+      comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 4, "PI", 5));
+      if (comparison.getReturnedValue().equals("")) {
+        comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 4, "", 5));
+      }
+    }
     comparison.setPriorityLevel(Comparison.PRIORITY_LEVEL_OPTIONAL);
     comparisonList.add(comparison);
 
