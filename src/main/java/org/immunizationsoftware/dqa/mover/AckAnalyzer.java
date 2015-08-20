@@ -37,7 +37,7 @@ public class AckAnalyzer {
       return null;
     }
     HL7Reader ackMessageReader = new HL7Reader(ackMessageText);
-    if (!ackMessageReader.advanceToSegment("MSH") || ackMessageReader.getValue(9).equals("ACK")) {
+    if (!ackMessageReader.advanceToSegment("MSH") || !ackMessageReader.getValue(9).equals("ACK")) {
       return null;
     }
     return ackMessageReader;
