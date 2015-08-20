@@ -6,16 +6,42 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AckAnalyzer
-{
+import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
+
+public class AckAnalyzer {
 
   public static enum ErrorType {
     UNKNOWN, AUTHENTICATION, SENDER_PROBLEM, RECEIVER_PROBLEM
   };
 
   public static enum AckType {
-    DEFAULT, NMSIIS, ALERT, WEBIZ, MIIC, IRIS, VIIS
+    DEFAULT, NMSIIS, ALERT, WEBIZ, MIIC, IRIS, VIIS, NJSIIS;
+    
+    private boolean inHL7Format = true;
+    
+    public boolean isInHL7Format()
+    {
+      return inHL7Format;
+    }
   };
+  
+  static
+  {
+    AckType.NJSIIS.inHL7Format = false;
+  }
+  
+  public static HL7Reader getMessageReader(String ackMessageText, AckType ackType)
+  {
+    if (ackMessageText == null || ackMessageText.length() == 0 || !ackType.inHL7Format)
+    {
+      return null;
+    }
+    HL7Reader ackMessageReader = new HL7Reader(ackMessageText);
+    if (!ackMessageReader.advanceToSegment("MSH") || ackMessageReader.getValue(9).equals("ACK")) {
+      return null;
+    }
+    return ackMessageReader;
+  }
 
   private ErrorType errorType = null;
   private boolean ackMessage = false;
@@ -101,6 +127,7 @@ public class AckAnalyzer
   }
 
   public AckAnalyzer(String ack, AckType ackType, FileOut errorFileOut) {
+    System.out.println("--> ack = " + ack);
     while (ack != null && ack.length() > 0 && ack.charAt(0) <= ' ') {
       ack = ack.substring(1);
     }
@@ -119,21 +146,29 @@ public class AckAnalyzer
       log("Returned result is not an acknowledgement message: first line does not start with MSH|");
     } else if (!getFieldValue("MSH", 9).equals("ACK")) {
       isNotAck = true;
-      log("Returned result is not an acknowledgement message: MSH-9 is not ACK, it is '" + getFieldValue("MSH", 9)
-          + "'");
+      log("Returned result is not an acknowledgement message: MSH-9 is not ACK, it is '" + getFieldValue("MSH", 9) + "'");
     }
     if (isNotAck) {
-      ackMessage = false;
-      positive = false;
-      setupProblem = true;
-      if (ack != null && ackType == AckType.NMSIIS) {
-        if (ack.length() < 240) {
-          setupProblemDescription = ack;
+      System.out.println("--> ackType = " + ackType);
+      if (ackType.equals(AckType.NJSIIS)) {
+        isNotAck = false;
+        ackMessage = true;
+        positive = ackUpperCase.equals("SUCCESS");
+        ackCode = positive ? "AA" : "AE";
+        System.out.println("--> positive = " + positive);
+      } else {
+        ackMessage = false;
+        positive = false;
+        setupProblem = true;
+        if (ack != null && ackType == AckType.NMSIIS) {
+          if (ack.length() < 240) {
+            setupProblemDescription = ack;
+          } else {
+            setupProblemDescription = "Unexpected non-HL7 response, please verify connection URL";
+          }
         } else {
           setupProblemDescription = "Unexpected non-HL7 response, please verify connection URL";
         }
-      } else {
-        setupProblemDescription = "Unexpected non-HL7 response, please verify connection URL";
       }
     } else {
       ackMessage = true;
@@ -173,7 +208,7 @@ public class AckAnalyzer
           log("The word rejected appeared in the message so the message was rejected");
         }
       } else if (ackType.equals(AckType.VIIS)) {
-        String[] rejectPhrases = { "Unsupported HL7 version or trigger".toUpperCase(), "REJECTED", "PID #1 IGNORED", "BAD MESSAGE"};
+        String[] rejectPhrases = { "Unsupported HL7 version or trigger".toUpperCase(), "REJECTED", "PID #1 IGNORED", "BAD MESSAGE" };
 
         positive = ackUpperCase.startsWith("MSH|^~\\&|");
         for (String rejectPhrase : rejectPhrases) {
