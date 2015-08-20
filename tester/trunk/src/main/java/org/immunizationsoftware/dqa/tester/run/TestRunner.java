@@ -149,14 +149,16 @@ public class TestRunner {
           passedTest = true;
         }
       } else {
-        ackMessageReader = new HL7Reader(ackMessageText);
-        if (ackMessageReader.advanceToSegment("MSH")) {
+        ackMessageReader = AckAnalyzer.getMessageReader(ackMessageText, connector.getAckType());
+        if (ackMessageReader != null) {
           testCaseMessage.setActualMessageResponseType(ackMessageReader.getValue(9));
-          if (testCaseMessage.getActualMessageResponseType().equals("ACK")) {
+        }
+        {
+          if (ackMessageReader != null || !connector.getAckType().isInHL7Format()) {
             AckAnalyzer ackAnalyzer = new AckAnalyzer(ackMessageText, connector.getAckType());
             testCaseMessage.setAccepted(ackAnalyzer.isPositive());
 
-            if (ackMessageReader.advanceToSegment("MSA")) {
+            if (ackMessageReader != null && ackMessageReader.advanceToSegment("MSA")) {
               testCaseMessage.setActualResultAckType(ackMessageReader.getValue(1));
               testCaseMessage.setActualResultAckMessage(ackMessageReader.getValue(2));
               boolean accepted = false;
