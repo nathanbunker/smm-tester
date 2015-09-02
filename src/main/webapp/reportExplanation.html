@@ -81,6 +81,10 @@
     in meaning. This score was developed to aid in readability of the report. It should only 
     be used help focus the reader on sections of interest and to provide a way of detecting 
     when major changes occur across time to a particular IIS.</p>
+    <p>Furthermore the useful of the scoring criteria is not yet finalized and thus the score
+    may change as the AIRA testing process continues and the report improves. At some point
+    this version of the process will stabilized and the score may be used for comparison across
+    time. </p>
     
     <h3>Report Sections</h3>
     <p>The report is made of eight sections. Each section has a score and these are weighted 
@@ -154,6 +158,41 @@
     the score at first and then less so as the number increases. This means that it 
     is expected that IIS will accept most if not all codes, and missing even a few 
     drastically reduces the score. </p>
+
+    <div id="tolerance"/>
+    <h2>Tolerance</h2> 
+    <p>There are a small set of messages that have minor issues that should or could be 
+    ignored by the IIS. Some of these are future functionality that may be seen in the 
+    future. During testing in 2013 it was shown that many IIS were unprepared to ignore 
+    OBX segments they didn't recognize. This test ensures that IIS are ready for changes 
+    that may come in the future. The score for this section is based on a percentage of 
+    messages accepted. It is not expected that IIS would accept all the tolerance 
+    messages as there is not a clear definition of what should or should not be accepted. </p>
+
+    <div id="ehrExamples"/>
+    <h2>EHR Examples</h2> 
+    <p>A set of EHR example messages are sent. The score is a percentage of accepted messages. </p>
+
+    <div id="performance"/>
+    <h2>Performance</h2> 
+    <p>There is no set standard for performance. It has been observed that many IIS are able 
+    to respond to updates within one or two seconds, while some others can take much longer. 
+    While a slow response time is not necessarily an interoperability problem, it is most
+    useful if an IIS is able to respond quickly. For the purposes of the report the average
+    response time standard has been set at three seconds. It should be further noted that
+    this performance is not necessarily indicative of performance on the IIS machine in 
+    production. This information is provided only because it can be easily observed during
+    testing and so is being reported here for the benefit of the IIS and other partners.  
+    </p>
+    <p>This scoring of this section looks at the performance of all updates sent in the previous tests. 
+    Currently the score is 100% if the messages were responded to within 3 seconds on average. 
+    If the average response was between 3 and 6 seconds then score is a linear percentage with 
+    3 seconds at 100% and 6 seconds at 0%.  </p>
+
+    <div id="acknowledgmentConformance"/>
+    <h2>Acknowledgement Conformance</h2> 
+    <p>This section looks at all of the acknowledgements received back and verifies if they meet the 
+    standard for format. The score is the percentage of messages that had no issues in format. </p>
 
     <div id="localRequirements"/>
     <h2>Local Requirement Implementation</h2> 
@@ -352,41 +391,6 @@
     CONSTRAINT interoperability is still possible with some provisos. If there is an 
     ALLOWANCE the local site has relaxed requirements and important information may be 
     lost in the exchange but the IIS should still be interoperable. </p>
-
-    <div id="tolerance"/>
-    <h2>Tolerance</h2> 
-    <p>There are a small set of messages that have minor issues that should or could be 
-    ignored by the IIS. Some of these are future functionality that may be seen in the 
-    future. During testing in 2013 it was shown that many IIS were unprepared to ignore 
-    OBX segments they didn't recognize. This test ensures that IIS are ready for changes 
-    that may come in the future. The score for this section is based on a percentage of 
-    messages accepted. It is not expected that IIS would accept all the tolerance 
-    messages as there is not a clear definition of what should or should not be accepted. </p>
-
-    <div id="ehrExamples"/>
-    <h2>EHR Examples</h2> 
-    <p>A set of EHR example messages are sent. The score is a percentage of accepted messages. </p>
-
-    <div id="performance"/>
-    <h2>Performance</h2> 
-    <p>There is no set standard for performance. It has been observed that many IIS are able 
-    to respond to updates within one or two seconds, while some others can take much longer. 
-    While a slow response time is not necessarily an interoperability problem, it is most
-    useful if an IIS is able to respond quickly. For the purposes of the report the average
-    response time standard has been set at three seconds. It should be further noted that
-    this performance is not necessarily indicative of performance on the IIS machine in 
-    production. This information is provided only because it can be easily observed during
-    testing and so is being reported here for the benefit of the IIS and other partners.  
-    </p>
-    <p>This scoring of this section looks at the performance of all updates sent in the previous tests. 
-    Currently the score is 100% if the messages were responded to within 3 seconds on average. 
-    If the average response was between 3 and 6 seconds then score is a linear percentage with 
-    3 seconds at 100% and 6 seconds at 0%.  </p>
-
-    <div id="acknowledgmentConformance"/>
-    <h2>Acknowledgement Conformance</h2> 
-    <p>This section looks at all of the acknowledgements received back and verifies if they meet the 
-    standard for format. The score is the percentage of messages that had no issues in format. </p>
 
     </body>
 </html>

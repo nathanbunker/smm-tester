@@ -127,7 +127,6 @@ public class AckAnalyzer {
   }
 
   public AckAnalyzer(String ack, AckType ackType, FileOut errorFileOut) {
-    System.out.println("--> ack = " + ack);
     while (ack != null && ack.length() > 0 && ack.charAt(0) <= ' ') {
       ack = ack.substring(1);
     }
@@ -149,13 +148,11 @@ public class AckAnalyzer {
       log("Returned result is not an acknowledgement message: MSH-9 is not ACK, it is '" + getFieldValue("MSH", 9) + "'");
     }
     if (isNotAck) {
-      System.out.println("--> ackType = " + ackType);
       if (ackType.equals(AckType.NJSIIS)) {
         isNotAck = false;
         ackMessage = true;
         positive = ackUpperCase.equals("SUCCESS");
         ackCode = positive ? "AA" : "AE";
-        System.out.println("--> positive = " + positive);
       } else {
         ackMessage = false;
         positive = false;

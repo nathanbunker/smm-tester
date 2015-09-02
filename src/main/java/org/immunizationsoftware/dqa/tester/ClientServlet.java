@@ -154,6 +154,7 @@ public class ClientServlet extends HttpServlet
     out.println("    <title>" + title + "</title>");
     out.println("    <style>");
     out.println("       body {font-family: Tahoma, Geneva, sans-serif; background:#D5E1DD}");
+    out.println("       h2 {border-top-style: solid; border-top-width: 2px;}");
     out.println("       .pass {background:#77BED2; padding-left:5px;}");
     out.println("       .fail {background:#FF9999; padding-left:5px;}");
     out.println("       .nottested { padding-left:5px;}");
