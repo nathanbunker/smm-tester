@@ -26,6 +26,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ import org.immunizationsoftware.dqa.transform.Transformer;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestCase;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestEvent;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
+import org.junit.rules.ExpectedException;
 
 public class CertifyRunner extends Thread
 {
@@ -86,7 +88,7 @@ public class CertifyRunner extends Thread
   private List<String> statusMessageList = null;
   private Throwable exception = null;
   private boolean keepRunning = true;
-  private TestCaseMessage testCaseMessageBase = null;
+  Performance performance = null;
 
   private void logStatus(String status) {
     synchronized (statusMessageList) {
@@ -156,11 +158,6 @@ public class CertifyRunner extends Thread
   public void setRun(boolean r, int suite) {
     run[suite] = r;
   }
-
-  private long totalQueryTime = 0;
-  private long totalUpdateTime = 0;
-  private int totalQueryCount = 0;
-  private int totalUpdateCount = 0;
 
   private String testCaseSet = "";
   private HttpSession session = null;
@@ -238,6 +235,8 @@ public class CertifyRunner extends Thread
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
     testCaseSet = CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX + " " + sdf.format(new Date());
 
+    performance = new Performance();
+
     sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     statusMessageList = new ArrayList<String>();
     logStatus("IIS Tester Initialized");
@@ -278,11 +277,6 @@ public class CertifyRunner extends Thread
       uniqueMRNBase = Transformer.makeBase62Number(System.currentTimeMillis() % 1000000 + uniqueMRNBaseInc++) + "-";
       willQuery = queryType != null && (queryType.equals(QUERY_TYPE_QBP) || queryType.equals(QUERY_TYPE_VXQ));
 
-      testCaseMessageBase = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
-      testCaseMessageBase.setTestCaseSet(testCaseSet);
-      testCaseMessageBase.setTestCaseCategoryId("BASE");
-      testCaseMessageBase.setTestCaseNumber(uniqueMRNBase + testCaseMessageBase.getTestCaseCategoryId());
-
       testStarted = new Date();
 
       if (runAgainstFolder != null) {
@@ -294,6 +288,26 @@ public class CertifyRunner extends Thread
         }
       } else {
         logStatus("Connecting directly to real-time interface");
+
+        logStatus("Verify connection works by sending a message that is expected to pass");
+        TestCaseMessage testCaseMessageBase = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+        testCaseMessageBase.setTestCaseSet(testCaseSet);
+        testCaseMessageBase.setTestCaseCategoryId("BASE");
+        testCaseMessageBase.setTestCaseNumber(uniqueMRNBase + testCaseMessageBase.getTestCaseCategoryId());
+        transformer.transform(testCaseMessageBase);
+        testCaseMessageBase.setAssertResult("Accept - *");
+        TestRunner testRunner = new TestRunner();
+        try {
+          testRunner.runTest(connector, testCaseMessageBase);
+          boolean pass = testCaseMessageBase.isAccepted();
+          if (pass) {
+            logStatus("Base message was accepted, test should be good to run");
+          } else {
+            logStatus("Base message was NOT accepted, tests may not be able to run properly");
+          }
+        } catch (Throwable t) {
+          logStatus("Exception running base test case message: " + t.getMessage());
+        }
       }
 
       if (run[SUITE_A_BASIC]) {
@@ -308,7 +322,7 @@ public class CertifyRunner extends Thread
 
         logStatus("Sending basic messages");
         updateBasic();
-        printReportToFile();
+        // printReportToFile();
       }
 
       if (!keepRunning) {
@@ -322,7 +336,7 @@ public class CertifyRunner extends Thread
 
         logStatus("Sending intermediate messages");
         updateIntermediate();
-        printReportToFile();
+        // printReportToFile();
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
@@ -341,7 +355,7 @@ public class CertifyRunner extends Thread
 
         logStatus("Sending advanced messages");
         updateAdvanced(issueMap);
-        printReportToFile();
+        // printReportToFile();
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
@@ -363,7 +377,7 @@ public class CertifyRunner extends Thread
             ProfileManager.updateMessageAcceptStatus(profileLineList);
             logStatus("Found " + profileLineList.size() + " of profile lines to test");
             updateProfiling(profileLineList);
-            printReportToFile();
+            // printReportToFile();
             if (!keepRunning) {
               status = STATUS_STOPPED;
               return;
@@ -378,7 +392,7 @@ public class CertifyRunner extends Thread
 
         logStatus("Sending exceptional messages");
         updateExceptional();
-        printReportToFile();
+        // printReportToFile();
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
@@ -391,17 +405,17 @@ public class CertifyRunner extends Thread
 
         logStatus("Sending forecast prep messages");
         updateForecastPrep();
-        printReportToFile();
+        // printReportToFile();
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
         }
       }
 
-      if (totalUpdateCount > 0) {
-        areaScore[SUITE_G_PERFORMANCE][0] = (int) totalUpdateTime / totalUpdateCount;
+      if (performance.getTotalUpdateCount() > 0) {
+        areaScore[SUITE_G_PERFORMANCE][0] = (int) performance.getUpdateAverage();
         areaProgress[SUITE_G_PERFORMANCE][0] = 100;
-        areaCount[SUITE_G_PERFORMANCE][0] = totalUpdateCount;
+        areaCount[SUITE_G_PERFORMANCE][0] = performance.getTotalUpdateCount();
       }
       if (run[SUITE_H_CONFORMANCE]) {
 
@@ -414,7 +428,7 @@ public class CertifyRunner extends Thread
 
         logStatus("Analyze format updates");
         analyzeFormatUpdates();
-        printReportToFile();
+        // printReportToFile();
         if (!keepRunning) {
           status = STATUS_STOPPED;
           return;
@@ -466,7 +480,7 @@ public class CertifyRunner extends Thread
 
           logStatus("Submit query for intermediate messages");
           query(SUITE_B_INTERMEDIATE, statusCheckQueryTestCaseIntermediateList);
-          printReportToFile();
+          // printReportToFile();
           if (!keepRunning) {
             status = STATUS_STOPPED;
             return;
@@ -483,7 +497,7 @@ public class CertifyRunner extends Thread
           }
           logStatus("Submit query for profiling messages");
           query(SUITE_I_PROFILING, statusCheckQueryTestCaseProfilingList);
-          printReportToFile();
+          // printReportToFile();
           if (!keepRunning) {
             status = STATUS_STOPPED;
             return;
@@ -500,7 +514,7 @@ public class CertifyRunner extends Thread
           }
           logStatus("Submit query for exceptional messages");
           query(SUITE_D_EXCEPTIONAL, statusCheckQueryTestCaseTolerantList);
-          printReportToFile();
+          // printReportToFile();
           if (!keepRunning) {
             status = STATUS_STOPPED;
             return;
@@ -519,16 +533,16 @@ public class CertifyRunner extends Thread
           logStatus("Submit query for forecast prep messages");
           query(SUITE_E_FORECAST_PREP, statusCheckQueryTestCaseForecastPrepList);
 
-          printReportToFile();
+          // printReportToFile();
           if (!keepRunning) {
             status = STATUS_STOPPED;
             return;
           }
         }
 
-        if (totalQueryCount > 0) {
-          areaScore[SUITE_G_PERFORMANCE][1] = (int) totalQueryTime / totalQueryCount;
-          areaCount[SUITE_G_PERFORMANCE][1] = totalQueryCount;
+        if (performance.getTotalQueryCount() > 0) {
+          areaScore[SUITE_G_PERFORMANCE][1] = (int) performance.getQueryAverage();
+          areaCount[SUITE_G_PERFORMANCE][1] = performance.getTotalQueryCount();
           areaProgress[SUITE_G_PERFORMANCE][1] = 100;
         }
 
@@ -550,6 +564,7 @@ public class CertifyRunner extends Thread
       testFinished = new Date();
 
       printReportToFile();
+      printAnalysis();
     }
 
     catch (Throwable t) {
@@ -587,8 +602,7 @@ public class CertifyRunner extends Thread
     logStatus("Running full test record to see it will be accepted");
     TestRunner testRunner = new TestRunner();
     testRunner.runTest(connector, tcmFull);
-    totalUpdateTime += testRunner.getTotalRunTime();
-    totalUpdateCount++;
+    performance.addTotalUpdateTime(testRunner.getTotalRunTime(), tcmFull);
     tcmFull.setHasRun(true);
 
     if (tcmFull.isPassedTest()) {
@@ -652,7 +666,7 @@ public class CertifyRunner extends Thread
         PrintWriter out = new PrintWriter(new FileWriter(detailReportFile));
         String title = "IIS Testing Report Detail";
         ClientServlet.printHtmlHeadForFile(out, title);
-        out.println("<h1>Detialed Run Log for " + connector.getLabel() + "</h1>");
+        out.println("<h1>Detailed Run Log for " + connector.getLabel() + "</h1>");
         out.println("<p>This detail run log gives complete details on what was tested. For a summary and condensed view see the IIS Testing Results. </p>");
         out.println("<ul>");
         out.println("  <li><a href=\"IIS Testing Report.html\">IIS Testing Results</a></li>");
@@ -681,8 +695,163 @@ public class CertifyRunner extends Thread
         // unable to save, continue as normal
       }
 
-      logStatus("Looking to see if SMM analysis can be written");
+    }
+  }
+
+  public void printAnalysis() {
+
+    if (testDir != null) {
       File smmAnalysisDir = ManagerServlet.getSmmAnalysisFolder();
+      logStatus("Saving performance information");
+      if (smmAnalysisDir != null) {
+        File performanceFile = new File(smmAnalysisDir, "performance.csv");
+        try {
+          PrintWriter out;
+          if (performanceFile.exists()) {
+            out = new PrintWriter(new FileWriter(performanceFile, true));
+          } else {
+            out = new PrintWriter(new FileWriter(performanceFile));
+            boolean first = true;
+            for (PerformanceColumn performanceColumn : PerformanceColumn.values()) {
+              if (!first) {
+                out.print(",");
+              }
+              first = false;
+              out.print("\"" + performanceColumn + "\"");
+            }
+            out.println();
+          }
+
+          boolean first = true;
+          for (PerformanceColumn performanceColumn : PerformanceColumn.values()) {
+            if (!first) {
+              out.print(",");
+            }
+            first = false;
+            switch (performanceColumn) {
+            case ACK_TYPE:
+              out.print("\"" + connector.getAckType() + "\"");
+              break;
+            case ADVANCED_TEST:
+              out.print("\"" + (run[SUITE_C_ADVANCED] ? "Enabled" : "Not Enabled") + "\"");
+              break;
+            case AVERAGE_QUERY:
+              if (performance.getTotalQueryCount() > 0) {
+                out.print(performance.getQueryAverage());
+              }
+              break;
+            case AVERAGE_UPDATE:
+              if (performance.getTotalUpdateCount() > 0) {
+                out.print(performance.getUpdateAverage());
+              }
+              break;
+            case BASIC_TEST:
+              out.print("\"" + (run[SUITE_A_BASIC] ? "Enabled" : "Not Enabled") + "\"");
+              break;
+            case CONFORMANCE:
+              out.print("\"" + (run[SUITE_H_CONFORMANCE] ? "Enabled" : "Not Enabled") + "\"");
+              break;
+            case CONNECTION:
+              out.print("\"" + connector.getLabel() + "\"");
+              break;
+            case EXCEPTIONAL_TEST:
+              out.print("\"" + (run[SUITE_D_EXCEPTIONAL] ? "Enabled" : "Not Enabled") + "\"");
+              break;
+            case FINISHED:
+              out.print(sdf.format(new Date()));
+              break;
+            case FORECAST_PREP:
+              out.print("\"" + (run[SUITE_E_FORECAST_PREP] ? "Enabled" : "Not Enabled") + "\"");
+              break;
+            case INTERMEDIATE_TEST:
+              out.print("\"" + (run[SUITE_B_INTERMEDIATE] ? "Enabled" : "Not Enabled") + "\"");
+              break;
+            case MAX_QUERY:
+              if (performance.getTotalQueryCount() > 0) {
+                out.print(performance.getMaxQueryTime());
+              }
+              break;
+            case MAX_QUERY_TEST_CASE:
+              if (performance.getTotalQueryCount() > 0 && performance.getMaxQueryTestCase() != null) {
+                out.print(performance.getMaxQueryTestCase().getDescription());
+              }
+              break;
+            case MAX_UPDATE:
+              if (performance.getTotalUpdateCount() > 0) {
+                out.print(performance.getMaxUpdateTime());
+              }
+              break;
+            case MAX_UPDATE_TEST_CASE:
+              if (performance.getTotalUpdateCount() > 0 && performance.getMaxUpdateTestCase() != null) {
+                out.print(performance.getMaxUpdateTestCase().getDescription());
+              }
+              break;
+            case MIN_QUERY:
+              if (performance.getTotalQueryCount() > 0) {
+                out.print(performance.getMinQueryTime());
+              }
+              break;
+            case MIN_QUERY_TEST_CASE:
+              if (performance.getTotalQueryCount() > 0 && performance.getMinQueryTestCase() != null) {
+                out.print(performance.getMinQueryTestCase().getDescription());
+              }
+              break;
+            case MIN_UPDATE:
+              if (performance.getTotalUpdateCount() > 0) {
+                out.print(performance.getMinUpdateTime());
+              }
+              break;
+            case MIN_UPDATE_TEST_CASE:
+              if (performance.getTotalUpdateCount() > 0 && performance.getMinUpdateTestCase() != null) {
+                out.print(performance.getMinUpdateTestCase().getDescription());
+              }
+              break;
+            case PERFORMANCE:
+              out.print("\"Enabled\"");
+              break;
+            case PROFILING_TEST:
+              out.print("\"" + (run[SUITE_I_PROFILING] ? "Enabled" : "Not Enabled") + "\"");
+              break;
+            case QUERY_COUNT:
+              out.print(performance.getTotalQueryCount());
+              break;
+            case STARTED:
+              if (testStarted != null) {
+                out.print(sdf.format(testStarted));
+              }
+              break;
+            case TEST_STATUS:
+              out.print(status);
+              break;
+            case TRANSPORT:
+              out.print("\"" + connector.getType() + "\"");
+              break;
+            case UPDATE_COUNT:
+              if (performance.getTotalUpdateCount() > 0) {
+                out.print(performance.getTotalUpdateCount());
+              }
+              break;
+            case STDEV_QUERY:
+              if (performance.getTotalQueryCount() > 0) {
+                out.print(performance.getQuerySDev());
+              }
+              break;
+            case STDEV_UPDATE:
+              if (performance.getTotalUpdateCount() > 0) {
+                out.print(performance.getUpdateSDev());
+              }
+              break;
+            }
+          }
+          out.println();
+          out.close();
+        } catch (IOException ioe) {
+          ioe.printStackTrace();
+          // unable to save, continue as normal
+        }
+      }
+
+      logStatus("Looking to see if SMM analysis can be written");
       if (smmAnalysisDir != null && areaProgress[SUITE_A_BASIC][0] > 0 && areaProgress[SUITE_B_INTERMEDIATE][0] > 0
           && areaProgress[SUITE_D_EXCEPTIONAL][0] > 0 && areaProgress[SUITE_G_PERFORMANCE][0] > 0
           && areaProgress[SUITE_H_CONFORMANCE][0] > 0 && areaProgress[SUITE_I_PROFILING][0] > 0) {
@@ -805,8 +974,7 @@ public class CertifyRunner extends Thread
           if (testCaseMessage.hasIssue()) {
             try {
               testRunner.runTest(connector, testCaseMessage);
-              totalUpdateCount++;
-              totalUpdateTime += testRunner.getTotalRunTime();
+              performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessage);
               if (testCaseMessage.isPassedTest()) {
                 countPass++;
               }
@@ -895,8 +1063,7 @@ public class CertifyRunner extends Thread
             register(testCaseMessagePresent);
             testCaseMessagePresent = testRunner.runTestIfNew(connector, testCaseMessagePresent, testCaseMessageMap);
             if (testRunner.isWasRun()) {
-              totalUpdateTime += testRunner.getTotalRunTime();
-              totalUpdateCount++;
+              performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessagePresent);
               if (testCaseMessagePresent.isAccepted()) {
                 statusCheckTestCaseProfilingList.add(testCaseMessagePresent);
               }
@@ -907,8 +1074,7 @@ public class CertifyRunner extends Thread
             register(testCaseMessageAbsent);
             testRunner.runTestIfNew(connector, testCaseMessageAbsent, testCaseMessageMap);
             if (testRunner.isWasRun()) {
-              totalUpdateTime += testRunner.getTotalRunTime();
-              totalUpdateCount++;
+              performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessageAbsent);
               if (testCaseMessageAbsent.isAccepted()) {
                 statusCheckTestCaseProfilingList.add(testCaseMessageAbsent);
               }
@@ -1011,7 +1177,6 @@ public class CertifyRunner extends Thread
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
-      String type = "A";
     }
 
     areaCount[SUITE_A_BASIC][0] = statusCheckTestCaseBasicList.size();
@@ -1056,8 +1221,7 @@ public class CertifyRunner extends Thread
         testRunner.runTest(connector, testCaseMessage);
         boolean pass = testCaseMessage.isAccepted();
         testCaseMessage.setMajorChangesMade(!verifyNoMajorChangesMade(testCaseMessage));
-        totalUpdateCount++;
-        totalUpdateTime += testRunner.getTotalRunTime();
+        performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessage);
         if (pass) {
           testAccepted++;
           if (!testCaseMessage.isMajorChangesMade()) {
@@ -2240,8 +2404,7 @@ public class CertifyRunner extends Thread
       try {
         testRunner.runTest(connector, testCaseMessage);
         boolean pass = testCaseMessage.isAccepted();
-        totalUpdateCount++;
-        totalUpdateTime += testRunner.getTotalRunTime();
+        performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessage);
         testCaseMessage.setHasRun(true);
         if (pass) {
           testPass++;
@@ -2271,8 +2434,7 @@ public class CertifyRunner extends Thread
       try {
         testRunner.runTest(connector, testCaseMessage);
         boolean pass = testCaseMessage.isAccepted();
-        totalUpdateCount++;
-        totalUpdateTime += testRunner.getTotalRunTime();
+        performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessage);
         testCaseMessage.setHasRun(true);
         if (pass) {
           testPass++;
@@ -2303,8 +2465,7 @@ public class CertifyRunner extends Thread
       try {
         testRunner.runTest(connector, testCaseMessage);
         boolean pass = testCaseMessage.isAccepted();
-        totalUpdateCount++;
-        totalUpdateTime += testRunner.getTotalRunTime();
+        performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessage);
         testCaseMessage.setHasRun(true);
         if (pass) {
           testPass++;
@@ -2349,8 +2510,7 @@ public class CertifyRunner extends Thread
         long startTime = System.currentTimeMillis();
         String message = prepareSendQueryMessage(queryTestCaseMessage);
         String rspMessage = queryConnector.submitMessage(message, false);
-        totalQueryCount++;
-        totalQueryTime += System.currentTimeMillis() - startTime;
+        performance.addTotalQueryTime(System.currentTimeMillis() - startTime, queryTestCaseMessage);
         queryTestCaseMessage.setHasRun(true);
         queryTestCaseMessage.setActualResponseMessage(rspMessage);
         List<Comparison> comparisonList = CompareManager.compareMessages(vxuMessage, rspMessage);
@@ -2481,8 +2641,7 @@ public class CertifyRunner extends Thread
         long startTime = System.currentTimeMillis();
         String message = prepareSendQueryMessage(queryTestCaseMessage);
         String rspMessage = queryConnector.submitMessage(message, false);
-        totalQueryCount++;
-        totalQueryTime += System.currentTimeMillis() - startTime;
+        performance.addTotalQueryTime(System.currentTimeMillis() - startTime, queryTestCaseMessage);
         queryTestCaseMessage.setHasRun(true);
         queryTestCaseMessage.setActualResponseMessage(rspMessage);
         List<Comparison> comparisonList = CompareManager.compareMessages(
@@ -3085,14 +3244,14 @@ public class CertifyRunner extends Thread
       }
 
       double overallScore = 0.0;
-      overallScore += reportScore[REPORT_1_INTEROP] * 0.4;
-      overallScore += reportScore[REPORT_2_CODED] * 0.2;
-      overallScore += reportScore[REPORT_3_LOCAL] * 0.1;
-      overallScore += reportScore[REPORT_4_NATIONAL] * 0.1;
+      overallScore += reportScore[REPORT_1_INTEROP] * 0.5;
+      overallScore += reportScore[REPORT_2_CODED] * 0.1;
+      // overallScore += reportScore[REPORT_3_LOCAL] * 0.1;
+      // overallScore += reportScore[REPORT_4_NATIONAL] * 0.1;
       overallScore += reportScore[REPORT_5_TOLERANCE] * 0.05;
       overallScore += reportScore[REPORT_6_EHR] * 0.05;
       overallScore += reportScore[REPORT_7_PERFORM] * 0.05;
-      overallScore += reportScore[REPORT_8_ACK] * 0.05;
+      overallScore += reportScore[REPORT_8_ACK] * 0.25;
 
       out.println("<p>This report gives quick view of how the interface responds when receiving VXU messages. "
           + "This report is preliminary and to be used to inform both national and local standardization efforts. This report is "
@@ -3109,10 +3268,9 @@ public class CertifyRunner extends Thread
       out.println("<h2>Overall Score: ");
       out.printf("%.0f", (overallScore * 100));
       out.println("%</h2>");
-      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#overallScore\">How to read this section...</a></p>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
-      out.println("    <th>Report Section</th>");
+      out.println("    <th>Core Section (Beta)</th>");
       out.println("    <th>Score</th>");
       out.println("    <th width=\"200\">Problem</th>");
       out.println("    <th width=\"200\">Working</th>");
@@ -3130,20 +3288,6 @@ public class CertifyRunner extends Thread
       out.printf("%.0f", (reportScore[REPORT_2_CODED] * 100));
       out.println("%</td>");
       printBar(out, reportScore[REPORT_2_CODED]);
-      out.println("  </tr>");
-      out.println("  <tr>");
-      out.println("    <td><a href=\"#localRequirements\">Local Requirement Implementation</a></td>");
-      out.println("    <td>");
-      out.printf("%.0f", (reportScore[REPORT_3_LOCAL] * 100));
-      out.println("%</td>");
-      printBar(out, reportScore[REPORT_3_LOCAL]);
-      out.println("  </tr>");
-      out.println("  <tr>");
-      out.println("    <td><a href=\"#nationalCompatibility\">National Compatibility</a></td>");
-      out.println("    <td>");
-      out.printf("%.0f", (reportScore[REPORT_4_NATIONAL] * 100));
-      out.println("%</td>");
-      printBar(out, reportScore[REPORT_4_NATIONAL]);
       out.println("  </tr>");
       out.println("  <tr>");
       out.println("    <td><a href=\"#tolerance\">Tolerance</a></td>");
@@ -3174,9 +3318,23 @@ public class CertifyRunner extends Thread
       printBar(out, reportScore[REPORT_8_ACK]);
       out.println("  </tr>");
       out.println("</table>");
+      out.println("<br/>");
+
+      out.println("<table border=\"1\" cellspacing=\"0\">");
+      out.println("  <tr>");
+      out.println("    <th>Assumption Testing (Alpha)</th>");
+      out.println("  </tr>");
+      out.println("  <tr>");
+      out.println("    <td><a href=\"#localRequirements\">Local Requirement Implementation</a></td>");
+      out.println("  </tr>");
+      out.println("  <tr>");
+      out.println("    <td><a href=\"#nationalCompatibility\">National Compatibility</a></td>");
+      out.println("  </tr>");
+      out.println("</table>");
+      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#overallScore\" class=\"boxLinks\">Description</a></p>");
 
       out.println("<h3>Setup</h3>");
-      out.println("<p>Here is some connection details that were used to connect to IIS to create report. </p>");
+      out.println("<p>Here are the connection details that were used to connect to IIS to create report. </p>");
 
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
@@ -3204,7 +3362,48 @@ public class CertifyRunner extends Thread
           out.println("<p>This interface requires customized Transformations to modify each message before transmitting "
               + "them to the IIS. These transformations can range from setting the correct submitter facility in the "
               + "message header to modifying the structure of the HL7 message to meet local requirements. </p>");
-          out.println("  <pre>" + connector.getCustomTransformations() + "</pre>");
+          {
+            try {
+              BufferedReader customTransformsIn = new BufferedReader(new StringReader(
+                  connector.getCustomTransformations()));
+              StringBuilder expectedTransforms = new StringBuilder();
+              StringBuilder unexpectedTransforms = new StringBuilder();
+              String line = "";
+              String[] expectedStarts = { "MSH-3=", "MSH-4=", "MSH-5=", "MSH-6=", "MSH-22=", "RXA-11.4=", "RXA-11.4*=" };
+              while ((line = customTransformsIn.readLine()) != null) {
+                if (line.length() > 0) {
+                  boolean foundExpectedStart = false;
+                  for (String expectedStart : expectedStarts) {
+                    if (line.startsWith(expectedStart)) {
+                      foundExpectedStart = true;
+                      break;
+                    }
+                  }
+                  if (foundExpectedStart) {
+                    expectedTransforms.append(line);
+                    expectedTransforms.append("\n");
+                  } else {
+                    unexpectedTransforms.append(line);
+                    unexpectedTransforms.append("\n");
+                  }
+                }
+              }
+              if (expectedTransforms.length() > 0) {
+                out.println("<h4>Expected Transformations</h4>");
+                out.println("<p>Transforms to certain segments such as MSH-4 and RXA-11.4 are expected as IIS may request specific values in these fields.  </p>");
+                out.println("  <pre>" + expectedTransforms + "</pre>");
+              }
+              if (expectedTransforms.length() > 0) {
+                out.println("<h4>Unexpected Transformations</h4>");
+                out.println("<p>These transforms were not anticipated in the national standard or in NIST testing. "
+                    + "Please examine the need for these changes carefully as they are likely to cause interoperability problems. </p>");
+                out.println("  <pre>" + unexpectedTransforms + "</pre>");
+              }
+            } catch (IOException ioe) {
+              // Not expected when reading string
+              out.println("Exception ocurred: " + ioe.getMessage());
+            }
+          }
         }
         List<String> scenarioList = new ArrayList<String>(connector.getScenarioTransformationsMap().keySet());
         Collections.sort(scenarioList);
@@ -3216,7 +3415,6 @@ public class CertifyRunner extends Thread
 
       out.println("<div id=\"interoperability\"/>");
       out.println("<h2>Interoperability</h2>");
-      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#interoperability\">How to read this section...</a></p>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
       out.println("    <th>Test</th>");
@@ -3226,11 +3424,13 @@ public class CertifyRunner extends Thread
         printTestCaseMessageDetailsUpdate(out, toFile, testCaseMessage);
       }
       out.println("</table>");
-      out.println("<p><a href=\"IIS Testing Report Detail.html#areaALevel1\">See detailed test results</a></p>");
+      out.println("<p>");
+      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#interoperability\" class=\"boxLinks\">Description</a>");
+      out.println("  <a href=\"IIS Testing Report Detail.html#areaALevel1\" class=\"boxLinks\">More Details</a>");
+      out.println("</p>");
 
       out.println("<div id=\"codedValues\"/>");
       out.println("<h2>Coded Values</h2>");
-      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#codedValues\">How to read this section...</a></p>");
       {
         if (reportScore[REPORT_2_CODED] == 1.0) {
           out.println("<p>All coded value messages were accepted. </p>");
@@ -3248,62 +3448,13 @@ public class CertifyRunner extends Thread
           out.println("</table>");
         }
       }
-      out.println("<p><a href=\"IIS Testing Report Detail.html#areaBLevel1\">See detailed test results</a></p>");
-
-      if (areaProgress[SUITE_I_PROFILING][0] > 0) {
-        out.println("<div id=\"localRequirements\"/>");
-        out.println("<h2>Local Requirement Implementation</h2>");
-        out.println("<p><a href=\"" + REPORT_EXPLANATION_URL
-            + "#localRequirements\">How to read this section...</a></p>");
-
-        out.println("<h3>Base Message</h3>");
-        out.println("<p>Base Message was accepted.  " + makeTestCaseMessageDetailsLink(tcmFull, toFile) + "</p>");
-        if (reportScore[REPORT_3_LOCAL] == 1.0) {
-          out.println("<h3>Unexpected Responses</h3>");
-          out.println("<p>All local requirements tested were confirmed.</p>");
-        } else {
-          out.println("<h3>Unexpected Responses</h3>");
-          out.println("<table border=\"1\" cellspacing=\"0\">");
-          out.println("  <tr>");
-          out.println("    <th>Field</th>");
-          out.println("    <th>Description</th>");
-          out.println("    <th>Expect Accept If</th>");
-          out.println("    <th>Status</th>");
-          out.println("    <th>Field Present</th>");
-          out.println("    <th>Field Absent</th>");
-          out.println("  </tr>");
-          for (ProfileLine profileLine : profileLineList) {
-            if (profileLine.isHasRun() && !profileLine.isPassed()) {
-              printProfileLine(out, toFile, profileLine);
-            }
-          }
-          out.println("</table>");
-        }
-        out.println("<p><a href=\"IIS Testing Report Detail.html#areaILevel1\">See detailed test results</a></p>");
-
-        if (profileUsageComparisonConformance != null) {
-          out.println("<div id=\"nationalCompatibility\"/>");
-          out.println("<h2>National Compatibility</h2>");
-          out.println("<p><a href=\"" + REPORT_EXPLANATION_URL
-              + "#nationalCompatibility\">How to read this section...</a> </span></p>");
-          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONFLICT,
-              "Local Standard has Major Conflict with National Standards");
-          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONFLICT,
-              "Local Standard Conflicts with National Standards");
-          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONSTRAINT,
-              "Local Standard Defines Hard Constraint on National Standard");
-          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONSTRAINT,
-              "Local Standard Defines Constraint on National Standard");
-          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.ALLOWANCE,
-              "Local Standard Loosens National Constraints");
-          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.UNABLE_TO_DETERMINE,
-              "Local Standard is Not Determined");
-        }
-      }
+      out.println("<p>");
+      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#codedValues\" class=\"boxLinks\">Description</a>");
+      out.println("  <a href=\"IIS Testing Report Detail.html#areaBLevel1\" class=\"boxLinks\">More Details</a>");
+      out.println("</p>");
 
       out.println("<div id=\"tolerance\"/>");
       out.println("<h2>Tolerance</h2>");
-      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#tolerance\">How to read this section...</a></p>");
       if (reportScore[REPORT_5_TOLERANCE] == 1.0) {
         out.println("<p>All tolerance messages were accepted. IIS is tolerant of unusual and unexpected message formats or values.</p>");
       } else {
@@ -3320,11 +3471,13 @@ public class CertifyRunner extends Thread
         }
         out.println("</table>");
       }
-      out.println("<p><a href=\"IIS Testing Report Detail.html#areaDLevel1\">See detailed test results</a></p>");
+      out.println("<p>");
+      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#tolerance\" class=\"boxLinks\">Description</a>");
+      out.println("  <a href=\"IIS Testing Report Detail.html#areaDLevel1\" class=\"boxLinks\">More Details</a>");
+      out.println("</p>");
 
       out.println("<div id=\"ehrExample\"/>");
       out.println("<h2>EHR Examples</h2>");
-      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#ehrExamples\">How to read this section...</a></p>");
       if (reportScore[REPORT_6_EHR] == 1.0) {
         out.println("<p>All EHR sample messages were accepted. </p>");
       } else {
@@ -3341,23 +3494,63 @@ public class CertifyRunner extends Thread
         }
         out.println("</table>");
       }
-      out.println("<p><a href=\"IIS Testing Report Detail.html#areaDLevel1\">See detailed test results</a></p>");
+      out.println("<p>");
+      out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#ehrExamples\" class=\"boxLinks\">Description</a>");
+      out.println("  <a href=\"IIS Testing Report Detail.html#areaDLevel1\" class=\"boxLinks\">More Details</a>");
+      out.println("</p>");
 
       out.println("<div id=\"performance\"/>");
       out.println("<h2>Performance</h2>");
-      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#performance\">How to read this section...</a></p>");
       if (areaScore[SUITE_G_PERFORMANCE][0] < 3000) {
-        out.println("    <p>Performance was as fast as normally expected: ");
-        out.printf("%.2fs processing time for each update</p>", (areaScore[SUITE_G_PERFORMANCE][0] / 1000.0));
+        out.println("    <p>Response time was as fast enough: " + printSeconds(performance.getUpdateAverage())
+            + " average processing time per test message. </p>");
       } else {
-        out.println("    <p>Performance was slower than was anticipated: ");
-        out.printf("%.2fs processing time for each update</p>", (areaScore[SUITE_G_PERFORMANCE][0] / 1000.0));
+        out.println("    <p>Response time was as slower than anticipated: "
+            + printSeconds(performance.getUpdateAverage()) + " average processing time per test message. </p>");
       }
+      if (performance != null && performance.getTotalUpdateCount() > 0) {
+        out.println("<table border=\"1\" cellspacing=\"0\">");
+        out.println("  <tr>");
+        out.println("    <th>Average</th>");
+        out.println("    <td>" + printSeconds(performance.getUpdateAverage()) + "</td>");
+        out.println("  </tr>");
+        out.println("  <tr>");
+        out.println("    <th>Fastest</th>");
+        out.println("    <td>" + printSeconds(performance.getMinUpdateTime()));
+        if (performance.getMinUpdateTestCase() != null) {
+          out.println(makeTestCaseMessageDetailsLink(performance.getMinUpdateTestCase(), toFile));
+        }
+        out.println("</td>");
+        out.println("  </tr>");
+        out.println("  <tr>");
+        out.println("    <th>Slowest</th>");
+        out.println("    <td>" + printSeconds(performance.getMaxUpdateTime()));
+        if (performance.getMaxUpdateTestCase() != null) {
+          out.println(makeTestCaseMessageDetailsLink(performance.getMaxUpdateTestCase(), toFile));
+        }
+        out.println("</td>");
+        out.println("  </tr>");
+        out.println("  <tr>");
+        out.println("    <th>Std Dev</th>");
+        out.println("    <td>" + printSeconds(performance.getUpdateSDev()) + "</td>");
+        out.println("  </tr>");
+        out.println("</table>");
+      }
+      if (performance != null && performance.getTotalQueryCount() > 0) {
+        out.println("    <p>Slowest Query: ");
+        out.printf("%.2fs ", (performance.getMaxQueryTime() / 1000.0));
+        out.println("     <br/>Fastest Query: ");
+        out.printf("%.2fs ", (performance.getMinQueryTime() / 1000.0));
+        out.println("     <br/>Average: ");
+        out.printf("%.2fs ", (performance.getQueryAverage() / 1000.0));
+        out.println("     <br/>Std Dev: ");
+        out.printf("%.2fs ", (performance.getQuerySDev() / 1000.0));
+        out.println("    </p>");
+      }
+      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#performance\" class=\"boxLinks\">Description</a></p>");
 
       out.println("<div id=\"acknowledgmentConformance\"/>");
       out.println("<h2>Acknowledgment Conformance</h2>");
-      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL
-          + "#acknowledgmentConformance\">How to read this section...</a></p>");
       if (reportScore[REPORT_6_EHR] == 1.0) {
         out.println("<p>All response messages (ACKs) conformed to expectations.</p>");
       } else {
@@ -3381,7 +3574,62 @@ public class CertifyRunner extends Thread
           }
         }
       }
-      out.println("<p><a href=\"IIS Testing Report Detail.html#areaHLevel1\">See detailed test results</a></p>");
+      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL
+          + "#acknowledgmentConformance\" class=\"boxLinks\">Description</a></p>");
+
+      if (areaProgress[SUITE_I_PROFILING][0] > 0) {
+        out.println("<div id=\"localRequirements\"/>");
+        out.println("<h2>Local Requirement Implementation</h2>");
+
+        out.println("<h3>Base Message</h3>");
+        out.println("<p>Base Message was accepted.  " + makeTestCaseMessageDetailsLink(tcmFull, toFile) + "</p>");
+        if (reportScore[REPORT_3_LOCAL] == 1.0) {
+          out.println("<h3>Unexpected Responses</h3>");
+          out.println("<p>All local requirements tested were confirmed.</p>");
+        } else {
+          out.println("<h3>Unexpected Responses</h3>");
+          out.println("<table border=\"1\" cellspacing=\"0\">");
+          out.println("  <tr>");
+          out.println("    <th>Field</th>");
+          out.println("    <th>Description</th>");
+          out.println("    <th>Expect Accept If</th>");
+          out.println("    <th>Status</th>");
+          out.println("    <th>Field Present</th>");
+          out.println("    <th>Field Absent</th>");
+          out.println("  </tr>");
+          for (ProfileLine profileLine : profileLineList) {
+            if (profileLine.isHasRun() && !profileLine.isPassed()) {
+              printProfileLine(out, toFile, profileLine, false);
+            }
+          }
+          out.println("</table>");
+        }
+        out.println("<p>");
+        out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#localRequirements\" class=\"boxLinks\">Description</a>");
+        out.println("  <a href=\"IIS Testing Report Detail.html#areaILevel1\" class=\"boxLinks\">More Details</a>");
+        out.println("</p>");
+
+        if (profileUsageComparisonConformance != null) {
+          out.println("<div id=\"nationalCompatibility\"/>");
+          out.println("<h2>National Compatibility</h2>");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONFLICT,
+              "Local Standard has Major Conflict with National Standards");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONFLICT,
+              "Local Standard Conflicts with National Standards");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONSTRAINT,
+              "Local Standard Defines Hard Constraint on National Standard");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONSTRAINT,
+              "Local Standard Defines Constraint on National Standard");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.ALLOWANCE,
+              "Local Standard Loosens National Constraints");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.UNABLE_TO_DETERMINE,
+              "Local Standard is Not Determined");
+          out.println("<p><a href=\"" + REPORT_EXPLANATION_URL
+              + "#nationalCompatibility\" class=\"boxLinks\">Description</a></p>");
+        }
+      }
+
+      out.println("<p><a href=\"IIS Testing Report Detail.html#areaHLevel1\">More Details</a></p>");
       out.println("<div style=\"position: fixed; bottom: 0; right: 0; background-color: red; color: white; font-size: 180%; font-weight: bold; padding-left: 5px; padding-right 5px; \">DRAFT REPORT &#8212; DO NOT DISTRIBUTE</div>");
 
     }
@@ -3506,11 +3754,11 @@ public class CertifyRunner extends Thread
     out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th>Update Test Count</th>");
-    out.println("    <td>" + totalUpdateCount + "</td>");
+    out.println("    <td>" + performance.getTotalUpdateCount() + "</td>");
     out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th>Query Test Count</th>");
-    out.println("    <td>" + totalQueryCount + "</td>");
+    out.println("    <td>" + performance.getTotalQueryCount() + "</td>");
     out.println("  </tr>");
     if (connector.getQueryResponseFieldsNotReturnedSet() != null) {
       out.println("  <tr>");
@@ -3968,7 +4216,7 @@ public class CertifyRunner extends Thread
             out.println("  </tr>");
             segmentName = profileLine.getField().getSegmentName();
           }
-          printProfileLine(out, toFile, profileLine);
+          printProfileLine(out, toFile, profileLine, true);
         }
       }
       out.println("</table>");
@@ -4434,7 +4682,17 @@ public class CertifyRunner extends Thread
     out.println("  <tr>");
     out.println("    <td class=\"" + classText + "\"><em>" + testCaseMessage.getDescription() + "</em></td>");
     if (testCaseMessage.isHasRun()) {
-      if (testCaseMessage.isAccepted()) {
+      if (testCaseMessage.isMajorChangesMade()) {
+        out.println("    <td class=\"fail\">Message was significantly changed in the process of submitting it "
+            + makeCompareDetailsLink(testCaseMessage, toFile, true));
+        out.println("<br/>");
+        if (testCaseMessage.isAccepted()) {
+          out.println("Message was accepted.");
+        } else {
+          out.println(" Message was rejected.");
+        }
+        out.println(makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+      } else if (testCaseMessage.isAccepted()) {
         out.println("    <td class=\"" + classText + "\">Message accepted. "
             + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
       } else {
@@ -4502,11 +4760,11 @@ public class CertifyRunner extends Thread
     return fieldName;
   }
 
-  public void printProfileLine(PrintWriter out, boolean toFile, ProfileLine profileLine) {
+  public void printProfileLine(PrintWriter out, boolean toFile, ProfileLine profileLine, boolean highlightUnexpected) {
 
     String profileLineClassText = "nottested";
     boolean profileLinePassed = profileLine.isPassed();
-    if (profileLine.isHasRun()) {
+    if (profileLine.isHasRun() && highlightUnexpected) {
       profileLineClassText = profileLinePassed ? "pass" : "fail";
     }
 
@@ -4528,13 +4786,13 @@ public class CertifyRunner extends Thread
       if (profileLinePassed) {
         out.println("    <td class=\"" + profileLineClassText + "\">Confirmed</td>");
       } else {
-        out.println("    <td class=\"" + profileLineClassText + "\">Inconsistent</td>");
+        out.println("    <td class=\"" + profileLineClassText + "\">Unexpected</td>");
       }
     } else {
       out.println("    <td class=\"" + profileLineClassText + "\">-</td>");
     }
-    printTestMessageCell(out, toFile, profileLine.getTestCaseMessagePresent());
-    printTestMessageCell(out, toFile, profileLine.getTestCaseMessageAbsent());
+    printTestMessageCell(out, toFile, profileLine.getTestCaseMessagePresent(), highlightUnexpected);
+    printTestMessageCell(out, toFile, profileLine.getTestCaseMessageAbsent(), highlightUnexpected);
     out.println("  </tr>");
   }
 
@@ -4607,7 +4865,8 @@ public class CertifyRunner extends Thread
 
   // profileUsageComparisonInteroperability
 
-  public void printTestMessageCell(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage) {
+  public void printTestMessageCell(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage,
+      boolean highlightUnexpected) {
     String classText = "nottested";
     boolean testPassed = false;
     if (testCaseMessage == null || !testCaseMessage.hasIssue()) {
@@ -4617,7 +4876,11 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"" + classText + "\">Not Run</td>");
       } else {
         testPassed = testCaseMessage.getActualResultStatus().equals(TestRunner.ACTUAL_RESULT_STATUS_PASS);
-        classText = testPassed ? "pass" : "fail";
+        classText = "";
+        if (highlightUnexpected) {
+          classText = testPassed ? "pass" : "fail";
+        }
+
         if (testPassed) {
           if (testCaseMessage == tcmFull) {
             out.println("    <td class=\"" + classText + "\">Accepted Base Message</td>");
@@ -4693,6 +4956,160 @@ public class CertifyRunner extends Thread
 
       }
     }
+  }
+
+  private static class Performance
+  {
+    private long totalQueryTime = 0;
+    private long totalUpdateTime = 0;
+    private int totalQueryCount = 0;
+    private int totalUpdateCount = 0;
+    private long minQueryTime = Long.MAX_VALUE;
+    private long minUpdateTime = Long.MAX_VALUE;
+    private long maxQueryTime = 0;
+    private long maxUpdateTime = 0;
+    private TestCaseMessage minQueryTestCase = null;
+    private TestCaseMessage minUpdateTestCase = null;
+    private TestCaseMessage maxQueryTestCase = null;
+    private TestCaseMessage maxUpdateTestCase = null;
+    private List<Long> queryTimeList = new ArrayList<Long>();
+    private List<Long> updateTimeList = new ArrayList<Long>();
+
+    public double getQuerySDev() {
+      if (queryTimeList.size() == 0) {
+        return 0;
+      }
+      long averageQuery = getQueryAverage();
+      double variance = 0;
+      for (Long queryTime : queryTimeList) {
+        double v = Math.pow(queryTime - averageQuery, 2);
+        variance += v;
+      }
+      return Math.sqrt(variance / queryTimeList.size());
+    }
+
+    public long getQueryAverage() {
+      long averageQuery = totalQueryTime / totalQueryCount;
+      return averageQuery;
+    }
+
+    public double getUpdateSDev() {
+      if (updateTimeList.size() == 0) {
+        return 0;
+      }
+      long averageUpdate = getUpdateAverage();
+      double variance = 0;
+      for (Long updateTime : updateTimeList) {
+        double v = Math.pow(updateTime - averageUpdate, 2);
+        variance += v;
+      }
+      return Math.sqrt(variance / updateTimeList.size());
+    }
+
+    public long getUpdateAverage() {
+      long averageUpdate = totalUpdateTime / totalUpdateCount;
+      return averageUpdate;
+    }
+
+    public void addTotalQueryTime(long queryTime, TestCaseMessage tcm) {
+      queryTimeList.add(queryTime);
+      totalQueryTime += queryTime;
+      totalQueryCount++;
+      if (queryTime < minQueryTime) {
+        minQueryTime = queryTime;
+        minQueryTestCase = tcm;
+      }
+      if (queryTime > maxQueryTime) {
+        maxQueryTime = queryTime;
+        maxQueryTestCase = tcm;
+      }
+    }
+
+    public void addTotalUpdateTime(long updateTime, TestCaseMessage tcm) {
+      updateTimeList.add(updateTime);
+      totalUpdateTime += updateTime;
+      totalUpdateCount++;
+      if (updateTime < minUpdateTime) {
+        minUpdateTime = updateTime;
+        minUpdateTestCase = tcm;
+      }
+      if (updateTime > maxUpdateTime) {
+        maxUpdateTime = updateTime;
+        maxUpdateTestCase = tcm;
+      }
+    }
+
+    public long getMinQueryTime() {
+      return minQueryTime;
+    }
+
+    public long getMinUpdateTime() {
+      return minUpdateTime;
+    }
+
+    public long getMaxQueryTime() {
+      return maxQueryTime;
+    }
+
+    public long getMaxUpdateTime() {
+      return maxUpdateTime;
+    }
+
+    public TestCaseMessage getMinQueryTestCase() {
+      return minQueryTestCase;
+    }
+
+    public TestCaseMessage getMinUpdateTestCase() {
+      return minUpdateTestCase;
+    }
+
+    public TestCaseMessage getMaxQueryTestCase() {
+      return maxQueryTestCase;
+    }
+
+    public TestCaseMessage getMaxUpdateTestCase() {
+      return maxUpdateTestCase;
+    }
+
+    public int getTotalQueryCount() {
+      return totalQueryCount;
+    }
+
+    public int getTotalUpdateCount() {
+      return totalUpdateCount;
+    }
+  }
+
+  private static enum PerformanceColumn {
+    CONNECTION("Connection"), TRANSPORT("Transport"), ACK_TYPE("Ack Type"), STARTED("Started"), FINISHED("Finished"), TEST_STATUS(
+        "Test Status"), UPDATE_COUNT("Update Count"), AVERAGE_UPDATE("Average Update (ms)"), STDEV_UPDATE(
+        "Std Dev Update"), MIN_UPDATE("Min Update (ms)"), MAX_UPDATE("Max Update (ms)"), MIN_UPDATE_TEST_CASE(
+        "Min Update Test Case"), MAX_UPDATE_TEST_CASE("Max Update Test Case"), QUERY_COUNT("Query Count"), AVERAGE_QUERY(
+        "Average Query (ms)"), STDEV_QUERY("Std Dev Query"), MIN_QUERY("Min Query (ms)"), MAX_QUERY("Max Query (ms)"), MIN_QUERY_TEST_CASE(
+        "Min Query Test Case"), MAX_QUERY_TEST_CASE("Max Query Test Case"), BASIC_TEST("Basic Tests"), INTERMEDIATE_TEST(
+        "Intermediate Tests"), ADVANCED_TEST("Advanced Tests"), PROFILING_TEST("Profiling Tests"), EXCEPTIONAL_TEST(
+        "Exceptional Tests"), FORECAST_PREP("Forecast Prep Tests"), PERFORMANCE("Performance Tests"), CONFORMANCE(
+        "Conformance Tests");
+    String label;
+
+    private PerformanceColumn(String label) {
+      this.label = label;
+    }
+
+    @Override
+    public String toString() {
+      return label;
+    }
+  }
+
+  private static String printSeconds(double ms) {
+    if (ms == 0) {
+      return "0s";
+    }
+    if (ms < 100) {
+      return ((int) (ms + 0.5)) + "ms";
+    }
+    return ((int) (ms / 100.0 + 0.5)) / 10.0 + "s";
   }
 
 }

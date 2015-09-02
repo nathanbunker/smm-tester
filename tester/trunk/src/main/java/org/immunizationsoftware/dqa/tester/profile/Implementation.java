@@ -40,7 +40,7 @@ public enum Implementation {
   public String toString() {
     switch (this) {
     case INDIFFERENT:
-      return "";
+      return "I";
     case SUPPORTED:
       return "S";
     case DEPRECATED:

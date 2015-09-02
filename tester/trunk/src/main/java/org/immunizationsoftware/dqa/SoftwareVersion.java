@@ -10,5 +10,5 @@ public class SoftwareVersion
   public static String SOFTWARE_VENDOR = "AIRA";
   public static String SOFTWARE_PRODUCT_NAME = "IIS Tester - Simple Message Mover";
   public static String SOFTWARE_BINARY_ID = "139008";
-  public static String SOFTWARE_RELEASE_DATE = "20150812";
+  public static String SOFTWARE_RELEASE_DATE = "20150902";
 }
