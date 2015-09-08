@@ -7,14 +7,16 @@ package org.immunizationsoftware.dqa.tester;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +30,6 @@ import org.immunizationsoftware.dqa.mover.ManagerServlet;
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
 import org.immunizationsoftware.dqa.tester.manager.ParticipantResponseManager;
-import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 
 /**
  * 
@@ -111,8 +112,7 @@ public class CertifyHistoryServlet extends ClientServlet
         if (sendData != null && sendData.getConnector() != null) {
           if (sendData.getConnector().getLabel().equals(iis)) {
             File dir = new File(sendData.getRootDir(), report);
-            if (!dir.exists())
-            {
+            if (!dir.exists()) {
               File testCaseDir = sendData.getTestCaseDir(false);
               dir = new File(testCaseDir, report);
             }
@@ -418,13 +418,35 @@ public class CertifyHistoryServlet extends ClientServlet
                       }
                       if (!latestTestName.equals("")) {
                         String latestTestNameDate = latestTestName.substring(16, 26);
+                        boolean needsToBeRunAgain = false;
+                        {
+                          SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                          try {
+                            Date d = sdf.parse(latestTestNameDate);
+                            Calendar c = Calendar.getInstance();
+                            c.setTime(d);
+                            c.add(Calendar.MONTH, 1);
+                            if (c.getTime().before(new Date())) {
+                              needsToBeRunAgain = true;
+                            }
+                          } catch (ParseException e) {
+                            needsToBeRunAgain = true;
+                          }
+                        }
                         if (latestTestNameDate.startsWith(currentYear + "-")) {
                           latestTestNameDate = latestTestNameDate.substring(currentYear.length() + 1);
                         }
                         link = "CertifyHistoryServlet/" + folderName + "/" + latestTestName
                             + "/IIS Testing Report.html";
-                        out.println("<br/><center><a href=\"" + link + "\" target=\"_blank\">" + latestTestNameDate
+                        if (needsToBeRunAgain) {
+                        out.println("<br/><center><a href=\"" + link + "\" target=\"_blank\" class=\"fail\">" + latestTestNameDate
                             + "</a></center>");
+                        }
+                        else
+                        {
+                          out.println("<br/><center><a href=\"" + link + "\" target=\"_blank\">" + latestTestNameDate
+                              + "</a></center>");
+                        }
                       }
                     }
                   }

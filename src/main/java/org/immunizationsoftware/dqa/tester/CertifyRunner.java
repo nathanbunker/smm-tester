@@ -258,15 +258,6 @@ public class CertifyRunner extends Thread
 
       Authenticate.User user = (Authenticate.User) session.getAttribute("user");
       sendData = user.getSendData();
-      if (sendData == null) {
-        testDir = null;
-      } else {
-        testDir = new File(sendData.getRootDir(), testCaseSet);
-        if (!testDir.exists()) {
-          testDir.mkdir();
-        }
-      }
-
       File testDataFile = CreateTestCaseServlet.getTestDataFile(user);
       if (testDataFile == null) {
         transformer = new Transformer();
@@ -278,6 +269,8 @@ public class CertifyRunner extends Thread
       willQuery = queryType != null && (queryType.equals(QUERY_TYPE_QBP) || queryType.equals(QUERY_TYPE_VXQ));
 
       testStarted = new Date();
+
+      boolean goodToGo = true;
 
       if (runAgainstFolder != null) {
         connector = new RunAgainstConnector(connector, runAgainstFolder);
@@ -302,11 +295,28 @@ public class CertifyRunner extends Thread
           boolean pass = testCaseMessageBase.isAccepted();
           if (pass) {
             logStatus("Base message was accepted, test should be good to run");
+            goodToGo = true;
           } else {
             logStatus("Base message was NOT accepted, tests may not be able to run properly");
+            goodToGo = false;
           }
         } catch (Throwable t) {
           logStatus("Exception running base test case message: " + t.getMessage());
+          goodToGo = false;
+        }
+      }
+      if (!goodToGo)
+      {
+        logStatus("Test is being cancelled, basic message was not accepted");
+        return;
+      }
+
+      if (sendData == null) {
+        testDir = null;
+      } else {
+        testDir = new File(sendData.getRootDir(), testCaseSet);
+        if (!testDir.exists()) {
+          testDir.mkdir();
         }
       }
 
@@ -3357,7 +3367,7 @@ public class CertifyRunner extends Thread
       out.println("</table>");
 
       if (!connector.getCustomTransformations().equals("") || connector.getScenarioTransformationsMap().size() > 0) {
-        out.println("<h3>Custom Transformations</h3>");
+        out.println("<h3>Custom Modications</h3>");
         if (!connector.getCustomTransformations().equals("")) {
           out.println("<p>This interface requires customized Transformations to modify each message before transmitting "
               + "them to the IIS. These transformations can range from setting the correct submitter facility in the "
@@ -3389,14 +3399,15 @@ public class CertifyRunner extends Thread
                 }
               }
               if (expectedTransforms.length() > 0) {
-                out.println("<h4>Expected Transformations</h4>");
-                out.println("<p>Transforms to certain segments such as MSH-4 and RXA-11.4 are expected as IIS may request specific values in these fields.  </p>");
+                out.println("<h4>Expected Modifications</h4>");
+                out.println("<p>Changes to certain fields such as MSH-4 and RXA-11.4 are expected as IIS may request specific values in these fields.  </p>");
                 out.println("  <pre>" + expectedTransforms + "</pre>");
               }
               if (expectedTransforms.length() > 0) {
-                out.println("<h4>Unexpected Transformations</h4>");
-                out.println("<p>These transforms were not anticipated in the national standard or in NIST testing. "
-                    + "Please examine the need for these changes carefully as they are likely to cause interoperability problems. </p>");
+                out.println("<h4>Unexpected Modifications</h4>");
+                out.println("<p>These changes were not anticipated in the national standard or in NIST testing. "
+                    + "Please examine the need for these changes carefully as they are likely to result in significant "
+                    + "effort by EHR-s and other trading partners to achieve interoperability. </p>");
                 out.println("  <pre>" + unexpectedTransforms + "</pre>");
               }
             } catch (IOException ioe) {
@@ -3551,10 +3562,10 @@ public class CertifyRunner extends Thread
 
       out.println("<div id=\"acknowledgmentConformance\"/>");
       out.println("<h2>Acknowledgment Conformance</h2>");
-      if (reportScore[REPORT_6_EHR] == 1.0) {
+      if (reportScore[REPORT_8_ACK] == 1.0) {
         out.println("<p>All response messages (ACKs) conformed to expectations.</p>");
       } else {
-        if (reportScore[REPORT_6_EHR] == 0.0) {
+        if (reportScore[REPORT_8_ACK] == 0.0) {
           out.println("<p>None of the response messages (ACKs) conformed to expectations.</p>");
         } else {
           out.println("<p>Not all response messages (ACKs) conformed to expectations.</p>");
@@ -3798,7 +3809,7 @@ public class CertifyRunner extends Thread
         + "to IIS. This standard supports the most common used Web Service and HTTPS standards. </p>");
 
     if (!connector.getCustomTransformations().equals("")) {
-      out.println("<p>This interface requires customized Transformations to modify each message before transmitting "
+      out.println("<p>This interface requires customized modifications to modify each message before transmitting "
           + "them to the IIS. These transformations can range from setting the correct submitter facility in the "
           + "message header to modifying the structure of the HL7 message to meet local requirements. </p>");
     }
@@ -3819,7 +3830,7 @@ public class CertifyRunner extends Thread
     out.println("</table>");
 
     if (!connector.getCustomTransformations().equals("") || connector.getScenarioTransformationsMap().size() > 0) {
-      out.println("<h3>Custom Transformations</h3>");
+      out.println("<h3>Custom Modifications</h3>");
       if (!connector.getCustomTransformations().equals("")) {
         out.println("  <h4>Overall</h4>");
         out.println("  <pre>" + connector.getCustomTransformations() + "</pre>");
@@ -3850,7 +3861,7 @@ public class CertifyRunner extends Thread
       out.println("  </tr>");
       if (!queryConnector.getCustomTransformations().equals("")) {
         out.println("  <tr>");
-        out.println("    <th>Transformations</th>");
+        out.println("    <th>Modifications</th>");
         out.println("    <td><pre>" + queryConnector.getCustomTransformations() + "</pre></td>");
         out.println("  </tr>");
       }
@@ -3905,7 +3916,7 @@ public class CertifyRunner extends Thread
         out.println("  <tr>");
         out.println("    <th>Level 1</th>");
         if (testCaseMessage.isMajorChangesMade()) {
-          out.println("    <td class=\"fail\">Message was significantly changed in the process of submitting it "
+          out.println("    <td class=\"fail\">Not all core data could be submitted. "
               + makeCompareDetailsLink(testCaseMessage, toFile, true));
           out.println("<br/>");
           if (testCaseMessage.isAccepted()) {
@@ -4474,7 +4485,7 @@ public class CertifyRunner extends Thread
 
     out.println("<h3>Message Sent</h3>");
     out.println("<p>Here is an example of one of the messages that was submitted to each IIS. (Every IIS "
-        + "received the same message with slightly different data and perhaps additional configurations "
+        + "received the same message with slightly different data and perhaps additional modifications "
         + "required by the IIS.)</p>");
     out.println("<pre>" + tcm.getMessageTextSent() + "</pre>");
 
@@ -4683,7 +4694,7 @@ public class CertifyRunner extends Thread
     out.println("    <td class=\"" + classText + "\"><em>" + testCaseMessage.getDescription() + "</em></td>");
     if (testCaseMessage.isHasRun()) {
       if (testCaseMessage.isMajorChangesMade()) {
-        out.println("    <td class=\"fail\">Message was significantly changed in the process of submitting it "
+        out.println("    <td class=\"fail\">Not all core data could be submitted. "
             + makeCompareDetailsLink(testCaseMessage, toFile, true));
         out.println("<br/>");
         if (testCaseMessage.isAccepted()) {

@@ -19,9 +19,9 @@
     to assessing HL7 capabilities and requirements at the IIS level. This report has the following critical 
     limitations, which must be carefully noted:</p>
     <ul>
-      <li>This report is preliminary and exploratory so includes tests where there is yet no 
+      <li>This report is preliminary and exploratory and so includes tests where there is yet no 
       definitive standard on the correct response expected from the IIS.</li>
-      <li>This report may have technical issues that are yet to be discovered and fixed.</li>
+      <li>This report has technical issues in some areas, some have not yet been discovered, others are scheduled to be fixed. </li>
       <li>Due to the variance and differences in acknowledgement messages returned from IIS, 
       the report may not accurately report whether a VXU was actually accepted or not.</li>
     </ul>
@@ -87,34 +87,24 @@
     time. </p>
     
     <h3>Report Sections</h3>
-    <p>The report is made of eight sections. Each section has a score and these are weighted 
+    <p>The report is made of six core sections and two assumption testing sections. The primary sections are weighted 
     and added together for an overall score. Here is the breakdown:</p>
     
     <table border="1" cellspacing="0">
       <tr>
-        <th>Report Section</th>
+        <th>Core Section</th>
         <th>Weight</th>
         <th>Description</th>
       </tr>
       <tr>
         <td>Interoperability</td>
-        <td>40%</td>
+        <td>50%</td>
         <td>IIS must accept all 7 NIST test message (original Interoperability Status Check)</td>
       </tr>
       <tr>
         <td>Coded Values</td>
-        <td>20%</td>
+        <td>10%</td>
         <td>IIS should accept codes defined by CDC in the implementation guide</td>
-      </tr>
-      <tr>
-        <td>Local Requirement Implementation</td>
-        <td>10%</td>
-        <td>IIS should support and enforce requirements defined in local guide</td>
-      </tr>
-      <tr>
-        <td>National Compatibility</td>
-        <td>10%</td>
-        <td>IIS should operate in a way that is compatible with national standards</td>
       </tr>
       <tr>
         <td>Tolerance</td>
@@ -133,12 +123,21 @@
       </tr>
       <tr>
         <td>Acknowledgment Conformance</td>
-        <td>5%</td>
+        <td>25%</td>
         <td>IIS should send ACK messages that conform to national requirements.</td>
       </tr>
     </table>
     
-    <div id="interoperability"/>
+    <p>These additional sections are used to test assumptions of what acknowledgements are returned
+    when following and not following the IIS guide. These sections may be very useful to IIS to 
+    understand how their interface matches their own guide but are preliminary and still being reviewed
+    and improved by AIRA. </p>
+    <ul>
+      <li>Local Requirement Implementation</li>
+      <li>National Compatibility</li>
+    </ul>
+    
+    <div id="interoperability"/> 
     <h2>Interoperability</h2> 
     <p>This is the automated version of the IIS Interoperability Status Check. The 
     score is the percentage of tests that were accepted without having the messages 
@@ -158,6 +157,17 @@
     the score at first and then less so as the number increases. This means that it 
     is expected that IIS will accept most if not all codes, and missing even a few 
     drastically reduces the score. </p>
+    
+    <p><b><em>NOTE:</em></b> The current list of code values was drawn from the CDC 
+    Implementation Guide release v1.4. Some code tables listed in that version of the guide
+    contain values that IIS don't typically use but were listed because they existed in 
+    the base table from HL7.  A good example of this is Person Id Type - MasterCard. This
+    code could be used to indicate in PID-3 the MasterCard number of the patient.
+    Because the 1.4 guide indicated this was a valid value this section does test to 
+    see what happens if this value is submitted. Some IIS do not accept messages that include
+    the patient's MasterCard number. AIRA is using this information to inform recommendations
+    for changes in the next release of the CDC guide. In the future it is expected that 
+    some fields, like Person Id Type will be limited to those that an IIS could possibly use. </p>
 
     <div id="tolerance"/>
     <h2>Tolerance</h2> 
@@ -168,10 +178,19 @@
     that may come in the future. The score for this section is based on a percentage of 
     messages accepted. It is not expected that IIS would accept all the tolerance 
     messages as there is not a clear definition of what should or should not be accepted. </p>
+    <p>Do you have any other examples that you would like to add to the list of messages
+    that you think should be tolerated? We would be happy to add messages you would suggest.</p>
 
     <div id="ehrExamples"/>
     <h2>EHR Examples</h2> 
     <p>A set of EHR example messages are sent. The score is a percentage of accepted messages. </p>
+    <p><b><em>Note:</em></b>The examples were submitted by EHR systems but may not be 
+    completely correct. In one example, some IIS reject the message because of data quality 
+    issues. (Which probably happened because it is test data and was not entered correctly by 
+    the non-Immunization expert.) This test does not assert that an IIS should accept all of
+    these messages. It is possible that some are rejected for good reasons. </p>
+    <p>Do you have additional EHR examples? If so we would love to add them to this list. Please
+    send to AIRA any additional examples and we will add them to this report. </p>
 
     <div id="performance"/>
     <h2>Performance</h2> 
@@ -184,6 +203,15 @@
     production. This information is provided only because it can be easily observed during
     testing and so is being reported here for the benefit of the IIS and other partners.  
     </p>
+    <p>The measured values are:<p>
+    <ul>
+      <li><b>Average</b>: The total amount of time it to took to send and receive test messages divided by the number of test messages. This average only includes 
+      transmission time and not the time it takes to prepare the message and save the results when they were returned. </li>
+      <li><b>Fastest</b>: The amount of time it took for the shortest response. </li>
+      <li><b>Slowest</b>: The amount of time it took for the longest response. </li>
+      <li><b>Std Dev</b>: The standard deviation, can be used to get understand how variable the response time was.  </li>
+    </ul>
+    
     <p>This scoring of this section looks at the performance of all updates sent in the previous tests. 
     Currently the score is 100% if the messages were responded to within 3 seconds on average. 
     If the average response was between 3 and 6 seconds then score is a linear percentage with 
@@ -291,30 +319,26 @@
         Human readable description of the field. Please note that because this table has been truncated, and
         not all rows shown, the
         descriptions preceded by the indent and dash may not flow under the row directly above. </li>
-      <li><b>Usage</b>: 
-        The usage as indicated in the local implementation guide. </li>
-      <li><b>Detected</b>: 
-        The usage that the testing has detected. Please note that there are limitations to what 
-        can be detected (testing can not yet differentiate between how an IIS process RE and O fields) and how 
-        well the testing process reads the acknowledgment (variance in acknowledgements means that it is difficult for the 
-        tester to always understand exactly what happened.)</li>
+      <li><b>Expect Accept If</b>: 
+         Indicates whether a message is expected to be accepted or not when this field is populated (Present) or not 
+         populated (Absent). The three possible values for this are:
+           <ul>
+             <li>Present: Field must be valued for the message to be accepted, in short the field is a required. </li>
+             <li>Absent: Field must be left empty for the message for the message to be accepted. </li>
+             <li>Present or Absent: The field is not required. </li>
+           </ul>
+         </li>
       <li><b>Status</b>:
         This field indicates whether the Usage matches what was documented in the local guide. In this report
         the table is truncated so that all rows shown are inconsistent. </li>
       <li><b>Field Present</b>: 
         Reports on status of the test case to submit a message with the field valued. From here the user can
-        click through to see the message that was submitted and the details of why the test failed. 'Expected 
-        Response' indicates that the message was accepted or rejected as is expected for the status field. 
-        'Unexpected Response' indicates that the message was not accepted or rejected as is expected for the 
-        status field. (For example PID-2 should be empty but the message was accepted with it valued.) 
+        click through to see the message that was submitted and the details of why the test failed. 
         Please note that this indicates the assumption from the documented behavior was not met, and does 
         not of itself indicate that the IIS is operating incorrectly. </li>
       <li><b>Field Absent</b>: 
         Reports on status of the test case to submit a message with the field NOT valued. From here the user can
-        click through to see the message that was submitted and the details of why the test failed. 'Expected 
-        Response' indicates that the message was accepted or rejected as is expected for the status field. 
-        'Unexpected Response' indicates that the message was not accepted or rejected as is expected for the 
-        status field. (For example PID-5 was empty but the message was accepted anyways.) 
+        click through to see the message that was submitted and the details of why the test failed. 
         Please note that this indicates the assumption from the documented behavior was not met, and does 
         not of itself indicate that the IIS is operating incorrectly. </li>
     </ul>
