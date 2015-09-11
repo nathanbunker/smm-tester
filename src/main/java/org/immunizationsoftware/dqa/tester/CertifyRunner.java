@@ -160,7 +160,6 @@ public class CertifyRunner extends Thread
   }
 
   private String testCaseSet = "";
-  private HttpSession session = null;
 
   private Date testStarted = null;
   private Date testFinished = null;
@@ -224,13 +223,15 @@ public class CertifyRunner extends Thread
   Connector connector;
   Connector queryConnector;
 
-  public CertifyRunner(Connector connector, HttpSession session) {
+  public CertifyRunner(Connector connector, SendData sendData) {
     this.connector = connector;
     this.queryConnector = connector.getOtherConnectorMap().get(Connector.PURPOSE_QUERY);
     if (this.queryConnector == null) {
       queryConnector = connector;
     }
-    this.session = session;
+    
+    this.sendData = sendData;
+    
     status = STATUS_INITIALIZED;
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
     testCaseSet = CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX + " " + sdf.format(new Date());
@@ -256,9 +257,7 @@ public class CertifyRunner extends Thread
     status = STATUS_STARTED;
     try {
 
-      Authenticate.User user = (Authenticate.User) session.getAttribute("user");
-      sendData = user.getSendData();
-      File testDataFile = CreateTestCaseServlet.getTestDataFile(user);
+      File testDataFile = CreateTestCaseServlet.getTestDataFile(sendData);
       if (testDataFile == null) {
         transformer = new Transformer();
       } else {
@@ -2723,7 +2722,7 @@ public class CertifyRunner extends Thread
     if (testDir != null) {
       CreateTestCaseServlet.saveTestCaseHtml(tcm, testDir);
     }
-    CreateTestCaseServlet.saveAnalysis(tcm, connector, session);
+    CreateTestCaseServlet.saveAnalysis(tcm, connector);
   }
 
   public boolean fieldNotSupported(Comparison comparison) {

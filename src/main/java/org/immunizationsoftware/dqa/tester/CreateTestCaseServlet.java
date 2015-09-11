@@ -583,11 +583,10 @@ public class CreateTestCaseServlet extends ClientServlet
     }
   }
 
-  protected static void saveAnalysis(TestCaseMessage testCaseMessage, Connector connector, HttpSession session) {
+  protected static void saveAnalysis(TestCaseMessage testCaseMessage, Connector connector) {
     if (testCaseMessage.getTestCaseNumber() != null && !testCaseMessage.getTestCaseNumber().equals("")) {
-      Authenticate.User user = (Authenticate.User) session.getAttribute("user");
       File smmAnalysisDir = ManagerServlet.getSmmAnalysisFolder();
-      if (user != null && user.hasSendData() && smmAnalysisDir != null) {
+      if (smmAnalysisDir != null) {
         File testCaseFile = new File(smmAnalysisDir, "TCAP-" + connector.getLabel() + "-"
             + testCaseMessage.getTestCaseCategoryId() + ".part.html");
         try {
@@ -634,7 +633,12 @@ public class CreateTestCaseServlet extends ClientServlet
   }
 
   public static File getTestDataFile(Authenticate.User user) {
-    File testCaseDir = user.getSendData().getTestDir(false);
+    SendData sendData = user.getSendData();
+    return getTestDataFile(sendData);
+  }
+
+  public static File getTestDataFile(SendData sendData) {
+    File testCaseDir = sendData.getTestDir(false);
     if (testCaseDir != null) {
       File testDataFile = new File(testCaseDir, "test-data.txt");
       if (testDataFile.exists()) {
