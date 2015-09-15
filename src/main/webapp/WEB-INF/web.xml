@@ -35,6 +35,7 @@
     </init-param>
     
      -->
+<!--
    <init-param>
       <param-name>keyStore</param-name>
       <param-value>C:\test\smm\NC NCIR\ncir.jks</param-value>
@@ -43,7 +44,6 @@
       <param-name>keyStorePassword</param-name>
       <param-value>k51j27maa</param-value>
     </init-param> 
-<!--
 
     <init-param>
       <param-name>keyStore</param-name>
@@ -53,7 +53,26 @@
       <param-name>keyStorePassword</param-name>
       <param-value>agBq5XZzYTOTU1gynpu34w8YzGdG4x</param-value>
     </init-param>
+    
+    <init-param>
+    <param-name>keyStore</param-name>
+      <param-value>C:\test\smm\OR ALERT\smm.jks</param-value>
+    </init-param>
+    <init-param>
+      <param-name>keyStorePassword</param-name>
+      <param-value>changeit</param-value>
+    </init-param>
+
      -->
+    <init-param>
+    <param-name>keyStore</param-name>
+      <param-value>C:\test\smm\ID IRIS\smm.jks</param-value>
+    </init-param>
+    <init-param>
+      <param-name>keyStorePassword</param-name>
+      <param-value>changeme</param-value>
+    </init-param>
+
      
     <init-param>
       <param-name>sun.security.ssl.allowUnsafeRenegotiation</param-name>

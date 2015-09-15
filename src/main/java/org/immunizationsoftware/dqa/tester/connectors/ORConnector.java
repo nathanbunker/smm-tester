@@ -12,55 +12,32 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.TimeZone;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 
 /**
  * 
  * @author nathan
  */
-public class ORConnector extends Connector
-{
+public class ORConnector extends Connector {
 
-  private static String XML_START_1 = "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" "
-      + "xmlns:vac=\"http://vaccination.org/\">";
-
-  private static String XML_START_2 = "  <soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">"
-      + "    <wsse:Security soap:mustUnderstand=\"true\" xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wsswssecurity-secext-1.0.xsd\">"
-      + "      <wsse:UsernameToken wsu:Id=\"UsernameToken-2\" xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\">"
-      + "        <wsse:Username>";
-
-  private static String XML_START_3 = "</wsse:Username>"
-      + "        <wsse:Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText\"><![CDATA[";
-
-  private static String XML_START_4 = "]]></wsse:Password>"
-      + "        <wsse:Nonce EncodingType=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary\">xxxxxxxxxxxx</wsse:Nonce>"
-      + "        <wsu:Created>";
-
-  private static String XML_START_5 = "</wsu:Created>" + "      </wsse:UsernameToken>"
-      + "    </wsse:Security>"
-      + "    <wsa:Action>http://vaccination.org/IVaccinationService/UpdateHistoryRequest</wsa:Action>";
- 
-  private static String CLIP_OUT = 
-       "    <wsa:MessageID>uuid:7e2efb25-077c-4982-b6ee-a21463437094</wsa:MessageID>";
-
-  private static String XML_START_6 =  "  </soap:Header>"
-      + "  <soap:Body>" + "    <vac:UpdateHistory>" + "      <arg0>" + "<![CDATA[";
-  private static String XML_END = "]]>" + "      </arg0>" + "    </vac:UpdateHistory>" + "  </soap:Body>"
-      + "</soap:Envelope>";
+  private static String XML_START_1 = "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:vac=\"http://vaccination.org/\">";
+  private static String XML_START_2 = "<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\"><wsse:Security soap:mustUnderstand=\"true\" xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\"><wsse:UsernameToken wsu:Id=\"UsernameToken-1FE3EACC843FB85E7314423175070027\"><wsse:Username>";
+  private static String XML_START_3 = "</wsse:Username><wsse:Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText\">";
+  private static String XML_START_4 = "</wsse:Password><wsse:Nonce EncodingType=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary\">W8Xz6MljKoZsKeievKnDDQ==</wsse:Nonce><wsu:Created>";
+  private static String XML_START_5 = "</wsu:Created></wsse:UsernameToken></wsse:Security><wsa:Action>http://vaccination.org/IVaccinationService/UpdateHistoryRequest</wsa:Action><wsa:MessageID>";
+  private static String XML_START_6 = "</wsa:MessageID></soap:Header><soap:Body><vac:UpdateHistory><arg0><![CDATA[";
+  private static String XML_END = "]]></arg0></vac:UpdateHistory></soap:Body></soap:Envelope>";
 
   protected ORConnector(String label, String url, String type) {
     super(label, type);
@@ -100,7 +77,6 @@ public class ORConnector extends Connector
     if (sbuf.length() > 0) {
       result = sbuf.toString();
     }
-    
 
     while (result != null && result.length() > 0 && result.charAt(0) < ' ') {
       result = result.substring(1);
@@ -115,8 +91,7 @@ public class ORConnector extends Connector
       debugLog = new StringBuilder();
     }
     try {
-      SSLSocketFactory factory =  setupSSLSocketFactory(debug, debugLog);
-
+      SSLSocketFactory factory = null; // setupSSLSocketFactory(debug, debugLog);
       HttpURLConnection urlConn;
       DataOutputStream printout;
       InputStreamReader input = null;
@@ -129,11 +104,14 @@ public class ORConnector extends Connector
 
       urlConn.setRequestMethod("POST");
 
-      urlConn.setRequestProperty("Content-Type", "application/soap+xml; charset=utf-8;action=\"http://vaccination.org/IVaccinationService/UpdateHistoryRequest\"");
+      urlConn.setRequestProperty("Content-Type",
+          "application/soap+xml; charset=utf-8;action=\"http://vaccination.org/IVaccinationService/UpdateHistoryRequest\"");
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       urlConn.setUseCaches(false);
       String content;
+
+      Random random = new Random();
 
       SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd"); // 2011-12-22T21:55:18.593Z
       SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss.SSS");
@@ -150,10 +128,13 @@ public class ORConnector extends Connector
       sb.append(XML_START_4);
       sb.append(messageDate);
       sb.append(XML_START_5);
+      sb.append("uuid:3aa9b7f4-3269-44e5-b52a-028e" + (random.nextInt(90000000) + 10000000));
       sb.append(XML_START_6);
       sb.append(request);
       sb.append(XML_END);
       content = sb.toString();
+
+      System.out.println(content);
 
       printout = new DataOutputStream(urlConn.getOutputStream());
       printout.writeBytes(content);
@@ -209,9 +190,11 @@ public class ORConnector extends Connector
         if (debug) {
           debugLog.append("Key store loaded \r");
         }
-//        context.init(new KeyManager[] { new FilteredKeyManager((X509KeyManager)originalKeyManagers[0], desiredCertsForConnection) },
-//            tmf.getTrustManagers(), new SecureRandom());
-        
+        // context.init(new KeyManager[] { new
+        // FilteredKeyManager((X509KeyManager)originalKeyManagers[0],
+        // desiredCertsForConnection) },
+        // tmf.getTrustManagers(), new SecureRandom());
+
       } catch (Exception e) {
         e.printStackTrace();
         if (debug) {
@@ -223,7 +206,7 @@ public class ORConnector extends Connector
         debugLog.append("Key store was not defined, using default for this connection \r");
       }
     }
-    
+
     return factory;
   }
 
@@ -231,7 +214,6 @@ public class ORConnector extends Connector
   public String connectivityTest(String message) throws Exception {
     return "Not supported yet";
   }
-
 
   @Override
   protected void setupFields(List<String> fields) {

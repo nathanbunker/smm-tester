@@ -187,7 +187,7 @@ public class ScenarioManager
       patientType = PatientType.TODDLER;
       customTransformations = "MSH-15=NE\nMSH-16=AL\nMSH-22=[RESPONSIBLE_ORG_NAME]\n"
           + "PID-11.2=[STREET2]\n"
-          + "PID-15=[LANGUAGE]\nPID-15.2=[LANGUAGE_LABEL]\nPID-15.3=HL70296\nPID-13.2#2=NET\nPID-13.4#2=[EMAIL]\n"
+          + "PID-15=[LANGUAGE]\nPID-15.2=[LANGUAGE_LABEL]\nPID-15.3=HL70296\nPID-13.2#2=NET\nPID-13.3#2=X.400\nPID-13.4#2=[EMAIL]\n"
           + "PID-14.2=WPN\nPID-14.3=PH\nPID-14.6=[PHONE_ALT_AREA]\nPID-14.7=[PHONE_ALT_LOCAL]\nPID-24=N\nPID-25=1\nPID-30=N\n"
           + "PD1-11.1=02\nPD1-11.2=Reminder/recall - any method\nPD1-11.3=HL70215\nPD1-12=N\nPD1-13=[TODAY]\nPD1-16=A\nPD1-17=[TODAY]\nPD1-18=[TODAY]\n"
           + "NK1-2.3=[GIRL_MIDDLE]\nNK1-2.7=L\n" 
@@ -224,7 +224,7 @@ public class ScenarioManager
     } else if (scenario.equals(SCENARIO_2_1_ADMIN_ADULT)) {
       description = "NIST IZ #2.1: Administered for Adult";
       originalMessage = "MSH|^~\\&|Test EHR Application|X68||NIST Test Iz Reg|201207010822||VXU^V04^VXU_V04|NIST-IZ-004.00|P|2.5.1|||AL|ER\n"
-          + "PID|1||MR-76732^^^NIST MPI^MR~184-36-9200^^^MAA^SS||Vally^Nitika^^^^^L||19410813|F|||||^NET^^nvally@fastmail.com\n"
+          + "PID|1||MR-76732^^^NIST MPI^MR~184-36-9200^^^MAA^SS||Vally^Nitika^^^^^L||19410813|F|||||^NET^X.400^nvally@fastmail.com\n"
           + "ORC|RE||IZ-783275^NDA|||||||||57422^RADON^NICHOLAS^^^^^^NDA^L\n"
           + "RXA|0|1|20120814||52^Hep A^CVX|1|mL^milliliters^UCUM||00^New immunization record^NIP001||^^^F28||||I90FV|20121214|MSD^Merck and Co^MVX|||CP|A\n"
           + "RXR|IM^Intramuscular^HL70162|RA^Right Arm^HL70163\n"

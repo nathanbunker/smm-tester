@@ -118,6 +118,7 @@ public class TestRunner {
 
     startTime = System.currentTimeMillis();
     ackMessageText = connector.submitMessage(message, false);
+    
     endTime = System.currentTimeMillis();
 
     if (connector instanceof RunAgainstConnector) {
@@ -252,7 +253,6 @@ public class TestRunner {
                   errorType = ErrorType.ERROR;
                 }
               }
-
             }
           }
         }
