@@ -6,8 +6,7 @@ import java.util.List;
 
 import org.immunizationsoftware.dqa.transform.Comparison;
 
-public class CompareManager
-{
+public class CompareManager {
 
   public static List<Comparison> compareMessages(String vxuMessage, String rspMessage) {
     List<Comparison> comparisonList = new ArrayList<Comparison>();
@@ -55,25 +54,27 @@ public class CompareManager
     comparison.setPriorityLevel(Comparison.PRIORITY_LEVEL_OPTIONAL);
     comparisonList.add(comparison);
 
-    comparison = new Comparison();
-    comparison.setHl7FieldName("PID-3.4");
-    comparison.setFieldLabel("MRN Assigning Authority");
-    comparison.setOriginalValue(vxuReader.getValueBySearchingRepeats(3, 4, "MR", 5));
-    if (comparison.getOriginalValue().equals("")) {
-      comparison.setOriginalValue(vxuReader.getValueBySearchingRepeats(3, 4, "PI", 5));
+    if (false) {
+      comparison = new Comparison();
+      comparison.setHl7FieldName("PID-3.4");
+      comparison.setFieldLabel("MRN Assigning Authority");
+      comparison.setOriginalValue(vxuReader.getValueBySearchingRepeats(3, 4, "MR", 5));
       if (comparison.getOriginalValue().equals("")) {
-        comparison.setOriginalValue(vxuReader.getValueBySearchingRepeats(3, 4, "", 5));
+        comparison.setOriginalValue(vxuReader.getValueBySearchingRepeats(3, 4, "PI", 5));
+        if (comparison.getOriginalValue().equals("")) {
+          comparison.setOriginalValue(vxuReader.getValueBySearchingRepeats(3, 4, "", 5));
+        }
       }
-    }
-    comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 4, "MR", 5));
-    if (comparison.getReturnedValue().equals("")) {
-      comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 4, "PI", 5));
+      comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 4, "MR", 5));
       if (comparison.getReturnedValue().equals("")) {
-        comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 4, "", 5));
+        comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 4, "PI", 5));
+        if (comparison.getReturnedValue().equals("")) {
+          comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 4, "", 5));
+        }
       }
+      comparison.setPriorityLevel(Comparison.PRIORITY_LEVEL_OPTIONAL);
+      comparisonList.add(comparison);
     }
-    comparison.setPriorityLevel(Comparison.PRIORITY_LEVEL_OPTIONAL);
-    comparisonList.add(comparison);
 
     comparison = new Comparison();
     comparison.setHl7FieldName("PID-5.1");

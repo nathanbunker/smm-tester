@@ -27,7 +27,7 @@ public class AckAnalyzer {
   
   static
   {
-    AckType.NJSIIS.inHL7Format = false;
+    // AckType.NJSIIS.inHL7Format = false;
   }
   
   public static HL7Reader getMessageReader(String ackMessageText, AckType ackType)

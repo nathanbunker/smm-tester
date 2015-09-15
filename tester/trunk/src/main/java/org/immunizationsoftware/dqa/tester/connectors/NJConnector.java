@@ -16,8 +16,8 @@ import javax.net.ssl.SSLSocketFactory;
 public class NJConnector extends ORConnector
 {
 
-  private static final String HL7_REQUEST_RESULT_START_TAG = "<ns0:StatusMessage>";
-  private static final String HL7_REQUEST_RESULT_END_TAG = "</ns0:StatusMessage>";
+  private static final String HL7_REQUEST_RESULT_START_TAG = "<ns5:ResponseHL7Message>";
+  private static final String HL7_REQUEST_RESULT_END_TAG = "</ns5:ResponseHL7Message>";
 
   protected NJConnector(String label, String url, String type) {
     super(label, url, type);
@@ -115,8 +115,6 @@ public class NJConnector extends ORConnector
       sb.append("</ns0:NJIISIMSPutRequest>");
       sb.append("</S:Body>");
       sb.append("</S:Envelope>");
-      sb.append("");
-      sb.append("");
       
       content = sb.toString();
 
@@ -138,6 +136,7 @@ public class NJConnector extends ORConnector
       int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG);
       if (startPos > 0 && endPos > startPos) {
         responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
+        responseString = responseString.replaceAll("\\Q&#xd;\\E", "\r").replaceAll("\\Q&amp;\\E", "&");
         response = new StringBuilder(responseString);
       }
       if (debug) {

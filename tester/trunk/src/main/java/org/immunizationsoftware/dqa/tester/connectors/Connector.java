@@ -632,7 +632,7 @@ public abstract class Connector
     }
 
     public X509Certificate[] getAcceptedIssuers() {
-      throw new UnsupportedOperationException();
+      return tm.getAcceptedIssuers();
     }
 
     public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
