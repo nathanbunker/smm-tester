@@ -13,11 +13,10 @@ import java.util.List;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
-public class NJConnector extends ORConnector
-{
+public class NJConnector extends ORConnector {
 
-  private static final String HL7_REQUEST_RESULT_START_TAG = "<ns5:ResponseHL7Message>";
-  private static final String HL7_REQUEST_RESULT_END_TAG = "</ns5:ResponseHL7Message>";
+  private static final String HL7_REQUEST_RESULT_START_TAG = "ResponseHL7Message>";
+  private static final String HL7_REQUEST_RESULT_END_TAG = "</";
 
   protected NJConnector(String label, String url, String type) {
     super(label, url, type);
@@ -77,7 +76,7 @@ public class NJConnector extends ORConnector
       debugLog = new StringBuilder();
     }
     try {
-      //SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
+      // SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
       SSLSocketFactory factory = null;
 
       HttpURLConnection urlConn;
@@ -92,8 +91,7 @@ public class NJConnector extends ORConnector
 
       urlConn.setRequestMethod("POST");
 
-      urlConn.setRequestProperty("Content-Type",
-          "application/soap+xml; charset=utf-8");
+      urlConn.setRequestProperty("Content-Type", "application/soap+xml; charset=utf-8");
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       String content;
@@ -115,7 +113,7 @@ public class NJConnector extends ORConnector
       sb.append("</ns0:NJIISIMSPutRequest>");
       sb.append("</S:Body>");
       sb.append("</S:Envelope>");
-      
+
       content = sb.toString();
 
       printout = new DataOutputStream(urlConn.getOutputStream());
@@ -133,11 +131,13 @@ public class NJConnector extends ORConnector
       input.close();
       String responseString = response.toString();
       int startPos = responseString.indexOf(HL7_REQUEST_RESULT_START_TAG);
-      int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG);
-      if (startPos > 0 && endPos > startPos) {
-        responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
-        responseString = responseString.replaceAll("\\Q&#xd;\\E", "\r").replaceAll("\\Q&amp;\\E", "&");
-        response = new StringBuilder(responseString);
+      if (startPos > 0) {
+        int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG, startPos);
+        if (endPos > startPos) {
+          responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
+          responseString = responseString.replaceAll("\\Q&#xd;\\E", "\r").replaceAll("\\Q&amp;\\E", "&");
+          response = new StringBuilder(responseString);
+        }
       }
       if (debug) {
         response.append("\r");
