@@ -42,6 +42,7 @@ public class SoapConnector extends HttpConnector
     request.setUsername(this.userid);
     submitSingleMessage.setSubmitSingleMessage(request);
     SubmitSingleMessageResponse response = clientService.submitSingleMessage(submitSingleMessage);
+    
     return response.getSubmitSingleMessageResponse().get_return();
 
   }

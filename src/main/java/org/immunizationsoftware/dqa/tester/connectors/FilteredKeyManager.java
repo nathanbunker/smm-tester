@@ -23,7 +23,6 @@ public class FilteredKeyManager implements X509KeyManager
   }
 
   public String[] getClientAliases(String keyType, Principal[] issuers) {
-    System.out.println("--> calling getClientAliases");
     return new String[] { "ihs" };
   }
 
