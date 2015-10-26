@@ -13,6 +13,7 @@ public class TransformRequest
   private Connector connector = null;
   private String resultText = null;
   private Patient patient = null;
+  private String yesterday = null;
   private String today = null;
   private String tomorrow = null;
   private String now = null;
@@ -20,6 +21,14 @@ public class TransformRequest
   private String line = null;
   private String segmentSeparator = "\r";
   
+  public String getYesterday() {
+    return yesterday;
+  }
+
+  public void setYesterday(String yesterday) {
+    this.yesterday = yesterday;
+  }
+
   public String getSegmentSeparator() {
     return segmentSeparator;
   }
@@ -36,8 +45,11 @@ public class TransformRequest
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
     today = sdf.format(new Date());
     Calendar tomorrowCalendar = Calendar.getInstance();
-    tomorrowCalendar.add(Calendar.DAY_OF_MONTH, -1);
+    tomorrowCalendar.add(Calendar.DAY_OF_MONTH, 1);
     tomorrow = sdf.format(tomorrowCalendar.getTime());
+    Calendar yesterdayCalendar = Calendar.getInstance();
+    yesterdayCalendar.add(Calendar.DAY_OF_MONTH, -1);
+    yesterday = sdf.format(yesterdayCalendar.getTime());
     sdf = new SimpleDateFormat("yyyyMMddHHmmssZ");
     now = sdf.format(new Date());
     sdf = new SimpleDateFormat("yyyyMMddHHmmss");
