@@ -104,6 +104,7 @@ public class NDSoapConnector extends HttpConnector
       out.println("  </soap:Body>");
       out.println("</soap:Envelope>");
       messageBeingSent = stringWriter.toString();
+      System.out.println("--> REQUEST: " + messageBeingSent);
       printout.writeBytes(messageBeingSent);
       printout.flush();
       printout.close();
@@ -114,6 +115,7 @@ public class NDSoapConnector extends HttpConnector
         response.append(line);
         response.append('\r');
       }
+      System.out.println("--> Response: " + response.toString());
       input.close();
     } catch (IOException ioe) {
       response.append("Unable to relay message, received this error: " + ioe.getMessage());
@@ -173,7 +175,6 @@ public class NDSoapConnector extends HttpConnector
       while ((line = in.readLine()) != null) {
         response.append(line);
         response.append('\r');
-        System.out.println("--> RESPONSE: " + line);
       }
       input.close();
       

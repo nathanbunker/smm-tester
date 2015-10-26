@@ -638,3 +638,24 @@ OBX|8|CE|30956-7^vaccine type^LN|4|17^Hib^CVX||||||F
 OBX|9|TS|29768-9^Data vaccine information published^LN|4|19981216||||||F
 OBX|10|TS|29769-7^Date vaccine statement presented^LN|4|20150415||||||F
 
+-- CDC Adjuvant Example
+MSH|^~\&|||||20150930125518-0700||VXU^V04^VXU_V04|N24D401.2dZ|P|2.5.1|
+PID|1||N24D401^^^AIRA-TEST^MR||Manistee^Proctor^Hank^^^^L|Klamath^Hedwig|20021003|M|||361 Jungstroin Cir^^Perkins^MI^49872^USA^P||^PRN^PH^^^906^2798787|
+NK1|1|Klamath^Hedwig|MTH^Mother^HL70063|
+PV1|1|R|
+ORC|RE||N24D401.1^AIRA|
+RXA|0|1|20110928||83^Hep A^CVX|999|||01^Historical^NIP001||||||||||||A|
+ORC|RE||N24D401.2^AIRA|
+RXA|0|1|20150930||160^Influenza A monovalent (H5N1), ADUJVANTED-2013 vax^CVX|0.5|mL^milliliters^UCUM||00^Administered^NIP001||||||B5324WU||IDB^ID Biomedical^MVX||||A|
+RXR|IM^^HL70162|RA^^HL70163|
+OBX|1|CE|64994-7^Vaccine funding program eligibility category^LN|1|V02^VFC eligible - Medicaid/Medicaid Managed Care^HL70064||||||F|||20150930|||VXC40^Eligibility captured at the immunization level^CDCPHINVS|
+OBX|2|CE|30956-7^Vaccine Type^LN|2|137^HPV^CVX||||||F|
+OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20120222||||||F|
+OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20150930||||||F|
+ORC|RE||N24D401.3^AIRA|||||||I-23432^Burden^Donna^A^^^^^NIST-AA-1||57422^RADON^NICHOLAS^^^^^^NIST-AA-1^L|
+RXA|0|1|20150930||801^ASO3 Adjuvant^CVX|0.5|mL^milliliters^UCUM||00^Administered^NIP001||||||97H54U||IDB^ID Biomedical^MVX||||A|
+RXR|IM^^HL70162|RA^^HL70163|
+OBX|1|CE|64994-7^Vaccine funding program eligibility category^LN|1|V02^VFC eligible - Medicaid/Medicaid Managed Care^HL70064||||||F|||20150930|||VXC40^Eligibility captured at the immunization level^CDCPHINVS|
+OBX|2|CE|30956-7^Vaccine Type^LN|2|137^HPV^CVX||||||F|
+OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20120222||||||F|
+OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20150930||||||F|

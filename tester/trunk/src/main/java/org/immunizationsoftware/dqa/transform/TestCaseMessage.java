@@ -136,6 +136,24 @@ public class TestCaseMessage
   private ForecastTestPanel forecastTestPanel = null;
   private String scenario = "";
   private String messageAcceptStatusDebug = "";
+  private int testPosition = 0;
+  private String testType = "";
+
+  public String getTestType() {
+    return testType;
+  }
+
+  public void setTestType(String testType) {
+    this.testType = testType;
+  }
+
+  public int getTestPosition() {
+    return testPosition;
+  }
+
+  public void setTestPosition(int testPosition) {
+    this.testPosition = testPosition;
+  }
 
   public String getMessageAcceptStatusDebug() {
     return messageAcceptStatusDebug;
