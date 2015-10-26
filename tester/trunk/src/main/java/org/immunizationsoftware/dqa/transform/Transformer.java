@@ -600,7 +600,7 @@ public class Transformer
           count -= alsoHas(testCaseMessage, "VAC2_ADMIN") || alsoHas(testCaseMessage, "VAC2_HIST") ? 1 : 0;
           count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1 : 0;
           quickTransforms += "ORC-3=[VAC" + count + "_ID]\n";
-          quickTransforms += "RXA-3=[VAC" + count + "_DATE]\n";
+          quickTransforms += "RXA-3=[VAC2_DATE]\n";
           quickTransforms += "RXA-5.1=[VAC" + count + "_CVX]\n";
           quickTransforms += "RXA-5.2=[VAC" + count + "_CVX_LABEL]\n";
           quickTransforms += "RXA-5.3=CVX\n";
@@ -2324,6 +2324,8 @@ public class Transformer
       t.value = transformRequest.getToday();
     } else if (t.value.equalsIgnoreCase("[TOMORROW]")) {
       t.value = transformRequest.getTomorrow();
+    } else if (t.value.equalsIgnoreCase("[YESTERDAY]")) {
+      t.value = transformRequest.getYesterday();
     } else if (t.value.equalsIgnoreCase("[CONTROL_ID]")) {
       t.value = connector.getCurrentControlId();
     } else if (t.value.toLowerCase().startsWith("[map") && t.value.endsWith("]")) {
