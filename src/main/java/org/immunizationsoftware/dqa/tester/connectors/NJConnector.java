@@ -97,22 +97,41 @@ public class NJConnector extends ORConnector {
       String content;
 
       StringBuilder sb = new StringBuilder();
-      sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-      sb.append("<S:Envelope xmlns:S=\"http://www.w3.org/2003/05/soap-envelope\">");
-      sb.append("<S:Body>");
-      sb.append("<ns0:NJIISIMSPutRequest xmlns:ns0=\"http://njiis.njdoh.gov/ims/service/schema/hl7/put/request\">");
-      sb.append("<ns0:RequestHeader>");
-      sb.append("<ns0:FacilityID>" + userid + "</ns0:FacilityID>");
-      sb.append("<ns0:FacilityKey>" + password + "</ns0:FacilityKey>");
-      sb.append("</ns0:RequestHeader>");
-      sb.append("<ns0:PutRequest>");
-      sb.append("<ns0:NJIISProviderID>" + facilityid + "</ns0:NJIISProviderID>");
-      sb.append("<ns0:HL7MessageVersion>2.5.1</ns0:HL7MessageVersion>");
-      sb.append("<ns0:RequestHL7Message>" + replaceAmpersand(request) + "</ns0:RequestHL7Message>");
-      sb.append("</ns0:PutRequest>");
-      sb.append("</ns0:NJIISIMSPutRequest>");
-      sb.append("</S:Body>");
-      sb.append("</S:Envelope>");
+      if (request.indexOf("|QBP^") > 0) {
+        sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+        sb.append("<S:Envelope xmlns:S=\"http://www.w3.org/2003/05/soap-envelope\">");
+        sb.append("<S:Body>");
+        sb.append("<ns4:NJIISIMSGetRequest xmlns:ns4=\"http://njiis.njdoh.gov/ims/service/schema/hl7/get/request\">");
+        sb.append("<ns4:RequestHeader>");
+        sb.append("<ns4:FacilityID>" + userid + "</ns4:FacilityID>");
+        sb.append("<ns4:FacilityKey>" + password + "</ns4:FacilityKey>");
+        sb.append("</ns4:RequestHeader>");
+        sb.append("<ns4:GetRequest>");
+        sb.append("<ns4:NJIISProviderID>" + facilityid + "</ns4:NJIISProviderID>");
+        sb.append("<ns4:HL7MessageVersion>2.5.1</ns4:HL7MessageVersion>");
+        sb.append("<ns4:RequestHL7Message>" + replaceAmpersand(request) + "</ns4:RequestHL7Message>");
+        sb.append("</ns4:GetRequest>");
+        sb.append("</ns4:NJIISIMSGetRequest>");
+        sb.append("</S:Body>");
+        sb.append("</S:Envelope>");
+      } else {
+        sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+        sb.append("<S:Envelope xmlns:S=\"http://www.w3.org/2003/05/soap-envelope\">");
+        sb.append("<S:Body>");
+        sb.append("<ns0:NJIISIMSPutRequest xmlns:ns0=\"http://njiis.njdoh.gov/ims/service/schema/hl7/put/request\">");
+        sb.append("<ns0:RequestHeader>");
+        sb.append("<ns0:FacilityID>" + userid + "</ns0:FacilityID>");
+        sb.append("<ns0:FacilityKey>" + password + "</ns0:FacilityKey>");
+        sb.append("</ns0:RequestHeader>");
+        sb.append("<ns0:PutRequest>");
+        sb.append("<ns0:NJIISProviderID>" + facilityid + "</ns0:NJIISProviderID>");
+        sb.append("<ns0:HL7MessageVersion>2.5.1</ns0:HL7MessageVersion>");
+        sb.append("<ns0:RequestHL7Message>" + replaceAmpersand(request) + "</ns0:RequestHL7Message>");
+        sb.append("</ns0:PutRequest>");
+        sb.append("</ns0:NJIISIMSPutRequest>");
+        sb.append("</S:Body>");
+        sb.append("</S:Envelope>");
+      }
 
       content = sb.toString();
 

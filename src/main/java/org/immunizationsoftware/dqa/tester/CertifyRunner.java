@@ -19,6 +19,7 @@ import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_FU
 import static org.immunizationsoftware.dqa.transform.ScenarioManager.createTestCaseMessage;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -27,6 +28,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,7 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpSession;
+import javax.sql.rowset.spi.SyncResolver;
 
 import org.immunizationsoftware.dqa.mover.ManagerServlet;
 import org.immunizationsoftware.dqa.mover.SendData;
@@ -46,6 +52,7 @@ import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.connectors.RunAgainstConnector;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
+import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
 import org.immunizationsoftware.dqa.tester.manager.TestCaseMessageManager;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTesterManager;
@@ -68,10 +75,12 @@ import org.immunizationsoftware.dqa.transform.Transformer;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestCase;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestEvent;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
-import org.junit.rules.ExpectedException;
+import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
 
-public class CertifyRunner extends Thread
-{
+public class CertifyRunner extends Thread implements RecordServletInterface {
+
+  private static final String REPORT_URL = "http://localhost:8289/record";
+
   private static final String REPORT_EXPLANATION_URL = "http://ois-pt.org/tester/reportExplanation.html";
 
   private static final String QUERY_TYPE_QBP = "Q";
@@ -92,7 +101,7 @@ public class CertifyRunner extends Thread
 
   private void logStatus(String status) {
     synchronized (statusMessageList) {
-      statusMessageList.add(sdf.format(new Date()) + " " + status);
+      statusMessageList.add(sdf.format(new Date()) + " " + areaLabel[currentSuite] + ": " + status);
     }
   }
 
@@ -106,6 +115,8 @@ public class CertifyRunner extends Thread
   public static final int SUITE_H_CONFORMANCE = 7;
   public static final int SUITE_I_PROFILING = 8;
   public static final int SUITE_COUNT = 9;
+
+  private int currentSuite = SUITE_A_BASIC;
 
   private boolean run[] = new boolean[SUITE_COUNT];
   private int[][] areaScore = new int[SUITE_COUNT][3];
@@ -136,20 +147,162 @@ public class CertifyRunner extends Thread
       areaCount[i][1] = -1;
       areaCount[i][2] = -1;
     }
-    areaLabel[SUITE_A_BASIC] = "Basic";
-    areaLabel[SUITE_B_INTERMEDIATE] = "Intermediate";
-    areaLabel[SUITE_C_ADVANCED] = "Advanced";
-    areaLabel[SUITE_D_EXCEPTIONAL] = "Exceptional";
-    areaLabel[SUITE_E_FORECAST_PREP] = "Forecast Prep";
-    areaLabel[SUITE_F_FORECAST] = "Forecast";
-    areaLabel[SUITE_G_PERFORMANCE] = "Performance";
-    areaLabel[SUITE_H_CONFORMANCE] = "Conformance";
-    areaLabel[SUITE_I_PROFILING] = "Profiling";
+    areaLabel[SUITE_A_BASIC] = VALUE_TEST_SECTION_TYPE_BASIC;
+    areaLabel[SUITE_B_INTERMEDIATE] = VALUE_TEST_SECTION_TYPE_INTERMEDIATE;
+    areaLabel[SUITE_C_ADVANCED] = VALUE_TEST_SECTION_TYPE_ADVANCED;
+    areaLabel[SUITE_D_EXCEPTIONAL] = VALUE_TEST_SECTION_TYPE_EXCEPTIONAL;
+    areaLabel[SUITE_E_FORECAST_PREP] = VALUE_TEST_SECTION_TYPE_FORECAST_PREP;
+    areaLabel[SUITE_F_FORECAST] = VALUE_TEST_SECTION_TYPE_FORECAST;
+    areaLabel[SUITE_G_PERFORMANCE] = VALUE_TEST_SECTION_TYPE_PERFORMANCE;
+    areaLabel[SUITE_H_CONFORMANCE] = VALUE_TEST_SECTION_TYPE_CONFORMANCE;
+    areaLabel[SUITE_I_PROFILING] = VALUE_TEST_SECTION_TYPE_PROFILING;
 
   }
 
   private Map<String, PrintWriter> exampleOutSet = new HashMap<String, PrintWriter>();
   private Map<String, PrintWriter> exampleAckOutSet = new HashMap<String, PrintWriter>();
+
+  double overallScore = 0.0;
+
+  private Map<CompatibilityConformance, List<ProfileLine>> updateOverallScore() {
+
+    synchronized (reportScore) {
+      overallScore = 0.0;
+
+      reportScore[REPORT_1_INTEROP] = 0.0;
+      reportScore[REPORT_2_CODED] = 0.0;
+      reportScore[REPORT_3_LOCAL] = 0.0;
+      reportScore[REPORT_4_NATIONAL] = 0.0;
+      reportScore[REPORT_5_TOLERANCE] = 0.0;
+      reportScore[REPORT_6_EHR] = 0.0;
+      reportScore[REPORT_7_PERFORM] = 0.0;
+      reportScore[REPORT_8_ACK] = 0.0;
+      Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap = new HashMap<CompatibilityConformance, List<ProfileLine>>();
+
+      if (areaProgress[SUITE_A_BASIC][0] > 0) {
+        reportScore[REPORT_1_INTEROP] = areaScore[SUITE_A_BASIC][0] / 100.0;
+      }
+
+      if (areaProgress[SUITE_B_INTERMEDIATE][0] > 0) {
+        double score = Math.log(areaScore[SUITE_B_INTERMEDIATE][0] + 1) / Math.log(101);
+        reportScore[REPORT_2_CODED] = score;
+      }
+
+      if (areaProgress[SUITE_I_PROFILING][0] > 0) {
+        int countRun = 0;
+        {
+          int countPass = 0;
+          for (ProfileLine profileLine : profileLineList) {
+            if (profileLine.isHasRun()) {
+              countRun++;
+              if (profileLine.isPassed()) {
+                countPass++;
+              }
+            }
+          }
+          if (countRun > 0) {
+            reportScore[REPORT_3_LOCAL] = ((double) countPass) / countRun;
+          }
+        }
+      }
+      if (profileLineList != null) {
+        for (ProfileLine profileLine : profileLineList) {
+          if (profileUsageComparisonConformance != null && profileUsageComparisonConformance.getProfileUsageValueMap() != null) {
+            ProfileUsageValue profileUsageValueConformance = profileUsageComparisonConformance.getProfileUsageValueMap().get(profileLine.getField());
+            if (profileUsageValueConformance != null) {
+              CompatibilityConformance compatibility = ProfileManager.getCompatibilityConformance(profileLine.getUsageDetected(),
+                  profileUsageValueConformance.getUsage());
+              List<ProfileLine> profileLineList = compatibilityMap.get(compatibility);
+              if (profileLineList == null) {
+                profileLineList = new ArrayList<ProfileLine>();
+                compatibilityMap.put(compatibility, profileLineList);
+              }
+              profileLineList.add(profileLine);
+            }
+          }
+        }
+        if (compatibilityMap.get(CompatibilityConformance.MAJOR_CONFLICT) != null) {
+          reportScore[REPORT_4_NATIONAL] = 0.0;
+        } else if (compatibilityMap.get(CompatibilityConformance.MAJOR_CONSTRAINT) != null) {
+          reportScore[REPORT_4_NATIONAL] = 0.7;
+        } else if (compatibilityMap.get(CompatibilityConformance.CONSTRAINT) != null) {
+          reportScore[REPORT_4_NATIONAL] = 0.8;
+        } else if (compatibilityMap.get(CompatibilityConformance.ALLOWANCE) != null) {
+          reportScore[REPORT_4_NATIONAL] = 0.9;
+        } else {
+          reportScore[REPORT_4_NATIONAL] = 1.0;
+        }
+        if (compatibilityMap.get(CompatibilityConformance.CONFLICT) != null) {
+          reportScore[REPORT_4_NATIONAL] -= 0.05;
+        }
+        if (reportScore[REPORT_4_NATIONAL] < 0) {
+          reportScore[REPORT_4_NATIONAL] = 0;
+        }
+      }
+
+      if (areaProgress[SUITE_D_EXCEPTIONAL][0] > 0) {
+        int countTolerance = 0;
+        int countEhr = 0;
+        int countTolerancePass = 0;
+        int countEhrPass = 0;
+
+        for (TestCaseMessage testCaseMessage : statusCheckTestCaseExceptionalList) {
+          if (testCaseMessage.getDescription().startsWith(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK)) {
+            countTolerance++;
+            if (testCaseMessage.isHasRun() && testCaseMessage.isPassedTest()) {
+              countTolerancePass++;
+            }
+          } else if (testCaseMessage.getDescription().startsWith(VALUE_EXCEPTIONAL_PREFIX_CERTIFIED_MESSAGE)) {
+            countEhr++;
+            if (testCaseMessage.isHasRun() && testCaseMessage.isPassedTest()) {
+              countEhrPass++;
+            }
+          }
+        }
+        if (countTolerance == 0) {
+          reportScore[REPORT_5_TOLERANCE] = 0.0;
+        } else {
+          reportScore[REPORT_5_TOLERANCE] = ((double) countTolerancePass) / countTolerance;
+        }
+        if (countEhr == 0) {
+          reportScore[REPORT_6_EHR] = 0.0;
+        } else {
+          reportScore[REPORT_6_EHR] = ((double) countEhrPass) / countEhr;
+        }
+      }
+
+      if (areaProgress[SUITE_G_PERFORMANCE][0] > 0) {
+        int averageMs = areaScore[SUITE_G_PERFORMANCE][0];
+        if (averageMs < 3000) {
+          reportScore[REPORT_7_PERFORM] = 1.0;
+        } else if (averageMs > 6000) {
+          reportScore[REPORT_7_PERFORM] = 0.0;
+        } else {
+          reportScore[REPORT_7_PERFORM] = 1.0 - ((averageMs - 3000) / 3000.0);
+        }
+      }
+
+      if (areaProgress[SUITE_H_CONFORMANCE][0] > 0) {
+        reportScore[REPORT_8_ACK] = areaScore[SUITE_H_CONFORMANCE][0] / 100.0;
+      }
+      for (int i = 0; i < reportScore.length; i++) {
+        if (reportScore[i] < 0) {
+          reportScore[i] = 0;
+        }
+      }
+
+      overallScore += reportScore[REPORT_1_INTEROP] * 0.5;
+      overallScore += reportScore[REPORT_2_CODED] * 0.1;
+      // overallScore += reportScore[REPORT_3_LOCAL] * 0.1;
+      // overallScore += reportScore[REPORT_4_NATIONAL] * 0.1;
+      overallScore += reportScore[REPORT_5_TOLERANCE] * 0.05;
+      overallScore += reportScore[REPORT_6_EHR] * 0.05;
+      overallScore += reportScore[REPORT_7_PERFORM] * 0.05;
+      overallScore += reportScore[REPORT_8_ACK] * 0.25;
+
+      return compatibilityMap;
+    }
+  }
 
   public boolean isRun(int suite) {
     return run[suite];
@@ -214,9 +367,8 @@ public class CertifyRunner extends Thread
     this.queryType = queryType;
   }
 
-  private String[] statusCheckScenarios = { SCENARIO_1_R_ADMIN_CHILD, SCENARIO_2_R_ADMIN_ADULT,
-      SCENARIO_3_R_HISTORICAL_CHILD, SCENARIO_4_R_CONSENTED_CHILD, SCENARIO_5_P_REFUSED_TODDLER,
-      SCENARIO_6_P_VARICELLA_HISTORY_CHILD, SCENARIO_7_R_COMPLETE_RECORD };
+  private String[] statusCheckScenarios = { SCENARIO_1_R_ADMIN_CHILD, SCENARIO_2_R_ADMIN_ADULT, SCENARIO_3_R_HISTORICAL_CHILD,
+      SCENARIO_4_R_CONSENTED_CHILD, SCENARIO_5_P_REFUSED_TODDLER, SCENARIO_6_P_VARICELLA_HISTORY_CHILD, SCENARIO_7_R_COMPLETE_RECORD };
 
   private List<TestCaseMessage>[] profileTestCaseLists = new ArrayList[3];
 
@@ -229,9 +381,9 @@ public class CertifyRunner extends Thread
     if (this.queryConnector == null) {
       queryConnector = connector;
     }
-    
+
     this.sendData = sendData;
-    
+
     status = STATUS_INITIALIZED;
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
     testCaseSet = CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX + " " + sdf.format(new Date());
@@ -271,12 +423,13 @@ public class CertifyRunner extends Thread
 
       boolean goodToGo = true;
 
+      reportProgress(null);
+
       if (runAgainstFolder != null) {
         connector = new RunAgainstConnector(connector, runAgainstFolder);
         logStatus("Running test against previously received responses in this forder: " + runAgainstFolder);
         if (queryConnector != null) {
           queryConnector = new RunAgainstConnector(queryConnector, runAgainstFolder);
-          ;
         }
       } else {
         logStatus("Connecting directly to real-time interface");
@@ -288,6 +441,7 @@ public class CertifyRunner extends Thread
         testCaseMessageBase.setTestCaseNumber(uniqueMRNBase + testCaseMessageBase.getTestCaseCategoryId());
         transformer.transform(testCaseMessageBase);
         testCaseMessageBase.setAssertResult("Accept - *");
+        testCaseMessageBase.setTestType(VALUE_TEST_TYPE_PREP);
         TestRunner testRunner = new TestRunner();
         try {
           testRunner.runTest(connector, testCaseMessageBase);
@@ -303,9 +457,9 @@ public class CertifyRunner extends Thread
           logStatus("Exception running base test case message: " + t.getMessage());
           goodToGo = false;
         }
+        reportProgress(testCaseMessageBase);
       }
-      if (!goodToGo)
-      {
+      if (!goodToGo) {
         logStatus("Test is being cancelled, basic message was not accepted");
         return;
       }
@@ -319,13 +473,25 @@ public class CertifyRunner extends Thread
         }
       }
 
+      {
+        for (int i = 0; i < run.length; i++) {
+          if (run[i]) {
+            currentSuite = i;
+            reportProgress(null);
+          }
+        }
+        currentSuite = SUITE_A_BASIC;
+      }
+
       if (run[SUITE_A_BASIC]) {
 
+        currentSuite = SUITE_A_BASIC;
         logStatus("Preparing basic messages");
         prepareBasic();
 
         if (!keepRunning) {
           status = STATUS_STOPPED;
+          reportProgress(null);
           return;
         }
 
@@ -336,9 +502,11 @@ public class CertifyRunner extends Thread
 
       if (!keepRunning) {
         status = STATUS_STOPPED;
+        reportProgress(null);
         return;
       }
       if (run[SUITE_B_INTERMEDIATE]) {
+        currentSuite = SUITE_B_INTERMEDIATE;
 
         logStatus("Preparing intermediate");
         prepareIntermediate();
@@ -348,17 +516,20 @@ public class CertifyRunner extends Thread
         // printReportToFile();
         if (!keepRunning) {
           status = STATUS_STOPPED;
+          reportProgress(null);
           return;
         }
 
       }
       if (run[SUITE_C_ADVANCED]) {
+        currentSuite = SUITE_C_ADVANCED;
         Map<Integer, List<Issue>> issueMap = new HashMap<Integer, List<Issue>>();
 
         logStatus("Preparing advanced messages");
         prepareAdvanced(issueMap);
         if (!keepRunning) {
           status = STATUS_STOPPED;
+          reportProgress(null);
           return;
         }
 
@@ -367,11 +538,13 @@ public class CertifyRunner extends Thread
         // printReportToFile();
         if (!keepRunning) {
           status = STATUS_STOPPED;
+          reportProgress(null);
           return;
         }
       }
 
       if (run[SUITE_I_PROFILING]) {
+        currentSuite = SUITE_I_PROFILING;
         logStatus("Preparing profiling");
 
         prepareProfiling();
@@ -389,6 +562,7 @@ public class CertifyRunner extends Thread
             // printReportToFile();
             if (!keepRunning) {
               status = STATUS_STOPPED;
+              reportProgress(null);
               return;
             }
           }
@@ -396,6 +570,7 @@ public class CertifyRunner extends Thread
       }
 
       if (run[SUITE_D_EXCEPTIONAL]) {
+        currentSuite = SUITE_D_EXCEPTIONAL;
         logStatus("Preparing exceptional messages");
         prepareExceptional();
 
@@ -404,11 +579,13 @@ public class CertifyRunner extends Thread
         // printReportToFile();
         if (!keepRunning) {
           status = STATUS_STOPPED;
+          reportProgress(null);
           return;
         }
       }
 
       if (run[SUITE_E_FORECAST_PREP]) {
+        currentSuite = SUITE_E_FORECAST_PREP;
         logStatus("Preparing forecast prep messages");
         prepareForecastPrep();
 
@@ -417,6 +594,7 @@ public class CertifyRunner extends Thread
         // printReportToFile();
         if (!keepRunning) {
           status = STATUS_STOPPED;
+          reportProgress(null);
           return;
         }
       }
@@ -427,28 +605,32 @@ public class CertifyRunner extends Thread
         areaCount[SUITE_G_PERFORMANCE][0] = performance.getTotalUpdateCount();
       }
       if (run[SUITE_H_CONFORMANCE]) {
+        currentSuite = SUITE_H_CONFORMANCE;
 
         logStatus("Prepare for format analysis of update messages");
         prepareFormatUpdateAnalysis();
         if (!keepRunning) {
           status = STATUS_STOPPED;
+          reportProgress(null);
           return;
         }
 
         logStatus("Analyze format updates");
         analyzeFormatUpdates();
+        reportProgress(null);
         // printReportToFile();
         if (!keepRunning) {
           status = STATUS_STOPPED;
+          reportProgress(null);
           return;
         }
       }
 
       if (willQuery) {
-
         if (pauseBeforeQuerying) {
           logStatus("Paused, waiting to start query process");
           status = STATUS_PAUSED;
+          reportProgress(null);
           int maxWait = 0;
           while (pauseBeforeQuerying && keepRunning && maxWait < (60 * 10)) {
             try {
@@ -462,28 +644,33 @@ public class CertifyRunner extends Thread
           }
           logStatus("Begin query process");
           status = STATUS_STARTED;
+          reportProgress(null);
         }
 
         if (!keepRunning) {
           status = STATUS_STOPPED;
+          reportProgress(null);
           return;
         }
 
         if (run[SUITE_A_BASIC]) {
+          currentSuite = SUITE_A_BASIC;
           logStatus("Submit query for basic messages");
           queryBasic();
         }
         if (!keepRunning) {
           status = STATUS_STOPPED;
+          reportProgress(null);
           return;
         }
 
         if (run[SUITE_B_INTERMEDIATE]) {
-
+          currentSuite = SUITE_B_INTERMEDIATE;
           logStatus("Prepare query for intermediate messages");
           prepareQueryIntermediate();
           if (!keepRunning) {
             status = STATUS_STOPPED;
+            reportProgress(null);
             return;
           }
 
@@ -492,16 +679,18 @@ public class CertifyRunner extends Thread
           // printReportToFile();
           if (!keepRunning) {
             status = STATUS_STOPPED;
+            reportProgress(null);
             return;
           }
         }
 
         if (run[SUITE_I_PROFILING]) {
-
+          currentSuite = SUITE_I_PROFILING;
           logStatus("Prepare query for profiling messages");
           prepareQueryProfiling();
           if (!keepRunning) {
             status = STATUS_STOPPED;
+            reportProgress(null);
             return;
           }
           logStatus("Submit query for profiling messages");
@@ -509,16 +698,18 @@ public class CertifyRunner extends Thread
           // printReportToFile();
           if (!keepRunning) {
             status = STATUS_STOPPED;
+            reportProgress(null);
             return;
           }
         }
 
         if (run[SUITE_D_EXCEPTIONAL]) {
-
+          currentSuite = SUITE_D_EXCEPTIONAL;
           logStatus("Prepare query for exceptional messages");
           prepareQueryExeptional();
           if (!keepRunning) {
             status = STATUS_STOPPED;
+            reportProgress(null);
             return;
           }
           logStatus("Submit query for exceptional messages");
@@ -526,16 +717,18 @@ public class CertifyRunner extends Thread
           // printReportToFile();
           if (!keepRunning) {
             status = STATUS_STOPPED;
+            reportProgress(null);
             return;
           }
         }
 
         if (run[SUITE_E_FORECAST_PREP]) {
-
+          currentSuite = SUITE_E_FORECAST_PREP;
           logStatus("Prepare query for forecast prep messages");
           prepareQueryForecastPrep();
           if (!keepRunning) {
             status = STATUS_STOPPED;
+            reportProgress(null);
             return;
           }
 
@@ -545,6 +738,7 @@ public class CertifyRunner extends Thread
           // printReportToFile();
           if (!keepRunning) {
             status = STATUS_STOPPED;
+            reportProgress(null);
             return;
           }
         }
@@ -556,10 +750,12 @@ public class CertifyRunner extends Thread
         }
 
         if (run[SUITE_H_CONFORMANCE]) {
+          currentSuite = SUITE_H_CONFORMANCE;
           logStatus("Prepare for format analysis of queries");
           prepareFormatQueryAnalysis();
           if (!keepRunning) {
             status = STATUS_STOPPED;
+            reportProgress(null);
             return;
           }
 
@@ -569,8 +765,8 @@ public class CertifyRunner extends Thread
 
       }
 
-      areaProgress[SUITE_H_CONFORMANCE][2] = 100;
       testFinished = new Date();
+      reportProgress(null);
 
       printReportToFile();
       printAnalysis();
@@ -580,10 +776,12 @@ public class CertifyRunner extends Thread
       t.printStackTrace();
       exception = t;
       status = STATUS_STOPPED;
+      reportProgress(null);
       logStatus("Exception ocurred: " + exception.getMessage());
     } finally {
       if (status != STATUS_STOPPED) {
         status = STATUS_COMPLETED;
+        reportProgress(null);
       } else {
         logStatus("Process stopped by user");
       }
@@ -607,6 +805,7 @@ public class CertifyRunner extends Thread
     register(tcmFull);
     tcmFull.setAssertResult("Accept - *");
     tcmFull.setHasIssue(true);
+    tcmFull.setTestType(VALUE_TEST_TYPE_PREP);
 
     logStatus("Running full test record to see it will be accepted");
     TestRunner testRunner = new TestRunner();
@@ -620,6 +819,8 @@ public class CertifyRunner extends Thread
       logStatus("Full record for profiling was NOT accepted, profiling of all fields can not be conducted");
     }
 
+    reportProgress(tcmFull);
+
   }
 
   public PrintWriter setupExampleFile(String name, TestCaseMessage testCaseMessage) {
@@ -628,8 +829,7 @@ public class CertifyRunner extends Thread
         logStatus("Saving example");
         File exampleFile;
         if (testCaseMessage.getForecastTestPanel() != null) {
-          exampleFile = new File(testDir, "Example Messages " + name + ""
-              + testCaseMessage.getForecastTestPanel().getLabel() + ".hl7");
+          exampleFile = new File(testDir, "Example Messages " + name + "" + testCaseMessage.getForecastTestPanel().getLabel() + ".hl7");
         } else {
           exampleFile = new File(testDir, "Example Messages " + name + ".hl7");
         }
@@ -650,8 +850,7 @@ public class CertifyRunner extends Thread
         logStatus("Saving example");
         File exampleFile;
         if (testCaseMessage.getForecastTestPanel() != null) {
-          exampleFile = new File(testDir, "Example Messages " + name + ""
-              + testCaseMessage.getForecastTestPanel().getLabel() + ".ack.hl7");
+          exampleFile = new File(testDir, "Example Messages " + name + "" + testCaseMessage.getForecastTestPanel().getLabel() + ".ack.hl7");
         } else {
           exampleFile = new File(testDir, "Example Messages " + name + ".ack.hl7");
         }
@@ -862,8 +1061,8 @@ public class CertifyRunner extends Thread
 
       logStatus("Looking to see if SMM analysis can be written");
       if (smmAnalysisDir != null && areaProgress[SUITE_A_BASIC][0] > 0 && areaProgress[SUITE_B_INTERMEDIATE][0] > 0
-          && areaProgress[SUITE_D_EXCEPTIONAL][0] > 0 && areaProgress[SUITE_G_PERFORMANCE][0] > 0
-          && areaProgress[SUITE_H_CONFORMANCE][0] > 0 && areaProgress[SUITE_I_PROFILING][0] > 0) {
+          && areaProgress[SUITE_D_EXCEPTIONAL][0] > 0 && areaProgress[SUITE_G_PERFORMANCE][0] > 0 && areaProgress[SUITE_H_CONFORMANCE][0] > 0
+          && areaProgress[SUITE_I_PROFILING][0] > 0) {
         logStatus("Writing SMM Analysis");
         File analysisFile = new File(smmAnalysisDir, "Analysis Report.html");
         try {
@@ -917,6 +1116,7 @@ public class CertifyRunner extends Thread
       }
       if (!keepRunning) {
         status = STATUS_STOPPED;
+        reportProgress(null);
         return;
       }
     }
@@ -936,13 +1136,10 @@ public class CertifyRunner extends Thread
         }
 
         areaProgress[SUITE_H_CONFORMANCE][1] = makeScore(count, rspAnalysisList.size());
-
-        // TODO look for query and rate
-
-        areaProgress[SUITE_H_CONFORMANCE][2] = makeScore(count, rspAnalysisList.size());
       }
       if (!keepRunning) {
         status = STATUS_STOPPED;
+        reportProgress(null);
         return;
       }
     }
@@ -957,6 +1154,7 @@ public class CertifyRunner extends Thread
     for (int i = 0; i < areaScore[SUITE_C_ADVANCED].length; i++) {
       if (!keepRunning) {
         status = STATUS_STOPPED;
+        reportProgress(null);
         return;
       }
       profileTestCaseLists[i] = new ArrayList<TestCaseMessage>();
@@ -997,6 +1195,7 @@ public class CertifyRunner extends Thread
           areaProgress[SUITE_C_ADVANCED][i] = makeScore(count, issueList.size());
           if (!keepRunning) {
             status = STATUS_STOPPED;
+            reportProgress(null);
             return;
           }
         }
@@ -1075,6 +1274,8 @@ public class CertifyRunner extends Thread
               performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessagePresent);
               if (testCaseMessagePresent.isAccepted()) {
                 statusCheckTestCaseProfilingList.add(testCaseMessagePresent);
+                testCaseMessagePresent.setTestPosition(statusCheckTestCaseProfilingList.size());
+                testCaseMessagePresent.setTestType(VALUE_TEST_TYPE_UPDATE);
               }
             }
           }
@@ -1086,6 +1287,8 @@ public class CertifyRunner extends Thread
               performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessageAbsent);
               if (testCaseMessageAbsent.isAccepted()) {
                 statusCheckTestCaseProfilingList.add(testCaseMessageAbsent);
+                testCaseMessageAbsent.setTestPosition(statusCheckTestCaseProfilingList.size());
+                testCaseMessageAbsent.setTestType(VALUE_TEST_TYPE_UPDATE);
               }
             }
           }
@@ -1142,14 +1345,17 @@ public class CertifyRunner extends Thread
       testCaseMessagePresent.setHasRun(true);
       if (profileLine.isHasRun()) {
         saveTestCase(testCaseMessagePresent);
+        reportProgress(testCaseMessagePresent);
       }
       testCaseMessageAbsent.setHasRun(true);
       if (profileLine.isHasRun()) {
         saveTestCase(testCaseMessageAbsent);
+        reportProgress(testCaseMessageAbsent);
       }
       areaProgress[SUITE_I_PROFILING][0] = makeScore(count, profileLineList.size());
       if (!keepRunning) {
         status = STATUS_STOPPED;
+        reportProgress(null);
         return;
       }
     }
@@ -1157,8 +1363,8 @@ public class CertifyRunner extends Thread
       areaScore[SUITE_I_PROFILING][0] = makeScore(countPass, countTested);
     }
     areaCount[SUITE_I_PROFILING][0] = profilingRunCount;
-
     areaProgress[SUITE_I_PROFILING][0] = 100;
+    reportProgress(null);
   }
 
   private void prepareAdvanced(Map<Integer, List<Issue>> issueMap) {
@@ -1183,6 +1389,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.setTestCaseCategoryId("A." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseBasicList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseBasicList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1244,13 +1452,16 @@ public class CertifyRunner extends Thread
       }
       areaProgress[SUITE_A_BASIC][0] = makeScore(count, statusCheckTestCaseBasicList.size());
       saveTestCase(testCaseMessage);
+      reportProgress(testCaseMessage);
       if (!keepRunning) {
         status = STATUS_STOPPED;
+        reportProgress(null);
         return;
       }
     }
     areaScore[SUITE_A_BASIC][0] = makeScore(testPass, statusCheckTestCaseBasicList.size());
     areaProgress[SUITE_A_BASIC][0] = 100;
+    reportProgress(null);
 
     if (testAccepted == 0) {
       logStatus("None of the basic messages were accepted. Stopping test process. ");
@@ -1260,8 +1471,7 @@ public class CertifyRunner extends Thread
 
   private boolean verifyNoMajorChangesMade(TestCaseMessage testCaseMessage) {
     boolean noMajorChangesMade = true;
-    List<Comparison> comparisonList = CompareManager.compareMessages(testCaseMessage.getMessageText(),
-        testCaseMessage.getMessageTextSent());
+    List<Comparison> comparisonList = CompareManager.compareMessages(testCaseMessage.getMessageText(), testCaseMessage.getMessageTextSent());
     for (Comparison comparison : comparisonList) {
       if (comparison.isTested() && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
         if (!comparison.isPass()) {
@@ -1300,6 +1510,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("PID-8=" + certifyItem.getCode());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1319,6 +1531,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PID-10.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-10.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1340,6 +1554,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PID-10.3=" + certifyItem.getTable());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1359,6 +1575,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PID-22.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-22.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1384,6 +1602,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("RXA-9.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-9.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1404,6 +1624,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("OBX-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("OBX-5.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1424,6 +1646,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("OBX-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("OBX-5.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1443,6 +1667,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PD1-16=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PD1-17=[NOW]");
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1463,6 +1689,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("RXA-18.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-18.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1483,6 +1711,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("NK1-3.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("NK1-3.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1503,6 +1733,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1523,6 +1755,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1543,6 +1777,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1563,6 +1799,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1597,8 +1835,8 @@ public class CertifyRunner extends Thread
             {
               count++;
               TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(adminChecks[i][2]);
-              testCaseMessage.setDescription("Vaccination administered at " + adminChecks[i][0] + " of age is "
-                  + certifyItem.getLabel() + " (" + productCi.getCode() + ")");
+              testCaseMessage.setDescription("Vaccination administered at " + adminChecks[i][0] + " of age is " + certifyItem.getLabel() + " ("
+                  + productCi.getCode() + ")");
               testCaseMessage.setTestCaseSet(testCaseSet);
               testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
               testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
@@ -1610,6 +1848,8 @@ public class CertifyRunner extends Thread
               testCaseMessage.appendCustomTransformation("RXA-17.3=" + mvxItem.getTable());
 
               statusCheckTestCaseIntermediateList.add(testCaseMessage);
+              testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+              testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
               transformer.transform(testCaseMessage);
               testCaseMessage.setAssertResult("Accept - *");
               register(testCaseMessage);
@@ -1620,8 +1860,8 @@ public class CertifyRunner extends Thread
                 {
                   count++;
                   TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(adminChecks[i][2]);
-                  testCaseMessage.setDescription("Vaccination administered at " + adminChecks[i][0] + " of age is CPT "
-                      + cptCi.getLabel() + " (" + productCi.getCode() + ")");
+                  testCaseMessage.setDescription("Vaccination administered at " + adminChecks[i][0] + " of age is CPT " + cptCi.getLabel() + " ("
+                      + productCi.getCode() + ")");
                   testCaseMessage.setTestCaseSet(testCaseSet);
                   testCaseMessage.setTestCaseCategoryId("B." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
                   testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
@@ -1636,6 +1876,8 @@ public class CertifyRunner extends Thread
                   testCaseMessage.appendCustomTransformation("RXA-17.3=" + mvxItem.getTable());
 
                   statusCheckTestCaseIntermediateList.add(testCaseMessage);
+                  testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+                  testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
                   transformer.transform(testCaseMessage);
                   testCaseMessage.setAssertResult("Accept - *");
                   register(testCaseMessage);
@@ -1661,6 +1903,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("RXR-1.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXR-1.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1681,6 +1925,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("RXR-2.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXR-2.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1704,6 +1950,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PID-11.5#2=PID-11.5");
       testCaseMessage.appendCustomTransformation("PID-11.7#2=" + certifyItem.getCode());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1724,6 +1972,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PID-5.2#2=[LAST_DIFFERENT]");
       testCaseMessage.appendCustomTransformation("PID-5.7#2=" + certifyItem.getCode());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1751,6 +2001,8 @@ public class CertifyRunner extends Thread
         testCaseMessage.appendCustomTransformation("PID-13.2=" + certifyItem.getCode());
       }
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1782,6 +2034,8 @@ public class CertifyRunner extends Thread
         testCaseMessage.appendCustomTransformation("PID-13.3=" + certifyItem.getCode());
       }
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1813,6 +2067,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PID-3.5#2=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1834,6 +2090,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PD1-11.3=" + certifyItem.getTable());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1854,6 +2112,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PID-11.9=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1875,6 +2135,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PID-15.3=" + certifyItem.getTable());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1905,6 +2167,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("RXA-20.1=" + completionStatus);
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1924,6 +2188,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("RXA-21=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1943,6 +2209,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("RXA-21=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1964,6 +2232,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("RXA-10.21=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -1987,6 +2257,8 @@ public class CertifyRunner extends Thread
       }
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -2007,6 +2279,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("PID-25=" + i);
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -2083,39 +2357,32 @@ public class CertifyRunner extends Thread
 
           testCaseMessage.setForecastTestPanel(testPanel);
           testCaseMessage.appendOriginalMessage(sb.toString());
-          testCaseMessage.setDescription(testPanel.getLabel() + ": " + forecastTestCase.getCategoryName() + ": "
-              + forecastTestCase.getDescription());
+          testCaseMessage.setDescription(testPanel.getLabel() + ": " + forecastTestCase.getCategoryName() + ": " + forecastTestCase.getDescription());
           testCaseMessage.setTestCaseSet(testCaseSet);
           testCaseMessage.setTestCaseCategoryId("F." + makeTwoDigits(1) + "." + makeTwoDigits(count));
           testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
-          testCaseMessage.setQuickTransformations(new String[] { "2.5.1",
-              (forecastTestCase.getPatientSex().equals("M") ? "BOY" : "GIRL"), "ADDRESS", "PHONE", "MOTHER", "RACE",
-              "ETHNICITY" });
+          testCaseMessage.setQuickTransformations(new String[] { "2.5.1", (forecastTestCase.getPatientSex().equals("M") ? "BOY" : "GIRL"), "ADDRESS",
+              "PHONE", "MOTHER", "RACE", "ETHNICITY" });
           testCaseMessage.appendCustomTransformation("PID-7=" + forecastTestCase.getPatientDob());
           int vaccinationCount = 0;
           for (ForecastTestEvent forecastTestEvent : forecastTestCase.getForecastTestEventList()) {
             if (forecastTestEvent.getEventTypeCode().equals("V")) {
               vaccinationCount++;
               testCaseMessage.appendCustomTransformation("ORC#" + vaccinationCount + "-1=RE");
-              testCaseMessage.appendCustomTransformation("ORC#" + vaccinationCount + "-3.1="
-                  + forecastTestEvent.getTestEventId());
+              testCaseMessage.appendCustomTransformation("ORC#" + vaccinationCount + "-3.1=" + forecastTestEvent.getTestEventId());
               testCaseMessage.appendCustomTransformation("ORC#" + vaccinationCount + "-3.2=TCH-FT");
               testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-1=0");
               testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-2=1");
-              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-3="
-                  + forecastTestEvent.getEventDate());
-              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-5.1="
-                  + forecastTestEvent.getVaccineCvx());
-              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-5.2="
-                  + forecastTestEvent.getLabel());
+              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-3=" + forecastTestEvent.getEventDate());
+              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-5.1=" + forecastTestEvent.getVaccineCvx());
+              testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-5.2=" + forecastTestEvent.getLabel());
               testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-5.3=CVX");
               testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-6=999");
               testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-9.1=01");
               testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-9.2=Historical");
               testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-9.3=NIP001");
               if (!forecastTestEvent.getVaccineMvx().equals("")) {
-                testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-17.1="
-                    + forecastTestEvent.getVaccineMvx());
+                testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-17.1=" + forecastTestEvent.getVaccineMvx());
                 testCaseMessage.appendCustomTransformation("RXA#" + vaccinationCount + "-17.3=MVX");
               }
 
@@ -2123,6 +2390,8 @@ public class CertifyRunner extends Thread
           }
 
           statusCheckTestCaseForecastPrepList.add(testCaseMessage);
+          testCaseMessage.setTestPosition(statusCheckTestCaseForecastPrepList.size());
+          testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
           transformer.transform(testCaseMessage);
           testCaseMessage.setAssertResult("Accept - *");
           register(testCaseMessage);
@@ -2149,6 +2418,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -2159,11 +2430,13 @@ public class CertifyRunner extends Thread
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.appendCustomTransformation("RXA-3=" + sdf.format(new Date()));
-      testCaseMessage.setDescription("Tolerance Check: RXA-3 contains a time component");
+      testCaseMessage.setDescription(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " RXA-3 contains a time component");
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -2174,12 +2447,13 @@ public class CertifyRunner extends Thread
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage
           .appendCustomTransformation("RXA-5.2=This is a very long description for a vaccine, that normally you shouldn't expect to see, but since this field should not be read by the receiver it should cause no problem, furthermore HL7 allows this field to have up to 999 characters, which should not cause a problem to the receiver. Also this tests to verify that the receiver is not trying to verify the text of the vaccine. ");
-      testCaseMessage
-          .setDescription("Tolerance Check: Message includes description for vaccine that is extremely long");
+      testCaseMessage.setDescription(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " Message includes description for vaccine that is extremely long");
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -2189,11 +2463,13 @@ public class CertifyRunner extends Thread
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.appendCustomTransformation("PID-3.4=LOCAL_FACILITY_ASSIGNED_ID");
-      testCaseMessage.setDescription("Tolerance Check: Patient identifier assigning authority is very long");
+      testCaseMessage.setDescription(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " Patient identifier assigning authority is very long");
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -2203,11 +2479,13 @@ public class CertifyRunner extends Thread
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.appendOriginalMessage("YES|This|is|a|segment^you^should^never^see|in|production\n");
-      testCaseMessage.setDescription("Tolerance Check: Message includes segment not defined by HL7");
+      testCaseMessage.setDescription(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " Message includes segment not defined by HL7");
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -2216,12 +2494,14 @@ public class CertifyRunner extends Thread
     {
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
-      testCaseMessage.setDescription("Tolerance Check: Hospital service code is set to a non-standard value");
+      testCaseMessage.setDescription(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " Hospital service code is set to a non-standard value");
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("PV1-10=AMB");
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -2245,6 +2525,8 @@ public class CertifyRunner extends Thread
       testCaseMessage.appendCustomTransformation("OBX-5.3=SCT");
       testCaseMessage.appendCustomTransformation("OBX-11=F");
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
@@ -2254,8 +2536,7 @@ public class CertifyRunner extends Thread
 
     try {
       count = 0;
-      BufferedReader in = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(
-          "exampleCertifiedMessages.txt")));
+      BufferedReader in = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("exampleCertifiedMessages.txt")));
       String line;
       StringBuilder sb = new StringBuilder();
       String previousDescription = null;
@@ -2289,8 +2570,7 @@ public class CertifyRunner extends Thread
     areaCount[SUITE_D_EXCEPTIONAL][0] = statusCheckTestCaseExceptionalList.size();
   }
 
-  private int createCertfiedMessageTestCaseMessage(Transformer transformer, int count, StringBuilder sb,
-      String previousDescription) {
+  private int createCertfiedMessageTestCaseMessage(Transformer transformer, int count, StringBuilder sb, String previousDescription) {
     count++;
 
     String messageText = sb.toString();
@@ -2300,8 +2580,7 @@ public class CertifyRunner extends Thread
 
     changePatientIdentifyingInformation(messageText, testCaseMessage);
 
-    testCaseMessage.setDescription("Certified Message: "
-        + (previousDescription == null ? "Unidentified EHR" : previousDescription));
+    testCaseMessage.setDescription(VALUE_EXCEPTIONAL_PREFIX_CERTIFIED_MESSAGE + " " + (previousDescription == null ? "Unidentified EHR" : previousDescription));
     testCaseMessage.setTestCaseSet(testCaseSet);
     testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(2) + "." + makeTwoDigits(count));
     testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
@@ -2314,8 +2593,7 @@ public class CertifyRunner extends Thread
 
   private void changePatientIdentifyingInformation(String messageText, TestCaseMessage testCaseMessage) {
     HL7Reader hl7Reader = new HL7Reader(messageText);
-    testCaseMessage.appendCustomTransformation("MSH-10=" + messageText.hashCode() + "."
-        + (System.currentTimeMillis() % 10000));
+    testCaseMessage.appendCustomTransformation("MSH-10=" + messageText.hashCode() + "." + (System.currentTimeMillis() % 10000));
     if (hl7Reader.advanceToSegment("PID")) {
       String dob = hl7Reader.getValue(7);
       if (dob.length() >= 8) {
@@ -2425,12 +2703,15 @@ public class CertifyRunner extends Thread
       }
       areaProgress[SUITE_B_INTERMEDIATE][0] = makeScore(count, statusCheckTestCaseIntermediateList.size());
       saveTestCase(testCaseMessage);
+      reportProgress(testCaseMessage);
       if (!keepRunning) {
         status = STATUS_STOPPED;
+        reportProgress(null);
         return;
       }
     }
     areaScore[SUITE_B_INTERMEDIATE][0] = makeScore(testPass, statusCheckTestCaseIntermediateList.size());
+    reportProgress(null);
   }
 
   private void updateExceptional() {
@@ -2455,13 +2736,15 @@ public class CertifyRunner extends Thread
       }
       areaProgress[SUITE_D_EXCEPTIONAL][0] = makeScore(count, statusCheckTestCaseExceptionalList.size());
       saveTestCase(testCaseMessage);
+      reportProgress(testCaseMessage);
       if (!keepRunning) {
         status = STATUS_STOPPED;
+        reportProgress(null);
         return;
       }
     }
     areaScore[SUITE_D_EXCEPTIONAL][0] = makeScore(testPass, statusCheckTestCaseExceptionalList.size());
-
+    reportProgress(null);
   }
 
   private void updateForecastPrep() {
@@ -2486,8 +2769,10 @@ public class CertifyRunner extends Thread
       }
       areaProgress[SUITE_E_FORECAST_PREP][0] = makeScore(count, statusCheckTestCaseForecastPrepList.size());
       saveTestCase(testCaseMessage);
+      reportProgress(testCaseMessage);
       if (!keepRunning) {
         status = STATUS_STOPPED;
+        reportProgress(null);
         return;
       }
     }
@@ -2514,6 +2799,8 @@ public class CertifyRunner extends Thread
       queryTestCaseMessage.setTestCaseCategoryId("A." + makeTwoDigits(3) + "." + makeTwoDigits(count));
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       statusCheckQueryTestCaseBasicList.add(queryTestCaseMessage);
+      queryTestCaseMessage.setTestPosition(statusCheckQueryTestCaseBasicList.size());
+      queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
       register(queryTestCaseMessage);
       try {
         long startTime = System.currentTimeMillis();
@@ -2545,8 +2832,10 @@ public class CertifyRunner extends Thread
       areaProgress[SUITE_A_BASIC][2] = makeScore(count, statusCheckTestCaseBasicList.size());
       areaProgress[SUITE_A_BASIC][1] = areaProgress[SUITE_A_BASIC][2];
       saveTestCase(queryTestCaseMessage);
+      reportProgress(queryTestCaseMessage);
       if (!keepRunning) {
         status = STATUS_STOPPED;
+        reportProgress(null);
         return;
       }
     }
@@ -2554,6 +2843,7 @@ public class CertifyRunner extends Thread
     areaScore[SUITE_A_BASIC][2] = makeScore(testQueryPassOptional, testQueryCountOptional);
     areaCount[SUITE_A_BASIC][1] = testQueryCountRequired;
     areaCount[SUITE_A_BASIC][2] = testQueryCountOptional;
+    reportProgress(null);
   }
 
   public String convertToQuery(TestCaseMessage testCaseMessage) {
@@ -2563,8 +2853,7 @@ public class CertifyRunner extends Thread
     if (queryType.equals(QUERY_TYPE_VXQ)) {
       return QueryConverter.convertVXUtoVXQ(testCaseMessage.getMessageText());
     }
-    throw new IllegalArgumentException("Unable to convert query because query type '" + queryType
-        + "' is not recognized");
+    throw new IllegalArgumentException("Unable to convert query because query type '" + queryType + "' is not recognized");
   }
 
   private String prepareSendQueryMessage(TestCaseMessage queryTestCaseMessage) {
@@ -2583,6 +2872,8 @@ public class CertifyRunner extends Thread
       queryTestCaseMessage.setTestCaseCategoryId("BQ." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       statusCheckQueryTestCaseIntermediateList.add(queryTestCaseMessage);
+      queryTestCaseMessage.setTestPosition(statusCheckQueryTestCaseIntermediateList.size());
+      queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
       register(queryTestCaseMessage);
     }
   }
@@ -2599,6 +2890,8 @@ public class CertifyRunner extends Thread
       queryTestCaseMessage.setTestCaseCategoryId("D." + makeTwoDigits(3) + "." + makeTwoDigits(count));
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       statusCheckQueryTestCaseTolerantList.add(queryTestCaseMessage);
+      queryTestCaseMessage.setTestPosition(statusCheckQueryTestCaseTolerantList.size());
+      queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
       register(queryTestCaseMessage);
     }
   }
@@ -2615,6 +2908,8 @@ public class CertifyRunner extends Thread
       queryTestCaseMessage.setTestCaseCategoryId("I." + makeTwoDigits(3) + "." + makeTwoDigits(count));
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       statusCheckQueryTestCaseProfilingList.add(queryTestCaseMessage);
+      queryTestCaseMessage.setTestPosition(statusCheckQueryTestCaseProfilingList.size());
+      queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
       register(queryTestCaseMessage);
     }
   }
@@ -2632,6 +2927,8 @@ public class CertifyRunner extends Thread
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       queryTestCaseMessage.setForecastTestCase(testCaseMessage.getForecastTestCase());
       statusCheckQueryTestCaseForecastPrepList.add(queryTestCaseMessage);
+      queryTestCaseMessage.setTestPosition(statusCheckQueryTestCaseForecastPrepList.size());
+      queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
       register(queryTestCaseMessage);
     }
   }
@@ -2653,8 +2950,7 @@ public class CertifyRunner extends Thread
         performance.addTotalQueryTime(System.currentTimeMillis() - startTime, queryTestCaseMessage);
         queryTestCaseMessage.setHasRun(true);
         queryTestCaseMessage.setActualResponseMessage(rspMessage);
-        List<Comparison> comparisonList = CompareManager.compareMessages(
-            queryTestCaseMessage.getDerivedFromVXUMessage(), rspMessage);
+        List<Comparison> comparisonList = CompareManager.compareMessages(queryTestCaseMessage.getDerivedFromVXUMessage(), rspMessage);
         queryTestCaseMessage.setComparisonList(comparisonList);
         queryTestCaseMessage.setPassedTest(true);
         for (Comparison comparison : comparisonList) {
@@ -2677,13 +2973,11 @@ public class CertifyRunner extends Thread
         if (queryTestCaseMessage.getForecastTestCase() != null) {
           if (connector.getTchForecastTesterSoftwareId() > 0) {
             try {
-              String results = forecastTesterManager.reportForecastResults(queryTestCaseMessage.getForecastTestCase(),
-                  rspMessage, connector.getTchForecastTesterSoftwareId());
-              if (queryTestCaseMessage.getTestCaseNumber() != null
-                  && !queryTestCaseMessage.getTestCaseNumber().equals("")) {
+              String results = forecastTesterManager.reportForecastResults(queryTestCaseMessage.getForecastTestCase(), rspMessage,
+                  connector.getTchForecastTesterSoftwareId());
+              if (queryTestCaseMessage.getTestCaseNumber() != null && !queryTestCaseMessage.getTestCaseNumber().equals("")) {
                 if (testDir != null) {
-                  File testCaseFile = new File(testDir, "TC-" + queryTestCaseMessage.getTestCaseNumber()
-                      + ".forecast-results.txt");
+                  File testCaseFile = new File(testDir, "TC-" + queryTestCaseMessage.getTestCaseNumber() + ".forecast-results.txt");
                   try {
                     PrintWriter out = new PrintWriter(new FileWriter(testCaseFile));
                     out.print(results);
@@ -2705,8 +2999,10 @@ public class CertifyRunner extends Thread
       areaProgress[suite][2] = makeScore(count, testCaseMessageList.size());
       areaProgress[suite][1] = areaProgress[suite][2];
       saveTestCase(queryTestCaseMessage);
+      reportProgress(queryTestCaseMessage);
       if (!keepRunning) {
         status = STATUS_STOPPED;
+        reportProgress(null);
         return;
       }
     }
@@ -2716,6 +3012,7 @@ public class CertifyRunner extends Thread
     areaScore[suite][2] = makeScore(testQueryPassOptional, testQueryCountOptional);
     areaCount[suite][1] = testQueryCountRequired;
     areaCount[suite][2] = testQueryCountOptional;
+    reportProgress(null);
   }
 
   private void saveTestCase(TestCaseMessage tcm) {
@@ -2761,8 +3058,7 @@ public class CertifyRunner extends Thread
       if (areaScore[SUITE_A_BASIC][1] >= 100) {
         out.println("    <td class=\"pass\">All required IIS core fields are supported.  <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
       } else if (areaScore[SUITE_A_BASIC][1] >= 0) {
-        out.println("    <td class=\"fail\">Not all required IIS core fields are supported. ("
-            + areaScore[SUITE_A_BASIC][1]
+        out.println("    <td class=\"fail\">Not all required IIS core fields are supported. (" + areaScore[SUITE_A_BASIC][1]
             + "% of tests passed) <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_A_BASIC][1] > -1) {
@@ -2779,8 +3075,7 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"pass\">All required and optional IIS core data were returned when queried. "
             + "<font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
       } else if (areaScore[SUITE_A_BASIC][2] >= 0) {
-        out.println("    <td class=\"fail\">Not all required or optional IIS core data were returned when queried ("
-            + areaScore[SUITE_A_BASIC][2]
+        out.println("    <td class=\"fail\">Not all required or optional IIS core data were returned when queried (" + areaScore[SUITE_A_BASIC][2]
             + "% of fields returned) <font size=\"-1\"><a href=\"#areaALevel1\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_A_BASIC][2] > -1) {
@@ -2802,9 +3097,8 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"pass\">All messages with core coded data elements were accepted. "
             + "<font size=\"-1\"><a href=\"#areaBLevel1\">(details)</a></font></td>");
       } else if (areaScore[SUITE_B_INTERMEDIATE][0] >= 0) {
-        out.println("    <td class=\"fail\">Some messages with core coded data elements were NOT accepted. ("
-            + areaScore[SUITE_B_INTERMEDIATE][0] + "% messages accepted) "
-            + "<font size=\"-1\"><a href=\"#areaBLevel1\">(details)</a></font></td>");
+        out.println("    <td class=\"fail\">Some messages with core coded data elements were NOT accepted. (" + areaScore[SUITE_B_INTERMEDIATE][0]
+            + "% messages accepted) " + "<font size=\"-1\"><a href=\"#areaBLevel1\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_B_INTERMEDIATE][0] > -1) {
           out.println("    <td>running now ... <br/>" + areaProgress[SUITE_B_INTERMEDIATE][0] + "% complete</td>");
@@ -2816,9 +3110,8 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"pass\">All required IIS core fields were returned. "
             + "<font size=\"-1\"><a href=\"#areaBLevel2\">(details)</a></font></td>");
       } else if (areaScore[SUITE_B_INTERMEDIATE][1] >= 0) {
-        out.println("    <td class=\"fail\">Not all required IIS core fields were returned. ("
-            + areaScore[SUITE_B_INTERMEDIATE][1] + "% core fields returned) "
-            + "<font size=\"-1\"><a href=\"#areaBLevel2\">(details)</a></font></td>");
+        out.println("    <td class=\"fail\">Not all required IIS core fields were returned. (" + areaScore[SUITE_B_INTERMEDIATE][1]
+            + "% core fields returned) " + "<font size=\"-1\"><a href=\"#areaBLevel2\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_B_INTERMEDIATE][1] > -1) {
           out.println("    <td>running now ... <br/>" + areaProgress[SUITE_B_INTERMEDIATE][1] + "% complete</td>");
@@ -2834,9 +3127,8 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"pass\">All required and optional IIS core fields were returned. "
             + "<font size=\"-1\"><a href=\"#areaBLevel3\">(details)</a></font></td>");
       } else if (areaScore[SUITE_B_INTERMEDIATE][2] >= 0) {
-        out.println("    <td class=\"fail\">Not all required or optional IIS core fields were returned. ("
-            + areaScore[SUITE_B_INTERMEDIATE][2] + "% required and optional were returned) "
-            + "<font size=\"-1\"><a href=\"#areaBLevel3\">(details)</a></font></td>");
+        out.println("    <td class=\"fail\">Not all required or optional IIS core fields were returned. (" + areaScore[SUITE_B_INTERMEDIATE][2]
+            + "% required and optional were returned) " + "<font size=\"-1\"><a href=\"#areaBLevel3\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_B_INTERMEDIATE][2] > -1) {
           out.println("    <td>running now ... <br/>" + areaProgress[SUITE_B_INTERMEDIATE][2] + "% complete</td>");
@@ -2857,9 +3149,8 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"pass\">All high priority issues were identified. "
             + "<font size=\"-1\"><a href=\"#areaCLevel1\">(details)</a></font></td>");
       } else if (areaScore[SUITE_C_ADVANCED][0] >= 0) {
-        out.println("    <td class=\"fail\">Not all high priority issues were identified. ("
-            + areaScore[SUITE_C_ADVANCED][0] + "% of issues identified) "
-            + "<font size=\"-1\"><a href=\"#areaCLevel1\">(details)</a></font></td>");
+        out.println("    <td class=\"fail\">Not all high priority issues were identified. (" + areaScore[SUITE_C_ADVANCED][0]
+            + "% of issues identified) " + "<font size=\"-1\"><a href=\"#areaCLevel1\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_C_ADVANCED][0] > -1) {
           out.println("    <td>running now ... <br/>" + areaProgress[SUITE_C_ADVANCED][0] + "% complete</td>");
@@ -2871,9 +3162,8 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"pass\">All medium priority issues were identified. "
             + "<font size=\"-1\"><a href=\"#areaCLevel2\">(details)</a></font></td>");
       } else if (areaScore[SUITE_C_ADVANCED][1] >= 0) {
-        out.println("    <td class=\"fail\">Not all medium priority issues were identified. ("
-            + areaScore[SUITE_C_ADVANCED][1] + "% issues identified) "
-            + "<font size=\"-1\"><a href=\"#areaCLevel2\">(details)</a></font></td>");
+        out.println("    <td class=\"fail\">Not all medium priority issues were identified. (" + areaScore[SUITE_C_ADVANCED][1]
+            + "% issues identified) " + "<font size=\"-1\"><a href=\"#areaCLevel2\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_C_ADVANCED][1] > -1) {
           out.println("    <td>running now ... <br/>" + areaProgress[SUITE_C_ADVANCED][1] + "% complete</td>");
@@ -2885,9 +3175,8 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"pass\">All low priority issues were identified. "
             + "<font size=\"-1\"><a href=\"#areaCLevel3\">(details)</a></font></td>");
       } else if (areaScore[SUITE_C_ADVANCED][2] >= 0) {
-        out.println("    <td class=\"fail\">Not all low priority issues were identified. ("
-            + areaScore[SUITE_C_ADVANCED][2] + "% issues were identified) "
-            + "<font size=\"-1\"><a href=\"#areaCLevel3\">(details)</a></font></td>");
+        out.println("    <td class=\"fail\">Not all low priority issues were identified. (" + areaScore[SUITE_C_ADVANCED][2]
+            + "% issues were identified) " + "<font size=\"-1\"><a href=\"#areaCLevel3\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_C_ADVANCED][2] > -1) {
           out.println("    <td>running now ... <br/>" + areaProgress[SUITE_C_ADVANCED][2] + "% complete</td>");
@@ -2902,11 +3191,10 @@ public class CertifyRunner extends Thread
       out.println("  <tr>");
       out.println("    <th><font size=\"+1\">Profiling</font><br/><font size=\"-2\">IIS meets own requirements</font></th>");
       if (areaScore[SUITE_I_PROFILING][0] >= 100) {
-        out.println("    <td class=\"pass\">All requirements are confirmed "
-            + "<font size=\"-1\"><a href=\"#areaILevel1\">(details)</a></font></td>");
+        out.println("    <td class=\"pass\">All requirements are confirmed " + "<font size=\"-1\"><a href=\"#areaILevel1\">(details)</a></font></td>");
       } else if (areaScore[SUITE_I_PROFILING][0] >= 0) {
-        out.println("    <td class=\"fail\">Not all requirements are confirmed (" + areaScore[SUITE_I_PROFILING][0]
-            + "% requirements confirmed) " + "<font size=\"-1\"><a href=\"#areaILevel1\">(details)</a></font></td>");
+        out.println("    <td class=\"fail\">Not all requirements are confirmed (" + areaScore[SUITE_I_PROFILING][0] + "% requirements confirmed) "
+            + "<font size=\"-1\"><a href=\"#areaILevel1\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_I_PROFILING][0] > -1) {
           out.println("    <td>running now ... <br/>" + areaProgress[SUITE_I_PROFILING][0] + "% complete</td>");
@@ -2919,9 +3207,7 @@ public class CertifyRunner extends Thread
             + "<font size=\"-1\"><a href=\"#areaILevel2\">(details)</a></font></td>");
       } else if (areaScore[SUITE_I_PROFILING][1] >= 0) {
         out.println("    <td class=\"fail\">Not all required IIS core fields were returned from messages that were accepted. ("
-            + areaScore[SUITE_I_PROFILING][1]
-            + "% core fields returned) "
-            + "<font size=\"-1\"><a href=\"#areaILevel2\">(details)</a></font></td>");
+            + areaScore[SUITE_I_PROFILING][1] + "% core fields returned) " + "<font size=\"-1\"><a href=\"#areaILevel2\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_I_PROFILING][1] > -1) {
           out.println("    <td>running now ... <br/>" + areaProgress[SUITE_I_PROFILING][1] + "% complete</td>");
@@ -2938,8 +3224,7 @@ public class CertifyRunner extends Thread
             + "<font size=\"-1\"><a href=\"#areaILevel3\">(details)</a></font></td>");
       } else if (areaScore[SUITE_I_PROFILING][2] >= 0) {
         out.println("    <td class=\"fail\">Not all required or optional IIS core fields were returned from messages that were accepted. ("
-            + areaScore[SUITE_I_PROFILING][2]
-            + "% required and optional were returned) "
+            + areaScore[SUITE_I_PROFILING][2] + "% required and optional were returned) "
             + "<font size=\"-1\"><a href=\"#areaILevel3\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_I_PROFILING][2] > -1) {
@@ -2959,11 +3244,9 @@ public class CertifyRunner extends Thread
       out.println("  <tr>");
       out.println("    <th><font size=\"+1\">Exceptional</font><br/><font size=\"-2\">IIS can allow for minor differences</font></th>");
       if (areaScore[SUITE_D_EXCEPTIONAL][0] >= 100) {
-        out.println("    <td class=\"pass\">All messages accepted as-is. "
-            + "<font size=\"-1\"><a href=\"#areaDLevel1\">(details)</a></font></td>");
+        out.println("    <td class=\"pass\">All messages accepted as-is. " + "<font size=\"-1\"><a href=\"#areaDLevel1\">(details)</a></font></td>");
       } else if (areaScore[SUITE_D_EXCEPTIONAL][0] >= 0) {
-        out.println("    <td class=\"fail\">Some messages were not accepted as-is. ("
-            + areaScore[SUITE_D_EXCEPTIONAL][0] + "% messages accepted) "
+        out.println("    <td class=\"fail\">Some messages were not accepted as-is. (" + areaScore[SUITE_D_EXCEPTIONAL][0] + "% messages accepted) "
             + "<font size=\"-1\"><a href=\"#areaDLevel1\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_D_EXCEPTIONAL][0] > -1) {
@@ -2976,9 +3259,8 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"pass\">All required IIS core fields were returned. "
             + "<font size=\"-1\"><a href=\"#areaDLevel2\">(details)</a></font></td>");
       } else if (areaScore[SUITE_D_EXCEPTIONAL][1] >= 0) {
-        out.println("    <td class=\"fail\">Not all required IIS core fields were returned. ("
-            + areaScore[SUITE_D_EXCEPTIONAL][1] + "% core fields returned) "
-            + "<font size=\"-1\"><a href=\"#areaDLevel2\">(details)</a></font></td>");
+        out.println("    <td class=\"fail\">Not all required IIS core fields were returned. (" + areaScore[SUITE_D_EXCEPTIONAL][1]
+            + "% core fields returned) " + "<font size=\"-1\"><a href=\"#areaDLevel2\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_D_EXCEPTIONAL][1] > -1) {
           out.println("    <td>running now ... <br/>" + areaProgress[SUITE_D_EXCEPTIONAL][1] + "% complete</td>");
@@ -2994,9 +3276,8 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"pass\">All required and optional IIS core fields were returned. "
             + "<font size=\"-1\"><a href=\"#areaDLevel3\">(details)</a></font></td>");
       } else if (areaScore[SUITE_D_EXCEPTIONAL][2] >= 0) {
-        out.println("    <td class=\"fail\">Not all required or optional IIS core fields were returned. ("
-            + areaScore[SUITE_D_EXCEPTIONAL][2] + "% required and optional were returned) "
-            + "<font size=\"-1\"><a href=\"#areaDLevel3\">(details)</a></font></td>");
+        out.println("    <td class=\"fail\">Not all required or optional IIS core fields were returned. (" + areaScore[SUITE_D_EXCEPTIONAL][2]
+            + "% required and optional were returned) " + "<font size=\"-1\"><a href=\"#areaDLevel3\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_D_EXCEPTIONAL][2] > -1) {
           out.println("    <td>running now ... <br/>" + areaProgress[SUITE_D_EXCEPTIONAL][2] + "% complete</td>");
@@ -3017,8 +3298,7 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"pass\">All shot histories were accepted. "
             + "<font size=\"-1\"><a href=\"#areaELevel1\">(details)</a></font></td>");
       } else if (areaScore[SUITE_E_FORECAST_PREP][0] >= 0) {
-        out.println("    <td class=\"fail\">Some shot histories were NOT accepted. ("
-            + areaScore[SUITE_E_FORECAST_PREP][0] + "% messages accepted) "
+        out.println("    <td class=\"fail\">Some shot histories were NOT accepted. (" + areaScore[SUITE_E_FORECAST_PREP][0] + "% messages accepted) "
             + "<font size=\"-1\"><a href=\"#areaELevel1\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_E_FORECAST_PREP][0] > -1) {
@@ -3031,9 +3311,8 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"pass\">All required IIS core fields were returned. "
             + "<font size=\"-1\"><a href=\"#areaELevel2\">(details)</a></font></td>");
       } else if (areaScore[SUITE_E_FORECAST_PREP][1] >= 0) {
-        out.println("    <td class=\"fail\">Not all required IIS core fields were returned. ("
-            + areaScore[SUITE_E_FORECAST_PREP][1] + "% core fields returned) "
-            + "<font size=\"-1\"><a href=\"#areaELevel2\">(details)</a></font></td>");
+        out.println("    <td class=\"fail\">Not all required IIS core fields were returned. (" + areaScore[SUITE_E_FORECAST_PREP][1]
+            + "% core fields returned) " + "<font size=\"-1\"><a href=\"#areaELevel2\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_E_FORECAST_PREP][1] > -1) {
           out.println("    <td>running now ... <br/>" + areaProgress[SUITE_E_FORECAST_PREP][1] + "% complete</td>");
@@ -3049,9 +3328,8 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"pass\">All required and optional IIS core fields were returned. "
             + "<font size=\"-1\"><a href=\"#areaELevel3\">(details)</a></font></td>");
       } else if (areaScore[SUITE_E_FORECAST_PREP][2] >= 0) {
-        out.println("    <td class=\"fail\">Not all required or optional IIS core fields were returned. ("
-            + areaScore[SUITE_E_FORECAST_PREP][2] + "% required and optional were returned) "
-            + "<font size=\"-1\"><a href=\"#areaELevel3\">(details)</a></font></td>");
+        out.println("    <td class=\"fail\">Not all required or optional IIS core fields were returned. (" + areaScore[SUITE_E_FORECAST_PREP][2]
+            + "% required and optional were returned) " + "<font size=\"-1\"><a href=\"#areaELevel3\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_E_FORECAST_PREP][2] > -1) {
           out.println("    <td>running now ... <br/>" + areaProgress[SUITE_E_FORECAST_PREP][2] + "% complete</td>");
@@ -3071,22 +3349,18 @@ public class CertifyRunner extends Thread
       out.println("    <td>not calculated yet</td>");
     } else {
       if (areaScore[SUITE_G_PERFORMANCE][0] < 3000) {
-        out.println("    <td class=\"pass\">Performance was acceptable: " + areaScore[SUITE_G_PERFORMANCE][0]
-            + "ms for updates.</td>");
+        out.println("    <td class=\"pass\">Performance was acceptable: " + areaScore[SUITE_G_PERFORMANCE][0] + "ms for updates.</td>");
       } else {
-        out.println("    <td class=\"fail\">Performance was below acceptable levels: "
-            + areaScore[SUITE_G_PERFORMANCE][0] + "ms for updates.</td>");
+        out.println("    <td class=\"fail\">Performance was below acceptable levels: " + areaScore[SUITE_G_PERFORMANCE][0] + "ms for updates.</td>");
       }
     }
     if (areaProgress[SUITE_G_PERFORMANCE][1] == -1) {
       out.println("    <td>not calculated yet</td>");
     } else {
       if (areaScore[SUITE_G_PERFORMANCE][1] < 5000) {
-        out.println("    <td class=\"pass\">Performance was acceptable: " + areaScore[SUITE_G_PERFORMANCE][1]
-            + "ms for queries.</td>");
+        out.println("    <td class=\"pass\">Performance was acceptable: " + areaScore[SUITE_G_PERFORMANCE][1] + "ms for queries.</td>");
       } else {
-        out.println("    <td class=\"fail\">Performance was below acceptable levels: "
-            + areaScore[SUITE_G_PERFORMANCE][1] + "ms for queries.</td>");
+        out.println("    <td class=\"fail\">Performance was below acceptable levels: " + areaScore[SUITE_G_PERFORMANCE][1] + "ms for queries.</td>");
       }
     }
     out.println("    <td>not defined</td>");
@@ -3112,9 +3386,8 @@ public class CertifyRunner extends Thread
         out.println("    <td class=\"pass\">All query response (RSP) messages met HL7 and CDC standards.  "
             + "<font size=\"-1\"><a href=\"#areaHLevel2\">(details)</a></font></td>");
       } else if (areaScore[SUITE_H_CONFORMANCE][1] >= 0) {
-        out.println("    <td class=\"fail\">Not all query response (RSP) messages met HL7 and CDC standards. ("
-            + areaScore[SUITE_H_CONFORMANCE][1] + "% of fields returned) "
-            + "<font size=\"-1\"><a href=\"#areaHLevel2\">(details)</a></font></td>");
+        out.println("    <td class=\"fail\">Not all query response (RSP) messages met HL7 and CDC standards. (" + areaScore[SUITE_H_CONFORMANCE][1]
+            + "% of fields returned) " + "<font size=\"-1\"><a href=\"#areaHLevel2\">(details)</a></font></td>");
       } else {
         if (areaProgress[SUITE_H_CONFORMANCE][1] > -1) {
           out.println("    <td>running now ... <br/>" + areaProgress[SUITE_H_CONFORMANCE][1] + "% complete</td>");
@@ -3133,134 +3406,7 @@ public class CertifyRunner extends Thread
     if (testFinished == null) {
       out.println("<p>Test in progress, unable to provide final report. <a href=\"IIS Testing Report Detail.html\">See supporting details for current progress. </a></p>");
     } else {
-      reportScore[REPORT_1_INTEROP] = 0.0;
-      reportScore[REPORT_2_CODED] = 0.0;
-      reportScore[REPORT_3_LOCAL] = 0.0;
-      reportScore[REPORT_4_NATIONAL] = 0.0;
-      reportScore[REPORT_5_TOLERANCE] = 0.0;
-      reportScore[REPORT_6_EHR] = 0.0;
-      reportScore[REPORT_7_PERFORM] = 0.0;
-      reportScore[REPORT_8_ACK] = 0.0;
-      Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap = new HashMap<CompatibilityConformance, List<ProfileLine>>();
-
-      if (areaProgress[SUITE_A_BASIC][0] > 0) {
-        reportScore[REPORT_1_INTEROP] = areaScore[SUITE_A_BASIC][0] / 100.0;
-      }
-
-      if (areaProgress[SUITE_B_INTERMEDIATE][0] > 0) {
-        double score = Math.log(areaScore[SUITE_B_INTERMEDIATE][0] + 1) / Math.log(101);
-        reportScore[REPORT_2_CODED] = score;
-      }
-
-      if (areaProgress[SUITE_I_PROFILING][0] > 0) {
-        int countRun = 0;
-        {
-          int countPass = 0;
-          for (ProfileLine profileLine : profileLineList) {
-            if (profileLine.isHasRun()) {
-              countRun++;
-              if (profileLine.isPassed()) {
-                countPass++;
-              }
-            }
-          }
-          if (countRun > 0) {
-            reportScore[REPORT_3_LOCAL] = ((double) countPass) / countRun;
-          }
-        }
-      }
-      if (profileLineList != null) {
-        for (ProfileLine profileLine : profileLineList) {
-          if (profileUsageComparisonConformance != null
-              && profileUsageComparisonConformance.getProfileUsageValueMap() != null) {
-            ProfileUsageValue profileUsageValueConformance = profileUsageComparisonConformance
-                .getProfileUsageValueMap().get(profileLine.getField());
-            if (profileUsageValueConformance != null) {
-              CompatibilityConformance compatibility = ProfileManager.getCompatibilityConformance(
-                  profileLine.getUsageDetected(), profileUsageValueConformance.getUsage());
-              List<ProfileLine> profileLineList = compatibilityMap.get(compatibility);
-              if (profileLineList == null) {
-                profileLineList = new ArrayList<ProfileLine>();
-                compatibilityMap.put(compatibility, profileLineList);
-              }
-              profileLineList.add(profileLine);
-            }
-          }
-        }
-        if (compatibilityMap.get(CompatibilityConformance.MAJOR_CONFLICT) != null) {
-          reportScore[REPORT_4_NATIONAL] = 0.0;
-        } else if (compatibilityMap.get(CompatibilityConformance.MAJOR_CONSTRAINT) != null) {
-          reportScore[REPORT_4_NATIONAL] = 0.7;
-        } else if (compatibilityMap.get(CompatibilityConformance.CONSTRAINT) != null) {
-          reportScore[REPORT_4_NATIONAL] = 0.8;
-        } else if (compatibilityMap.get(CompatibilityConformance.ALLOWANCE) != null) {
-          reportScore[REPORT_4_NATIONAL] = 0.9;
-        } else {
-          reportScore[REPORT_4_NATIONAL] = 1.0;
-        }
-        if (compatibilityMap.get(CompatibilityConformance.CONFLICT) != null) {
-          reportScore[REPORT_4_NATIONAL] -= 0.05;
-        }
-        if (reportScore[REPORT_4_NATIONAL] < 0) {
-          reportScore[REPORT_4_NATIONAL] = 0;
-        }
-      }
-
-      if (areaProgress[SUITE_D_EXCEPTIONAL][0] > 0) {
-        int countTolerance = 0;
-        int countEhr = 0;
-        int countTolerancePass = 0;
-        int countEhrPass = 0;
-
-        for (TestCaseMessage testCaseMessage : statusCheckTestCaseExceptionalList) {
-          if (testCaseMessage.getDescription().startsWith("Tolerance Check:")) {
-            countTolerance++;
-            if (testCaseMessage.isHasRun() && testCaseMessage.isPassedTest()) {
-              countTolerancePass++;
-            }
-          } else if (testCaseMessage.getDescription().startsWith("Certified Message:")) {
-            countEhr++;
-            if (testCaseMessage.isHasRun() && testCaseMessage.isPassedTest()) {
-              countEhrPass++;
-            }
-          }
-        }
-        if (countTolerance == 0) {
-          reportScore[REPORT_5_TOLERANCE] = 0.0;
-        } else {
-          reportScore[REPORT_5_TOLERANCE] = ((double) countTolerancePass) / countTolerance;
-        }
-        if (countEhr == 0) {
-          reportScore[REPORT_6_EHR] = 0.0;
-        } else {
-          reportScore[REPORT_6_EHR] = ((double) countEhrPass) / countEhr;
-        }
-      }
-
-      if (areaProgress[SUITE_G_PERFORMANCE][0] > 0) {
-        int averageMs = areaScore[SUITE_G_PERFORMANCE][0];
-        if (averageMs < 3000) {
-          reportScore[REPORT_7_PERFORM] = 1.0;
-        } else if (averageMs > 6000) {
-          reportScore[REPORT_7_PERFORM] = 0.0;
-        } else {
-          reportScore[REPORT_7_PERFORM] = 1.0 - ((averageMs - 3000) / 3000.0);
-        }
-      }
-
-      if (areaProgress[SUITE_H_CONFORMANCE][0] > 0) {
-        reportScore[REPORT_8_ACK] = areaScore[SUITE_H_CONFORMANCE][0] / 100.0;
-      }
-
-      double overallScore = 0.0;
-      overallScore += reportScore[REPORT_1_INTEROP] * 0.5;
-      overallScore += reportScore[REPORT_2_CODED] * 0.1;
-      // overallScore += reportScore[REPORT_3_LOCAL] * 0.1;
-      // overallScore += reportScore[REPORT_4_NATIONAL] * 0.1;
-      overallScore += reportScore[REPORT_5_TOLERANCE] * 0.05;
-      overallScore += reportScore[REPORT_6_EHR] * 0.05;
-      overallScore += reportScore[REPORT_7_PERFORM] * 0.05;
-      overallScore += reportScore[REPORT_8_ACK] * 0.25;
+      Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap = updateOverallScore();
 
       out.println("<p>This report gives quick view of how the interface responds when receiving VXU messages. "
           + "This report is preliminary and to be used to inform both national and local standardization efforts. This report is "
@@ -3373,8 +3519,7 @@ public class CertifyRunner extends Thread
               + "message header to modifying the structure of the HL7 message to meet local requirements. </p>");
           {
             try {
-              BufferedReader customTransformsIn = new BufferedReader(new StringReader(
-                  connector.getCustomTransformations()));
+              BufferedReader customTransformsIn = new BufferedReader(new StringReader(connector.getCustomTransformations()));
               StringBuilder expectedTransforms = new StringBuilder();
               StringBuilder unexpectedTransforms = new StringBuilder();
               String line = "";
@@ -3474,8 +3619,7 @@ public class CertifyRunner extends Thread
         out.println("    <th>Results</th>");
         out.println("  </tr>");
         for (TestCaseMessage testCaseMessage : statusCheckTestCaseExceptionalList) {
-          if (testCaseMessage.getDescription().startsWith("Tolerance Check:") && testCaseMessage.isHasRun()
-              && !testCaseMessage.isPassedTest()) {
+          if (testCaseMessage.getDescription().startsWith(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK) && testCaseMessage.isHasRun() && !testCaseMessage.isPassedTest()) {
             printTestCaseMessageDetailsUpdate(out, toFile, testCaseMessage);
           }
         }
@@ -3497,8 +3641,7 @@ public class CertifyRunner extends Thread
         out.println("    <th>Results</th>");
         out.println("  </tr>");
         for (TestCaseMessage testCaseMessage : statusCheckTestCaseExceptionalList) {
-          if (testCaseMessage.getDescription().startsWith("Certified Message:") && testCaseMessage.isHasRun()
-              && !testCaseMessage.isPassedTest()) {
+          if (testCaseMessage.getDescription().startsWith(VALUE_EXCEPTIONAL_PREFIX_CERTIFIED_MESSAGE) && testCaseMessage.isHasRun() && !testCaseMessage.isPassedTest()) {
             printTestCaseMessageDetailsUpdate(out, toFile, testCaseMessage);
           }
         }
@@ -3515,8 +3658,8 @@ public class CertifyRunner extends Thread
         out.println("    <p>Response time was as fast enough: " + printSeconds(performance.getUpdateAverage())
             + " average processing time per test message. </p>");
       } else {
-        out.println("    <p>Response time was as slower than anticipated: "
-            + printSeconds(performance.getUpdateAverage()) + " average processing time per test message. </p>");
+        out.println("    <p>Response time was as slower than anticipated: " + printSeconds(performance.getUpdateAverage())
+            + " average processing time per test message. </p>");
       }
       if (performance != null && performance.getTotalUpdateCount() > 0) {
         out.println("<table border=\"1\" cellspacing=\"0\">");
@@ -3584,8 +3727,7 @@ public class CertifyRunner extends Thread
           }
         }
       }
-      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL
-          + "#acknowledgmentConformance\" class=\"boxLinks\">Description</a></p>");
+      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#acknowledgmentConformance\" class=\"boxLinks\">Description</a></p>");
 
       if (areaProgress[SUITE_I_PROFILING][0] > 0) {
         out.println("<div id=\"localRequirements\"/>");
@@ -3624,18 +3766,14 @@ public class CertifyRunner extends Thread
           out.println("<h2>National Compatibility</h2>");
           printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONFLICT,
               "Local Standard has Major Conflict with National Standards");
-          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONFLICT,
-              "Local Standard Conflicts with National Standards");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONFLICT, "Local Standard Conflicts with National Standards");
           printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONSTRAINT,
               "Local Standard Defines Hard Constraint on National Standard");
           printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONSTRAINT,
               "Local Standard Defines Constraint on National Standard");
-          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.ALLOWANCE,
-              "Local Standard Loosens National Constraints");
-          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.UNABLE_TO_DETERMINE,
-              "Local Standard is Not Determined");
-          out.println("<p><a href=\"" + REPORT_EXPLANATION_URL
-              + "#nationalCompatibility\" class=\"boxLinks\">Description</a></p>");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.ALLOWANCE, "Local Standard Loosens National Constraints");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.UNABLE_TO_DETERMINE, "Local Standard is Not Determined");
+          out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#nationalCompatibility\" class=\"boxLinks\">Description</a></p>");
         }
       }
 
@@ -3659,8 +3797,7 @@ public class CertifyRunner extends Thread
     if (score >= 0.6) {
       out.println("    <td>&nbsp;</td>");
       out.println("    <td>");
-      out.println("<div style=\"width: " + ((int) (score * 200)) + "px; text-align: center;\" class=\"pass\">"
-          + message + "</div>");
+      out.println("<div style=\"width: " + ((int) (score * 200)) + "px; text-align: center;\" class=\"pass\">" + message + "</div>");
       out.println("    </td>");
     } else {
       out.println("    <td>");
@@ -3671,8 +3808,8 @@ public class CertifyRunner extends Thread
     }
   }
 
-  public void printConformanceCompatibility(PrintWriter out,
-      Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap, CompatibilityConformance c, String heading) {
+  public void printConformanceCompatibility(PrintWriter out, Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap,
+      CompatibilityConformance c, String heading) {
     if (compatibilityMap.get(c) != null) {
       out.println("<h3>" + heading + "</h3>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
@@ -3684,8 +3821,7 @@ public class CertifyRunner extends Thread
       out.println("    <th>Detected Usage</th>");
       out.println("  </tr>");
       for (ProfileLine profileLine : compatibilityMap.get(c)) {
-        ProfileUsageValue profileUsageValueConformance = profileUsageComparisonConformance.getProfileUsageValueMap()
-            .get(profileLine.getField());
+        ProfileUsageValue profileUsageValueConformance = profileUsageComparisonConformance.getProfileUsageValueMap().get(profileLine.getField());
         if (profileUsageValueConformance != null) {
           out.println("  <tr>");
           out.println("    <td>" + profileLine.getField().getFieldName() + "</td>");
@@ -3897,8 +4033,7 @@ public class CertifyRunner extends Thread
       out.println("<h2>Basic Interoperability Tests</h2>");
       out.println("<p><b>Purpose</b>: Test to see if the IIS can accept updates from certified EHR systems. </p>");
       out.println("<p><b>Requirements</b>: IIS must accept all 7 NIST messages than an EHR is required to be able to send in 2014. "
-          + "In addition the IIS should be able to store all IIS required core fields, and if possible all the "
-          + "IIS optional core fields. </p>");
+          + "In addition the IIS should be able to store all IIS required core fields, and if possible all the " + "IIS optional core fields. </p>");
       out.println("<ul>");
       out.println("  <li>Level 1: The IIS must be able to accept replicas of all NIST messages. </li>");
       out.println("  <li>Level 2: The IIS should return all required 2007 IIS Core Data included in the NIST messages.</li>");
@@ -3915,8 +4050,7 @@ public class CertifyRunner extends Thread
         out.println("  <tr>");
         out.println("    <th>Level 1</th>");
         if (testCaseMessage.isMajorChangesMade()) {
-          out.println("    <td class=\"fail\">Not all core data could be submitted. "
-              + makeCompareDetailsLink(testCaseMessage, toFile, true));
+          out.println("    <td class=\"fail\">Not all core data could be submitted. " + makeCompareDetailsLink(testCaseMessage, toFile, true));
           out.println("<br/>");
           if (testCaseMessage.isAccepted()) {
             out.println("Message was accepted.");
@@ -3926,8 +4060,7 @@ public class CertifyRunner extends Thread
 
           out.println(makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
         } else if (testCaseMessage.isAccepted()) {
-          out.println("    <td class=\"pass\">Message was accepted. "
-              + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+          out.println("    <td class=\"pass\">Message was accepted. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
         } else if (testCaseMessage.isHasRun()) {
           out.println("    <td class=\"fail\">");
           out.println("Message was not accepted. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
@@ -3969,17 +4102,15 @@ public class CertifyRunner extends Thread
                 out.println("    <td class=\"pass\">All required fields returned except those not supported: ");
                 out.println("      <br/> <ul>");
                 for (Comparison comparison : testCaseMessage.getComparisonList()) {
-                  if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED
-                      && !comparison.isPass() && fieldNotSupported(comparison)) {
-                    out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel()
-                        + "</li>");
+                  if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED && !comparison.isPass()
+                      && fieldNotSupported(comparison)) {
+                    out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel() + "</li>");
                   }
                 }
                 out.println("      </ul>");
                 out.println(makeCompareDetailsLink(testCaseMessage, toFile, false));
               } else {
-                out.println("    <td class=\"pass\">All required fields returned. "
-                    + makeCompareDetailsLink(testCaseMessage, toFile, false));
+                out.println("    <td class=\"pass\">All required fields returned. " + makeCompareDetailsLink(testCaseMessage, toFile, false));
               }
               out.println(makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
               out.println("    </td>");
@@ -3987,11 +4118,9 @@ public class CertifyRunner extends Thread
               out.println("    <td class=\"fail\">Required fields not returned:");
               out.println("      <ul>");
               for (Comparison comparison : testCaseMessage.getComparisonList()) {
-                if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED
-                    && !comparison.isPass()) {
+                if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED && !comparison.isPass()) {
                   if (fieldSupported(comparison)) {
-                    out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel()
-                        + "</li>");
+                    out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel() + "</li>");
                   } else {
                     out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel()
                         + " (not expected to be returned in query)</li>");
@@ -4035,8 +4164,7 @@ public class CertifyRunner extends Thread
             } else if (hasRun) {
               boolean hasOptionalFields = false;
               for (Comparison comparison : testCaseMessage.getComparisonList()) {
-                if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL
-                    && !comparison.isPass()) {
+                if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL && !comparison.isPass()) {
                   hasOptionalFields = true;
                   break;
                 }
@@ -4045,10 +4173,8 @@ public class CertifyRunner extends Thread
                 out.println("    <td class=\"fail\">Optional fields not returned:");
                 out.println("      <ul>");
                 for (Comparison comparison : testCaseMessage.getComparisonList()) {
-                  if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL
-                      && !comparison.isPass()) {
-                    out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel()
-                        + "</li>");
+                  if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL && !comparison.isPass()) {
+                    out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel() + "</li>");
                   }
                 }
                 out.println("      </ul>");
@@ -4167,11 +4293,11 @@ public class CertifyRunner extends Thread
         } else {
           if (testCaseMessage.isHasRun()) {
             if (testCaseMessage.isPassedTest()) {
-              out.println("    <td class=\"" + classText + "\">Issue was identified. "
-                  + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+              out.println("    <td class=\"" + classText + "\">Issue was identified. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile)
+                  + "</td>");
             } else {
-              out.println("    <td class=\"" + classText + "\">Issue was NOT identified. "
-                  + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+              out.println("    <td class=\"" + classText + "\">Issue was NOT identified. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile)
+                  + "</td>");
             }
           } else if (testCaseMessage.getException() != null) {
             out.println("    <td class=\"fail\">");
@@ -4189,8 +4315,8 @@ public class CertifyRunner extends Thread
     }
     if (tcmFull != null && tcmFull.isHasRun() && !tcmFull.isPassedTest()) {
       out.println("<h2>Profiling Tests</h2>");
-      out.println("<p>Profiling tests could not be run. Base profiling message was not accepted. "
-          + makeTestCaseMessageDetailsLink(tcmFull, toFile) + "</p>");
+      out.println("<p>Profiling tests could not be run. Base profiling message was not accepted. " + makeTestCaseMessageDetailsLink(tcmFull, toFile)
+          + "</p>");
     }
     if (areaProgress[SUITE_I_PROFILING][0] > 0) {
       out.println("<div id=\"areaILevel1\"/>");
@@ -4407,8 +4533,8 @@ public class CertifyRunner extends Thread
         }
         out.println("  <tr>");
         out.println("    <td class=\"fail\"><em>" + testCaseMessage.getDescription() + "</em></td>");
-        out.println("    <td class=\"fail\">Ack did not meet HL7 or CDC standards. "
-            + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+        out.println("    <td class=\"fail\">Ack did not meet HL7 or CDC standards. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile)
+            + "</td>");
         out.println("  </tr>");
       }
       out.println("</table>");
@@ -4452,15 +4578,13 @@ public class CertifyRunner extends Thread
     }
   }
 
-  private static class ConsolidateResults
-  {
+  private static class ConsolidateResults {
     String filename = null;
     int acceptCount = 0;
     int notAcceptCount = 0;
 
     public String makeLink() {
-      return " <font size=\"-1\"><a href=\"" + filename + "\">" + acceptCount + " accepted / " + notAcceptCount
-          + " not accepted</a></font>";
+      return " <font size=\"-1\"><a href=\"" + filename + "\">" + acceptCount + " accepted / " + notAcceptCount + " not accepted</a></font>";
     }
   }
 
@@ -4484,8 +4608,7 @@ public class CertifyRunner extends Thread
 
     out.println("<h3>Message Sent</h3>");
     out.println("<p>Here is an example of one of the messages that was submitted to each IIS. (Every IIS "
-        + "received the same message with slightly different data and perhaps additional modifications "
-        + "required by the IIS.)</p>");
+        + "received the same message with slightly different data and perhaps additional modifications " + "required by the IIS.)</p>");
     out.println("<pre>" + tcm.getMessageTextSent() + "</pre>");
 
     for (String filePartName : filePartNames) {
@@ -4525,8 +4648,7 @@ public class CertifyRunner extends Thread
       out.println("<h2>Intermediate Tests - Level 1 - Accepting Core Data</h2>");
       String previousFieldName = "";
       for (TestCaseMessage testCaseMessage : statusCheckTestCaseIntermediateList) {
-        previousFieldName = printTestCaseMessageDetailsUpdateForAnalysis(out, toFile, testCaseMessage,
-            previousFieldName);
+        previousFieldName = printTestCaseMessageDetailsUpdateForAnalysis(out, toFile, testCaseMessage, previousFieldName);
       }
       if (!previousFieldName.equals("")) {
         out.println("</ul>");
@@ -4620,8 +4742,8 @@ public class CertifyRunner extends Thread
     if (testCaseMessage.isHasRun() && testCaseMessage.getComparisonList() != null) {
       passedAllOptional = true;
       for (Comparison comparison : testCaseMessage.getComparisonList()) {
-        if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL
-            && !comparison.isPass() && !fieldNotSupported(comparison)) {
+        if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL && !comparison.isPass()
+            && !fieldNotSupported(comparison)) {
           passedAllOptional = false;
           break;
         }
@@ -4693,8 +4815,7 @@ public class CertifyRunner extends Thread
     out.println("    <td class=\"" + classText + "\"><em>" + testCaseMessage.getDescription() + "</em></td>");
     if (testCaseMessage.isHasRun()) {
       if (testCaseMessage.isMajorChangesMade()) {
-        out.println("    <td class=\"fail\">Not all core data could be submitted. "
-            + makeCompareDetailsLink(testCaseMessage, toFile, true));
+        out.println("    <td class=\"fail\">Not all core data could be submitted. " + makeCompareDetailsLink(testCaseMessage, toFile, true));
         out.println("<br/>");
         if (testCaseMessage.isAccepted()) {
           out.println("Message was accepted.");
@@ -4703,11 +4824,10 @@ public class CertifyRunner extends Thread
         }
         out.println(makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
       } else if (testCaseMessage.isAccepted()) {
-        out.println("    <td class=\"" + classText + "\">Message accepted. "
-            + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+        out.println("    <td class=\"" + classText + "\">Message accepted. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
       } else {
-        out.println("    <td class=\"" + classText + "\">Message was NOT accepted. "
-            + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+        out.println("    <td class=\"" + classText + "\">Message was NOT accepted. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile)
+            + "</td>");
       }
     } else {
       out.println("    <td class=\"" + classText + "\">not run yet</td>");
@@ -4715,8 +4835,7 @@ public class CertifyRunner extends Thread
     out.println("  </tr>");
   }
 
-  public String printTestCaseMessageDetailsUpdate(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage,
-      String previousFieldName) {
+  public String printTestCaseMessageDetailsUpdate(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage, String previousFieldName) {
     String classText = "nottested";
     if (testCaseMessage.isHasRun()) {
       classText = testCaseMessage.isAccepted() ? "pass" : "fail";
@@ -4749,8 +4868,8 @@ public class CertifyRunner extends Thread
     return fieldName;
   }
 
-  public String printTestCaseMessageDetailsUpdateForAnalysis(PrintWriter out, boolean toFile,
-      TestCaseMessage testCaseMessage, String previousFieldName) throws IOException {
+  public String printTestCaseMessageDetailsUpdateForAnalysis(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage,
+      String previousFieldName) throws IOException {
     ConsolidateResults cr = consolidate(testCaseMessage);
     String fieldName = testCaseMessage.getDescription();
     String fieldValue = "";
@@ -4807,11 +4926,10 @@ public class CertifyRunner extends Thread
   }
 
   public void printProfileLineComparisonConformance(PrintWriter out, boolean toFile, ProfileLine profileLine) {
-    ProfileUsageValue profileUsageValue = profileUsageComparisonConformance.getProfileUsageValueMap().get(
-        profileLine.getField());
+    ProfileUsageValue profileUsageValue = profileUsageComparisonConformance.getProfileUsageValueMap().get(profileLine.getField());
     if (profileUsageValue != null) {
-      CompatibilityConformance compatibilityConformance = ProfileManager.getCompatibilityConformance(
-          profileLine.getUsageDetected(), profileUsageValue.getUsage());
+      CompatibilityConformance compatibilityConformance = ProfileManager.getCompatibilityConformance(profileLine.getUsageDetected(),
+          profileUsageValue.getUsage());
       String usageClass = "";
       switch (compatibilityConformance) {
       case COMPATIBLE:
@@ -4842,8 +4960,7 @@ public class CertifyRunner extends Thread
   }
 
   public void printProfileLineComparisonInteroperability(PrintWriter out, boolean toFile, ProfileLine profileLine) {
-    ProfileUsageValue profileUsageValue = profileUsageComparisonInteroperability.getProfileUsageValueMap().get(
-        profileLine.getField());
+    ProfileUsageValue profileUsageValue = profileUsageComparisonInteroperability.getProfileUsageValueMap().get(profileLine.getField());
     if (profileUsageValue != null) {
       CompatibilityInteroperability compatibilityInteroperability = ProfileManager.getCompatibilityInteroperability(
           profileLine.getProfileUsageValue(), profileUsageValue);
@@ -4875,8 +4992,7 @@ public class CertifyRunner extends Thread
 
   // profileUsageComparisonInteroperability
 
-  public void printTestMessageCell(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage,
-      boolean highlightUnexpected) {
+  public void printTestMessageCell(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage, boolean highlightUnexpected) {
     String classText = "nottested";
     boolean testPassed = false;
     if (testCaseMessage == null || !testCaseMessage.hasIssue()) {
@@ -4896,8 +5012,8 @@ public class CertifyRunner extends Thread
             out.println("    <td class=\"" + classText + "\">Accepted Base Message</td>");
           } else {
             if (testCaseMessage.isAccepted()) {
-              out.println("    <td class=\"" + classText + "\">Accepted as was Expected "
-                  + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+              out.println("    <td class=\"" + classText + "\">Accepted as was Expected " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile)
+                  + "</td>");
             } else {
               out.println("    <td class=\"" + classText + "\">Not Accepted as was Expected "
                   + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
@@ -4942,19 +5058,17 @@ public class CertifyRunner extends Thread
     if (toFile) {
       return "<font size=\"-1\"><a href=\"TC-" + testCaseMessage.getTestCaseNumber() + ".html\">details</a></font>";
     } else {
-      return "<font size=\"-1\"><a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
-          + testCaseMessage.getTestCaseId() + "\">details</a></font>";
+      return "<font size=\"-1\"><a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum=" + testCaseMessage.getTestCaseId()
+          + "\">details</a></font>";
     }
   }
 
   private String makeCompareDetailsLink(TestCaseMessage testCaseMessage, boolean toFile, boolean substantialChanges) {
     if (toFile) {
       if (substantialChanges) {
-        return "<font size=\"-1\"><a href=\"TC-" + testCaseMessage.getTestCaseNumber()
-            + ".html#changesMade\">(details)</a></font>";
+        return "<font size=\"-1\"><a href=\"TC-" + testCaseMessage.getTestCaseNumber() + ".html#changesMade\">(details)</a></font>";
       } else {
-        return "<font size=\"-1\"><a href=\"TC-" + testCaseMessage.getTestCaseNumber()
-            + ".html#compareDetails\">(details)</a></font>";
+        return "<font size=\"-1\"><a href=\"TC-" + testCaseMessage.getTestCaseNumber() + ".html#compareDetails\">(details)</a></font>";
       }
     } else {
       if (substantialChanges) {
@@ -4968,8 +5082,7 @@ public class CertifyRunner extends Thread
     }
   }
 
-  private static class Performance
-  {
+  private static class Performance {
     private long totalQueryTime = 0;
     private long totalUpdateTime = 0;
     private int totalQueryCount = 0;
@@ -4984,6 +5097,14 @@ public class CertifyRunner extends Thread
     private TestCaseMessage maxUpdateTestCase = null;
     private List<Long> queryTimeList = new ArrayList<Long>();
     private List<Long> updateTimeList = new ArrayList<Long>();
+
+    public long getTotalQueryTime() {
+      return totalQueryTime;
+    }
+
+    public long getTotalUpdateTime() {
+      return totalUpdateTime;
+    }
 
     public double getQuerySDev() {
       if (queryTimeList.size() == 0) {
@@ -5091,15 +5212,13 @@ public class CertifyRunner extends Thread
   }
 
   private static enum PerformanceColumn {
-    CONNECTION("Connection"), TRANSPORT("Transport"), ACK_TYPE("Ack Type"), STARTED("Started"), FINISHED("Finished"), TEST_STATUS(
-        "Test Status"), UPDATE_COUNT("Update Count"), AVERAGE_UPDATE("Average Update (ms)"), STDEV_UPDATE(
-        "Std Dev Update"), MIN_UPDATE("Min Update (ms)"), MAX_UPDATE("Max Update (ms)"), MIN_UPDATE_TEST_CASE(
-        "Min Update Test Case"), MAX_UPDATE_TEST_CASE("Max Update Test Case"), QUERY_COUNT("Query Count"), AVERAGE_QUERY(
+    CONNECTION("Connection"), TRANSPORT("Transport"), ACK_TYPE("Ack Type"), STARTED("Started"), FINISHED("Finished"), TEST_STATUS("Test Status"), UPDATE_COUNT(
+        "Update Count"), AVERAGE_UPDATE("Average Update (ms)"), STDEV_UPDATE("Std Dev Update"), MIN_UPDATE("Min Update (ms)"), MAX_UPDATE(
+        "Max Update (ms)"), MIN_UPDATE_TEST_CASE("Min Update Test Case"), MAX_UPDATE_TEST_CASE("Max Update Test Case"), QUERY_COUNT("Query Count"), AVERAGE_QUERY(
         "Average Query (ms)"), STDEV_QUERY("Std Dev Query"), MIN_QUERY("Min Query (ms)"), MAX_QUERY("Max Query (ms)"), MIN_QUERY_TEST_CASE(
-        "Min Query Test Case"), MAX_QUERY_TEST_CASE("Max Query Test Case"), BASIC_TEST("Basic Tests"), INTERMEDIATE_TEST(
-        "Intermediate Tests"), ADVANCED_TEST("Advanced Tests"), PROFILING_TEST("Profiling Tests"), EXCEPTIONAL_TEST(
-        "Exceptional Tests"), FORECAST_PREP("Forecast Prep Tests"), PERFORMANCE("Performance Tests"), CONFORMANCE(
-        "Conformance Tests");
+        "Min Query Test Case"), MAX_QUERY_TEST_CASE("Max Query Test Case"), BASIC_TEST("Basic Tests"), INTERMEDIATE_TEST("Intermediate Tests"), ADVANCED_TEST(
+        "Advanced Tests"), PROFILING_TEST("Profiling Tests"), EXCEPTIONAL_TEST("Exceptional Tests"), FORECAST_PREP("Forecast Prep Tests"), PERFORMANCE(
+        "Performance Tests"), CONFORMANCE("Conformance Tests");
     String label;
 
     private PerformanceColumn(String label) {
@@ -5120,6 +5239,314 @@ public class CertifyRunner extends Thread
       return ((int) (ms + 0.5)) + "ms";
     }
     return ((int) (ms / 100.0 + 0.5)) / 10.0 + "s";
+  }
+
+  public static void reportParticipant(ParticipantResponse participantResponse) {
+    try {
+      HttpURLConnection urlConn;
+      DataOutputStream printout;
+      InputStreamReader input = null;
+      URL url = new URL(REPORT_URL);
+
+      urlConn = (HttpURLConnection) url.openConnection();
+
+      urlConn.setRequestMethod("POST");
+
+      urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+      urlConn.setDoInput(true);
+      urlConn.setDoOutput(true);
+      urlConn.setUseCaches(false);
+      String content;
+      StringBuilder sb = new StringBuilder();
+
+      sb.append("action=Submit");
+      addField(sb, PARAM_TPAR_ORGANIZATION_NAME, participantResponse.getOrganizationName());
+      addField(sb, PARAM_TPAR_CONNECTION_LABEL, participantResponse.getFolderName());
+      if (participantResponse.getRow() == 0 && participantResponse.getCol() == 0 && !participantResponse.getMap().equals("1,1")) {
+        addField(sb, PARAM_TPAR_MAP_ROW, 0);
+        addField(sb, PARAM_TPAR_MAP_COL, 0);
+      } else {
+        addField(sb, PARAM_TPAR_MAP_ROW, participantResponse.getRow() + 1);
+        addField(sb, PARAM_TPAR_MAP_COL, participantResponse.getCol() + 1);
+      }
+      addField(sb, PARAM_TPAR_PLATFORM_LABEL, participantResponse.getPlatform());
+      addField(sb, PARAM_TPAR_VENDOR_LABEL, participantResponse.getVendor());
+      addField(sb, PARAM_TPAR_INTERNAL_COMMENTS, participantResponse.getInternalComments());
+      addField(sb, PARAM_TPAR_PHASE1_PARTICIPATION, participantResponse.getPhaseIParticipation());
+      addField(sb, PARAM_TPAR_PHASE1_STATUS, participantResponse.getPhase1Status());
+      addField(sb, PARAM_TPAR_PHASE1_COMMENTS, participantResponse.getPhase1Comments());
+      addField(sb, PARAM_TPAR_PHASE2_PARTICIPATION, participantResponse.getPhaseIIParticipation());
+      addField(sb, PARAM_TPAR_PHASE2_STATUS, participantResponse.getPhaseIIStatus());
+      addField(sb, PARAM_TPAR_PHASE2_COMMENTS, participantResponse.getPhaseIIComments());
+      addField(sb, PARAM_TPAR_IHS_STATUS, participantResponse.getIHS());
+      addField(sb, PARAM_TPAR_GUIDE_STATUS, participantResponse.getRecordRequirementsStatus());
+      addField(sb, PARAM_TPAR_GUIDE_NAME, participantResponse.getGuideName());
+      addField(sb, PARAM_TPAR_CONNECT_STATUS, participantResponse.getConnecttoIISStatus());
+      addField(sb, PARAM_TPAR_GENERAL_COMMENTS, participantResponse.getComments());
+      addField(sb, PARAM_TPAR_TRANSPORT_TYPE, participantResponse.getTransport());
+      addField(sb, PARAM_TPAR_QUERY_SUPPORT, participantResponse.getQuerySupport());
+      addField(sb, PARAM_TPAR_NIST_STATUS, participantResponse.getNistStatus());
+      addField(sb, PARAM_TPAR_ACCESS_PASSCODE, participantResponse.getAccessPasscode());
+
+      content = sb.toString();
+      printout = new DataOutputStream(urlConn.getOutputStream());
+      printout.writeBytes(content);
+      printout.flush();
+      printout.close();
+      input = new InputStreamReader(urlConn.getInputStream());
+      StringBuilder response = new StringBuilder();
+      BufferedReader in = new BufferedReader(input);
+      String line;
+      while ((line = in.readLine()) != null) {
+        response.append(line);
+        response.append('\r');
+      }
+      input.close();
+      response.toString();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void reportProgress(TestCaseMessage testMessage) {
+    try {
+      Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap = updateOverallScore();
+
+      HttpURLConnection urlConn;
+      DataOutputStream printout;
+      InputStreamReader input = null;
+      URL url = new URL(REPORT_URL);
+
+      urlConn = (HttpURLConnection) url.openConnection();
+
+      urlConn.setRequestMethod("POST");
+
+      urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+      urlConn.setDoInput(true);
+      urlConn.setDoOutput(true);
+      urlConn.setUseCaches(false);
+      String content;
+      StringBuilder sb = new StringBuilder();
+
+      sb.append("action=Submit");
+
+      addField(sb, PARAM_TC_CONNECTION_LABEL, connector.getLabel());
+      addField(sb, PARAM_TC_CONNECTION_TYPE, connector.getType());
+      addField(sb, PARAM_TC_CONNECTION_URL, connector.getUrl());
+      addField(sb, PARAM_TC_CONNECTION_ACK_TYPE, connector.getAckType().toString());
+      addField(sb, PARAM_TC_CONNECTION_CONFIG, connector.getScript());
+      boolean latestTest = status.equals(STATUS_COMPLETED) && areaProgress[SUITE_A_BASIC][0] == 100 && areaProgress[SUITE_B_INTERMEDIATE][0] == 100
+          && areaProgress[SUITE_D_EXCEPTIONAL][0] == 100 && areaProgress[SUITE_I_PROFILING][0] == 100 && areaProgress[SUITE_H_CONFORMANCE][0] == 100;
+      addField(sb, PARAM_TC_COMPLETE_TEST, latestTest);
+
+      addField(sb, PARAM_TC_QUERY_TYPE, queryType);
+      addField(sb, PARAM_TC_QUERY_ENABLED, willQuery);
+      addField(sb, PARAM_TC_QUERY_PAUSE, pauseBeforeQuerying);
+      addField(sb, PARAM_TC_TEST_LOG, statusMessageList);
+      addField(sb, PARAM_TC_TEST_STATUS, status);
+      addField(sb, PARAM_TC_TEST_STARTED_TIME, testStarted);
+      addField(sb, PARAM_TC_TEST_FINISHED_TIME, testFinished);
+      addField(sb, PARAM_TC_COUNT_UPDATE, performance.getTotalUpdateCount());
+      addField(sb, PARAM_TC_COUNT_QUERY, performance.getTotalQueryCount());
+      if (profileUsage != null) {
+        addField(sb, PARAM_TC_PROFILE_BASE_NAME, profileUsage.toString());
+      }
+      if (profileUsageComparisonConformance != null) {
+        addField(sb, PARAM_TC_PROFILE_COMPARE_NAME, profileUsageComparisonConformance.toString());
+      }
+
+      addField(sb, PARAM_TS_TEST_SECTION_TYPE, areaLabel[currentSuite]);
+      addField(sb, PARAM_TS_TEST_ENABLED, run[currentSuite]);
+      addField(sb, PARAM_TS_SCORE_LEVEL1, areaScore[currentSuite][0]);
+      addField(sb, PARAM_TS_SCORE_LEVEL2, areaScore[currentSuite][1]);
+      addField(sb, PARAM_TS_SCORE_LEVEL3, areaScore[currentSuite][1]);
+      addField(sb, PARAM_TS_PROGRESS_LEVEL1, areaProgress[currentSuite][0]);
+      addField(sb, PARAM_TS_PROGRESS_LEVEL2, areaProgress[currentSuite][1]);
+      addField(sb, PARAM_TS_PROGRESS_LEVEL3, areaProgress[currentSuite][2]);
+      addField(sb, PARAM_TS_COUNT_LEVEL1, areaCount[currentSuite][0]);
+      addField(sb, PARAM_TS_COUNT_LEVEL2, areaCount[currentSuite][1]);
+      addField(sb, PARAM_TS_COUNT_LEVEL3, areaCount[currentSuite][2]);
+      addField(sb, PARAM_TC_SCORE_OVERALL, (int) (overallScore * 100));
+      addField(sb, PARAM_TC_SCORE_INTEROP, (int) (reportScore[REPORT_1_INTEROP] * 100));
+      addField(sb, PARAM_TC_SCORE_CODED, (int) (reportScore[REPORT_2_CODED] * 100));
+      addField(sb, PARAM_TC_SCORE_LOCAL, (int) (reportScore[REPORT_3_LOCAL] * 100));
+      addField(sb, PARAM_TC_SCORE_NATIONAL, (int) (reportScore[REPORT_4_NATIONAL] * 100));
+      addField(sb, PARAM_TC_SCORE_TOLERANCE, (int) (reportScore[REPORT_5_TOLERANCE] * 100));
+      addField(sb, PARAM_TC_SCORE_EHR, (int) (reportScore[REPORT_6_EHR] * 100));
+      addField(sb, PARAM_TC_SCORE_PERFORM, (int) (reportScore[REPORT_7_PERFORM] * 100));
+      addField(sb, PARAM_TC_SCORE_ACK, (int) (reportScore[REPORT_8_ACK] * 100));
+      addField(sb, PARAM_TC_PER_QUERY_TOTAL, performance.getTotalQueryTime());
+      addField(sb, PARAM_TC_PER_QUERY_COUNT, performance.getTotalQueryCount());
+      addField(sb, PARAM_TC_PER_QUERY_MIN, performance.getMinQueryTime() == Long.MAX_VALUE ? 0 : performance.getMinQueryTime());
+      addField(sb, PARAM_TC_PER_QUERY_MAX, performance.getMaxQueryTime());
+      addField(sb, PARAM_TC_PER_QUERY_STD, performance.getQuerySDev());
+      addField(sb, PARAM_TC_PER_UPDATE_TOTAL, performance.getTotalUpdateTime());
+      addField(sb, PARAM_TC_PER_UPDATE_COUNT, performance.getTotalUpdateCount());
+      addField(sb, PARAM_TC_PER_UPDATE_MIN, performance.getMinUpdateTime() == Long.MAX_VALUE ? 0 : performance.getMinUpdateTime());
+      addField(sb, PARAM_TC_PER_UPDATE_MAX, performance.getMaxUpdateTime());
+      addField(sb, PARAM_TC_PER_UPDATE_STD, performance.getUpdateSDev());
+      if (testMessage != null) {
+        addField(sb, PARAM_TM_TEST_POSITION, testMessage.getTestPosition());
+        addField(sb, PARAM_TM_TEST_TYPE, testMessage.getTestType());
+        addField(sb, PARAM_TM_TEST_CASE_SET, testMessage.getTestCaseSet());
+        addField(sb, PARAM_TM_TEST_CASE_NUMBER, testMessage.getTestCaseNumber());
+        addField(sb, PARAM_TM_TEST_CASE_CATEGORY, testMessage.getTestCaseCategoryId());
+        addField(sb, PARAM_TM_TEST_CASE_DESCRIPTION, testMessage.getDescription());
+        addField(sb, PARAM_TM_TEST_CASE_ASSERT_RESULT, testMessage.getAssertResult());
+        addField(sb, PARAM_TM_PREP_PATIENT_TYPE, testMessage.getPatientType().toString());
+        addField(sb, PARAM_TM_PREP_TRANSFORMS_QUICK, testMessage.getQuickTransformations());
+        addField(sb, PARAM_TM_PREP_TRANSFORMS_CUSTOM, testMessage.getCustomTransformations());
+        addField(sb, PARAM_TM_PREP_TRANSFORMS_ADDITION, testMessage.getAdditionalTransformations());
+        addField(sb, PARAM_TM_PREP_TRANSFORMS_CAUSE_ISSUE, testMessage.getCauseIssueTransforms());
+        addField(sb, PARAM_TM_PREP_CAUSE_ISSUE_NAMES, testMessage.getCauseIssues());
+        addField(sb, PARAM_TM_PREP_HAS_ISSUE, testMessage.hasIssue());
+        addField(sb, PARAM_TM_PREP_MAJOR_CHANGES_MADE, testMessage.isMajorChangesMade());
+        addField(sb, PARAM_TM_PREP_NOT_EXPECTED_TO_CONFORM, testMessage.isResultNotExpectedToConform());
+        addField(sb, PARAM_TM_PREP_MESSAGE_ACCEPT_STATUS_DEBUG, testMessage.getMessageAcceptStatusDebug());
+        addField(sb, PARAM_TM_PREP_SCENARIO_NAME, testMessage.getScenario());
+        addField(sb, PARAM_TM_PREP_MESSAGE_DERIVED_FROM, testMessage.getDerivedFromVXUMessage());
+        addField(sb, PARAM_TM_PREP_MESSAGE_ORIGINAL, testMessage.getOriginalMessage());
+        addField(sb, PARAM_TM_PREP_MESSAGE_ACTUAL, testMessage.getMessageTextSent());
+        addField(sb, PARAM_TM_RESULT_MESSAGE_ACTUAL, testMessage.getActualResponseMessage());
+        addField(sb, PARAM_TM_RESULT_STATUS, testMessage.getActualResultStatus());
+        addField(sb, PARAM_TM_RESULT_ACCEPTED, testMessage.isAccepted());
+        addField(sb, PARAM_TM_RESULT_EXECEPTION_TEXT, testMessage.getException());
+        addField(sb, PARAM_TM_RESULT_ACCEPTED_MESSAGE, testMessage.getActualResultAckMessage());
+        addField(sb, PARAM_TM_RESULT_RESPONSE_TYPE, testMessage.getActualMessageResponseType());
+        addField(sb, PARAM_TM_RESULT_ACK_TYPE, testMessage.getActualResultAckType());
+        if (testMessage.getForecastTestCase() != null) {
+          addField(sb, PARAM_TM_FORECAST_TEST_PANEL_CASE_ID, testMessage.getForecastTestCase().getTestPanelCaseId());
+        }
+        if (testMessage.getForecastTestPanel() != null) {
+          addField(sb, PARAM_TM_FORECAST_TEST_PANEL_ID, testMessage.getForecastTestPanel().getId());
+        }
+
+        List<Comparison> comparisonList;
+        if (testMessage.getTestType().equals(VALUE_TEST_TYPE_QUERY)) {
+          comparisonList = CompareManager.compareMessages(testMessage.getDerivedFromVXUMessage(), testMessage.getActualResponseMessage());
+        } else {
+          comparisonList = CompareManager.compareMessages(testMessage.getMessageText(), testMessage.getMessageTextSent());
+        }
+        int position = 0;
+        for (Comparison comparison : comparisonList) {
+          position++;
+          addField(sb, PARAM_C_FIELD_NAME + position, comparison.getHl7FieldName());
+          addField(sb, PARAM_C_FIELD_LABEL + position, comparison.getFieldLabel());
+          addField(sb, PARAM_C_PRIORITY_LABEL + position, comparison.getPriorityLevelLabel());
+          addField(sb, PARAM_C_VALUE_ORIGINAL + position, comparison.getOriginalValue());
+          addField(sb, PARAM_C_VALUE_COMPARE + position, comparison.getReturnedValue());
+          if (comparison.isTested()) {
+            if (comparison.isPass()) {
+              addField(sb, PARAM_C_COMPARISON_STATUS + position, VALUE_COMPARISON_STATUS_PASS);
+            } else {
+              addField(sb, PARAM_C_COMPARISON_STATUS + position, VALUE_COMPARISON_STATUS_FAIL);
+            }
+          } else {
+            addField(sb, PARAM_C_COMPARISON_STATUS + position, VALUE_COMPARISON_STATUS_NOT_TESTED);
+          }
+        }
+      }
+
+      content = sb.toString();
+      printout = new DataOutputStream(urlConn.getOutputStream());
+      printout.writeBytes(content);
+      printout.flush();
+      printout.close();
+      input = new InputStreamReader(urlConn.getInputStream());
+      StringBuilder response = new StringBuilder();
+      BufferedReader in = new BufferedReader(input);
+      String line;
+      while ((line = in.readLine()) != null) {
+        response.append(line);
+        response.append('\r');
+      }
+      input.close();
+      response.toString();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+  }
+
+  private static void addField(StringBuilder sb, String field, String value) throws UnsupportedEncodingException {
+    sb.append("&");
+    sb.append(field);
+    sb.append("=");
+    if (value != null) {
+      sb.append(URLEncoder.encode(value, "UTF-8"));
+    }
+  }
+
+  private static void addField(StringBuilder sb, String field, Throwable value) throws UnsupportedEncodingException {
+    sb.append("&");
+    sb.append(field);
+    sb.append("=");
+    if (value != null) {
+      StringWriter sw = new StringWriter();
+      PrintWriter out = new PrintWriter(sw);
+      value.printStackTrace(out);
+      out.close();
+      sb.append(URLEncoder.encode(sw.toString(), "UTF-8"));
+    }
+  }
+
+  private static void addField(StringBuilder sb, String field, String[] values) throws UnsupportedEncodingException {
+    sb.append("&");
+    sb.append(field);
+    sb.append("=");
+    if (values != null) {
+      for (String value : values) {
+        sb.append(URLEncoder.encode(value + "\n", "UTF-8"));
+      }
+    }
+  }
+
+  private static void addField(StringBuilder sb, String field, List<String> values) throws UnsupportedEncodingException {
+    sb.append("&");
+    sb.append(field);
+    sb.append("=");
+    if (values != null) {
+      for (String value : values) {
+        sb.append(URLEncoder.encode(value + "\n", "UTF-8"));
+      }
+    }
+  }
+
+  private static void addField(StringBuilder sb, String field, boolean value) throws UnsupportedEncodingException {
+    sb.append("&");
+    sb.append(field);
+    sb.append("=");
+    sb.append(value ? VALUE_YES : VALUE_NO);
+  }
+
+  private static void addField(StringBuilder sb, String field, Date value) throws UnsupportedEncodingException {
+    sb.append("&");
+    sb.append(field);
+    sb.append("=");
+    if (value != null) {
+      sb.append(URLEncoder.encode(VALUE_DATE_FORMAT.format(value), "UTF-8"));
+    }
+  }
+
+  private static void addField(StringBuilder sb, String field, int value) throws UnsupportedEncodingException {
+    sb.append("&");
+    sb.append(field);
+    sb.append("=");
+    sb.append(value);
+  }
+
+  private static void addField(StringBuilder sb, String field, long value) throws UnsupportedEncodingException {
+    sb.append("&");
+    sb.append(field);
+    sb.append("=");
+    sb.append(value);
+  }
+
+  private static void addField(StringBuilder sb, String field, double value) throws UnsupportedEncodingException {
+    sb.append("&");
+    sb.append(field);
+    sb.append("=");
+    sb.append(value);
   }
 
 }
