@@ -96,6 +96,7 @@ public class Transformer
   private static final String INSERT_SEGMENT_AFTER = "after";
   private static final String INSERT_SEGMENT_LAST = "last";
   private static final String INSERT_SEGMENT_IF_MISSING = "if missing";
+  private static final String INSERT_SEGMENT_IF_MISSING_FROM_MESSAGE = "if missing from message";
 
   private static final String RUN_PROCEDURE = "run procedure";
 
@@ -692,6 +693,13 @@ public class Transformer
           }
           quickTransforms += "PID-3.4=AIRA-TEST\n";
           quickTransforms += "PID-3.5=MR\n";
+          quickTransforms += "PD1-11.1=02\n\n";
+          quickTransforms += "PD1-11.2=Reminder/Recall - any method\n\n";
+          quickTransforms += "PD1-11.3=HL70215\n\n";
+          quickTransforms += "PD1-11.1=02\n\n";
+          quickTransforms += "PD1-16=A\n\n";
+          quickTransforms += "PD1-17=[TODAY]\n\n";
+          quickTransforms += "PD1-18=[TODAY]\n";
           quickTransforms += "NK1-1=1\n";
           quickTransforms += "NK1#2-1=2\n";
           quickTransforms += "PV1-1=1\n";
@@ -1462,11 +1470,41 @@ public class Transformer
       String[] newSegmentNames = newSegmentNameString.split("\\,");
       if (newSegmentNames.length > 0 && newSegmentNames[0].length() == 3) {
         boolean insertIfMissing = false;
+        boolean insertIfMissingInMessage = false;
+        int segmentIfMissingInMesagePos = line.indexOf(INSERT_SEGMENT_IF_MISSING_FROM_MESSAGE);
+        if (segmentIfMissingInMesagePos > 0) {
+          insertIfMissingInMessage = true;
+          line = line.substring(0, segmentIfMissingInMesagePos - 1);
+        }
         int segmentIfMissingPos = line.indexOf(INSERT_SEGMENT_IF_MISSING);
         if (segmentIfMissingPos > 0) {
           insertIfMissing = true;
           line = line.substring(0, segmentIfMissingPos - 1);
         }
+
+        boolean okayToInsert = true;
+        if (insertIfMissingInMessage) {
+          BufferedReader inResult = new BufferedReader(new StringReader(resultText));
+          String lineResult;
+          boolean foundIt = false;
+          while (!foundIt && (lineResult = inResult.readLine()) != null) {
+            lineResult = lineResult.trim();
+            if (lineResult.length() > 0) {
+              for (String newSegmentName : newSegmentNames) {
+                if (lineResult.startsWith(newSegmentName + "|")) {
+                  foundIt = true;
+                  break;
+                }
+              }
+            }
+          }
+          inResult.close();
+          if (foundIt)
+          {
+            okayToInsert = false;
+          }
+        }
+        if (okayToInsert)
         {
           String segmentToAdd = "";
           for (String newSegmentName : newSegmentNames) {
@@ -1573,7 +1611,7 @@ public class Transformer
                   if (lineResult.startsWith(line)) {
                     repeatCount++;
                     if (repeatCount == repeatPos) {
-                      boolean okayToInsert = true;
+                      okayToInsert = true;
                       if (insertIfMissing) {
                         if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_AFTER)) {
                           okayToInsert = lineResultPeak == null || !lineResultPeak.startsWith(newSegmentNames[0]);
@@ -1592,7 +1630,7 @@ public class Transformer
                     repeatCount++;
                   } else if (repeatCount == repeatPos && lineResult.startsWith(boundSegment)) {
                     triedToInsert = true;
-                    boolean okayToInsert = true;
+                    okayToInsert = true;
                     if (insertIfMissing) {
                       if (insertAction.equalsIgnoreCase(INSERT_SEGMENT_AFTER)) {
                         okayToInsert = lineResultPeak == null || !lineResultPeak.startsWith(newSegmentNames[0]);
