@@ -5149,6 +5149,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   }
 
   private void reportProgress(TestCaseMessage testMessage) {
+    if (REPORT_URL == null)
+    {
+      return;
+    }
     try {
       Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap = updateOverallScore();
 
