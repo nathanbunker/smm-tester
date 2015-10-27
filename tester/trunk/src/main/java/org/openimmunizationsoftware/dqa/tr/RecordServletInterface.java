@@ -25,6 +25,7 @@ public interface RecordServletInterface {
   public static final String VALUE_TEST_SECTION_TYPE_PERFORMANCE = "Performance";
   public static final String VALUE_TEST_SECTION_TYPE_CONFORMANCE = "Conformance";
   public static final String VALUE_TEST_SECTION_TYPE_PROFILING = "Profiling";
+  public static final String VALUE_TEST_SECTION_TYPE_ONC_2015 = "ONC 2015";
 
   public static final String PARAM_TC_CONNECTION_LABEL = "tc_connectionLabel";
   public static final String PARAM_TC_CONNECTION_TYPE = "tc_connectionType";

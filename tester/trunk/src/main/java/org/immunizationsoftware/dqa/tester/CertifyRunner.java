@@ -79,7 +79,9 @@ import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
 
 public class CertifyRunner extends Thread implements RecordServletInterface {
 
-  private static final String REPORT_URL = "http://localhost:8289/record";
+  private static final String REPORT_URL = "http://ois-pt.org/dqacm/record"; 
+//"http://localhost:8289/record";
+//"http://ois-pg.org/dqacm/record";
 
   private static final String REPORT_EXPLANATION_URL = "http://ois-pt.org/tester/reportExplanation.html";
 
@@ -114,7 +116,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   public static final int SUITE_G_PERFORMANCE = 6;
   public static final int SUITE_H_CONFORMANCE = 7;
   public static final int SUITE_I_PROFILING = 8;
-  public static final int SUITE_COUNT = 9;
+  public static final int SUITE_J_ONC_2015 = 9;
+  public static final int SUITE_COUNT = 10;
 
   private int currentSuite = SUITE_A_BASIC;
 
@@ -156,7 +159,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     areaLabel[SUITE_G_PERFORMANCE] = VALUE_TEST_SECTION_TYPE_PERFORMANCE;
     areaLabel[SUITE_H_CONFORMANCE] = VALUE_TEST_SECTION_TYPE_CONFORMANCE;
     areaLabel[SUITE_I_PROFILING] = VALUE_TEST_SECTION_TYPE_PROFILING;
-
+    areaLabel[SUITE_J_ONC_2015] = VALUE_TEST_SECTION_TYPE_ONC_2015;
   }
 
   private Map<String, PrintWriter> exampleOutSet = new HashMap<String, PrintWriter>();
@@ -370,6 +373,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   private String[] statusCheckScenarios = { SCENARIO_1_R_ADMIN_CHILD, SCENARIO_2_R_ADMIN_ADULT, SCENARIO_3_R_HISTORICAL_CHILD,
       SCENARIO_4_R_CONSENTED_CHILD, SCENARIO_5_P_REFUSED_TODDLER, SCENARIO_6_P_VARICELLA_HISTORY_CHILD, SCENARIO_7_R_COMPLETE_RECORD };
 
+  private String[] onc2015Scenarios = {};
   private List<TestCaseMessage>[] profileTestCaseLists = new ArrayList[3];
 
   Connector connector;
@@ -1380,6 +1384,26 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   }
 
   private void prepareBasic() {
+
+    int count = 0;
+    for (String scenario : statusCheckScenarios) {
+      count++;
+      TestCaseMessage testCaseMessage = createTestCaseMessage(scenario);
+      testCaseMessage.setTestCaseSet(testCaseSet);
+      testCaseMessage.setTestCaseCategoryId("A." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
+      statusCheckTestCaseBasicList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseBasicList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
+      transformer.transform(testCaseMessage);
+      testCaseMessage.setAssertResult("Accept - *");
+      register(testCaseMessage);
+    }
+
+    areaCount[SUITE_A_BASIC][0] = statusCheckTestCaseBasicList.size();
+  }
+  
+  private void prepareOnc2015() {
 
     int count = 0;
     for (String scenario : statusCheckScenarios) {
@@ -5242,6 +5266,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   }
 
   public static void reportParticipant(ParticipantResponse participantResponse) {
+    if (REPORT_URL == null)
+    {
+      return;
+    }
     try {
       HttpURLConnection urlConn;
       DataOutputStream printout;

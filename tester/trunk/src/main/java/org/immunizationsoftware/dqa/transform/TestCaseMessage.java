@@ -120,6 +120,7 @@ public class TestCaseMessage
   private String actualResultAckMessage = "";
   private String actualMessageResponseType = "";
   private PatientType patientType = PatientType.ANY_CHILD;
+  private String releaseVersion = "";
   private boolean hasIssue = false;
   private Throwable exception = null;
   private String actualResponseMessage = "";
@@ -138,6 +139,14 @@ public class TestCaseMessage
   private String messageAcceptStatusDebug = "";
   private int testPosition = 0;
   private String testType = "";
+
+  public String getReleaseVersion() {
+    return releaseVersion;
+  }
+
+  public void setReleaseVersion(String releaseVersion) {
+    this.releaseVersion = releaseVersion;
+  }
 
   public String getTestType() {
     return testType;
