@@ -159,19 +159,10 @@ public class ScenarioManager
       SCENARIO_3_R_HISTORICAL_TWELVE_YEARS_OLD, SCENARIO_4_1_CONSENTED_CHILD, SCENARIO_4_R_CONSENTED_CHILD,
       SCENARIO_5_1_REFUSED_TODDLER, SCENARIO_5_R_REFUSED_TODDLER, SCENARIO_5_P_REFUSED_TODDLER,
       SCENARIO_6_1_VARICELLA_HISTORY_CHILD, SCENARIO_6_R_VARICELLA_HISTORY_CHILD, SCENARIO_6_P_VARICELLA_HISTORY_CHILD,
-      SCENARIO_7_1_COMPLETE_RECORD, SCENARIO_7_R_COMPLETE_RECORD, 
-      SCENARIO_ONC_2015_IZ_AD_1, 
-      SCENARIO_ONC_2015_IZ_AD_1_R, 
-      SCENARIO_ONC_2015_IZ_AD_2,
-      SCENARIO_ONC_2015_IZ_AD_2_R,
-      SCENARIO_ONC_2015_IZ_AD_3, 
-      SCENARIO_ONC_2015_IZ_AD_3_R, 
-      SCENARIO_ONC_2015_IZ_AD_4, 
-      SCENARIO_ONC_2015_IZ_AD_4_R, 
-      SCENARIO_ONC_2015_IZ_AD_5, 
-      SCENARIO_ONC_2015_IZ_AD_5_R, 
-      SCENARIO_ONC_2015_IZ_AD_6,
-      SCENARIO_ONC_2015_IZ_AD_6_R,
+      SCENARIO_7_1_COMPLETE_RECORD, SCENARIO_7_R_COMPLETE_RECORD, SCENARIO_ONC_2015_IZ_AD_1,
+      SCENARIO_ONC_2015_IZ_AD_1_R, SCENARIO_ONC_2015_IZ_AD_2, SCENARIO_ONC_2015_IZ_AD_2_R, SCENARIO_ONC_2015_IZ_AD_3,
+      SCENARIO_ONC_2015_IZ_AD_3_R, SCENARIO_ONC_2015_IZ_AD_4, SCENARIO_ONC_2015_IZ_AD_4_R, SCENARIO_ONC_2015_IZ_AD_5,
+      SCENARIO_ONC_2015_IZ_AD_5_R, SCENARIO_ONC_2015_IZ_AD_6, SCENARIO_ONC_2015_IZ_AD_6_R,
       SCENARIO_FULL_RECORD_FOR_PROFILING, SCENARIO_ADD_DELETE, SCENARIO_MCIR_MPI };
 
   public static TestCaseMessage createTestCaseMessage(String scenario) {
@@ -472,41 +463,46 @@ public class ScenarioManager
       patientType = PatientType.BABY;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_1_R)) {
-      description = "ONC 2015 IZ-AD 1: Admin Child";
-      quickTransformations = new String[] {  "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "MOTHER", "FATHER", "RACE",
-          "ETHNICITY", "VAC1_ADMIN" };
+      description = "ONC 2015 IZ-AD 1: Admin Child (replica)";
+      quickTransformations = new String[] { "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "MOTHER", "FATHER", "RACE",
+          "ETHNICITY", "VAC1_CHANGE", "VAC2_CHANGE", "VAC3_CHANGE", "VAC4_CHANGE", "VAC5_CHANGE" };
       originalMessage = MESSAGE_ONC_2015_1;
-      quickTransformations = new String[] {};
       patientType = PatientType.BABY;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_2_R)) {
-      description = "ONC 2015 IZ-AD 2: Admin Adult";
+      description = "ONC 2015 IZ-AD 2: Admin Adult (replica)";
+      quickTransformations = new String[] { "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY",
+          "VAC1_CHANGE", "VAC2_CHANGE", "VAC3_CHANGE" };
       originalMessage = MESSAGE_ONC_2015_2;
-      quickTransformations = new String[] {};
       patientType = PatientType.ADULT;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_3_R)) {
-      description = "ONC 2015 IZ-AD 3: Child No Consent";
+      description = "ONC 2015 IZ-AD 3: Child No Consent (replica)";
+      quickTransformations = new String[] { "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY",
+          "VAC1_CHANGE" };
       originalMessage = MESSAGE_ONC_2015_3;
-      quickTransformations = new String[] {};
       patientType = PatientType.TWEEN;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_4_R)) {
-      description = "ONC 2015 IZ-AD 4: Child Deleted";
+      description = "ONC 2015 IZ-AD 4: Child Deleted (replica)";
+      quickTransformations = new String[] { "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY",
+          "VAC1_CHANGE" };
       originalMessage = MESSAGE_ONC_2015_4;
-      quickTransformations = new String[] {};
       patientType = PatientType.TWEEN;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_5_R)) {
-      description = "ONC 2015 IZ-AD 5: Child Refusal";
+      description = "ONC 2015 IZ-AD 5: Child Refusal (replica)";
+      quickTransformations = new String[] { "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "FATHER", "RACE", "ETHNICITY",
+          "VAC1_CHANGE", "VAC2_CHANGE", "VAC3_CHANGE", "VAC4_CHANGE" };
       originalMessage = MESSAGE_ONC_2015_5;
       quickTransformations = new String[] {};
       patientType = PatientType.BABY;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_6_R)) {
-      description = "ONC 2015 IZ-AD 6: Child Update";
+      description = "ONC 2015 IZ-AD 6: Child Update (replica)";
+      quickTransformations = new String[] { "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "FATHER", "RACE", "ETHNICITY",
+          "VAC1_CHANGE" };
       originalMessage = MESSAGE_ONC_2015_6;
-      quickTransformations = new String[] {};
       patientType = PatientType.BABY;
       releaseVersion = "1.5";
     }

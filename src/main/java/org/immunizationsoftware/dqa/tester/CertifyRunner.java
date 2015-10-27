@@ -16,6 +16,15 @@ import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_5_
 import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_6_P_VARICELLA_HISTORY_CHILD;
 import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_7_R_COMPLETE_RECORD;
 import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_FULL_RECORD_FOR_PROFILING;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_ONC_2015_IZ_AD_1_R;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_ONC_2015_IZ_AD_2_R;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_ONC_2015_IZ_AD_3_R;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_ONC_2015_IZ_AD_4_R;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_ONC_2015_IZ_AD_5_R;
+import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_ONC_2015_IZ_AD_6_R;
+
+
+
 import static org.immunizationsoftware.dqa.transform.ScenarioManager.createTestCaseMessage;
 
 import java.io.BufferedReader;
@@ -43,8 +52,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.sql.rowset.spi.SyncResolver;
 
 import org.immunizationsoftware.dqa.mover.ManagerServlet;
 import org.immunizationsoftware.dqa.mover.SendData;
@@ -340,12 +347,14 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   private List<TestCaseMessage> statusCheckTestCaseExceptionalList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckTestCaseProfilingList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckTestCaseForecastPrepList = new ArrayList<TestCaseMessage>();
+  private List<TestCaseMessage> statusCheckTestCaseOnc2015List = new ArrayList<TestCaseMessage>();
 
   private List<TestCaseMessage> statusCheckQueryTestCaseBasicList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckQueryTestCaseIntermediateList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckQueryTestCaseProfilingList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckQueryTestCaseTolerantList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckQueryTestCaseForecastPrepList = new ArrayList<TestCaseMessage>();
+  private List<TestCaseMessage> statusCheckQueryTestCaseOnc2015List = new ArrayList<TestCaseMessage>();
 
   private List<TestCaseMessage> ackAnalysisList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> rspAnalysisList = new ArrayList<TestCaseMessage>();
@@ -373,7 +382,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   private String[] statusCheckScenarios = { SCENARIO_1_R_ADMIN_CHILD, SCENARIO_2_R_ADMIN_ADULT, SCENARIO_3_R_HISTORICAL_CHILD,
       SCENARIO_4_R_CONSENTED_CHILD, SCENARIO_5_P_REFUSED_TODDLER, SCENARIO_6_P_VARICELLA_HISTORY_CHILD, SCENARIO_7_R_COMPLETE_RECORD };
 
-  private String[] onc2015Scenarios = {};
+  private String[] onc2015Scenarios = {SCENARIO_ONC_2015_IZ_AD_1_R, SCENARIO_ONC_2015_IZ_AD_2_R, SCENARIO_ONC_2015_IZ_AD_3_R,
+      SCENARIO_ONC_2015_IZ_AD_4_R, SCENARIO_ONC_2015_IZ_AD_5_R, SCENARIO_ONC_2015_IZ_AD_6_R};
+  
   private List<TestCaseMessage>[] profileTestCaseLists = new ArrayList[3];
 
   Connector connector;
@@ -509,6 +520,31 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
         reportProgress(null);
         return;
       }
+
+      if (run[SUITE_J_ONC_2015]) {
+
+        currentSuite = SUITE_J_ONC_2015;
+        logStatus("Preparing ONC 2015 messages");
+        prepareOnc2015();
+
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          reportProgress(null);
+          return;
+        }
+
+        logStatus("Sending basic messages");
+        updateOnc2015();
+        // printReportToFile();
+      }
+
+      if (!keepRunning) {
+        status = STATUS_STOPPED;
+        reportProgress(null);
+        return;
+      }
+
+      
       if (run[SUITE_B_INTERMEDIATE]) {
         currentSuite = SUITE_B_INTERMEDIATE;
 
@@ -668,6 +704,17 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
           return;
         }
 
+        if (run[SUITE_J_ONC_2015]) {
+          currentSuite = SUITE_J_ONC_2015;
+          logStatus("Submit query for ONC 2015 messages");
+          queryOnc2015();
+        }
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          reportProgress(null);
+          return;
+        }
+
         if (run[SUITE_B_INTERMEDIATE]) {
           currentSuite = SUITE_B_INTERMEDIATE;
           logStatus("Prepare query for intermediate messages");
@@ -773,7 +820,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       reportProgress(null);
 
       printReportToFile();
-      printAnalysis();
     }
 
     catch (Throwable t) {
@@ -907,182 +953,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
         // unable to save, continue as normal
       }
 
-    }
-  }
-
-  public void printAnalysis() {
-
-    if (testDir != null) {
-      File smmAnalysisDir = ManagerServlet.getSmmAnalysisFolder();
-      logStatus("Saving performance information");
-      if (smmAnalysisDir != null) {
-        File performanceFile = new File(smmAnalysisDir, "performance.csv");
-        try {
-          PrintWriter out;
-          if (performanceFile.exists()) {
-            out = new PrintWriter(new FileWriter(performanceFile, true));
-          } else {
-            out = new PrintWriter(new FileWriter(performanceFile));
-            boolean first = true;
-            for (PerformanceColumn performanceColumn : PerformanceColumn.values()) {
-              if (!first) {
-                out.print(",");
-              }
-              first = false;
-              out.print("\"" + performanceColumn + "\"");
-            }
-            out.println();
-          }
-
-          boolean first = true;
-          for (PerformanceColumn performanceColumn : PerformanceColumn.values()) {
-            if (!first) {
-              out.print(",");
-            }
-            first = false;
-            switch (performanceColumn) {
-            case ACK_TYPE:
-              out.print("\"" + connector.getAckType() + "\"");
-              break;
-            case ADVANCED_TEST:
-              out.print("\"" + (run[SUITE_C_ADVANCED] ? "Enabled" : "Not Enabled") + "\"");
-              break;
-            case AVERAGE_QUERY:
-              if (performance.getTotalQueryCount() > 0) {
-                out.print(performance.getQueryAverage());
-              }
-              break;
-            case AVERAGE_UPDATE:
-              if (performance.getTotalUpdateCount() > 0) {
-                out.print(performance.getUpdateAverage());
-              }
-              break;
-            case BASIC_TEST:
-              out.print("\"" + (run[SUITE_A_BASIC] ? "Enabled" : "Not Enabled") + "\"");
-              break;
-            case CONFORMANCE:
-              out.print("\"" + (run[SUITE_H_CONFORMANCE] ? "Enabled" : "Not Enabled") + "\"");
-              break;
-            case CONNECTION:
-              out.print("\"" + connector.getLabel() + "\"");
-              break;
-            case EXCEPTIONAL_TEST:
-              out.print("\"" + (run[SUITE_D_EXCEPTIONAL] ? "Enabled" : "Not Enabled") + "\"");
-              break;
-            case FINISHED:
-              out.print(sdf.format(new Date()));
-              break;
-            case FORECAST_PREP:
-              out.print("\"" + (run[SUITE_E_FORECAST_PREP] ? "Enabled" : "Not Enabled") + "\"");
-              break;
-            case INTERMEDIATE_TEST:
-              out.print("\"" + (run[SUITE_B_INTERMEDIATE] ? "Enabled" : "Not Enabled") + "\"");
-              break;
-            case MAX_QUERY:
-              if (performance.getTotalQueryCount() > 0) {
-                out.print(performance.getMaxQueryTime());
-              }
-              break;
-            case MAX_QUERY_TEST_CASE:
-              if (performance.getTotalQueryCount() > 0 && performance.getMaxQueryTestCase() != null) {
-                out.print(performance.getMaxQueryTestCase().getDescription());
-              }
-              break;
-            case MAX_UPDATE:
-              if (performance.getTotalUpdateCount() > 0) {
-                out.print(performance.getMaxUpdateTime());
-              }
-              break;
-            case MAX_UPDATE_TEST_CASE:
-              if (performance.getTotalUpdateCount() > 0 && performance.getMaxUpdateTestCase() != null) {
-                out.print(performance.getMaxUpdateTestCase().getDescription());
-              }
-              break;
-            case MIN_QUERY:
-              if (performance.getTotalQueryCount() > 0) {
-                out.print(performance.getMinQueryTime());
-              }
-              break;
-            case MIN_QUERY_TEST_CASE:
-              if (performance.getTotalQueryCount() > 0 && performance.getMinQueryTestCase() != null) {
-                out.print(performance.getMinQueryTestCase().getDescription());
-              }
-              break;
-            case MIN_UPDATE:
-              if (performance.getTotalUpdateCount() > 0) {
-                out.print(performance.getMinUpdateTime());
-              }
-              break;
-            case MIN_UPDATE_TEST_CASE:
-              if (performance.getTotalUpdateCount() > 0 && performance.getMinUpdateTestCase() != null) {
-                out.print(performance.getMinUpdateTestCase().getDescription());
-              }
-              break;
-            case PERFORMANCE:
-              out.print("\"Enabled\"");
-              break;
-            case PROFILING_TEST:
-              out.print("\"" + (run[SUITE_I_PROFILING] ? "Enabled" : "Not Enabled") + "\"");
-              break;
-            case QUERY_COUNT:
-              out.print(performance.getTotalQueryCount());
-              break;
-            case STARTED:
-              if (testStarted != null) {
-                out.print(sdf.format(testStarted));
-              }
-              break;
-            case TEST_STATUS:
-              out.print(status);
-              break;
-            case TRANSPORT:
-              out.print("\"" + connector.getType() + "\"");
-              break;
-            case UPDATE_COUNT:
-              if (performance.getTotalUpdateCount() > 0) {
-                out.print(performance.getTotalUpdateCount());
-              }
-              break;
-            case STDEV_QUERY:
-              if (performance.getTotalQueryCount() > 0) {
-                out.print(performance.getQuerySDev());
-              }
-              break;
-            case STDEV_UPDATE:
-              if (performance.getTotalUpdateCount() > 0) {
-                out.print(performance.getUpdateSDev());
-              }
-              break;
-            }
-          }
-          out.println();
-          out.close();
-        } catch (IOException ioe) {
-          ioe.printStackTrace();
-          // unable to save, continue as normal
-        }
-      }
-
-      logStatus("Looking to see if SMM analysis can be written");
-      if (smmAnalysisDir != null && areaProgress[SUITE_A_BASIC][0] > 0 && areaProgress[SUITE_B_INTERMEDIATE][0] > 0
-          && areaProgress[SUITE_D_EXCEPTIONAL][0] > 0 && areaProgress[SUITE_G_PERFORMANCE][0] > 0 && areaProgress[SUITE_H_CONFORMANCE][0] > 0
-          && areaProgress[SUITE_I_PROFILING][0] > 0) {
-        logStatus("Writing SMM Analysis");
-        File analysisFile = new File(smmAnalysisDir, "Analysis Report.html");
-        try {
-          PrintWriter out = new PrintWriter(new FileWriter(analysisFile));
-          String title = "IIS Testing Analysis";
-          ClientServlet.printHtmlHeadForFile(out, title);
-          out.println("    <h1>IIS Testing Analysis</h1>");
-          printAnalysis(out, true);
-          ClientServlet.printHtmlFootForFile(out);
-          out.close();
-        } catch (IOException ioe) {
-          ioe.printStackTrace();
-          // unable to save, continue as normal
-        }
-        logStatus("Finished writing SMM Analysis");
-      }
     }
   }
 
@@ -1406,21 +1276,21 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   private void prepareOnc2015() {
 
     int count = 0;
-    for (String scenario : statusCheckScenarios) {
+    for (String scenario : onc2015Scenarios) {
       count++;
       TestCaseMessage testCaseMessage = createTestCaseMessage(scenario);
       testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseCategoryId("A." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseCategoryId("J." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
-      statusCheckTestCaseBasicList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseBasicList.size());
+      statusCheckTestCaseOnc2015List.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseOnc2015List.size());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
       register(testCaseMessage);
     }
 
-    areaCount[SUITE_A_BASIC][0] = statusCheckTestCaseBasicList.size();
+    areaCount[SUITE_J_ONC_2015][0] = statusCheckTestCaseBasicList.size();
   }
 
   public void printExampleMessage(TestCaseMessage testCaseMessage, String type) {
@@ -1485,6 +1355,49 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     }
     areaScore[SUITE_A_BASIC][0] = makeScore(testPass, statusCheckTestCaseBasicList.size());
     areaProgress[SUITE_A_BASIC][0] = 100;
+    reportProgress(null);
+
+    if (testAccepted == 0) {
+      logStatus("None of the basic messages were accepted. Stopping test process. ");
+      keepRunning = false;
+    }
+  }
+
+  private void updateOnc2015() {
+    int count;
+    int testPass = 0;
+    TestRunner testRunner = new TestRunner();
+    count = 0;
+    int testAccepted = 0;
+    for (TestCaseMessage testCaseMessage : statusCheckTestCaseOnc2015List) {
+      count++;
+      try {
+        testRunner.runTest(connector, testCaseMessage);
+        boolean pass = testCaseMessage.isAccepted();
+        testCaseMessage.setMajorChangesMade(!verifyNoMajorChangesMade(testCaseMessage));
+        performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessage);
+        if (pass) {
+          testAccepted++;
+          if (!testCaseMessage.isMajorChangesMade()) {
+            testPass++;
+          }
+        }
+        testCaseMessage.setErrorList(testRunner.getErrorList());
+        printExampleMessage(testCaseMessage, "J ONC 2015");
+      } catch (Throwable t) {
+        testCaseMessage.setException(t);
+      }
+      areaProgress[SUITE_J_ONC_2015][0] = makeScore(count, statusCheckTestCaseOnc2015List.size());
+      saveTestCase(testCaseMessage);
+      reportProgress(testCaseMessage);
+      if (!keepRunning) {
+        status = STATUS_STOPPED;
+        reportProgress(null);
+        return;
+      }
+    }
+    areaScore[SUITE_J_ONC_2015][0] = makeScore(testPass, statusCheckTestCaseOnc2015List.size());
+    areaProgress[SUITE_J_ONC_2015][0] = 100;
     reportProgress(null);
 
     if (testAccepted == 0) {
@@ -2870,6 +2783,71 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     reportProgress(null);
   }
 
+  private void queryOnc2015() {
+    int count;
+    int testQueryPassRequired = 0;
+    int testQueryPassOptional = 0;
+    int testQueryCountRequired = 0;
+    int testQueryCountOptional = 0;
+    count = 0;
+    for (TestCaseMessage testCaseMessage : statusCheckTestCaseOnc2015List) {
+      count++;
+      String vxuMessage = testCaseMessage.getMessageText();
+
+      TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
+      queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
+      queryTestCaseMessage.setDescription("Query for " + testCaseMessage.getDescription());
+      queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
+      queryTestCaseMessage.setTestCaseSet(testCaseSet);
+      queryTestCaseMessage.setTestCaseCategoryId("J." + makeTwoDigits(3) + "." + makeTwoDigits(count));
+      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
+      statusCheckQueryTestCaseBasicList.add(queryTestCaseMessage);
+      queryTestCaseMessage.setTestPosition(statusCheckQueryTestCaseOnc2015List.size());
+      queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
+      register(queryTestCaseMessage);
+      try {
+        long startTime = System.currentTimeMillis();
+        String message = prepareSendQueryMessage(queryTestCaseMessage);
+        String rspMessage = queryConnector.submitMessage(message, false);
+        performance.addTotalQueryTime(System.currentTimeMillis() - startTime, queryTestCaseMessage);
+        queryTestCaseMessage.setHasRun(true);
+        queryTestCaseMessage.setActualResponseMessage(rspMessage);
+        List<Comparison> comparisonList = CompareManager.compareMessages(vxuMessage, rspMessage);
+        queryTestCaseMessage.setComparisonList(comparisonList);
+        for (Comparison comparison : comparisonList) {
+          if (comparison.isTested() && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
+            testQueryCountOptional++;
+            if (comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED) {
+              testQueryCountRequired++;
+            }
+
+            if (comparison.isPass() || fieldNotSupported(comparison)) {
+              testQueryPassOptional++;
+              if (comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED) {
+                testQueryPassRequired++;
+              }
+            }
+          }
+        }
+      } catch (Throwable t) {
+        queryTestCaseMessage.setException(t);
+      }
+      areaProgress[SUITE_J_ONC_2015][2] = makeScore(count, statusCheckTestCaseOnc2015List.size());
+      areaProgress[SUITE_J_ONC_2015][1] = areaProgress[SUITE_J_ONC_2015][2];
+      saveTestCase(queryTestCaseMessage);
+      reportProgress(queryTestCaseMessage);
+      if (!keepRunning) {
+        status = STATUS_STOPPED;
+        reportProgress(null);
+        return;
+      }
+    }
+    areaScore[SUITE_J_ONC_2015][1] = makeScore(testQueryPassRequired, testQueryCountRequired);
+    areaScore[SUITE_J_ONC_2015][2] = makeScore(testQueryPassOptional, testQueryCountOptional);
+    areaCount[SUITE_J_ONC_2015][1] = testQueryCountRequired;
+    areaCount[SUITE_J_ONC_2015][2] = testQueryCountOptional;
+    reportProgress(null);
+  }
   public String convertToQuery(TestCaseMessage testCaseMessage) {
     if (queryType.equals(QUERY_TYPE_QBP)) {
       return QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText());
@@ -3043,7 +3021,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     if (testDir != null) {
       CreateTestCaseServlet.saveTestCaseHtml(tcm, testDir);
     }
-    CreateTestCaseServlet.saveAnalysis(tcm, connector);
   }
 
   public boolean fieldNotSupported(Comparison comparison) {
@@ -4612,153 +4589,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     }
   }
 
-  private ConsolidateResults consolidate(TestCaseMessage tcm) throws IOException {
-    ConsolidateResults cr = new ConsolidateResults();
-    String filenameStart = "TCA-" + tcm.getTestCaseCategoryId();
-    cr.filename = filenameStart + ".html";
-    final String filenameEnd = "-" + tcm.getTestCaseCategoryId() + ".part.html";
-    File smmAnalysisDir = ManagerServlet.getSmmAnalysisFolder();
-    File fileOut = new File(smmAnalysisDir, cr.filename);
-    PrintWriter out = new PrintWriter(new FileWriter(fileOut));
-    String[] filePartNames = smmAnalysisDir.list(new FilenameFilter() {
-      public boolean accept(File dir, String name) {
-        return name.startsWith("TCAP-") && name.endsWith(filenameEnd);
-      }
-    });
-    Arrays.sort(filePartNames);
-    String title = "Analysis of " + tcm.getDescription();
-    ClientServlet.printHtmlHeadForFile(out, title);
-    out.println("    <h2>" + title + "</h2>");
-
-    out.println("<h3>Message Sent</h3>");
-    out.println("<p>Here is an example of one of the messages that was submitted to each IIS. (Every IIS "
-        + "received the same message with slightly different data and perhaps additional modifications " + "required by the IIS.)</p>");
-    out.println("<pre>" + tcm.getMessageTextSent() + "</pre>");
-
-    for (String filePartName : filePartNames) {
-      BufferedReader in = new BufferedReader(new FileReader(new File(smmAnalysisDir, filePartName)));
-      String line;
-      while ((line = in.readLine()) != null) {
-        out.println(line);
-        if (line.indexOf("<span class=\"pass\">Accepted</span></h3>") > 0) {
-          cr.acceptCount++;
-        } else if (line.indexOf("<span class=\"fail\">NOT Accepted</span></h3>") > 0) {
-          cr.notAcceptCount++;
-        }
-      }
-      in.close();
-    }
-    ClientServlet.printHtmlFootForFile(out);
-    out.close();
-    return cr;
-  }
-
-  public void printAnalysis(PrintWriter out, boolean toFile) throws IOException {
-
-    if (areaProgress[SUITE_A_BASIC][0] > 0) {
-      out.println("<h2>Basic Interoperability Tests</h2>");
-      out.println("<div id=\"areaALevel1\"/>");
-      out.println("<ul>");
-      for (TestCaseMessage testCaseMessage : statusCheckTestCaseBasicList) {
-        ConsolidateResults cr = consolidate(testCaseMessage);
-        out.println("  <li>" + testCaseMessage.getDescription() + cr.makeLink() + "</li>");
-      }
-      out.println("</ul>");
-    }
-
-    if (areaProgress[SUITE_B_INTERMEDIATE][0] > 0) {
-
-      out.println("<div id=\"areaBLevel1\"/>");
-      out.println("<h2>Intermediate Tests - Level 1 - Accepting Core Data</h2>");
-      String previousFieldName = "";
-      for (TestCaseMessage testCaseMessage : statusCheckTestCaseIntermediateList) {
-        previousFieldName = printTestCaseMessageDetailsUpdateForAnalysis(out, toFile, testCaseMessage, previousFieldName);
-      }
-      if (!previousFieldName.equals("")) {
-        out.println("</ul>");
-      }
-    }
-
-    for (int i = 0; i < areaScore[SUITE_C_ADVANCED].length; i++) {
-      if (profileTestCaseLists[i] == null || areaProgress[SUITE_C_ADVANCED][i] < 100) {
-        continue;
-      }
-
-      int priority = i + 1;
-      out.println("<div id=\"areaCLevel" + priority + "\"/>");
-      if (i == 0) {
-        out.println("    <h2>Advanced Tests - Level " + priority + " - High Priority</h2>");
-      } else if (i == 1) {
-        out.println("    <h2>Advanced Tests - Level " + priority + " - Medium Priority</h2>");
-      } else {
-        out.println("    <h2>Advanced Tests - Level " + priority + " - Low Priority </h2>");
-      }
-      out.println("<ul>");
-      for (TestCaseMessage testCaseMessage : profileTestCaseLists[i]) {
-        ConsolidateResults cr = consolidate(testCaseMessage);
-        out.println("  <li>" + testCaseMessage.getDescription() + cr.makeLink() + "</li>");
-      }
-      out.println("</ul>");
-    }
-    if (areaProgress[SUITE_I_PROFILING][0] > 0) {
-
-      out.println("<div id=\"areaILevel1\"/>");
-      String segmentName = "";
-      for (ProfileLine profileLine : profileLineList) {
-        if ((profileLine.getUsage() != Usage.NOT_DEFINED && profileUsage.getCategory() != ProfileCategory.US)
-            || (profileLine.getTestCaseMessagePresent() != null && profileLine.getTestCaseMessagePresent().hasIssue()
-                && profileLine.getTestCaseMessageAbsent() != null && profileLine.getTestCaseMessageAbsent().hasIssue())) {
-          if (!segmentName.equals(profileLine.getField().getSegmentName())) {
-            if (!segmentName.equals("")) {
-              out.println("</table>");
-            }
-            out.println("<h2>" + profileLine.getField().getSegmentName() + " Segment</h2>");
-            out.println("<table border=\"1\" cellspacing=\"0\">");
-            out.println("  <tr>");
-            out.println("    <th>Field</th>");
-            out.println("    <th>Description</th>");
-            out.println("    <th>Usage</th>");
-            out.println("    <th>Field Present</th>");
-            out.println("    <th>Field Absent</th>");
-            out.println("  </tr>");
-            segmentName = profileLine.getField().getSegmentName();
-          }
-
-          out.println("  <tr>");
-          out.println("    <td>" + profileLine.getField().getFieldName() + "</td>");
-          out.println("    <td>" + profileLine.getField().getDescription() + "</td>");
-          out.println("    <td>" + profileLine.getField().getTestUsage() + "</td>");
-          if (profileLine.getTestCaseMessagePresent() == null) {
-            out.println("    <td>-</td>");
-          } else {
-            ConsolidateResults cr = consolidate(profileLine.getTestCaseMessagePresent());
-            out.println("    <td>" + cr.makeLink() + "</td>");
-          }
-          if (profileLine.getTestCaseMessageAbsent() == null) {
-            out.println("    <td>-</td>");
-          } else {
-            ConsolidateResults cr = consolidate(profileLine.getTestCaseMessageAbsent());
-            out.println("    <td>" + cr.makeLink() + "</td>");
-          }
-          out.println("  </tr>");
-        }
-      }
-      out.println("</table>");
-      out.println("</br>");
-    }
-
-    if (areaProgress[SUITE_D_EXCEPTIONAL][0] > 0) {
-
-      out.println("<div id=\"areaDLevel1\"/>");
-      out.println("<h2>Tolerance Tests - Level 1 - Allows minor differences</h2>");
-      out.println("<ul>");
-      for (TestCaseMessage testCaseMessage : statusCheckTestCaseExceptionalList) {
-        ConsolidateResults cr = consolidate(testCaseMessage);
-        out.println("    <li>" + testCaseMessage.getDescription() + cr.makeLink() + "</li>");
-      }
-      out.println("</ul>");
-    }
-  }
+  
+  
 
   public void printTestCaseMessageDetailsQueryOptional(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage) {
     String classText = "nottested";
@@ -4892,26 +4724,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     return fieldName;
   }
 
-  public String printTestCaseMessageDetailsUpdateForAnalysis(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage,
-      String previousFieldName) throws IOException {
-    ConsolidateResults cr = consolidate(testCaseMessage);
-    String fieldName = testCaseMessage.getDescription();
-    String fieldValue = "";
-    int isPos = fieldName.indexOf(" is ");
-    if (isPos != -1) {
-      fieldValue = fieldName.substring(isPos + 4).trim();
-      fieldName = fieldName.substring(0, isPos).trim();
-    }
-    if (!previousFieldName.equals(fieldName)) {
-      if (!previousFieldName.equals("")) {
-        out.println("</ul>");
-      }
-      out.println("<p>" + fieldName + ":</p>");
-      out.println("<ul>");
-    }
-    out.println("    <li>" + fieldValue + cr.makeLink() + "</li>");
-    return fieldName;
-  }
 
   public void printProfileLine(PrintWriter out, boolean toFile, ProfileLine profileLine, boolean highlightUnexpected) {
 
@@ -5242,7 +5054,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
         "Average Query (ms)"), STDEV_QUERY("Std Dev Query"), MIN_QUERY("Min Query (ms)"), MAX_QUERY("Max Query (ms)"), MIN_QUERY_TEST_CASE(
         "Min Query Test Case"), MAX_QUERY_TEST_CASE("Max Query Test Case"), BASIC_TEST("Basic Tests"), INTERMEDIATE_TEST("Intermediate Tests"), ADVANCED_TEST(
         "Advanced Tests"), PROFILING_TEST("Profiling Tests"), EXCEPTIONAL_TEST("Exceptional Tests"), FORECAST_PREP("Forecast Prep Tests"), PERFORMANCE(
-        "Performance Tests"), CONFORMANCE("Conformance Tests");
+        "Performance Tests"), CONFORMANCE("Conformance Tests"), ONC_2015("ONC 2015");
     String label;
 
     private PerformanceColumn(String label) {

@@ -9,10 +9,8 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,14 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.immunizationsoftware.dqa.mover.ManagerServlet;
 import org.immunizationsoftware.dqa.mover.SendData;
-import org.immunizationsoftware.dqa.tester.connectors.Connector;
-import org.immunizationsoftware.dqa.tester.connectors.RunAgainstConnector;
-import org.immunizationsoftware.dqa.tester.manager.CompareManager;
-import org.immunizationsoftware.dqa.tester.manager.TestCaseMessageManager;
-import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
-import org.immunizationsoftware.dqa.transform.Comparison;
 import org.immunizationsoftware.dqa.transform.PatientType;
 import org.immunizationsoftware.dqa.transform.ScenarioManager;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
@@ -583,44 +574,6 @@ public class CreateTestCaseServlet extends ClientServlet
     }
   }
 
-  protected static void saveAnalysis(TestCaseMessage testCaseMessage, Connector connector) {
-    if (testCaseMessage.getTestCaseNumber() != null && !testCaseMessage.getTestCaseNumber().equals("")) {
-      File smmAnalysisDir = ManagerServlet.getSmmAnalysisFolder();
-      if (smmAnalysisDir != null) {
-        File testCaseFile = new File(smmAnalysisDir, "TCAP-" + connector.getLabel() + "-"
-            + testCaseMessage.getTestCaseCategoryId() + ".part.html");
-        try {
-          PrintWriter out = new PrintWriter(new FileWriter(testCaseFile));
-
-          if (testCaseMessage.isHasRun()) {
-            if (testCaseMessage.getActualMessageResponseType().equals("ACK")) {
-              if (testCaseMessage.isAccepted()) {
-                out.println("<h3>" + connector.getLabel() + " <span class=\"pass\">Accepted</span></h3>");
-              } else {
-                out.println("<h3>" + connector.getLabel() + " <span class=\"fail\">NOT Accepted</span></h3>");
-              }
-            } else {
-              out.println("<h3>" + connector.getLabel() + " Returned Unexpected Response</h3>");
-            }
-            out.println("<pre>" + testCaseMessage.getActualResponseMessage() + "</pre>");
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm z");
-            if (connector instanceof RunAgainstConnector) {
-              out.println("<p><em><font size=\"-1\">Test results analyzed " + sdf.format(new Date())
-                  + " from data previously submitted manually</font></em></p>");
-            } else {
-              out.println("<p><em><font size=\"-1\">Test conducted " + sdf.format(new Date()) + " connecting to "
-                  + connector.getUrl() + " with user id '" + connector.getUserid() + "'</font></em></p>");
-            }
-          }
-          out.close();
-        } catch (IOException ioe) {
-          ioe.printStackTrace();
-          // unable to save, continue as normal
-        }
-      }
-    }
-  }
-
   public static File getOrCreateTestCaseDir(TestCaseMessage testCaseMessage, Authenticate.User user) {
     File testCaseDir = user.getSendData().getTestCaseDir(true);
     if (!testCaseMessage.getTestCaseSet().equals("")) {
@@ -682,8 +635,7 @@ public class CreateTestCaseServlet extends ClientServlet
     }
     {
       File testCaseDir = sendData.getTestCaseDir(false);
-      if (testCaseDir != null) 
-      {
+      if (testCaseDir != null) {
         File[] dirs = testCaseDir.listFiles(new FileFilter() {
           public boolean accept(File arg0) {
             return arg0.isDirectory() && arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);

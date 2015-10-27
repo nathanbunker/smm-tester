@@ -547,12 +547,14 @@ public class Transformer
           if (alsoHas(testCaseMessage, "MOTHER")) {
             quickTransforms += "NK1#2-2.1=~60%[LAST]:[LAST_DIFFERENT]\n";
             quickTransforms += "NK1#2-2.2=[FATHER]\n";
+            quickTransforms += "NK1#2-2.7=L\n";
             quickTransforms += "NK1#2-3=FTH\n";
             quickTransforms += "NK1#2-3.2=Father\n";
             quickTransforms += "NK1#2-3.3=HL70063\n";
           } else {
             quickTransforms += "NK1-2.1=~60%[LAST]:[LAST_DIFFERENT]\n";
             quickTransforms += "NK1-2.2=[FATHER]\n";
+            quickTransforms += "NK1-2.7=L\n";
             quickTransforms += "NK1-3=FTH\n";
             quickTransforms += "NK1-3.2=Father\n";
             quickTransforms += "NK1-3.3=HL70063\n";
@@ -562,6 +564,7 @@ public class Transformer
           quickTransforms += "PID-6.2=[MOTHER]\n";
           quickTransforms += "NK1-2.1=~60%[LAST]:[LAST_DIFFERENT]\n";
           quickTransforms += "NK1-2.2=[MOTHER]\n";
+          quickTransforms += "NK1-2.7=L\n";
           quickTransforms += "NK1-3=MTH\n";
           quickTransforms += "NK1-3.2=Mother\n";
           quickTransforms += "NK1-3.3=HL70063\n";
@@ -647,7 +650,7 @@ public class Transformer
           quickTransforms += "RXA#2-6=999\n";
           quickTransforms += "RXA#2-21=A\n";
         } else if (extra.equals("VAC3_NA")) {
-          quickTransforms += "ORC#2-3=[VAC3_ID]\n";
+          quickTransforms += "ORC#3-3=[VAC3_ID]\n";
           quickTransforms += "RXA#3-3=[VAC3_DATE]\n";
           quickTransforms += "RXA#3-5.1=[VAC3_CVX]\n";
           quickTransforms += "RXA#3-5.2=[VAC3_CVX_LABEL]\n";
@@ -655,6 +658,16 @@ public class Transformer
           quickTransforms += "RXA#3-9.1=01\n";
           quickTransforms += "RXA#3-6=999\n";
           quickTransforms += "RXA#3-21=A\n";
+        } else if (extra.equals("VAC1_CHANGE")) {
+          quickTransforms = changeVac(quickTransforms, "1");
+        } else if (extra.equals("VAC2_CHANGE")) {
+          quickTransforms = changeVac(quickTransforms, "2");
+        } else if (extra.equals("VAC3_CHANGE")) {
+          quickTransforms = changeVac(quickTransforms, "3");
+        } else if (extra.equals("VAC4_CHANGE")) {
+          quickTransforms = changeVac(quickTransforms, "4");
+        } else if (extra.equals("VAC5_CHANGE")) {
+          quickTransforms = changeVac(quickTransforms, "5");
         } else if (extra.equals("ADDRESS")) {
           quickTransforms += "PID-11.1=[STREET]\n";
           quickTransforms += "PID-11.3=[CITY]\n";
@@ -662,12 +675,23 @@ public class Transformer
           quickTransforms += "PID-11.5=[ZIP]\n";
           quickTransforms += "PID-11.6=USA\n";
           quickTransforms += "PID-11.7=P\n";
+          quickTransforms += "NK1-4.1*=[STREET]\n";
+          quickTransforms += "NK1-4.3*=[CITY]\n";
+          quickTransforms += "NK1-4.4*=[STATE]\n";
+          quickTransforms += "NK1-4.5*=[ZIP]\n";
+          quickTransforms += "NK1-4.6*=USA\n";
+          quickTransforms += "NK1-4.7*=P\n";
         } else if (extra.equals("PHONE")) {
           quickTransforms += "PID-13.1=\n";
           quickTransforms += "PID-13.2=PRN\n";
           quickTransforms += "PID-13.3=PH\n";
           quickTransforms += "PID-13.6=[PHONE_AREA]\n";
           quickTransforms += "PID-13.7=[PHONE_LOCAL]\n";
+          quickTransforms += "NK1-5.1*=\n";
+          quickTransforms += "NK1-5.2*=PRN\n";
+          quickTransforms += "NK1-5.3*=PH\n";
+          quickTransforms += "NK1-5.6*=[PHONE_AREA]\n";
+          quickTransforms += "NK1-5.7*=[PHONE_LOCAL]\n";
         } else if (extra.equals("RACE")) {
           quickTransforms += "PID-10.1=[RACE]\n";
           quickTransforms += "PID-10.2=[RACE_LABEL]\n";
@@ -770,6 +794,14 @@ public class Transformer
         }
       }
     }
+    return quickTransforms;
+  }
+
+  public String changeVac(String quickTransforms, String vaccineNumber) {
+    quickTransforms += "ORC#" + vaccineNumber + "-2=[VAC1_ID]\n";
+    quickTransforms += "ORC#" + vaccineNumber + "-3=[VAC1_ID]\n";
+    quickTransforms += "RXA#" + vaccineNumber + "-3=[VAC3_DATE]\n";
+    quickTransforms += "RXA#" + vaccineNumber + ":OBX#1-14=[VAC3_DATE]\n";
     return quickTransforms;
   }
 

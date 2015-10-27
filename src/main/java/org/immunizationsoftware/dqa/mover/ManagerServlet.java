@@ -55,14 +55,9 @@ public class ManagerServlet extends ClientServlet {
   private static File softwareDir = null;
   private static File requirementTestFieldsFile = null;
   private static File iisParticipantResponsesAndAccountInfoFile = null;
-  private static File smmAnalysisFolder = null;
   private static File requirementTestTransformsFile = null;
   private static Set<ProfileUsage> requirementTestProfileFileSet = new HashSet<ProfileUsage>();
   private static boolean scanDirectories = true;
-
-  public static File getSmmAnalysisFolder() {
-    return smmAnalysisFolder;
-  }
 
   public static boolean isScanDirectories() {
     return scanDirectories;
@@ -72,7 +67,6 @@ public class ManagerServlet extends ClientServlet {
     ManagerServlet.scanDirectories = scanDirectories;
   }
 
-  private static final String SMM_ANALYSIS_FOLDER = "_SMM Analysis";
   private static final String REQUIREMENT_TEST_FIELDS_FILE = "SMM Requirement Test Fields.csv";
   private static final String IIS_PARTICIPANT_RESPONSES_AND_ACCOUNT_INFO = "IIS Participant Responses and Account Info.csv";
   private static final String REQUIREMENT_TEST_TRANSFORMS = "SMM Requirement Test Transforms.txt";
@@ -276,15 +270,6 @@ public class ManagerServlet extends ClientServlet {
                   iisParticipantResponsesAndAccountInfoFile = null;
                 } else {
                   System.out.println("Found " + iisParticipantResponsesAndAccountInfoFile);
-                }
-              }
-
-              if (smmAnalysisFolder == null) {
-                smmAnalysisFolder = new File(scanStartFile, SMM_ANALYSIS_FOLDER);
-                if (!smmAnalysisFolder.exists()) {
-                  smmAnalysisFolder = null;
-                } else {
-                  System.out.println("Found " + smmAnalysisFolder);
                 }
               }
 
