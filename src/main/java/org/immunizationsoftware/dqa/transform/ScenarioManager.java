@@ -2,6 +2,114 @@ package org.immunizationsoftware.dqa.transform;
 
 public class ScenarioManager
 {
+  private static final String MESSAGE_ONC_2015_6 = "MSH|^~\\&|wcApp|wcEHR|iisApp|IIS|20150624093847.808-0500||VXU^V04^VXU_V04|18019|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS|wcEHR|IIS\n"
+      + "PID|1||8891^^^wcEHR^MR||Banks^Tyler^Owen^^^^L||20140602|M||2106-3^White^CDCREC|924 Sycamore Lane^^Bozeman^MT^59715^USA^P||^PRN^PH^^^406^5555835|||||||||2186-5^Not Hispanic or Latino^CDCREC||Y|2|||||N\n"
+      + "PD1|||||||||||02^Reminder/recall - any method^HL70215|Y|20150624|||A|20040602|20150624\n"
+      + "NK1|1|Banks^Karl^Leonard^^^^L|FTH^Father^HL70063|924 Sycamore Lane^^Bozeman^MT^59715^USA^P|^PRN^PH^^^406^5555835\n"
+      + "ORC|RE|5027^wcEHR|12128^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN||654^Thomas^Wilma^Elizabeth^^^^^wcEHR^L^^^MD|||||wcEHR^West Clinic^HL70362\n"
+      + "RXA|0|1|20150624||00006-4095-01^VAQTA^NDC|0.5|mL^mL^UCUM||00^New Record^NIP001|7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|^^^wcEHR||||208490|20160120|MSD^Merck and Co., Inc.^MVX|||CP|U\n"
+      + "RXR|C28161^Intramuscular^NCIT|RT^Right Thigh^HL70163\n"
+      + "OBX|1|CE|30963-3^Vaccine Funding Source^LN|1|PHC70^Private^CDCPHINVS||||||F|||20150624\n"
+      + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V01^Not VFC Eligible^HL70064||||||F|||20150624|||VXC40^per immunization^CDCPHINVS\n"
+      + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300004211111025^Hepatitis A VIS^cdcgs1vis||||||F|||20150624\n"
+      + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20150624||||||F|||20150624\n";
+  private static final String MESSAGE_ONC_2015_5 = "MSH|^~\\&|wcApp|wcEHR|iisApp|IIS|20150624093847.808-0500||VXU^V04^VXU_V04|18019|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS|wcEHR|IIS\n"
+      + "PID|1||8891^^^wcEHR^MR||Banks^Tyler^Owen^^^^L||20140602|M||2106-3^White^CDCREC|924 Sycamore Lane^^Bozeman^MT^59715^USA^P||^PRN^PH^^^406^5555835|||||||||2186-5^Not Hispanic or Latino^CDCREC||Y|2|||||N\n"
+      + "PD1|||||||||||02^Reminder/recall - any method^HL70215|N|20150624|||A|20040602|20150624\n"
+      + "NK1|1|Banks^Karl^Leonard^^^^L|FTH^Father^HL70063|924 Sycamore Lane^^Bozeman^MT^59715^USA^P|^PRN^PH^^^406^5555835\n"
+      + "ORC|RE|5645^wcEHR|22515^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN||654^Thomas^Wilma^Elizabeth^^^^^wcEHR^L^^^MD|||||wcEHR^West Clinic^HL70362\n"
+      + "RXA|0|1|20150624||58160-0806-01^HIBERIX^NDC|0.5|mL^mL^UCUM||00^New Record^NIP001|7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|^^^wcEHR||||328734|20150923|SKB^GlaxoSmithKline^MVX|||CP|A\n"
+      + "RXR|C28161^Intramuscular^NCIT|RT^Right Thigh^HL70163\n"
+      + "OBX|1|CE|30963-3^Vaccine Funding Source^LN|1|PHC70^Private^CDCPHINVS||||||F|||20150624\n"
+      + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V01^Not VFC Eligible^HL70064||||||F|||20150624|||VXC40^per immunization^CDCPHINVS\n"
+      + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300026411141022^Multiple Vaccines VIS^cdcgs1vis||||||F|||20150624\n"
+      + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20150624||||||F|||20150624\n"
+      + "ORC|RE|5027^wcEHR|12128^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN||654^Thomas^Wilma^Elizabeth^^^^^wcEHR^L^^^MD|||||wcEHR^West Clinic^HL70362\n"
+      + "RXA|0|1|20150624||00006-4095-01^VAQTA^NDC|0.5|mL^mL^UCUM||00^New Record^NIP001|7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|^^^wcEHR||||208940|20160120|MSD^Merck and Co., Inc.^MVX|||CP|A\n"
+      + "RXR|C28161^Intramuscular^NCIT|RT^Right Thigh^HL70163\n"
+      + "OBX|1|CE|30963-3^Vaccine Funding Source^LN|1|PHC70^Private^CDCPHINVS||||||F|||20150624\n"
+      + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V01^Not VFC Eligible^HL70064||||||F|||20150624|||VXC40^per immunization^CDCPHINVS\n"
+      + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300004211111025^Hepatitis A VIS^cdcgs1vis||||||F|||20150624\n"
+      + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20150624||||||F|||20150624\n"
+      + "ORC|RE|7239^wcEHR|50588^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN||654^Thomas^Wilma^Elizabeth^^^^^wcEHR^L^^^MD|||||wcEHR^West Clinic^HL70362\n"
+      + "RXA|0|1|20150624||00006-4681-01^M-M-R II^NDC|0.5|mL^mL^UCUM||00^New Record^NIP001|7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|^^^wcEHR||||134301|20151028|MSD^Merck and Co., Inc.^MVX|||CP|A\n"
+      + "RXR|C38299^Subcutaneous^NCIT|LT^Left Thigh^HL70163\n"
+      + "OBX|1|CE|30963-3^Vaccine Funding Source^LN|1|PHC70^Private^CDCPHINVS||||||F|||20150624\n"
+      + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V01^Not VFC Eligible^HL70064||||||F|||20150624|||VXC40^per immunization^CDCPHINVS\n"
+      + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300012711120420^Measles/Mumps/Rubella VIS^cdcgs1vis||||||F|||20150624\n"
+      + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20150624||||||F|||20150624\n"
+      + "ORC|RE||9999^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|||||||wcEHR^West Clinic^HL70362\n"
+      + "RXA|0|1|20150624||21^varicella^CVX|999||||||||||||00^Parental decision^NIP002||RE|A\n";
+  private static final String MESSAGE_ONC_2015_4 = "MSH|^~\\&|wcApp|wcEHR|iisApp|IIS|20150624093847.804-0500||VXU^V04^VXU_V04|71892|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS|wcEHR|IIS\n"
+      + "PID|1||89778^^^wcEHR^MR||Benton^Katherine^Mackenzie^^^^L|Jones^^^^^^M|20031221|F||2106-3^White^CDCREC|89 West 21st Ave^^Bozeman^MT^59715^USA^P||^PRN^PH^^^406^5554019|||||||||2186-5^Not Hispanic or Latino^CDCREC||N|1|||||N\n"
+      + "PD1|||||||||||01^No reminder/recall^HL70215|Y|20150624|||A|20031221|20150624\n"
+      + "NK1|1|Benton^Kari^Michelle^^^^L|MTH^Mother^HL70063|89 West 21st Ave^^Bozeman^MT^59715^USA^P|^PRN^PH^^^406^5554019\n"
+      + "ORC|RE|5237^wcEHR|31309^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN||654^Thomas^Wilma^Elizabeth^^^^^wcEHR^L^^^MD|||||wcEHR^West Clinic^HL70362\n"
+      + "RXA|0|1|20150624||58160-0830-05^CERVARIX^NDC|0.5|mL^mL^UCUM||00^New Record^NIP001|7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|^^^wcEHR||||795441|20151223|SKB^GlaxoSmithKline^MVX|||CP|D\n"
+      + "RXR|C28161^Intramuscular^NCIT|RD^Right Deltoid^HL70163\n"
+      + "OBX|1|CE|30963-3^Vaccine Funding Source^LN|1|VXC50^Public^CDCPHINVS||||||F|||20150624\n"
+      + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V05^VFC Eligible - Underinsured^HL70064||||||F|||20150624|||VXC40^per immunization^CDCPHINVS\n"
+      + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300007311110503^Human papillomavirus Vaccine (Cervarix) VIS^cdcgs1vis||||||F|||20150624\n"
+      + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20150624||||||F|||20150624\n";
+  private static final String MESSAGE_ONC_2015_3 = "MSH|^~\\&|wcApp|wcEHR|iisApp|IIS|20150624093847.804-0500||VXU^V04^VXU_V04|77732|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS|wcEHR|IIS\n"
+      + "PID|1||89778^^^wcEHR^MR||Benton^Katherine^Mackenzie^^^^L|Jones^^^^^^M|20031221|F||2106-3^White^CDCREC|89 West 21st Ave^^Bozeman^MT^59715^USA^P||^PRN^PH^^^406^5554019|||||||||2186-5^Not Hispanic or Latino^CDCREC||N|1|||||N\n"
+      + "PD1|||||||||||01^No reminder/recall^HL70215|Y|20150624|||A|20031221|20150624\n"
+      + "NK1|1|Benton^Kari^Michelle^^^^L|MTH^Mother^HL70063|89 West 21st Ave^^Bozeman^MT^59715^USA^P|^PRN^PH^^^406^5554019\n"
+      + "ORC|RE|5237^wcEHR|31309^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN||654^Thomas^Wilma^Elizabeth^^^^^wcEHR^L^^^MD|||||wcEHR^West Clinic^HL70362\n"
+      + "RXA|0|1|20150624||58160-0830-05^CERVARIX^NDC|0.5|mL^mL^UCUM||00^New Record^NIP001|7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|^^^wcEHR||||795441|20151223|SKB^GlaxoSmithKline^MVX|||CP|A\n"
+      + "RXR|C28161^Intramuscular^NCIT|RD^Right Deltoid^HL70163\n"
+      + "OBX|1|CE|30963-3^Vaccine Funding Source^LN|1|VXC50^Public^CDCPHINVS||||||F|||20150624\n"
+      + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V05^VFC Eligible - Underinsured^HL70064||||||F|||20150624|||VXC40^per immunization^CDCPHINVS\n"
+      + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300007311110503^Human papillomavirus Vaccine (Cervarix) VIS^cdcgs1vis||||||F|||20150624\n"
+      + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20150624||||||F|||20150624\n";
+  private static final String MESSAGE_ONC_2015_2 = "MSH|^~\\&|wcApp|wcEHR|iisApp|IIS|20150624084727.655-0500||VXU^V04^VXU_V04|72268|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS|wcEHR|IIS\n"
+      + "PID|1||90012^^^wcEHR^MR||Wong^Elise^^^^^L||19830615|F||2028-9^Asian^CDCREC|9200 Wellington Trail^^Bozeman^MT^59715^USA^P||^PRN^PH^^^406^5557896~^NET^Internet^Elise.Wong@isp.com|||||||||2186-5^Not Hispanic or Latino^CDCREC||N|1|||||N\n"
+      + "PD1|||||||||||02^Reminder/recall - any method^HL70215|N|20150624|||A|19830615|20150624\n"
+      + "ORC|RE|4422^wcEHR|13696^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN||654^Thomas^Wilma^Elizabeth^^^^^wcEHR^L^^^MD|||||wcEHR^West Clinic^HL70362\n"
+      + "RXA|0|1|20150624||49281-0215-88^TENIVAC^NDC|0.5|mL^mL^UCUM||00^New Record^NIP001|7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|^^^wcEHR||||315841|20151216|PMC^Sanofi Pasteur^MVX|||CP|A\n"
+      + "RXR|C28161^Intramuscular^NCIT|RD^Right Deltoid^HL70163\n"
+      + "OBX|1|CE|30963-3^Vaccine Funding Source^LN|1|PHC70^Private^CDCPHINVS||||||F|||20150624\n"
+      + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V01^Not VFC Eligible^HL70064||||||F|||20150624|||VXC40^per immunization^CDCPHINVS\n"
+      + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300028811150224^Tetanus/Diphtheria (Td) VIS^cdcgs1vis||||||F|||20150624\n"
+      + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20150624||||||F|||20150624\n"
+      + "ORC|RE|6139^wcEHR|38760^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|||||||wcEHR^West Clinic^HL70362\n"
+      + "RXA|0|1|20141012||88^influenza, unspecified formulation^CVX|999|||01^Historical Administration^NIP001|||||||||||CP|A\n"
+      + "ORC|RE|7600^wcEHR|35508^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|||||||wcEHR^West Clinic^HL70362\n"
+      + "RXA|0|1|20131112||88^influenza, unspecified formulation^CVX|999|||01^Historical Administration^NIP001|||||||||||CP|A\n";
+  private static final String MESSAGE_ONC_2015_1 = "MSH|^~\\&|wcApp|wcEHR|issApp|IIS|20150624073733.994-0500||VXU^V04^VXU_V04|12462|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS|wcEHR|IIS\n"
+      + "PID|1||3123^^^wcEHR^MR||Richardson^Russell^Clint^^^^L|Billington^^^^^^M|20150415|M||1002-5^American Indian or Alaska Native^CDCREC|543 Blount Drive^^Bozeman^MT^59715^USA^P||^PRN^PH^^^406^5557690|||||||||2186-5^Not Hispanic or Latino^CDCREC||N|1|||||N\n"
+      + "PD1|||||||||||07^Recall only - no calls^HL70215|N|20150624|||A|20150415|20150624\n"
+      + "NK1|1|Richardson^Maria^Elizabeth^^^^L|MTH^Mother^HL70063|543 Blount Drive^^Bozeman^MT^59715^USA^P|^PRN^PH^^^406^5557690\n"
+      + "NK1|2|Richardson^John^William^^^^L|FTH^Father^HL70063|543 Blount Drive^^Bozeman^MT^59715^USA^P|^PRN^CP^^^406^5558299\n"
+      + "ORC|RE|3140^wcEHR|38766^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN||654^Thomas^Wilma^Elizabeth^^^^^wcEHR^L^^^MD|||||wcEHR^West Clinic^HL70362\n"
+      + "RXA|0|1|20150624||49281-0560-05^Pentacel^NDC|0.5|mL^mL^UCUM||00^New Record^NIP001|7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|^^^wcEHR||||526434|20150722|SKB^GlaxoSmithKline^MVX|||CP|A\n"
+      + "RXR|C28161^Intramuscular^NCIT|RT^Right Thigh^HL70163\n"
+      + "OBX|1|CE|30963-3^Vaccine Funding Source^LN|1|VXC50^Public^CDCPHINVS||||||F|||20150624\n"
+      + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V04^VFC Eligible - American Indian/Alaska Native^HL70064||||||F|||20150624|||VXC40^per immunization^CDCPHINVS\n"
+      + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300017211111108^Polio VIS^cdcgs1vis||||||F|||20150624\n"
+      + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20150624||||||F|||20150624\n"
+      + "OBX|5|CE|69764-9^Document Type^LN|4|253088698300005911120202^Hepatitis B VIS^cdcgs1vis||||||F|||20150624\n"
+      + "OBX|6|DT|29769-7^Date Vis Presented^LN|4|20150624||||||F|||20150624\n"
+      + "OBX|7|CE|69764-9^Document Type^LN|5|253088698300003511070517^Diphtheria/Tetanus/Pertussis (DTaP) VIS^cdcgs1vis||||||F|||20150624\n"
+      + "OBX|8|DT|29769-7^Date Vis Presented^LN|5|20150624||||||F|||20150624\n"
+      + "ORC|RE|8681^wcEHR|65138^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN||654^Thomas^Wilma^Elizabeth^^^^^wcEHR^L^^^MD|||||wcEHR^West Clinic^HL70362\n"
+      + "RXA|0|1|20150624||00006-4047-20^RotaTeq^NDC|2.0|mL^mL^UCUM||00^New Record^NIP001|7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|^^^wcEHR||||297961|20150916|MSD^Merck and Co., Inc.^MVX|||CP|A\n"
+      + "RXR|C38288^Oral^NCIT|\n"
+      + "OBX|1|CE|30963-3^Vaccine Funding Source^LN|1|VXC50^Public^CDCPHINVS||||||F|||20150624\n"
+      + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V04^VFC Eligible - American Indian/Alaska Native^HL70064||||||F||||20150624||VXC40^per immunization^CDCPHINVS\n"
+      + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300019611150415^Rotavirus VIS^cdcgs1vis||||||F|||20150624\n"
+      + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20150624||||||F|||20150624\n"
+      + "ORC|RE|7491^wcEHR|79539^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN||654^Thomas^Wilma^Elizabeth^^^^^wcEHR^L^^^MD|||||wcEHR^West Clinic^HL70362\n"
+      + "RXA|0|1|20150624||00005-1971-01^Prevnar 13^NDC|0.5|mL^mL^UCUM||00^New Record^NIP001|7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|^^^wcEHR||||353480|20150729|PFR^Pfizer, Inc^MVX|||CP|A\n"
+      + "RXR|C28161^Intramuscular^NCIT|LT^Left Thigh^HL70163\n"
+      + "OBX|1|CE|30963-3^Vaccine Funding Source^LN|1|VXC50^Public^CDCPHINVS||||||F|||20150624\n"
+      + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V04^VFC Eligible - American Indian/Alaska Native^HL70064||||||F||||20150624||VXC40^per immunization^CDCPHINVS\n"
+      + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300015811130227^Pneumococcal Conjugate (PCV13) VIS^cdcgs1vis||||||F|||20150624\n"
+      + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20150624||||||F|||20150624\n"
+      + "ORC|RE|9077^wcEHR|31528^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|||||||wcEHR^West Clinic^HL70362\n"
+      + "RXA|0|1|20150416||45^Hep B, unspecified formulation^CVX|999|||01^Historical Administration^NIP001|||||||||||CP|A\n"
+      + "ORC|RE|299^wcEHR|82668^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|||||||wcEHR^West Clinic^HL70362\n"
+      + "RXA|0|1|20150515||45^Hep B, unspecified formulation^CVX|999|||01^Historical Administration^NIP001|||||||||||CP|A\n";
   public static final String SCENARIO_BLANK = "Blank";
   public static final String SCENARIO_1_1_ADMIN_CHILD = "NIST MU2.1.1 - Admin Child";
   public static final String SCENARIO_1_R_ADMIN_CHILD = "NIST MU2.1.r - Admin Child (replica)";
@@ -30,6 +138,18 @@ public class ScenarioManager
   public static final String SCENARIO_FULL_RECORD_FOR_PROFILING = "Full Record for Profiling";
   public static final String SCENARIO_ADD_DELETE = "Add and then Delete - Admin Child";
   public static final String SCENARIO_MCIR_MPI = "MCIR MPI Test";
+  public static final String SCENARIO_ONC_2015_IZ_AD_1 = "ONC 2015 IZ-AD 1 Admin Child";
+  public static final String SCENARIO_ONC_2015_IZ_AD_1_R = "ONC 2015 IZ-AD 1 Admin Child (replica)";
+  public static final String SCENARIO_ONC_2015_IZ_AD_2 = "ONC 2015 IZ-AD 2 Admin Adult";
+  public static final String SCENARIO_ONC_2015_IZ_AD_2_R = "ONC 2015 IZ-AD 2 Admin Adult (replica)";
+  public static final String SCENARIO_ONC_2015_IZ_AD_3 = "ONC 2015 IZ-AD 3 Child No Consent";
+  public static final String SCENARIO_ONC_2015_IZ_AD_3_R = "ONC 2015 IZ-AD 3 Child No Consent (replica)";
+  public static final String SCENARIO_ONC_2015_IZ_AD_4 = "ONC 2015 IZ-AD 4 Child Deleted";
+  public static final String SCENARIO_ONC_2015_IZ_AD_4_R = "ONC 2015 IZ-AD 4 Child Deleted (replica)";
+  public static final String SCENARIO_ONC_2015_IZ_AD_5 = "ONC 2015 IZ-AD 5 Child Refusal";
+  public static final String SCENARIO_ONC_2015_IZ_AD_5_R = "ONC 2015 IZ-AD 5 Child Refusal (replica)";
+  public static final String SCENARIO_ONC_2015_IZ_AD_6 = "ONC 2015 IZ-AD 6 Child Update";
+  public static final String SCENARIO_ONC_2015_IZ_AD_6_R = "ONC 2015 IZ-AD 6 Child Update (replica)";
 
   public static final String[] SCENARIOS = { SCENARIO_BLANK, SCENARIO_1_1_ADMIN_CHILD, SCENARIO_1_R_ADMIN_CHILD,
       SCENARIO_1_R_ADMIN_TWO_MONTHS_OLD, SCENARIO_1_R_ADMIN_TWO_YEARS_OLD, SCENARIO_1_R_ADMIN_FOUR_YEARS_OLD,
@@ -39,8 +159,20 @@ public class ScenarioManager
       SCENARIO_3_R_HISTORICAL_TWELVE_YEARS_OLD, SCENARIO_4_1_CONSENTED_CHILD, SCENARIO_4_R_CONSENTED_CHILD,
       SCENARIO_5_1_REFUSED_TODDLER, SCENARIO_5_R_REFUSED_TODDLER, SCENARIO_5_P_REFUSED_TODDLER,
       SCENARIO_6_1_VARICELLA_HISTORY_CHILD, SCENARIO_6_R_VARICELLA_HISTORY_CHILD, SCENARIO_6_P_VARICELLA_HISTORY_CHILD,
-      SCENARIO_7_1_COMPLETE_RECORD, SCENARIO_7_R_COMPLETE_RECORD, SCENARIO_FULL_RECORD_FOR_PROFILING,
-      SCENARIO_ADD_DELETE, SCENARIO_MCIR_MPI };
+      SCENARIO_7_1_COMPLETE_RECORD, SCENARIO_7_R_COMPLETE_RECORD, 
+      SCENARIO_ONC_2015_IZ_AD_1, 
+      SCENARIO_ONC_2015_IZ_AD_1_R, 
+      SCENARIO_ONC_2015_IZ_AD_2,
+      SCENARIO_ONC_2015_IZ_AD_2_R,
+      SCENARIO_ONC_2015_IZ_AD_3, 
+      SCENARIO_ONC_2015_IZ_AD_3_R, 
+      SCENARIO_ONC_2015_IZ_AD_4, 
+      SCENARIO_ONC_2015_IZ_AD_4_R, 
+      SCENARIO_ONC_2015_IZ_AD_5, 
+      SCENARIO_ONC_2015_IZ_AD_5_R, 
+      SCENARIO_ONC_2015_IZ_AD_6,
+      SCENARIO_ONC_2015_IZ_AD_6_R,
+      SCENARIO_FULL_RECORD_FOR_PROFILING, SCENARIO_ADD_DELETE, SCENARIO_MCIR_MPI };
 
   public static TestCaseMessage createTestCaseMessage(String scenario) {
     TestCaseMessage testCaseMessage;
@@ -55,6 +187,7 @@ public class ScenarioManager
     String testCaseSet = "";
     String[] quickTransformations = {};
     PatientType patientType = PatientType.ANY_CHILD;
+    String releaseVersion = "1.4";
 
     if (scenario.equals(SCENARIO_BLANK)) {
       description = "Administered for Child";
@@ -190,7 +323,7 @@ public class ScenarioManager
           + "PID-15=[LANGUAGE]\nPID-15.2=[LANGUAGE_LABEL]\nPID-15.3=HL70296\nPID-13.2#2=NET\nPID-13.3#2=X.400\nPID-13.4#2=[EMAIL]\n"
           + "PID-14.2=WPN\nPID-14.3=PH\nPID-14.6=[PHONE_ALT_AREA]\nPID-14.7=[PHONE_ALT_LOCAL]\nPID-24=N\nPID-25=1\nPID-30=N\n"
           + "PD1-11.1=02\nPD1-11.2=Reminder/recall - any method\nPD1-11.3=HL70215\nPD1-12=N\nPD1-13=[TODAY]\nPD1-16=A\nPD1-17=[TODAY]\nPD1-18=[TODAY]\n"
-          + "NK1-2.3=[GIRL_MIDDLE]\nNK1-2.7=L\n" 
+          + "NK1-2.3=[GIRL_MIDDLE]\nNK1-2.7=L\n"
           + "NK1-4.1=[STREET]\nNK1-4.2=[STREET2]\nNK1-4.3=[CITY]\nNK1-4.4=[STATE]\nNK1-4.5=[ZIP]\nNK1-4.6=USA\nNK1-4.7=P\n"
           + "NK1-5.2=PRN\nNK1-5.3=PH\nNK1-5.6=[PHONE_AREA]\nNK1-5.7=[PHONE_LOCAL]\n"
           + "NK1-6.2=WPN\nNK1-6.3=PH\nNK1-6.6=[PHONE_ALT_AREA]\nNK1-6.7=[PHONE_ALT_LOCAL]\n"
@@ -302,6 +435,80 @@ public class ScenarioManager
       quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "MOTHER", "RACE",
           "ETHNICITY", "VAC1_ADMIN" };
       patientType = PatientType.TODDLER;
+    } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_1)) {
+      description = "ONC 2015 IZ-AD 1: Admin Child";
+      originalMessage = MESSAGE_ONC_2015_1;
+      quickTransformations = new String[] {};
+      patientType = PatientType.BABY;
+      releaseVersion = "1.5";
+    } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_2)) {
+      description = "ONC 2015 IZ-AD 2: Admin Adult";
+      originalMessage = MESSAGE_ONC_2015_2;
+      quickTransformations = new String[] {};
+      patientType = PatientType.ADULT;
+      releaseVersion = "1.5";
+    } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_3)) {
+      description = "ONC 2015 IZ-AD 3: Child No Consent";
+      originalMessage = MESSAGE_ONC_2015_3;
+      quickTransformations = new String[] {};
+      patientType = PatientType.TWEEN;
+      releaseVersion = "1.5";
+    } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_4)) {
+      description = "ONC 2015 IZ-AD 4: Child Deleted";
+      originalMessage = MESSAGE_ONC_2015_4;
+      quickTransformations = new String[] {};
+      patientType = PatientType.TWEEN;
+      releaseVersion = "1.5";
+    } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_5)) {
+      description = "ONC 2015 IZ-AD 5: Child Refusal";
+      originalMessage = MESSAGE_ONC_2015_5;
+      quickTransformations = new String[] {};
+      patientType = PatientType.BABY;
+      releaseVersion = "1.5";
+    } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_6)) {
+      description = "ONC 2015 IZ-AD 6: Child Update";
+      originalMessage = MESSAGE_ONC_2015_6;
+      quickTransformations = new String[] {};
+      patientType = PatientType.BABY;
+      releaseVersion = "1.5";
+    } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_1_R)) {
+      description = "ONC 2015 IZ-AD 1: Admin Child";
+      quickTransformations = new String[] {  "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "MOTHER", "FATHER", "RACE",
+          "ETHNICITY", "VAC1_ADMIN" };
+      originalMessage = MESSAGE_ONC_2015_1;
+      quickTransformations = new String[] {};
+      patientType = PatientType.BABY;
+      releaseVersion = "1.5";
+    } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_2_R)) {
+      description = "ONC 2015 IZ-AD 2: Admin Adult";
+      originalMessage = MESSAGE_ONC_2015_2;
+      quickTransformations = new String[] {};
+      patientType = PatientType.ADULT;
+      releaseVersion = "1.5";
+    } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_3_R)) {
+      description = "ONC 2015 IZ-AD 3: Child No Consent";
+      originalMessage = MESSAGE_ONC_2015_3;
+      quickTransformations = new String[] {};
+      patientType = PatientType.TWEEN;
+      releaseVersion = "1.5";
+    } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_4_R)) {
+      description = "ONC 2015 IZ-AD 4: Child Deleted";
+      originalMessage = MESSAGE_ONC_2015_4;
+      quickTransformations = new String[] {};
+      patientType = PatientType.TWEEN;
+      releaseVersion = "1.5";
+    } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_5_R)) {
+      description = "ONC 2015 IZ-AD 5: Child Refusal";
+      originalMessage = MESSAGE_ONC_2015_5;
+      quickTransformations = new String[] {};
+      patientType = PatientType.BABY;
+      releaseVersion = "1.5";
+    } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_6_R)) {
+      description = "ONC 2015 IZ-AD 6: Child Update";
+      originalMessage = MESSAGE_ONC_2015_6;
+      quickTransformations = new String[] {};
+      patientType = PatientType.BABY;
+      releaseVersion = "1.5";
     }
 
     testCaseMessage.setTestCaseSet(testCaseSet);
@@ -313,6 +520,7 @@ public class ScenarioManager
     testCaseMessage.setOriginalMessage(originalMessage);
     testCaseMessage.setQuickTransformations(quickTransformations);
     testCaseMessage.setPatientType(patientType);
+    testCaseMessage.setReleaseVersion(releaseVersion);
     return testCaseMessage;
   }
 }

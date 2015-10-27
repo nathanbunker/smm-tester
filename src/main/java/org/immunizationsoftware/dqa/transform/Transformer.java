@@ -24,6 +24,7 @@ import org.immunizationsoftware.dqa.tester.transform.IssueCreator;
 import org.immunizationsoftware.dqa.tester.transform.Patient;
 import org.immunizationsoftware.dqa.transform.procedure.ProcedureFactory;
 import org.immunizationsoftware.dqa.transform.procedure.ProcedureInterface;
+import org.springframework.util.WeakReferenceMonitor.ReleaseListener;
 
 /**
  * 
@@ -670,11 +671,19 @@ public class Transformer
         } else if (extra.equals("RACE")) {
           quickTransforms += "PID-10.1=[RACE]\n";
           quickTransforms += "PID-10.2=[RACE_LABEL]\n";
-          quickTransforms += "PID-10.3=HL70005\n";
+          if (testCaseMessage.getReleaseVersion().equals("1.4")) {
+            quickTransforms += "PID-10.3=HL70005\n";
+          } else {
+            quickTransforms += "PID-10.3=CDCREC\n";
+          }
         } else if (extra.equals("ETHNICITY")) {
           quickTransforms += "PID-22.1=[ETHNICITY]\n";
           quickTransforms += "PID-22.2=[ETHNICITY_LABEL]\n";
-          quickTransforms += "PID-22.3=CDCREC\n";
+          if (testCaseMessage.getReleaseVersion().equals("1.4")) {
+            quickTransforms += "PID-22.3=HL70005\n";
+          } else {
+            quickTransforms += "PID-22.3=CDCREC\n";
+          }
         } else if (extra.equals("2.5.1")) {
           quickTransforms += "MSH-2=^~\\&\n";
           quickTransforms += "MSH-7=[NOW]\n";
@@ -685,7 +694,13 @@ public class Transformer
               + "\n";
           quickTransforms += "MSH-11=P\n";
           quickTransforms += "MSH-12=2.5.1\n";
-          quickTransforms += "PID-1=1\n";
+          if (testCaseMessage.getReleaseVersion().equals("1.5")) {
+            quickTransforms += "MSH-15=ER\n";
+            quickTransforms += "MSH-16=A\n";
+            quickTransforms += "MSH-21.1=Z22\n";
+            quickTransforms += "MSH-21.2=CDCPHINVS\n";
+          }
+          quickTransforms += "MSH-23\n";
           if (actualTestCase.length() > 15) {
             quickTransforms += "PID-3.1=" + actualTestCase.substring(actualTestCase.length() - 15) + "\n";
           } else {
@@ -1499,13 +1514,11 @@ public class Transformer
             }
           }
           inResult.close();
-          if (foundIt)
-          {
+          if (foundIt) {
             okayToInsert = false;
           }
         }
-        if (okayToInsert)
-        {
+        if (okayToInsert) {
           String segmentToAdd = "";
           for (String newSegmentName : newSegmentNames) {
             if (newSegmentName.equals("FHS") || newSegmentName.equals("BHS")) {
@@ -2515,6 +2528,10 @@ public class Transformer
         p2 = patient.getMedicalRecordNumber() + ".2";
       } else if (p2.equals("[VAC3_ID]")) {
         p2 = patient.getMedicalRecordNumber() + ".3";
+      } else if (p2.equals("[VAC4_ID]")) {
+        p2 = patient.getMedicalRecordNumber() + ".4";
+      } else if (p2.equals("[VAC5_ID]")) {
+        p2 = patient.getMedicalRecordNumber() + ".5";
       } else if (p2.equals("[VAC1_DATE]")) {
         p2 = patient.getDates()[1];
       } else if (p2.equals("[VAC2_DATE]")) {

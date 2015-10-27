@@ -77,6 +77,7 @@ public class CertifyServlet extends ClientServlet
         certifyRunner.setRun(request.getParameter("runF") != null, CertifyRunner.SUITE_F_FORECAST);
         certifyRunner.setRun(request.getParameter("runH") != null, CertifyRunner.SUITE_H_CONFORMANCE);
         certifyRunner.setRun(request.getParameter("runI") != null, CertifyRunner.SUITE_I_PROFILING);
+        certifyRunner.setRun(request.getParameter("runJ") != null, CertifyRunner.SUITE_J_ONC_2015);
         certifyRunner.setPauseBeforeQuerying(request.getParameter("pauseBeforeQuerying") != null);
         if (certifyRunner.isRun(CertifyRunner.SUITE_E_FORECAST_PREP)) {
           Map<Integer, ForecastTestPanel> forecastTestPanelIdMap = new HashMap<Integer, ForecastTestPanel>();
@@ -369,6 +370,12 @@ public class CertifyServlet extends ClientServlet
         out.println("        <tr>");
         out.println("          <td>");
         out.println("            <input type=\"checkbox\" name=\"runH\" value=\"true\" checked=\"true\"/> Conformance");
+        out.println("          </td>");
+        out.println("          <td></td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td>");
+        out.println("            <input type=\"checkbox\" name=\"runJ\" value=\"true\"/> ONC 2015");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
