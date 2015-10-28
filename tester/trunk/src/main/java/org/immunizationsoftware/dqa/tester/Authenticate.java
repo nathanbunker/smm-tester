@@ -201,8 +201,8 @@ public class Authenticate {
             addUser("Roselle", "7OfpL5930T8h9TY");
             addUser("Santol", "5976g1D16kT1ZE1");
             addUser("Sapodilla", "n9qehfE18WQefxo", "Tom Love", "Cimarronmi@aol.com");
-            addUser("Starfruit", "vu756uB60b573L2");
-            addUser("Strawberry", "M67981M1wuIj9Tk");
+            addUser("Starfruit", "vu756uB60b573L2", "Deb Richards", "deborah.l.richards@state.or.us");
+            addUser("Strawberry", "M67981M1wuIj9Tk", "Tracy Little", "tracy.c.little@state.or.us");
             addUser("Tamarind", "IPkURqU7erHyEgW");
             addUser("Tangerine", "KrFJCE6uO974A80");
             addUser("Watermelon", "M7g1ZG29473v83W");
