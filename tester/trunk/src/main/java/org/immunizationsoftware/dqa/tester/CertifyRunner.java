@@ -422,6 +422,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   public void run() {
 
     status = STATUS_STARTED;
+    logStatus("Starting to run report");
     try {
 
       File testDataFile = CreateTestCaseServlet.getTestDataFile(sendData);
@@ -438,6 +439,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
       boolean goodToGo = true;
 
+      logStatus("Reporting progress");
       reportProgress(null);
 
       if (runAgainstFolder != null) {
@@ -1399,11 +1401,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     areaScore[SUITE_J_ONC_2015][0] = makeScore(testPass, statusCheckTestCaseOnc2015List.size());
     areaProgress[SUITE_J_ONC_2015][0] = 100;
     reportProgress(null);
-
-    if (testAccepted == 0) {
-      logStatus("None of the basic messages were accepted. Stopping test process. ");
-      keepRunning = false;
-    }
   }
 
   private boolean verifyNoMajorChangesMade(TestCaseMessage testCaseMessage) {
@@ -3091,6 +3088,56 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       }
     }
     out.println("  </tr>");
+    if (run[SUITE_J_ONC_2015]) {
+        out.println("  <tr>");
+        out.println("    <th><font size=\"+1\">ONC 2015</font><br/><font size=\"-2\">IIS can accept updates from EHR certified by ONC 2015</font></th>");
+        if (areaScore[SUITE_J_ONC_2015][0] >= 100) {
+          out.println("    <td class=\"pass\">All ONC 2015 scenarios are accepted. <font size=\"-1\"><a href=\"#areaJLevel1\">(details)</a></font></td>");
+        } else if (areaScore[SUITE_J_ONC_2015][0] >= 0) {
+          out.println("    <td class=\"fail\">Not all ONC 2015 scenarios are accepted. (" + areaScore[SUITE_J_ONC_2015][0]
+              + "% accepted) <font size=\"-1\"><a href=\"#areaJLevel1\">(details)</a></font></td>");
+        } else {
+          if (areaProgress[SUITE_J_ONC_2015][0] > -1) {
+            out.println("    <td>running now ... <br/>" + areaProgress[SUITE_J_ONC_2015][0] + "% complete</td>");
+          } else {
+            out.println("    <td>updates not sent yet</td>");
+          }
+        }
+        if (areaScore[SUITE_J_ONC_2015][1] >= 100) {
+          out.println("    <td class=\"pass\">All required IIS core fields are supported.  <font size=\"-1\"><a href=\"#areaJLevel1\">(details)</a></font></td>");
+        } else if (areaScore[SUITE_J_ONC_2015][1] >= 0) {
+          out.println("    <td class=\"fail\">Not all required IIS core fields are supported. (" + areaScore[SUITE_J_ONC_2015][1]
+              + "% of tests passed) <font size=\"-1\"><a href=\"#areaJLevel1\">(details)</a></font></td>");
+        } else {
+          if (areaProgress[SUITE_J_ONC_2015][1] > -1) {
+            out.println("    <td>running now ... <br/>" + areaProgress[SUITE_J_ONC_2015][1] + "% complete</td>");
+          } else {
+            if (willQuery) {
+              out.println("    <td>queries not sent yet</td>");
+            } else {
+              out.println("    <td>query tests not enabled</td>");
+            }
+          }
+        }
+        if (areaScore[SUITE_J_ONC_2015][2] >= 100) {
+          out.println("    <td class=\"pass\">All required and optional IIS core data were returned when queried. "
+              + "<font size=\"-1\"><a href=\"#areaJLevel1\">(details)</a></font></td>");
+        } else if (areaScore[SUITE_J_ONC_2015][2] >= 0) {
+          out.println("    <td class=\"fail\">Not all required or optional IIS core data were returned when queried (" + areaScore[SUITE_J_ONC_2015][2]
+              + "% of fields returned) <font size=\"-1\"><a href=\"#areaJLevel1\">(details)</a></font></td>");
+        } else {
+          if (areaProgress[SUITE_J_ONC_2015][2] > -1) {
+            out.println("    <td>running now ... <br/>" + areaProgress[SUITE_J_ONC_2015][2] + "% complete</td>");
+          } else {
+            if (willQuery) {
+              out.println("    <td>queries not sent yet</td>");
+            } else {
+              out.println("    <td>query tests not enabled</td>");
+            }
+          }
+        }
+      }
+      out.println("  </tr>");
     if (run[SUITE_B_INTERMEDIATE]) {
       out.println("  <tr>");
       out.println("    <th><font size=\"+1\">Intermediate</font><br/><font size=\"-2\">IIS can recognize valid codes</font></th>");
@@ -3900,6 +3947,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     out.println("    <td>" + (run[SUITE_H_CONFORMANCE] ? "Enabled" : "Not Enabled") + "</td>");
     out.println("  </tr>");
     out.println("  <tr>");
+    out.println("    <th>ONC 2015 Tests</th>");
+    out.println("    <td>" + (run[SUITE_J_ONC_2015] ? "Enabled" : "Not Enabled") + "</td>");
+    out.println("  </tr>");
+    out.println("  <tr>");
     out.println("    <th>Update Test Count</th>");
     out.println("    <td>" + performance.getTotalUpdateCount() + "</td>");
     out.println("  </tr>");
@@ -4199,10 +4250,180 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
         out.println("</br>");
       }
     }
+    
+    if (areaProgress[SUITE_J_ONC_2015][0] > 0) {
+        out.println("<h2>ONC 2015 Interoperability Tests</h2>");
+        out.println("<p><b>Purpose</b>: Test to see if the IIS can accept updates from ONC 2015 certified EHR systems. </p>");
+        out.println("<p><b>Requirements</b>: IIS must accept all 7 NIST messages than an EHR is required to be able to send after 2015. "
+            + "In addition the IIS should be able to store all IIS required core fields, and if possible all the " + "IIS optional core fields. </p>");
+        out.println("<ul>");
+        out.println("  <li>Level 1: The IIS must be able to accept replicas of all NIST messages. </li>");
+        out.println("  <li>Level 2: The IIS should return all required 2007 IIS Core Data included in the NIST messages.</li>");
+        out.println("  <li>Level 3: The IIS may return all IIS 2013-2017 Core Data that was included in the NIST messages.</li>");
+        out.println("</ul>");
+        for (TestCaseMessage testCaseMessage : statusCheckTestCaseOnc2015List) {
+          testNum++;
+          out.println("<div id=\"areaJLevel1\"/>");
+          out.println("<table border=\"1\" cellspacing=\"0\">");
+          out.println("  <tr>");
+          out.println("    <th>ONC 2015 Test #" + testNum + "</th>");
+          out.println("    <td><em>" + testCaseMessage.getDescription() + "</em></td>");
+          out.println("  </tr>");
+          out.println("  <tr>");
+          out.println("    <th>Level 1</th>");
+          if (testCaseMessage.isMajorChangesMade()) {
+            out.println("    <td class=\"fail\">Not all core data could be submitted. " + makeCompareDetailsLink(testCaseMessage, toFile, true));
+            out.println("<br/>");
+            if (testCaseMessage.isAccepted()) {
+              out.println("Message was accepted.");
+            } else {
+              out.println(" Message was rejected.");
+            }
+
+            out.println(makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+          } else if (testCaseMessage.isAccepted()) {
+            out.println("    <td class=\"pass\">Message was accepted. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+          } else if (testCaseMessage.isHasRun()) {
+            out.println("    <td class=\"fail\">");
+            out.println("Message was not accepted. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+            out.println("</td>");
+          } else if (testCaseMessage.getException() != null) {
+            out.println("    <td class=\"fail\">");
+            out.println("Exception when transmitting message: " + testCaseMessage.getException().getMessage() + ". "
+                + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+            out.println("</td>");
+          } else {
+            out.println("    <td class=\"nottested\">not run yet</td>");
+          }
+          out.println("  </tr>");
+          if (statusCheckQueryTestCaseOnc2015List.size() >= testNum) {
+            testCaseMessage = statusCheckQueryTestCaseOnc2015List.get(testNum - 1);
+            out.println("  <tr>");
+            out.println("    <th>Level 2</th>");
+            {
+              boolean hasRun = false;
+              boolean hasPassed = true;
+              boolean hasUnsupported = false;
+              if (testCaseMessage.getComparisonList() != null) {
+                hasRun = true;
+                for (Comparison comparison : testCaseMessage.getComparisonList()) {
+                  if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED) {
+                    if (!comparison.isPass()) {
+                      if (fieldSupported(comparison)) {
+                        hasPassed = false;
+                        break;
+                      } else {
+                        hasUnsupported = true;
+                      }
+                    }
+                  }
+                }
+              }
+              if (hasPassed) {
+                if (hasUnsupported) {
+                  out.println("    <td class=\"pass\">All required fields returned except those not supported: ");
+                  out.println("      <br/> <ul>");
+                  for (Comparison comparison : testCaseMessage.getComparisonList()) {
+                    if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED && !comparison.isPass()
+                        && fieldNotSupported(comparison)) {
+                      out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel() + "</li>");
+                    }
+                  }
+                  out.println("      </ul>");
+                  out.println(makeCompareDetailsLink(testCaseMessage, toFile, false));
+                } else {
+                  out.println("    <td class=\"pass\">All required fields returned. " + makeCompareDetailsLink(testCaseMessage, toFile, false));
+                }
+                out.println(makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+                out.println("    </td>");
+              } else if (hasRun) {
+                out.println("    <td class=\"fail\">Required fields not returned:");
+                out.println("      <ul>");
+                for (Comparison comparison : testCaseMessage.getComparisonList()) {
+                  if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED && !comparison.isPass()) {
+                    if (fieldSupported(comparison)) {
+                      out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel() + "</li>");
+                    } else {
+                      out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel()
+                          + " (not expected to be returned in query)</li>");
+                    }
+                  }
+                }
+                out.println("      </ul>");
+                out.println("      " + makeCompareDetailsLink(testCaseMessage, toFile, false));
+                out.println(makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+                out.println("    </td>");
+              } else if (testCaseMessage.getException() != null) {
+                out.println("    <td class=\"fail\">");
+                out.println("Exception when transmitting message: " + testCaseMessage.getException().getMessage() + ". "
+                    + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+                out.println("</td>");
+              } else {
+                out.println("    <td class=\"nottested\">not run yet</td>");
+              }
+            }
+            out.println("  </tr>");
+            out.println("  <tr>");
+            out.println("    <th>Level 3</th>");
+
+            {
+              boolean hasRun = false;
+              boolean hasPassed = true;
+              if (testCaseMessage.getComparisonList() != null) {
+                hasRun = true;
+                for (Comparison comparison : testCaseMessage.getComparisonList()) {
+                  if (comparison.isTested() && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
+                    if (!comparison.isPass()) {
+                      hasPassed = false;
+                      break;
+                    }
+                  }
+                }
+              }
+              if (hasPassed) {
+                out.println("    <td class=\"pass\">All required and optional fields returned. "
+                    + makeCompareDetailsLink(testCaseMessage, toFile, false));
+              } else if (hasRun) {
+                boolean hasOptionalFields = false;
+                for (Comparison comparison : testCaseMessage.getComparisonList()) {
+                  if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL && !comparison.isPass()) {
+                    hasOptionalFields = true;
+                    break;
+                  }
+                }
+                if (hasOptionalFields) {
+                  out.println("    <td class=\"fail\">Optional fields not returned:");
+                  out.println("      <ul>");
+                  for (Comparison comparison : testCaseMessage.getComparisonList()) {
+                    if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL && !comparison.isPass()) {
+                      out.println("      <li>" + comparison.getHl7FieldName() + " - " + comparison.getFieldLabel() + "</li>");
+                    }
+                  }
+                  out.println("      </ul>");
+                } else {
+                  out.println("    <td class=\"fail\">Level 2 not passed. ");
+                }
+                out.println("      " + makeCompareDetailsLink(testCaseMessage, toFile, false));
+                out.println("    </td>");
+              } else if (testCaseMessage.getException() != null) {
+                out.println("    <td class=\"fail\">");
+                out.println("Exception when transmitting message: " + testCaseMessage.getException().getMessage() + ". "
+                    + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+                out.println("</td>");
+              } else {
+                out.println("    <td class=\"nottested\">not run yet</td>");
+              }
+            }
+            out.println("  </tr>");
+          }
+          out.println("</table>");
+          out.println("</br>");
+        }
+      }
 
     if (areaProgress[SUITE_B_INTERMEDIATE][0] > 0) {
 
-      out.println("<h2>Basic Interoperability Tests</h2>");
+      out.println("<h2>Interoperability Tests</h2>");
       out.println("<p><b>Purpose</b>: Test to see if the IIS can accept recognize valid codes. </p>");
       out.println("<p><b>Requirements</b>: IIS must accept all valid codes for IIS core required and "
           + "optional fields, and not reject messages because of invalid or unrecognized codes in optional "
