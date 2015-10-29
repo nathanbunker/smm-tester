@@ -8,37 +8,60 @@ import java.util.List;
 
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 
-public class AckAnalyzer {
+public class AckAnalyzer
+{
 
   public static enum ErrorType {
     UNKNOWN, AUTHENTICATION, SENDER_PROBLEM, RECEIVER_PROBLEM
   };
 
   public static enum AckType {
-    DEFAULT, NMSIIS, ALERT, WEBIZ, MIIC, IRIS, VIIS, NJSIIS;
-    
+    DEFAULT, NMSIIS, ALERT, WEBIZ, MIIC, IRIS_IA, VIIS, NJSIIS, IRIS_ID;
+
     private boolean inHL7Format = true;
-    
-    public boolean isInHL7Format()
-    {
+    protected String description = null;
+
+    public String getDescription() {
+      return description;
+    }
+
+    public boolean isInHL7Format() {
       return inHL7Format;
     }
   };
-  
-  static
-  {
+
+  static {
     // AckType.NJSIIS.inHL7Format = false;
+    AckType.NMSIIS.description = "The NMSIIS interface is first assumed to have a setup problem if any one of three conditions occurs: \n"
+        + " + Message is shorter than 240 characters\n"
+        + " + Message contains phrase |BAD MESSAGE|\n"
+        + " + Message contains phrase FILE REJECTED\n\n"
+        + "Transmission will stop if a setup problem is detected\n\n"
+        + "A message is considered accepted if the following phrases are not found in the message: \n"
+        + " + RECORD REJECTED\n" + " + MESSAGE REJECTED\n" + " + WARNING:  RXA #[n] IGNORED - REQUIRED FIELD RXA-\n\n";
+
+    AckType.IRIS_ID.description = "The Idaho IRIS acknowledgement is considered accepted if it does not contain the phrase 'MESSAGE REJECTED'. \n\n"
+        + "In addition special steps were taken to handle fact that some ACK messages are incorrectly labeled as VXU messages. "
+        + "In the case where the ACK message is labeled as a VXU the responses is assumed to be an acknowledgement and read as such. \n";
   }
-  
-  public static HL7Reader getMessageReader(String ackMessageText, AckType ackType)
-  {
-    if (ackMessageText == null || ackMessageText.length() == 0 || !ackType.inHL7Format)
-    {
+
+  public static HL7Reader getMessageReader(String ackMessageText, AckType ackType) {
+    if (ackMessageText == null || ackMessageText.length() == 0 || !ackType.inHL7Format) {
       return null;
     }
     HL7Reader ackMessageReader = new HL7Reader(ackMessageText);
-    if (!ackMessageReader.advanceToSegment("MSH") || !ackMessageReader.getValue(9).equals("ACK")) {
+    if (!ackMessageReader.advanceToSegment("MSH")) {
       return null;
+    }
+    String type = ackMessageReader.getValue(9);
+    if (ackType == AckType.IRIS_ID) {
+      if (!type.equals("VXU") && !type.equals("ACK")) {
+        return null;
+      }
+    } else {
+      if (!type.equals("ACK")) {
+        return null;
+      }
     }
     return ackMessageReader;
   }
@@ -145,10 +168,20 @@ public class AckAnalyzer {
       log("Returned result is not an acknowledgement message: first line does not start with MSH|");
     } else if (!getFieldValue("MSH", 9).equals("ACK")) {
       isNotAck = true;
-      log("Returned result is not an acknowledgement message: MSH-9 is not ACK, it is '" + getFieldValue("MSH", 9) + "'");
+      log("Returned result is not an acknowledgement message: MSH-9 is not ACK, it is '" + getFieldValue("MSH", 9)
+          + "'");
     }
     if (isNotAck) {
-      if (ackType.equals(AckType.NJSIIS)) {
+      if (ackType.equals(AckType.IRIS_ID)) {
+        isNotAck = false;
+        ackMessage = true;
+        int messageRejectedPos = ackUpperCase.indexOf("MESSAGE REJECTED");
+        positive = ackUpperCase.startsWith("MSH|^~\\&|") && messageRejectedPos == -1;
+        if (!positive) {
+          log("The phrase \"MESSAGE REJECTED\" appeared in the message so major issue must have happened");
+        }
+        ackCode = positive ? "AA" : "AE";
+      } else if (ackType.equals(AckType.NJSIIS)) {
         isNotAck = false;
         ackMessage = true;
         positive = ackUpperCase.equals("SUCCESS");
@@ -205,7 +238,8 @@ public class AckAnalyzer {
           log("The word rejected appeared in the message so the message was rejected");
         }
       } else if (ackType.equals(AckType.VIIS)) {
-        String[] rejectPhrases = { "Unsupported HL7 version or trigger".toUpperCase(), "REJECTED", "PID #1 IGNORED", "BAD MESSAGE" };
+        String[] rejectPhrases = { "Unsupported HL7 version or trigger".toUpperCase(), "REJECTED", "PID #1 IGNORED",
+            "BAD MESSAGE" };
 
         positive = ackUpperCase.startsWith("MSH|^~\\&|");
         for (String rejectPhrase : rejectPhrases) {
@@ -227,7 +261,7 @@ public class AckAnalyzer {
         if (!positive) {
           log("The word rejected appeared in the message so the message was rejected");
         }
-      } else if (ackType.equals(AckType.IRIS)) {
+      } else if (ackType.equals(AckType.IRIS_IA)) {
         // IA defines 5 levels of errors: None, Low, Moderate, High, and
         // Critical
         int recordRejectedPos = ackUpperCase.indexOf("REJECTED");
@@ -244,6 +278,13 @@ public class AckAnalyzer {
         }
         if (!positive) {
           log("The word rejected appeared in the message so the message was rejected");
+        }
+      } else if (ackType.equals(AckType.IRIS_ID)) {
+        //
+        int messageRejectedPos = ackUpperCase.indexOf("MESSAGE REJECTED");
+        positive = ackUpperCase.startsWith("MSH|^~\\&|") && messageRejectedPos == -1;
+        if (!positive) {
+          log("The phrase \"MESSAGE REJECTED\" appeared in the message so major issue must have happened");
         }
       } else if (ackType.equals(AckType.ALERT)) {
         positive = true;

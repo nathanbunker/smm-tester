@@ -78,6 +78,7 @@ public class CertifyServlet extends ClientServlet
         certifyRunner.setRun(request.getParameter("runH") != null, CertifyRunner.SUITE_H_CONFORMANCE);
         certifyRunner.setRun(request.getParameter("runI") != null, CertifyRunner.SUITE_I_PROFILING);
         certifyRunner.setRun(request.getParameter("runJ") != null, CertifyRunner.SUITE_J_ONC_2015);
+        certifyRunner.setRun(request.getParameter("runK") != null, CertifyRunner.SUITE_K_NOT_ACCEPTED);
         certifyRunner.setPauseBeforeQuerying(request.getParameter("pauseBeforeQuerying") != null);
         if (certifyRunner.isRun(CertifyRunner.SUITE_E_FORECAST_PREP)) {
           Map<Integer, ForecastTestPanel> forecastTestPanelIdMap = new HashMap<Integer, ForecastTestPanel>();
@@ -269,6 +270,18 @@ public class CertifyServlet extends ClientServlet
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
+        out.println("            <input type=\"checkbox\" name=\"runJ\" value=\"true\" checked=\"true\"/> ONC 2015");
+        out.println("          </td>");
+        out.println("          <td></td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td>");
+        out.println("            <input type=\"checkbox\" name=\"runK\" value=\"true\" checked=\"true\"/> Not Accepted");
+        out.println("          </td>");
+        out.println("          <td></td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td>");
         out.println("            <input type=\"checkbox\" name=\"runB\" value=\"true\" checked=\"true\"/> Intermediate");
         out.println("          </td>");
         out.println("          <td></td>");
@@ -370,12 +383,6 @@ public class CertifyServlet extends ClientServlet
         out.println("        <tr>");
         out.println("          <td>");
         out.println("            <input type=\"checkbox\" name=\"runH\" value=\"true\" checked=\"true\"/> Conformance");
-        out.println("          </td>");
-        out.println("          <td></td>");
-        out.println("        </tr>");
-        out.println("        <tr>");
-        out.println("          <td>");
-        out.println("            <input type=\"checkbox\" name=\"runJ\" value=\"true\"/> ONC 2015");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");

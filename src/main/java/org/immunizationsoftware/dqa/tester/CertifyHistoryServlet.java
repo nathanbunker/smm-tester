@@ -36,7 +36,8 @@ import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
  * 
  * @author nathan
  */
-public class CertifyHistoryServlet extends ClientServlet {
+public class CertifyHistoryServlet extends ClientServlet
+{
 
   /**
    * 
@@ -154,16 +155,16 @@ public class CertifyHistoryServlet extends ClientServlet {
   private static final String VIEW_PHASE_2_PARTICIPATION = "Phase 2 Participation";
   private static final String VIEW_PHASE_2_STATUS = "Phase 2 Status";
   private static final String VIEW_PHASE_2_IIS_GUIDE = "IIS Guide";
-  private static final String VIEW_PHASE_2_TESTING = "Automated Testing";
+  private static final String VIEW_AUTOMATED_TESTING = "Automated Testing";
   private static final String VIEW_DETAIL = "Detail";
 
-  public static final String[] VIEW = { VIEW_ALL_REPORTS, VIEW_PHASE_1_PARTICIPATION, VIEW_PHASE_1_STATUS, VIEW_PHASE_2_PARTICIPATION,
-      VIEW_PHASE_2_STATUS, VIEW_PHASE_2_IIS_GUIDE, VIEW_PHASE_2_TESTING };
+  public static final String[] VIEW = { VIEW_ALL_REPORTS, VIEW_PHASE_1_PARTICIPATION, VIEW_PHASE_1_STATUS,
+      VIEW_PHASE_2_PARTICIPATION, VIEW_PHASE_2_STATUS, VIEW_PHASE_2_IIS_GUIDE, VIEW_AUTOMATED_TESTING };
 
   private static final String ALL = "All";
 
-  private void doGet(HttpServletRequest request, HttpServletResponse response, HttpSession session, String problem) throws IOException,
-      ServletException {
+  private void doGet(HttpServletRequest request, HttpServletResponse response, HttpSession session, String problem)
+      throws IOException, ServletException {
 
     String username = (String) session.getAttribute("username");
     if (username == null) {
@@ -189,10 +190,12 @@ public class CertifyHistoryServlet extends ClientServlet {
       if (!view.equals(VIEW_ALL_REPORTS) && ManagerServlet.getIisParticipantResponsesAndAccountInfoFile() != null) {
         int maxCols = RecordServletInterface.MAP_COLS_MAX;
         int maxRows = RecordServletInterface.MAP_ROWS_MAX;
-        ParticipantResponse[][] participantResponseMap = (ParticipantResponse[][]) session.getAttribute("participantResponseMap");
+        ParticipantResponse[][] participantResponseMap = (ParticipantResponse[][]) session
+            .getAttribute("participantResponseMap");
         if (participantResponseMap == null) {
           participantResponseMap = new ParticipantResponse[maxCols][maxRows];
-          List<ParticipantResponse> participantResponseList = ParticipantResponseManager.readFile(participantResponseMap);
+          List<ParticipantResponse> participantResponseList = ParticipantResponseManager
+              .readFile(participantResponseMap);
           for (ParticipantResponse participantResponse : participantResponseList) {
             CertifyRunner.reportParticipant(participantResponse);
           }
@@ -204,8 +207,8 @@ public class CertifyHistoryServlet extends ClientServlet {
           int row = Integer.parseInt(request.getParameter("row"));
           ParticipantResponse participantResponse = participantResponseMap[col][row];
           DashboardServlet.printDashboard(out, participantResponse);
-          out.println("<p><a href=\"dash?col=" + col + "&row=" + row + "&accessPasscode=" + participantResponse.getAccessPasscode()
-              + "\">Dashboard Link</a></p>");
+          out.println("<p><a href=\"dash?col=" + col + "&row=" + row + "&accessPasscode="
+              + participantResponse.getAccessPasscode() + "\">Dashboard Link</a></p>");
           switchParticipantResponse(session, user, participantResponse);
           // List<ParticipantResponse> participantResponseScheduledList =
           // (List<ParticipantResponse>) session
@@ -317,8 +320,8 @@ public class CertifyHistoryServlet extends ClientServlet {
               } else if (greyOut) {
                 out.println("<td width=\"90\" style=\"border-style:solid; border-width: 1px; \">&nbsp;</td>");
               } else {
-                dashboardLink += "&c" + dashboardLinkCount + "=" + col + "&r" + dashboardLinkCount + "=" + row + "&a" + dashboardLinkCount + "="
-                    + participantResponse.getAccessPasscode();
+                dashboardLink += "&c" + dashboardLinkCount + "=" + col + "&r" + dashboardLinkCount + "=" + row + "&a"
+                    + dashboardLinkCount + "=" + participantResponse.getAccessPasscode();
                 dashboardLinkCount++;
                 String organizationName = participantResponse.getOrganizationName();
                 String status = "pass";
@@ -329,7 +332,8 @@ public class CertifyHistoryServlet extends ClientServlet {
                   comment = participantResponse.getPhase1Comments();
                   if (statusLabel.equals("")) {
                     status = "";
-                  } else if (statusLabel.equalsIgnoreCase("Yes - Direct") || statusLabel.equalsIgnoreCase("Yes - Report Only")) {
+                  } else if (statusLabel.equalsIgnoreCase("Yes - Direct")
+                      || statusLabel.equalsIgnoreCase("Yes - Report Only")) {
                     status = "pass";
                   } else {
                     status = "fail";
@@ -349,7 +353,8 @@ public class CertifyHistoryServlet extends ClientServlet {
                   comment = participantResponse.getPhaseIIComments();
                   if (statusLabel.equals("")) {
                     status = "";
-                  } else if (statusLabel.equalsIgnoreCase("Yes - AIRA & NIST") || statusLabel.equalsIgnoreCase("Yes - AIRA Only")) {
+                  } else if (statusLabel.equalsIgnoreCase("Yes - AIRA & NIST")
+                      || statusLabel.equalsIgnoreCase("Yes - AIRA Only")) {
                     status = "pass";
                   } else {
                     status = "fail";
@@ -368,13 +373,14 @@ public class CertifyHistoryServlet extends ClientServlet {
                   statusLabel = participantResponse.getRecordRequirementsStatus();
                   if (statusLabel.equals("")) {
                     status = "";
-                  } else if (statusLabel.equalsIgnoreCase("IIS Guide Recorded") || statusLabel.equalsIgnoreCase("Use National Guide")
+                  } else if (statusLabel.equalsIgnoreCase("IIS Guide Recorded")
+                      || statusLabel.equalsIgnoreCase("Use National Guide")
                       || statusLabel.equalsIgnoreCase("See Envision Guide")) {
                     status = "pass";
                   } else {
                     status = "fail";
                   }
-                } else if (view.equals(VIEW_PHASE_2_TESTING)) {
+                } else if (view.equals(VIEW_AUTOMATED_TESTING)) {
                   statusLabel = participantResponse.getConnecttoIISStatus();
                   comment = participantResponse.getComments();
                   if (statusLabel.equals("")) {
@@ -386,12 +392,16 @@ public class CertifyHistoryServlet extends ClientServlet {
                   }
                 }
 
-                String link = "<a href=\"CertifyHistoryServlet?view=" + VIEW_DETAIL + "&row=" + row + "&col=" + col + "\" title=\"" + comment + "\">";
+                String link = "<a href=\"CertifyHistoryServlet?view=" + VIEW_DETAIL + "&row=" + row + "&col=" + col
+                    + "\" title=\"" + comment + "\">";
                 if (organizationName.length() <= 2) {
-                  out.println("<td class=\"" + status + "\" width=\"90\" style=\"border-style:solid; border-width: 1px; vertical-align: top; \">");
-                  out.println("<center><b><font size=\"+2\">" + link + participantResponse.getOrganizationName() + "</a></font></b></center>");
+                  out.println("<td class=\"" + status
+                      + "\" width=\"90\" style=\"border-style:solid; border-width: 1px; vertical-align: top; \">");
+                  out.println("<center><b><font size=\"+2\">" + link + participantResponse.getOrganizationName()
+                      + "</a></font></b></center>");
                 } else {
-                  out.println("<td class=\"" + status + "\" width=\"90\" style=\"border-style:solid; border-width: 1px; vertical-align: top;\">");
+                  out.println("<td class=\"" + status
+                      + "\" width=\"90\" style=\"border-style:solid; border-width: 1px; vertical-align: top;\">");
                   out.println("<center><b>" + link + participantResponse.getOrganizationName() + "</a></b></center>");
                 }
                 if (!statusLabel.equals("")) {
@@ -405,7 +415,7 @@ public class CertifyHistoryServlet extends ClientServlet {
                   statusLabelCountMap.put(statusLabel, count);
                 }
 
-                if (view.equals(VIEW_PHASE_2_TESTING)) {
+                if (view.equals(VIEW_AUTOMATED_TESTING)) {
                   String folderName = participantResponse.getFolderName();
                   if (!folderName.equals("")) {
                     SendData sendData = ManagerServlet.getSendDatayByLabel(folderName);
@@ -437,12 +447,14 @@ public class CertifyHistoryServlet extends ClientServlet {
                         if (latestTestNameDate.startsWith(currentYear + "-")) {
                           latestTestNameDate = latestTestNameDate.substring(currentYear.length() + 1);
                         }
-                        link = "CertifyHistoryServlet/" + folderName + "/" + latestTestName + "/IIS Testing Report.html";
+                        link = "CertifyHistoryServlet/" + folderName + "/" + latestTestName
+                            + "/IIS Testing Report.html";
                         if (needsToBeRunAgain) {
-                          out.println("<br/><center><a href=\"" + link + "\" target=\"_blank\" class=\"fail\">" + latestTestNameDate
-                              + "</a></center>");
+                          out.println("<br/><center><a href=\"" + link + "\" target=\"_blank\" class=\"fail\">"
+                              + latestTestNameDate + "</a></center>");
                         } else {
-                          out.println("<br/><center><a href=\"" + link + "\" target=\"_blank\">" + latestTestNameDate + "</a></center>");
+                          out.println("<br/><center><a href=\"" + link + "\" target=\"_blank\">" + latestTestNameDate
+                              + "</a></center>");
                         }
                       }
                     }
@@ -486,7 +498,8 @@ public class CertifyHistoryServlet extends ClientServlet {
           out.println("<p>Platform <select name=\"platform\">");
           for (String platformSelect : platformList) {
             if (platform.equals(platformSelect)) {
-              out.println("    <option value=\"" + platformSelect + "\" selected=\"true\">" + platformSelect + "</option>");
+              out.println("    <option value=\"" + platformSelect + "\" selected=\"true\">" + platformSelect
+                  + "</option>");
             } else {
               out.println("    <option value=\"" + platformSelect + "\">" + platformSelect + "</option>");
             }
@@ -505,7 +518,8 @@ public class CertifyHistoryServlet extends ClientServlet {
           out.println("Transport <select name=\"transport\">");
           for (String transportSelect : transportList) {
             if (transport.equals(transportSelect)) {
-              out.println("    <option value=\"" + transportSelect + "\" selected=\"true\">" + transportSelect + "</option>");
+              out.println("    <option value=\"" + transportSelect + "\" selected=\"true\">" + transportSelect
+                  + "</option>");
             } else {
               out.println("    <option value=\"" + transportSelect + "\">" + transportSelect + "</option>");
             }
@@ -514,7 +528,8 @@ public class CertifyHistoryServlet extends ClientServlet {
           out.println("Query Support <select name=\"querySupport\">");
           for (String querySupportSelect : querySupportList) {
             if (querySupport.equals(querySupportSelect)) {
-              out.println("    <option value=\"" + querySupportSelect + "\" selected=\"true\">" + querySupportSelect + "</option>");
+              out.println("    <option value=\"" + querySupportSelect + "\" selected=\"true\">" + querySupportSelect
+                  + "</option>");
             } else {
               out.println("    <option value=\"" + querySupportSelect + "\">" + querySupportSelect + "</option>");
             }
@@ -573,7 +588,8 @@ public class CertifyHistoryServlet extends ClientServlet {
               out.println("<h3>" + sendData.getConnector().getLabel() + "</h3>");
               out.println("<ul>");
               for (File file : fileList) {
-                String link = "CertifyHistoryServlet/" + sendData.getConnector().getLabel() + "/" + file.getName() + "/IIS Testing Report.html";
+                String link = "CertifyHistoryServlet/" + sendData.getConnector().getLabel() + "/" + file.getName()
+                    + "/IIS Testing Report.html";
                 out.println("  <li><a href=\"" + link + "\" target=\"_blank\">" + file.getName() + "</a></li>");
               }
               out.println("</ul>");
@@ -587,7 +603,8 @@ public class CertifyHistoryServlet extends ClientServlet {
     }
   }
 
-  public static void printViewMenu(PrintWriter out, String view, boolean isRunTestNow) throws UnsupportedEncodingException {
+  public static void printViewMenu(PrintWriter out, String view, boolean isRunTestNow)
+      throws UnsupportedEncodingException {
     out.println("    <table class=\"viewMenu\"><tr><td>");
     if (isRunTestNow) {
       out.print("<a class=\"menuLinkSelected\" href=\"CertifyServlet\">Run Test Now</a>");
@@ -602,7 +619,8 @@ public class CertifyHistoryServlet extends ClientServlet {
       if (VIEW[i].equals(view)) {
         styleClass = "menuLinkSelected";
       }
-      out.print("<a class=\"" + styleClass + "\" href=\"CertifyHistoryServlet?view=" + URLEncoder.encode(VIEW[i], "UTF-8") + "\">");
+      out.print("<a class=\"" + styleClass + "\" href=\"CertifyHistoryServlet?view="
+          + URLEncoder.encode(VIEW[i], "UTF-8") + "\">");
       out.print(VIEW[i]);
       out.println("</a>");
       if (ManagerServlet.getIisParticipantResponsesAndAccountInfoFile() == null) {
