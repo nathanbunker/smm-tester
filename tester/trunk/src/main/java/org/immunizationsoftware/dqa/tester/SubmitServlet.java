@@ -190,20 +190,21 @@ public class SubmitServlet extends ClientServlet
         try {
           Connector connector = getConnector(id, session);
           responseText = (String) request.getAttribute("responseText");
+          AckAnalyzer ackAnalyzer = null;
           if (responseText != null) {
             String title = "Response Received";
             HL7Reader ackMessageReader = new HL7Reader(responseText);
             if (ackMessageReader.advanceToSegment("MSH")) {
               String messageType = ackMessageReader.getValue(9);
-              if (messageType.equals("ACK")) {
-                AckAnalyzer ackAnalyzer = new AckAnalyzer(responseText, connector.getAckType());
+              if (messageType.equals("RSP") || messageType.equals("VXR") || messageType.equals("VXX")) {
+                title = "Query Response Received";
+              } else {
+                ackAnalyzer = new AckAnalyzer(responseText, connector.getAckType());
                 if (ackAnalyzer.isPositive()) {
                   title = "Message Accepted";
                 } else {
                   title = "Message Rejected";
                 }
-              } else if (messageType.equals("RSP")) {
-                title = "Query Response Received";
               }
             }
             out.println("<h3>" + title + "</h3>");

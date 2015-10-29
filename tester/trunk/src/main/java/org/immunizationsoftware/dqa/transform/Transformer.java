@@ -2776,7 +2776,11 @@ public class Transformer
     patient.setEthnicity(getValueArray("ETHNICITY", 2));
     patient.setLanguage(getValueArray("LANGUAGE", 2));
     patient.setAddress(getValueArray("ADDRESS", 4));
-    patient.setVfc(getValueArray("VFC", 2));
+    if (PatientType.ADULT == patientType) {
+      patient.setVfc(new String[] { "V01", "Not VFC eligible" });
+    } else {
+      patient.setVfc(getValueArray("VFC", 2));
+    }
     patient.setSuffix(getValue("SUFFIX"));
     patient.setStreet((random.nextInt(400) + 1) + " " + getValue("LAST_NAME") + " " + getValue("STREET_ABBREVIATION"));
     patient.setStreet2("APT #" + (random.nextInt(400) + 1));

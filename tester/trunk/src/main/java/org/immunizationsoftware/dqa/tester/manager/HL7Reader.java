@@ -9,6 +9,7 @@ import java.util.List;
 public class HL7Reader
 {
 
+  private List<String> originalLineList = null;
   private List<List<String>> segmentList = null;
   private List<String> fieldList = null;
 
@@ -22,6 +23,7 @@ public class HL7Reader
   public HL7Reader(String message) {
     if (message != null) {
       try {
+        originalLineList = new ArrayList<String>();
         segmentList = new ArrayList<List<String>>();
         BufferedReader in = new BufferedReader(new StringReader(message));
         String line;
@@ -47,6 +49,7 @@ public class HL7Reader
                 startPos = -1;
               }
             }
+            originalLineList.add(line);
             segmentList.add(fieldList);
           }
         }
@@ -177,6 +180,18 @@ public class HL7Reader
     if (segmentList != null) {
       if (fieldList != null && fieldNum < fieldList.size()) {
         return fieldList.get(fieldNum);
+      }
+    }
+    return "";
+  }
+  
+  public String getOriginalSegment()
+  {
+    if (originalLineList != null)
+    {
+      if (segmentPosition >= 0 && segmentPosition < originalLineList.size())
+      {
+        return originalLineList.get(segmentPosition);
       }
     }
     return "";
