@@ -2576,6 +2576,73 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       register(testCaseMessage);
     }
 
+
+    {
+      count++;
+      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+      testCaseMessage.setDescription("Future Functionality Check: NDC and CVX code");
+      testCaseMessage.setTestCaseSet(testCaseSet);
+      testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
+      testCaseMessage.appendCustomTransformation("RXA-5.1=00006-4047-20");
+      testCaseMessage.appendCustomTransformation("RXA-5.2=RotaTeq");
+      testCaseMessage.appendCustomTransformation("RXA-5.3=NDC");
+      testCaseMessage.appendCustomTransformation("RXA-5.4=116");
+      testCaseMessage.appendCustomTransformation("RXA-5.5=rotavirus, pentavalent");
+      testCaseMessage.appendCustomTransformation("RXA-5.6=CVX");
+      testCaseMessage.appendCustomTransformation("RXA-17.1=MSD");
+      testCaseMessage.appendCustomTransformation("RXA-17.2=Merck and Co., Inc.");
+      testCaseMessage.appendCustomTransformation("RXA-17.3=MVX");
+      statusCheckTestCaseExceptionalList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
+      transformer.transform(testCaseMessage);
+      testCaseMessage.setAssertResult("Accept - *");
+      register(testCaseMessage);
+    }
+    {
+      count++;
+      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+      testCaseMessage.setDescription("Future Functionality Check: CVX and NDC code");
+      testCaseMessage.setTestCaseSet(testCaseSet);
+      testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
+      testCaseMessage.appendCustomTransformation("RXA-5.1=116");
+      testCaseMessage.appendCustomTransformation("RXA-5.2=rotavirus, pentavalent");
+      testCaseMessage.appendCustomTransformation("RXA-5.3=CVX");
+      testCaseMessage.appendCustomTransformation("RXA-5.4=00006-4047-20");
+      testCaseMessage.appendCustomTransformation("RXA-5.5=RotaTeq");
+      testCaseMessage.appendCustomTransformation("RXA-5.6=NDC");
+      testCaseMessage.appendCustomTransformation("RXA-17.1=MSD");
+      testCaseMessage.appendCustomTransformation("RXA-17.2=Merck and Co., Inc.");
+      testCaseMessage.appendCustomTransformation("RXA-17.3=MVX");
+      statusCheckTestCaseExceptionalList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
+      transformer.transform(testCaseMessage);
+      testCaseMessage.setAssertResult("Accept - *");
+      register(testCaseMessage);
+    }
+    {
+      count++;
+      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+      testCaseMessage.setDescription("Future Functionality Check: NDC only (no CVX)");
+      testCaseMessage.setTestCaseSet(testCaseSet);
+      testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
+      testCaseMessage.appendCustomTransformation("RXA-5.1=00006-4047-20");
+      testCaseMessage.appendCustomTransformation("RXA-5.2=RotaTeq");
+      testCaseMessage.appendCustomTransformation("RXA-5.3=NDC");
+      testCaseMessage.appendCustomTransformation("RXA-17.1=MSD");
+      testCaseMessage.appendCustomTransformation("RXA-17.2=Merck and Co., Inc.");
+      testCaseMessage.appendCustomTransformation("RXA-17.3=MVX");
+      statusCheckTestCaseExceptionalList.add(testCaseMessage);
+      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
+      transformer.transform(testCaseMessage);
+      testCaseMessage.setAssertResult("Accept - *");
+      register(testCaseMessage);
+    }
     // TODO add examples of message construction issues that should be ignored
 
     try {
