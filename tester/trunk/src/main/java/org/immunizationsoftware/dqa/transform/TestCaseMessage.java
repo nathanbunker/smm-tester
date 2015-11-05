@@ -12,7 +12,8 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.immunizationsoftware.dqa.tester.profile.ProfileUsageValue;
+import org.immunizationsoftware.dqa.tester.manager.nist.ValidationReport;
+import org.immunizationsoftware.dqa.tester.manager.nist.ValidationResource;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestCase;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
 
@@ -139,6 +140,24 @@ public class TestCaseMessage
   private String messageAcceptStatusDebug = "";
   private int testPosition = 0;
   private String testType = "";
+  private ValidationReport validationReport = null;
+  private ValidationResource validationResource = null;
+
+  public ValidationResource getValidationResource() {
+    return validationResource;
+  }
+
+  public void setValidationResource(ValidationResource validationResource) {
+    this.validationResource = validationResource;
+  }
+
+  public ValidationReport getValidationReport() {
+    return validationReport;
+  }
+
+  public void setValidationReport(ValidationReport validationReport) {
+    this.validationReport = validationReport;
+  }
 
   public String getReleaseVersion() {
     return releaseVersion;
