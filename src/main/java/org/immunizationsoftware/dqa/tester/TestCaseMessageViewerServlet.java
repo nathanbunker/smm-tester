@@ -11,7 +11,10 @@ import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.TestCaseMessageManager;
+import org.immunizationsoftware.dqa.tester.manager.hl7.ConformanceIssue;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.nist.Assertion;
+import org.immunizationsoftware.dqa.tester.manager.nist.ValidationReport;
 import org.immunizationsoftware.dqa.transform.Comparison;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 import org.immunizationsoftware.dqa.transform.TestError;
@@ -177,6 +180,40 @@ public class TestCaseMessageViewerServlet extends ClientServlet
       ConformanceServlet.printConformanceIssues(out, actualResponseMessageComponent.getConformanceIssueList());
     } else {
       out.println("<p>No analysis performed</p>");
+    }
+    
+    if (testCaseMessage.getValidationReport() != null)
+    {
+      ValidationReport vr = testCaseMessage.getValidationReport();
+      out.println("<h3>ONC 2015 Analysis of Message</h3>");
+      out.println("      <table border=\"1\" cellspacing=\"0\">");
+      out.println("        <tr>");
+      out.println("          <th>Error</th>");
+      out.println("          <td>" + vr.getHeaderReport().getErrorCount() + "</td>");
+      out.println("        </tr>");
+      out.println("        <tr>");
+      out.println("          <th>Warning</th>");
+      out.println("          <td>" + vr.getHeaderReport().getWarningCount() + "</td>");
+      out.println("        </tr>");
+      out.println("      </table>");
+      out.println("      <br/>");
+      out.println("      <table border=\"1\" cellspacing=\"0\">");
+      out.println("        <tr>");
+      out.println("          <th>Result</th>");
+      out.println("          <th>Type</th>");
+      out.println("          <th>Location</th>");
+      out.println("          <th>Description</th>");
+      out.println("        </tr>");
+      for (Assertion assertion : testCaseMessage.getValidationReport().getAssertionList()) {
+        String passClass = assertion.getResult().equalsIgnoreCase("ERROR")  ? " class=\"fail\"" : " class=\"pass\"";
+        out.println("        <tr>");
+        out.println("          <td" + passClass + ">" + assertion.getResult() + "</td>");
+        out.println("          <td" + passClass + ">" + assertion.getType() + "</td>");
+        out.println("          <td" + passClass + ">" + assertion.getPath() + "</td>");
+        out.println("          <td" + passClass + ">" + assertion.getDescription() + "</td>");
+        out.println("        </tr>");
+      }
+      out.println("      </table>");
     }
   }
 }

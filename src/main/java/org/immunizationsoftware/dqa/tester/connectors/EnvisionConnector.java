@@ -21,7 +21,8 @@ import javax.net.ssl.SSLSocketFactory;
  * 
  * @author nathan
  */
-public class EnvisionConnector extends HttpConnector {
+public class EnvisionConnector extends HttpConnector
+{
 
   private static final String HL7_REQUEST_RESULT_START_TAG = "<ExecuteHL7MessageResult>";
   private static final String HL7_REQUEST_RESULT_END_TAG = "</ExecuteHL7MessageResult>";
@@ -29,10 +30,15 @@ public class EnvisionConnector extends HttpConnector {
   private static final String HL7_CONNECTIVITY_RESULT_START_TAG = "<connectivityTestResult>";
   private static final String HL7_CONNECTIVITY_RESULT_END_TAG = "</connectivityTestResult>";
 
-  
+  private boolean useSoap11 = false;
+
   public EnvisionConnector(String label, String url) throws Exception {
     super(label, url, ConnectorFactory.TYPE_ENVISION_SOAP);
+  }
 
+  public EnvisionConnector(String label, String url, boolean useSoap11) throws Exception {
+    super(label, url, ConnectorFactory.TYPE_ENVISION_SOAP11);
+    this.useSoap11 = useSoap11;
   }
 
   @Override
@@ -77,10 +83,11 @@ public class EnvisionConnector extends HttpConnector {
     if (debug) {
       debugLog = new StringBuilder();
     }
+
+    HttpURLConnection urlConn = null;
     try {
       SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
 
-      HttpURLConnection urlConn;
       DataOutputStream printout;
       InputStreamReader input = null;
       URL url = new URL(conn.getUrl());
@@ -92,22 +99,41 @@ public class EnvisionConnector extends HttpConnector {
 
       urlConn.setRequestMethod("POST");
 
-      urlConn.setRequestProperty("Content-Type", "application/soap+xml; charset=utf-8");
+      if (useSoap11) {
+        urlConn.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
+        urlConn.setRequestProperty("SOAPAction", "http://tempuri.org/ExecuteHL7Message");
+      } else {
+        urlConn.setRequestProperty("Content-Type", "application/soap+xml; charset=utf-8");
+      }
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       String content;
 
       StringBuilder sb = new StringBuilder();
-      sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-      sb.append("<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">");
-      sb.append("  <soap12:Body>");
-      sb.append("    <ExecuteHL7Message xmlns=\"http://tempuri.org/\">");
-      sb.append("      <userName>" +  userid + "</userName>");
-      sb.append("      <password>" +  password + "</password>");
-      sb.append("      <flatWire>" +  replaceAmpersand(request) + "</flatWire>");
-      sb.append("    </ExecuteHL7Message>");
-      sb.append("  </soap12:Body>");
-      sb.append("</soap12:Envelope>");
+      if (useSoap11) {
+        sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+        sb.append("<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
+        sb.append("  <soap:Body>");
+        sb.append("    <ExecuteHL7Message xmlns=\"http://tempuri.org/\">");
+        sb.append("      <userName>" + userid + "</userName>");
+        sb.append("      <password>" + password + "</password>");
+        sb.append("      <flatWire>" + replaceAmpersand(request) + "</flatWire>");
+        sb.append("    </ExecuteHL7Message>");
+        sb.append("  </soap:Body>");
+        sb.append("</soap:Envelope>");
+      } else {
+        sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+        sb.append("<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">");
+        sb.append("  <soap12:Body>");
+        sb.append("    <ExecuteHL7Message xmlns=\"http://tempuri.org/\">");
+        sb.append("      <userName>" + userid + "</userName>");
+        sb.append("      <password>" + password + "</password>");
+        sb.append("      <flatWire>" + replaceAmpersand(request) + "</flatWire>");
+        sb.append("    </ExecuteHL7Message>");
+        sb.append("  </soap12:Body>");
+        sb.append("</soap12:Envelope>");
+      }
+
       content = sb.toString();
 
       printout = new DataOutputStream(urlConn.getOutputStream());
@@ -128,6 +154,7 @@ public class EnvisionConnector extends HttpConnector {
       int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG);
       if (startPos > 0 && endPos > startPos) {
         responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
+        responseString = responseString.replaceAll("\\Q&amp;\\E", "&");
         response = new StringBuilder(responseString);
       }
       if (debug) {
@@ -137,6 +164,7 @@ public class EnvisionConnector extends HttpConnector {
       }
       return response.toString();
     } catch (IOException e) {
+      e.printStackTrace();
       if (debug) {
         StringWriter stringWriter = new StringWriter();
         PrintWriter out = new PrintWriter(stringWriter);
@@ -144,6 +172,19 @@ public class EnvisionConnector extends HttpConnector {
         e.printStackTrace(out);
         out.println("DEBUG LOG: \r");
         out.println(debugLog);
+        if (urlConn != null) {
+          try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(urlConn.getErrorStream()));
+            String line;
+            while ((line = in.readLine()) != null) {
+              out.println(line);
+            }
+            in.close();
+          } catch (IOException ioe) {
+            // ignore
+          }
+        }
+
         out.close();
         return stringWriter.toString();
       } else {
@@ -153,9 +194,10 @@ public class EnvisionConnector extends HttpConnector {
 
   }
 
-  
-  
   public String sendConnectivityTest(String message, ClientConnection conn, boolean debug) throws IOException {
+    if (useSoap11) {
+      return "Not supported";
+    }
     StringBuilder debugLog = null;
     if (debug) {
       debugLog = new StringBuilder();
@@ -185,7 +227,7 @@ public class EnvisionConnector extends HttpConnector {
       sb.append("<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">");
       sb.append("  <soap12:Body>");
       sb.append("    <connectivityTest xmlns=\"http://tempuri.org/\">");
-      sb.append("      <echoBack>" +  replaceAmpersand(message) + "</echoBack>");
+      sb.append("      <echoBack>" + replaceAmpersand(message) + "</echoBack>");
       sb.append("    </connectivityTest>");
       sb.append("  </soap12:Body>");
       sb.append("</soap12:Envelope>");

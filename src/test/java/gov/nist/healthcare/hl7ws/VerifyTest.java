@@ -3,6 +3,9 @@ package gov.nist.healthcare.hl7ws;
 import static org.junit.Assert.assertEquals;
 import gov.nist.healthcare.hl7ws.client.MessageValidationV2SoapClient;
 
+import org.immunizationsoftware.dqa.tester.manager.nist.NISTValidator;
+import org.immunizationsoftware.dqa.tester.manager.nist.ValidationReport;
+import org.immunizationsoftware.dqa.tester.manager.nist.ValidationResource;
 import org.junit.Test;
 
 public class VerifyTest {
@@ -36,7 +39,29 @@ public class VerifyTest {
   public void test() {
     MessageValidationV2SoapClient soapClient = new MessageValidationV2SoapClient("http://hit-testing2.nist.gov:8090/hl7v2ws/services/soap/MessageValidationV2");
     String result = soapClient.validate(EXAMPLE_MESSAGE, OID, "", "");
-    System.out.println(result);
+    ValidationReport validationReport = new ValidationReport(result);
+    assertEquals("Complete", validationReport.getHeaderReport().getValidationStatus());
+    assertEquals(16, validationReport.getAssertionList().size());
+    assertEquals(2, validationReport.getAssertionList().get(4).getLine());
+    assertEquals(124, validationReport.getAssertionList().get(4).getColumn());
+    assertEquals("PID[1].10[1].3", validationReport.getAssertionList().get(4).getPath());
+    assertEquals("PID", validationReport.getAssertionList().get(4).getSegment());
+    assertEquals("Race", validationReport.getAssertionList().get(4).getField());
+    assertEquals("Name of Coding System", validationReport.getAssertionList().get(4).getComponent());
+    
+    validationReport = NISTValidator.validate(EXAMPLE_MESSAGE, ValidationResource.IZ_VXU);
+    assertEquals("Complete", validationReport.getHeaderReport().getValidationStatus());
+    assertEquals(16, validationReport.getAssertionList().size());
+    assertEquals(2, validationReport.getAssertionList().get(4).getLine());
+    assertEquals(124, validationReport.getAssertionList().get(4).getColumn());
+    assertEquals("PID[1].10[1].3", validationReport.getAssertionList().get(4).getPath());
+    assertEquals("PID", validationReport.getAssertionList().get(4).getSegment());
+    assertEquals("Race", validationReport.getAssertionList().get(4).getField());
+    assertEquals("Name of Coding System", validationReport.getAssertionList().get(4).getComponent());
+    
+    validationReport = NISTValidator.validate(EXAMPLE_MESSAGE, ValidationResource.IZ_VXU_Z22);
+    assertEquals("Complete", validationReport.getHeaderReport().getValidationStatus());
+    assertEquals(195, validationReport.getAssertionList().size());
     
   }
 

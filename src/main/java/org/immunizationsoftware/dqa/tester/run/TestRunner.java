@@ -14,6 +14,9 @@ import org.immunizationsoftware.dqa.mover.AckAnalyzer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.connectors.RunAgainstConnector;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
+import org.immunizationsoftware.dqa.tester.manager.nist.NISTValidator;
+import org.immunizationsoftware.dqa.tester.manager.nist.ValidationReport;
+import org.immunizationsoftware.dqa.tester.manager.nist.ValidationResource;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 import org.immunizationsoftware.dqa.transform.TestError;
 import org.immunizationsoftware.dqa.transform.Transform;
@@ -23,7 +26,8 @@ import org.immunizationsoftware.dqa.transform.Transformer;
  * 
  * @author nathan
  */
-public class TestRunner {
+public class TestRunner
+{
 
   public static final String ACTUAL_RESULT_STATUS_FAIL = "FAIL";
   public static final String ACTUAL_RESULT_STATUS_PASS = "PASS";
@@ -36,6 +40,15 @@ public class TestRunner {
   private long startTime = 0;
   private long endTime = 0;
   private boolean wasRun = false;
+  private boolean validateResponse = false;
+
+  public boolean isValidateResponse() {
+    return validateResponse;
+  }
+
+  public void setValidateResponse(boolean validateResponse) {
+    this.validateResponse = validateResponse;
+  }
 
   public boolean isWasRun() {
     return wasRun;
@@ -95,8 +108,8 @@ public class TestRunner {
     return runTest(connector, testCaseMessage, message);
   }
 
-  public TestCaseMessage runTestIfNew(Connector connector, TestCaseMessage testCaseMessage, Map<String, TestCaseMessage> testCaseMessageMap)
-      throws Exception {
+  public TestCaseMessage runTestIfNew(Connector connector, TestCaseMessage testCaseMessage,
+      Map<String, TestCaseMessage> testCaseMessageMap) throws Exception {
     wasRun = false;
     testCaseMessage.setActualResponseMessage("");
     testCaseMessage.setPassedTest(false);
@@ -118,7 +131,7 @@ public class TestRunner {
 
     startTime = System.currentTimeMillis();
     ackMessageText = connector.submitMessage(message, false);
-    
+
     endTime = System.currentTimeMillis();
 
     if (connector instanceof RunAgainstConnector) {
@@ -200,7 +213,8 @@ public class TestRunner {
                 }
                 error.setDescription(userMessage);
 
-                if (!assertResultText.equals("*") && !testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept")) {
+                if (!assertResultText.equals("*")
+                    && !testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept")) {
                   if (userMessage.toUpperCase().startsWith(assertResultText)) {
                     errorType = error.getErrorType();
                     if (testCaseMessage.getAssertResultStatus().equalsIgnoreCase("Accept and Warn")) {
@@ -279,7 +293,38 @@ public class TestRunner {
     testCaseMessage.setHasRun(true);
     wasRun = true;
 
+    if (validateResponse) {
+      ascertainValidationResource(testCaseMessage, ackMessageText);
+      if (testCaseMessage.getValidationResource() != null) {
+        ValidationReport validationReport = NISTValidator.validate(ackMessageText,
+            testCaseMessage.getValidationResource());
+        testCaseMessage.setValidationReport(validationReport);
+      }
+    }
+
     return passedTest;
+  }
+
+  private void ascertainValidationResource(TestCaseMessage testCaseMessage, String messageText) {
+    ValidationResource validationResource = null;
+    HL7Reader hl7Reader = new HL7Reader(messageText);
+    if (hl7Reader.advanceToSegment("MSH")) {
+      String messageType = hl7Reader.getValue(9);
+      String profileId = hl7Reader.getValue(21);
+      if (profileId.equals("Z31")) {
+        validationResource = ValidationResource.IZ_RSP_Z31;
+      } else if (profileId.equals("Z32")) {
+        validationResource = ValidationResource.IZ_RSP_Z32;
+      } else if (profileId.equals("Z33")) {
+        validationResource = ValidationResource.IZ_RSP_Z33;
+      } else if (profileId.equals("Z34")) {
+        validationResource = ValidationResource.IZ_RSP_Z42;
+      } else if (profileId.equals("Z23") || messageType.equals("ACK")) {
+        validationResource = ValidationResource.IZ_ACK_Z23;
+      }
+    }
+    testCaseMessage.setValidationResource(validationResource);
+    System.out.println("-->   + validationResource = " + validationResource);
   }
 
 }
