@@ -299,6 +299,11 @@ public class TestRunner
         ValidationReport validationReport = NISTValidator.validate(ackMessageText,
             testCaseMessage.getValidationResource());
         testCaseMessage.setValidationReport(validationReport);
+        if (validationReport != null) {
+          testCaseMessage
+              .setValidationReportPass(validationReport.getHeaderReport().getValidationStatus().equals("Complete")
+                  && validationReport.getHeaderReport().getErrorCount() == 0);
+        }
       }
     }
 
@@ -324,7 +329,6 @@ public class TestRunner
       }
     }
     testCaseMessage.setValidationResource(validationResource);
-    System.out.println("-->   + validationResource = " + validationResource);
   }
 
 }

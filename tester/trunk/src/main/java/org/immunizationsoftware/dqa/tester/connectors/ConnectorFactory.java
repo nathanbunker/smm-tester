@@ -5,6 +5,9 @@ public class ConnectorFactory
 
   public static final String TYPE_SOAP = "SOAP";
   public static final String TYPE_POST = "POST";
+  public static final String TYPE_AL_SOAP = "AL SOAP";
+  public static final String TYPE_CO_SOAP = "CO SOAP";
+  public static final String TYPE_KS_SOAP = "KS SOAP";
   public static final String TYPE_IL_WS = "IL WS";
   public static final String TYPE_MA_SOAP = "MA SOAP";
   public static final String TYPE_MO_SOAP = "MO SOAP";
@@ -17,10 +20,12 @@ public class ConnectorFactory
   public static final String TYPE_CA_SOAP = "CA SOAP";
   public static final String TYPE_ND_SOAP = "ND SOAP";
 
-  public static final String[][] TYPES = { { TYPE_SOAP, "SOAP" }, { TYPE_POST, "POST" }, { TYPE_CA_SOAP, "CA SOAP" },
-      { TYPE_MA_SOAP, "MA SOAP" }, { TYPE_MO_SOAP, "MO SOAP" }, { TYPE_ND_SOAP, "ND SOAP" }, { TYPE_NJ_SOAP, "NJ SOAP" },
-      { TYPE_NM_SOAP, "NM SOAP" }, { TYPE_ENVISION_SOAP, "Envision SOAP" }, { TYPE_ENVISION_SOAP, "Envision SOAP 1.1" },
-      { TYPE_HI_SOAP, "HI SOAP (same standard as SOAP)" }, { TYPE_IL_WS, "IL WS" } };
+  public static final String[][] TYPES = { { TYPE_SOAP, "SOAP" }, { TYPE_POST, "POST" }, { TYPE_AL_SOAP, "AL SOAP" },
+      { TYPE_CA_SOAP, "CA SOAP" }, { TYPE_CO_SOAP, "CO SOAP" }, { TYPE_KS_SOAP, "KS SOAP" },
+      { TYPE_MA_SOAP, "MA SOAP" }, { TYPE_MO_SOAP, "MO SOAP" }, { TYPE_ND_SOAP, "ND SOAP" },
+      { TYPE_NJ_SOAP, "NJ SOAP" }, { TYPE_NM_SOAP, "NM SOAP" }, { TYPE_ENVISION_SOAP, "Envision SOAP" },
+      { TYPE_ENVISION_SOAP, "Envision SOAP 1.1" }, { TYPE_HI_SOAP, "HI SOAP (same standard as SOAP)" },
+      { TYPE_IL_WS, "IL WS" } };
 
   public static Connector getConnector(String type, String label, String url) throws Exception {
     Connector connector = null;
@@ -48,6 +53,12 @@ public class ConnectorFactory
       connector = new MOConnector(label, url);
     } else if (type.equals(TYPE_CA_SOAP)) {
       connector = new CASoapConnector(label, url);
+    } else if (type.equals(TYPE_AL_SOAP)) {
+      connector = new ALSoapConnector(label, url);
+    } else if (type.equals(TYPE_CO_SOAP)) {
+      connector = new COSoapConnector(label, url);
+    } else if (type.equals(TYPE_KS_SOAP)) {
+      connector = new KSSoapConnector(label, url);
     } else if (type.equals(TYPE_ND_SOAP)) {
       connector = new NDSoapConnector(label, url);
     }

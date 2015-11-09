@@ -61,7 +61,7 @@ public class VerifyTest {
     
     validationReport = NISTValidator.validate(EXAMPLE_MESSAGE, ValidationResource.IZ_VXU_Z22);
     assertEquals("Complete", validationReport.getHeaderReport().getValidationStatus());
-    assertEquals(195, validationReport.getAssertionList().size());
+    assertEquals(217, validationReport.getAssertionList().size());
     
   }
 

@@ -68,6 +68,12 @@ public abstract class Connector
         connector = new NJConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_CA_SOAP)) {
         connector = new CASoapConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_AL_SOAP)) {
+        connector = new ALSoapConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_CO_SOAP)) {
+        connector = new COSoapConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_KS_SOAP)) {
+        connector = new KSSoapConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_ND_SOAP)) {
         connector = new NDSoapConnector(label, url);
       } else {

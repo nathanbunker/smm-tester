@@ -69,10 +69,18 @@ public class CertifyHistoryServlet extends ClientServlet
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
-    Authenticate.User user = (Authenticate.User) session.getAttribute("user");
     String action = request.getParameter("action");
+    if (action != null && action.equals("Update AART"))
+    {
+      int maxCols = RecordServletInterface.MAP_COLS_MAX;
+      int maxRows = RecordServletInterface.MAP_ROWS_MAX;
+      ParticipantResponse[][] participantResponseMap = new ParticipantResponse[maxCols][maxRows];
+      List<ParticipantResponse> participantResponseList = ParticipantResponseManager.readFile(participantResponseMap);
+      for (ParticipantResponse participantResponse : participantResponseList) {
+        CertifyRunner.reportParticipant(participantResponse);
+      }
+    }
     String problem = null;
-    CertifyRunner certifyRunner = (CertifyRunner) session.getAttribute("certifyRunner");
     if (username == null) {
       response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
     }
@@ -80,7 +88,8 @@ public class CertifyHistoryServlet extends ClientServlet
   }
 
   // <editor-fold defaultstate="collapsed"
-  // desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+  // desc="HttpServlet methods. Click on the + sign on the left to edit the
+  // code.">
 
   /**
    * Handles the HTTP <code>GET</code> method.
@@ -196,9 +205,6 @@ public class CertifyHistoryServlet extends ClientServlet
           participantResponseMap = new ParticipantResponse[maxCols][maxRows];
           List<ParticipantResponse> participantResponseList = ParticipantResponseManager
               .readFile(participantResponseMap);
-          for (ParticipantResponse participantResponse : participantResponseList) {
-            CertifyRunner.reportParticipant(participantResponse);
-          }
           session.setAttribute("participantResponseMap", participantResponseMap);
         }
 
@@ -498,8 +504,8 @@ public class CertifyHistoryServlet extends ClientServlet
           out.println("<p>Platform <select name=\"platform\">");
           for (String platformSelect : platformList) {
             if (platform.equals(platformSelect)) {
-              out.println("    <option value=\"" + platformSelect + "\" selected=\"true\">" + platformSelect
-                  + "</option>");
+              out.println(
+                  "    <option value=\"" + platformSelect + "\" selected=\"true\">" + platformSelect + "</option>");
             } else {
               out.println("    <option value=\"" + platformSelect + "\">" + platformSelect + "</option>");
             }
@@ -518,8 +524,8 @@ public class CertifyHistoryServlet extends ClientServlet
           out.println("Transport <select name=\"transport\">");
           for (String transportSelect : transportList) {
             if (transport.equals(transportSelect)) {
-              out.println("    <option value=\"" + transportSelect + "\" selected=\"true\">" + transportSelect
-                  + "</option>");
+              out.println(
+                  "    <option value=\"" + transportSelect + "\" selected=\"true\">" + transportSelect + "</option>");
             } else {
               out.println("    <option value=\"" + transportSelect + "\">" + transportSelect + "</option>");
             }
@@ -578,6 +584,13 @@ public class CertifyHistoryServlet extends ClientServlet
           out.println("<input type=\"hidden\" name=\"view\" value=\"" + view + "\"/>");
           out.println("</form>");
 
+          out.println("<form action=\"CertifyHistoryServlet\" method=\"POST\">");
+          out.println("<h3>Update AART</h3>");
+          out.println("<input type=\"submit\" name=\"action\" value=\"Update AART\"/></p>");
+          out.println("<input type=\"hidden\" name=\"view\" value=\"" + view + "\"/>");
+          out.println("</form>");
+
+          
           out.println("<p><a href=\"" + dashboardLink + "\">Dashboard Link</a></p>");
         }
       } else {
