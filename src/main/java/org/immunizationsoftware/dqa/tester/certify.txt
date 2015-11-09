@@ -168,15 +168,8 @@ VAC HISTORICAL=137^HPV, unspecified formulation^CVX
 VAC HISTORICAL=86^IG^CVX
 VAC HISTORICAL=14^IG, unspecified formulation^CVX
 VAC HISTORICAL=87^IGIV^CVX
-VAC HISTORICAL=135^Influenza, high dose seasonal^CVX
-VAC HISTORICAL=111^influenza, live, intranasal^CVX
-VAC HISTORICAL=149^influenza, live, intranasal, quadrivalent^CVX
-VAC HISTORICAL=141^Influenza, seasonal, injectable^CVX
-VAC HISTORICAL=140^Influenza, seasonal, injectable, preservative free^CVX
-VAC HISTORICAL=144^influenza, seasonal, intradermal, preservative free^CVX
-VAC HISTORICAL=15^influenza, split (incl. purified surface antigen)^CVX
-VAC HISTORICAL=88^influenza, unspecified formulation^CVX
-VAC HISTORICAL=16^influenza, whole^CVX
+VAC HISTORICAL=03^MMR^CVX
+VAC HISTORICAL=85^Hep A, unspecified formulation^CVX
 VAC HISTORICAL=10^IPV^CVX
 VAC HISTORICAL=134^Japanese Encephalitis IM^CVX
 VAC HISTORICAL=39^Japanese encephalitis SC^CVX
@@ -2158,16 +2151,9 @@ VAC HISTORICAL 12 YEARS=62^HPV, quadrivalent^CVX
 
 
 
-VAC HISTORICAL 2 YEARS=135^Influenza, high dose seasonal^CVX
-VAC HISTORICAL 12 YEARS=153^Influenza, injectable, MDCK, preservative free^CVX
-VAC HISTORICAL 2 YEARS=158^Influenza, injectable, quadrivalent^CVX
-VAC HISTORICAL 2 YEARS=150^Influenza, injectable, quadrivalent, preservative free^CVX
-VAC HISTORICAL 2 YEARS=111^Influenza, live, intranasal^CVX
-VAC HISTORICAL 2 YEARS=149^influenza, live, intranasal, quadrivalent^CVX
-VAC HISTORICAL 12 YEARS=155^Influenza, recombinant, injectable, preservative free^CVX
-VAC HISTORICAL 2 YEARS=141^Influenza, seasonal, injectable^CVX
-VAC HISTORICAL 2 YEARS=140^Influenza, seasonal, injectable, preservative free^CVX
-VAC HISTORICAL 2 YEARS=144^Influenza, seasonal, intradermal, preservative free^CVX
+VAC HISTORICAL 2 YEARS=10^IPV^CVX
+VAC HISTORICAL 2 YEARS=03^MMR^CVX
+VAC HISTORICAL 2 YEARS=08^Hep B, adolescent or pediatric^CVX
 
 
 
@@ -2315,20 +2301,6 @@ VAC ADMIN 12 YEARS=118^HPV, bivalent^CVX
 VAC ADMIN 12 YEARS=62^HPV, quadrivalent^CVX
 
 
-
-
-
-
-VAC ADMIN 2 YEARS=135^Influenza, high dose seasonal^CVX
-VAC ADMIN 12 YEARS=153^Influenza, injectable, MDCK, preservative free^CVX
-VAC ADMIN 2 YEARS=158^Influenza, injectable, quadrivalent^CVX
-VAC ADMIN 2 YEARS=150^Influenza, injectable, quadrivalent, preservative free^CVX
-VAC ADMIN 2 YEARS=111^Influenza, live, intranasal^CVX
-VAC ADMIN 2 YEARS=149^influenza, live, intranasal, quadrivalent^CVX
-VAC ADMIN 12 YEARS=155^Influenza, recombinant, injectable, preservative free^CVX
-VAC ADMIN 2 YEARS=141^Influenza, seasonal, injectable^CVX
-VAC ADMIN 2 YEARS=140^Influenza, seasonal, injectable, preservative free^CVX
-VAC ADMIN 2 YEARS=144^Influenza, seasonal, intradermal, preservative free^CVX
 
 
 

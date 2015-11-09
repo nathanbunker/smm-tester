@@ -24,10 +24,10 @@ public interface RecordServletInterface {
   public static final String VALUE_TEST_SECTION_TYPE_FORECAST = "Forecast";
   public static final String VALUE_TEST_SECTION_TYPE_PERFORMANCE = "Performance";
   public static final String VALUE_TEST_SECTION_TYPE_CONFORMANCE = "Conformance";
+  public static final String VALUE_TEST_SECTION_TYPE_CONFORMANCE_2015 = "Conformance 2015";
   public static final String VALUE_TEST_SECTION_TYPE_PROFILING = "Profiling";
   public static final String VALUE_TEST_SECTION_TYPE_ONC_2015 = "ONC 2015";
   public static final String VALUE_TEST_SECTION_TYPE_NOT_ACCEPTED = "Not Accepted";
-  public static final String VALUE_TEST_SECTION_TYPE_CONFORMANCE_2015 = "Conformance 2015";
 
   public static final String PARAM_TC_CONNECTION_LABEL = "tc_connectionLabel";
   public static final String PARAM_TC_CONNECTION_TYPE = "tc_connectionType";
@@ -192,4 +192,11 @@ public interface RecordServletInterface {
       PARAM_TPAR_GUIDE_STATUS, PARAM_TPAR_GUIDE_NAME, PARAM_TPAR_CONNECT_STATUS, PARAM_TPAR_GENERAL_COMMENTS, PARAM_TPAR_TRANSPORT_TYPE,
       PARAM_TPAR_QUERY_SUPPORT, PARAM_TPAR_NIST_STATUS, PARAM_TPAR_ACCESS_PASSCODE };
 
+  
+  public static final String PARAM_A_ASSERTION_RESULT = "a_assertionResult";
+  public static final String PARAM_A_LOCATION_PATH = "a_locationPath";
+  public static final String PARAM_A_ASSERTION_TYPE = "a_assertionType";
+  public static final String PARAM_A_ASSERTION_DESCRIPTION = "a_assertionDescription";
+  
+  public static final String[] PARAMS_A = {PARAM_A_ASSERTION_RESULT, PARAM_A_LOCATION_PATH, PARAM_A_ASSERTION_TYPE, PARAM_A_ASSERTION_DESCRIPTION};
 }

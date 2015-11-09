@@ -142,6 +142,15 @@ public class TestCaseMessage
   private String testType = "";
   private ValidationReport validationReport = null;
   private ValidationResource validationResource = null;
+  private boolean validationReportPass = false;
+
+  public boolean isValidationReportPass() {
+    return validationReportPass;
+  }
+
+  public void setValidationReportPass(boolean validationReportPass) {
+    this.validationReportPass = validationReportPass;
+  }
 
   public ValidationResource getValidationResource() {
     return validationResource;

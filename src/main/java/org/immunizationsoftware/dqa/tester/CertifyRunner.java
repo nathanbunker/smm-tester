@@ -57,6 +57,7 @@ import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
 import org.immunizationsoftware.dqa.tester.manager.TestCaseMessageManager;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTesterManager;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
+import org.immunizationsoftware.dqa.tester.manager.nist.Assertion;
 import org.immunizationsoftware.dqa.tester.manager.nist.ValidationReport;
 import org.immunizationsoftware.dqa.tester.manager.nist.ValidationResource;
 import org.immunizationsoftware.dqa.tester.profile.CompatibilityConformance;
@@ -84,7 +85,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
   private static final String REPORT_URL = "http://ois-pt.org/dqacm/record";
   // "http://localhost:8289/record";
-  // "http://ois-pg.org/dqacm/record";
+  // "http://ois-pt.org/dqacm/record";
 
   private static final String REPORT_EXPLANATION_URL = "http://ois-pt.org/tester/reportExplanation.html";
 
@@ -1095,12 +1096,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     for (TestCaseMessage testCaseMessage : ackAnalysisList) {
       count++;
       if (testCaseMessage.isHasRun()) {
-        if (testCaseMessage.getValidationResource() != null) {
-          ValidationReport validationReport = testCaseMessage.getValidationReport();
-          if (validationReport != null && validationReport.getHeaderReport().getValidationStatus().equals("Complete")
-              && validationReport.getHeaderReport().getErrorCount() == 0) {
-            pass++;
-          }
+        if (testCaseMessage.isValidationReportPass()) {
+          pass++;
         }
         // TODO
         areaProgress[SUITE_L_CONFORMANCE_2015][0] = makeScore(count, ackAnalysisList.size());
@@ -1165,12 +1162,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     for (TestCaseMessage testCaseMessage : rspAnalysisList) {
       count++;
       if (testCaseMessage.isHasRun()) {
-        if (testCaseMessage.getValidationResource() != null) {
-          ValidationReport validationReport = testCaseMessage.getValidationReport();
-          if (validationReport != null && validationReport.getHeaderReport().getValidationStatus().equals("Complete")
-              && validationReport.getHeaderReport().getErrorCount() == 0) {
-            pass++;
-          }
+        if (testCaseMessage.isValidationReportPass()) {
+          pass++;
         }
         // TODO
         areaProgress[SUITE_L_CONFORMANCE_2015][1] = makeScore(count, rspAnalysisList.size());
@@ -2826,6 +2819,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     statusCheckTestCaseExceptionalList.add(testCaseMessage);
     transformer.transform(testCaseMessage);
     testCaseMessage.setAssertResult("Accept - *");
+    testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
     register(testCaseMessage);
     return count;
   }
@@ -5490,8 +5484,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           out.println("    <td class=\"fail\">Unable to check HL7 message for conformance "
               + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
           out.println("  </tr>");
-        } else if (testCaseMessage.getValidationReport().getHeaderReport().getValidationStatus().equals("Complete")
-            && testCaseMessage.getValidationReport().getHeaderReport().getErrorCount() > 0) {
+        } else if (testCaseMessage.isValidationReportPass()) {
           out.println("  <tr>");
           out.println("    <td class=\"fail\"><em>" + testCaseMessage.getDescription() + "</em></td>");
           out.println("    <td class=\"fail\">Message did not meet ONC 2015 standards. "
@@ -6093,6 +6086,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       return;
     }
     try {
+
       Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap = updateOverallScore();
 
       HttpURLConnection urlConn;
@@ -6232,6 +6226,18 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           } else {
             addField(sb, PARAM_C_COMPARISON_STATUS + position, VALUE_COMPARISON_STATUS_NOT_TESTED);
           }
+        }
+        if (testMessage.getValidationReport() != null) {
+          position = 0;
+          for (Assertion assertion : testMessage.getValidationReport().getAssertionList()) {
+            position++;
+            addField(sb, PARAM_A_ASSERTION_DESCRIPTION + position, assertion.getDescription());
+            addField(sb, PARAM_A_ASSERTION_RESULT + position, assertion.getResult());
+            addField(sb, PARAM_A_ASSERTION_TYPE + position, assertion.getType());
+            addField(sb, PARAM_A_LOCATION_PATH + position, assertion.getPath());
+          }
+          // to save on memory remove validation report
+          testMessage.setValidationReport(null);
         }
       }
 
