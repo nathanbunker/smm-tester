@@ -395,6 +395,11 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   private List<TestCaseMessage>[] profileTestCaseLists = new ArrayList[3];
 
   Connector connector;
+
+  public Connector getConnector() {
+    return connector;
+  }
+
   Connector queryConnector;
 
   public CertifyRunner(Connector connector, SendData sendData) {
@@ -3206,7 +3211,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         okay = true;
       } else if (messageType.equals("RSP")) {
         String profile = responseReader.getValue(21);
-        if (profile.equals("Z32") || profile.equals("Z34")) {
+        if (profile.equalsIgnoreCase("Z32") || profile.equalsIgnoreCase("Z34")) {
           okay = true;
         }
       }
@@ -6082,6 +6087,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   }
 
   private void reportProgress(TestCaseMessage testMessage) {
+    reportProgress(testMessage, false);
+  }
+
+  private void reportProgress(TestCaseMessage testMessage, boolean firstTime) {
     if (REPORT_URL == null) {
       return;
     }
@@ -6165,6 +6174,19 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           performance.getMinUpdateTime() == Long.MAX_VALUE ? 0 : performance.getMinUpdateTime());
       addField(sb, PARAM_TC_PER_UPDATE_MAX, performance.getMaxUpdateTime());
       addField(sb, PARAM_TC_PER_UPDATE_STD, performance.getUpdateSDev());
+      if (firstTime) {
+        int i = 1;
+        if (connector.getCustomTransformations() != null && !connector.getCustomTransformations().equals("")) {
+          addField(sb, PARAM_TC_TRANSFORMS + i, "\n" + connector.getCustomTransformations());
+        }
+        for (String scenario : connector.getScenarioTransformationsMap().keySet()) {
+          i++;
+          String transformText = connector.getScenarioTransformationsMap().get(scenario);
+          if (transformText != null && !transformText.equals("")) {
+            addField(sb, PARAM_TC_TRANSFORMS + i, "\n" + transformText);
+          }
+        }
+      }
       if (testMessage != null) {
         addField(sb, PARAM_TM_TEST_POSITION, testMessage.getTestPosition());
         addField(sb, PARAM_TM_TEST_TYPE, testMessage.getTestType());

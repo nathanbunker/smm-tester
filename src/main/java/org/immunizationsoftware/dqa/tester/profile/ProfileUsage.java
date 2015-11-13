@@ -10,7 +10,7 @@ public class ProfileUsage
   private String label = "";
   private String version = "";
   private File file = null;
-  
+
   public File getFile() {
     return file;
   }
