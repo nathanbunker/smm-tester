@@ -65,6 +65,7 @@ public interface RecordServletInterface {
   public static final String PARAM_TC_PER_UPDATE_MIN = "tc_perUpdateMin";
   public static final String PARAM_TC_PER_UPDATE_MAX = "tc_perUpdateMax";
   public static final String PARAM_TC_PER_UPDATE_STD = "tc_perUpdateStd";
+  public static final String PARAM_TC_TRANSFORMS = "tc_transforms";
 
   public static final String[] PARAMS_TC = { PARAM_TC_CONNECTION_LABEL, PARAM_TC_CONNECTION_TYPE, PARAM_TC_CONNECTION_URL,
       PARAM_TC_CONNECTION_ACK_TYPE, PARAM_TC_CONNECTION_CONFIG, PARAM_TC_QUERY_TYPE, PARAM_TC_QUERY_ENABLED, PARAM_TC_QUERY_PAUSE, PARAM_TC_TEST_LOG,

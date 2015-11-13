@@ -27,7 +27,7 @@ public class COSoapConnector extends HttpConnector
     Client_ServiceStub.SubmitSingleMessage submitSingleMessage = new Client_ServiceStub.SubmitSingleMessage();
     Client_ServiceStub.SubmitSingleMessageRequestType request = new Client_ServiceStub.SubmitSingleMessageRequestType();
     request.setFacilityID(this.facilityid);
-    request.setHl7Message(message);
+    request.setHl7Message(message.replaceAll("\\r", "\n"));
     request.setPassword(this.password);
     request.setUsername(this.userid);
     submitSingleMessage.setSubmitSingleMessage(request);

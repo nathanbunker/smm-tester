@@ -106,6 +106,7 @@ public class CASoapConnector extends HttpConnector
       out.println("  </soap:Body>");
       out.println("</soap:Envelope>");
       messageBeingSent = stringWriter.toString();
+      System.out.println(messageBeingSent);
       printout.writeBytes(messageBeingSent);
       printout.flush();
       printout.close();
