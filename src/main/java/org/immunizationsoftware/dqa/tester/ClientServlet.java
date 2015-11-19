@@ -208,6 +208,7 @@ public class ClientServlet extends HttpServlet
   }
   
   protected void switchParticipantResponse(HttpSession session, Authenticate.User user, ParticipantResponse participantResponse) throws IOException {
+    session.setAttribute("participantResponse", participantResponse);
     String folderName = participantResponse.getFolderName();
     if (!folderName.equals("")) {
       SendData sendData = ManagerServlet.getSendDatayByLabel(folderName);

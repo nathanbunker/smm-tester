@@ -482,6 +482,33 @@ public class Transformer
 
     return transform(messageText, transforms, PatientType.NONE, connector);
   }
+  
+  public String transform(Connector connector, String messageText, String customTransformations, String scenarioTransformations,
+      String additionalTransformations) {
+    String quickTransforms = "";
+
+    if (connector.getQuickTransformations() != null) {
+      for (String extra : connector.getQuickTransformations()) {
+        if (extra.equals("2.5.1")) {
+          quickTransforms += "MSH-12=2.5.1\n";
+        } else if (extra.equals("2.3.1")) {
+          quickTransforms += "MSH-12=2.3.1\n";
+        }
+      }
+    }
+    String transforms = quickTransforms + "\n";
+    if (!customTransformations.equals("")) {
+      transforms += customTransformations + "\n";
+    }
+    if (scenarioTransformations != null) {
+      transforms += scenarioTransformations;
+    }
+    if (additionalTransformations != null) {
+      transforms += additionalTransformations;
+    }
+
+    return transform(messageText, transforms, PatientType.NONE, connector);
+  }
 
   public static String readField(String message, String reference) {
     Transform t = readHL7Reference(reference, reference.length());

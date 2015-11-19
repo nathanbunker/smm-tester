@@ -19,6 +19,7 @@ import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
 import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
 
@@ -67,6 +68,7 @@ public class CertifyServlet extends ClientServlet
         String queryType = request.getParameter("queryType");
 
         certifyRunner = new CertifyRunner(connectors.get(id - 1), user.getSendData());
+        certifyRunner.setParticipantResponse((ParticipantResponse) session.getAttribute("participantResponse"));
         certifyRunner.setQueryType(queryType);
         certifyRunner.setRun(true, CertifyRunner.SUITE_A_BASIC);
         certifyRunner.setRun(request.getParameter("runA") != null, CertifyRunner.SUITE_A_BASIC);

@@ -610,7 +610,7 @@ public class ProfileServlet extends ClientServlet
           }
         }
 
-        if (true) {
+        if (false) {
           if (profileManager != null) {
             out.println("<pre>");
             if (false) {
