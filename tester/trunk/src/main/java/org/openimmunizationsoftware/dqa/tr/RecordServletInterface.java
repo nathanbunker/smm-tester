@@ -131,7 +131,11 @@ public interface RecordServletInterface {
       PARAM_TM_RESULT_ACCEPTED_MESSAGE, PARAM_TM_RESULT_RESPONSE_TYPE, PARAM_TM_RESULT_ACK_TYPE, PARAM_TM_FORECAST_TEST_PANEL_CASE_ID,
       PARAM_TM_FORECAST_TEST_PANEL_ID };
 
+  public static final String VALUE_PROFILE_TYPE_PRESENT = "present";
+  public static final String VALUE_PROFILE_TYPE_ABSENT = "absent";
+  
   public static final String PARAM_TP_TEST_PROFILE_STATUS = "tp_testProfileStatus";
+  public static final String PARAM_TP_TEST_PROFILE_TYPE = "tp_testProfileType";
   public static final String PARAM_TP_PROFILE_FIELD_POS = "tp_profileFieldPos";
   public static final String PARAM_TP_PROFILE_FIELD_NAME = "tp_profileFieldName";
   public static final String PARAM_TP_USAGE_EXPECTED = "tp_usageExpected";
@@ -142,7 +146,7 @@ public interface RecordServletInterface {
   public static final String PARAM_TP_TEST_MESSAGE_ABSENT_POS = "tp_testMessageAbsentPos";
   public static final String PARAM_TP_MESSAGE_ACCEPT_STATUS_DEBUG = "tp_messageAcceptStatusDebug";
   public static final String PARAM_TP_COMPATIBILITY_CONFORMANCE = "tp_compatibilityConformance";
-
+  
   public static final String[] PARAMS_TP = { PARAM_TP_TEST_PROFILE_STATUS, PARAM_TP_PROFILE_FIELD_POS, PARAM_TP_PROFILE_FIELD_NAME,
       PARAM_TP_USAGE_EXPECTED, PARAM_TP_USAGE_DETECTED, PARAM_TP_ACCEPT_EXPECTED, PARAM_TP_ACCEPT_DETECTED, PARAM_TP_TEST_MESSAGE_PRESENT_POS,
       PARAM_TP_TEST_MESSAGE_ABSENT_POS, PARAM_TP_MESSAGE_ACCEPT_STATUS_DEBUG, PARAM_TP_COMPATIBILITY_CONFORMANCE };

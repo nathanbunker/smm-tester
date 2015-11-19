@@ -58,7 +58,6 @@ import org.immunizationsoftware.dqa.tester.manager.TestCaseMessageManager;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTesterManager;
 import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
 import org.immunizationsoftware.dqa.tester.manager.nist.Assertion;
-import org.immunizationsoftware.dqa.tester.manager.nist.ValidationReport;
 import org.immunizationsoftware.dqa.tester.manager.nist.ValidationResource;
 import org.immunizationsoftware.dqa.tester.profile.CompatibilityConformance;
 import org.immunizationsoftware.dqa.tester.profile.CompatibilityInteroperability;
@@ -105,6 +104,16 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   private boolean keepRunning = true;
   Performance performance = null;
 
+  private class IncrementingInt
+  {
+    private int i = 0;
+
+    public synchronized int next() {
+      i++;
+      return i;
+    }
+  }
+
   private void logStatus(String status) {
     synchronized (statusMessageList) {
       statusMessageList.add(sdf.format(new Date()) + " " + areaLabel[currentSuite] + ": " + status);
@@ -126,6 +135,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   public static final int SUITE_COUNT = 12;
 
   private int currentSuite = SUITE_A_BASIC;
+  private IncrementingInt incrementingInt = null;
 
   private boolean run[] = new boolean[SUITE_COUNT];
   private int[][] areaScore = new int[SUITE_COUNT][3];
@@ -429,12 +439,21 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   private Transformer transformer;
   private SendData sendData;
   private File testDir;
+  private ParticipantResponse participantResponse = null;
+
+  public ParticipantResponse getParticipantResponse() {
+    return participantResponse;
+  }
+
+  public void setParticipantResponse(ParticipantResponse participantResponse) {
+    this.participantResponse = participantResponse;
+  }
 
   @Override
   public void run() {
-
     status = STATUS_STARTED;
     logStatus("Starting to run report");
+    incrementingInt = new IncrementingInt();
     try {
 
       File testDataFile = CreateTestCaseServlet.getTestDataFile(sendData);
@@ -452,7 +471,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       boolean goodToGo = true;
 
       logStatus("Reporting progress");
-      reportProgress(null);
+      if (participantResponse != null) {
+        reportParticipant(participantResponse);
+      }
+      reportProgress(null, true, null);
 
       if (runAgainstFolder != null) {
         connector = new RunAgainstConnector(connector, runAgainstFolder);
@@ -471,6 +493,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         transformer.transform(testCaseMessageBase);
         testCaseMessageBase.setAssertResult("Accept - *");
         testCaseMessageBase.setTestType(VALUE_TEST_TYPE_PREP);
+        testCaseMessageBase.setTestPosition(incrementingInt.next());
         TestRunner testRunner = new TestRunner();
         testRunner.setValidateResponse(run[SUITE_L_CONFORMANCE_2015]);
         try {
@@ -940,6 +963,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     register(tcmFull);
     tcmFull.setAssertResult("Accept - *");
     tcmFull.setHasIssue(true);
+    tcmFull.setTestPosition(incrementingInt.next());
     tcmFull.setTestType(VALUE_TEST_TYPE_PREP);
 
     logStatus("Running full test record to see it will be accepted");
@@ -1313,7 +1337,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
               performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessagePresent);
               if (testCaseMessagePresent.isAccepted()) {
                 statusCheckTestCaseProfilingList.add(testCaseMessagePresent);
-                testCaseMessagePresent.setTestPosition(statusCheckTestCaseProfilingList.size());
+                testCaseMessagePresent.setTestPosition(incrementingInt.next());
                 testCaseMessagePresent.setTestType(VALUE_TEST_TYPE_UPDATE);
               }
             }
@@ -1326,7 +1350,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
               performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessageAbsent);
               if (testCaseMessageAbsent.isAccepted()) {
                 statusCheckTestCaseProfilingList.add(testCaseMessageAbsent);
-                testCaseMessageAbsent.setTestPosition(statusCheckTestCaseProfilingList.size());
+                testCaseMessageAbsent.setTestPosition(incrementingInt.next());
                 testCaseMessageAbsent.setTestType(VALUE_TEST_TYPE_UPDATE);
               }
             }
@@ -1384,12 +1408,12 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessagePresent.setHasRun(true);
       if (profileLine.isHasRun()) {
         saveTestCase(testCaseMessagePresent);
-        reportProgress(testCaseMessagePresent);
+        reportProgress(testCaseMessagePresent, false, profileLine);
       }
       testCaseMessageAbsent.setHasRun(true);
       if (profileLine.isHasRun()) {
         saveTestCase(testCaseMessageAbsent);
-        reportProgress(testCaseMessageAbsent);
+        reportProgress(testCaseMessageAbsent, false, profileLine);
       }
       areaProgress[SUITE_I_PROFILING][0] = makeScore(count, profileLineList.size());
       if (!keepRunning) {
@@ -1428,7 +1452,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.setTestCaseCategoryId("A." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseBasicList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseBasicList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1448,7 +1472,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.setTestCaseCategoryId("J." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseOnc2015List.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseOnc2015List.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1476,7 +1500,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     testCaseMessage.setTestCaseCategoryId("K." + makeTwoDigits(1) + "." + makeTwoDigits(count));
     testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
     statusCheckTestCaseNotAcceptedList.add(testCaseMessage);
-    testCaseMessage.setTestPosition(statusCheckTestCaseNotAcceptedList.size());
+    testCaseMessage.setTestPosition(incrementingInt.next());
     testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
     transformer.transform(testCaseMessage);
     testCaseMessage.setAssertResult("Error - *");
@@ -1667,7 +1691,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("PID-8=" + certifyItem.getCode());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1688,7 +1712,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("PID-10.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-10.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1711,7 +1735,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("PID-10.3=" + certifyItem.getTable());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1732,7 +1756,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("PID-22.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-22.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1759,7 +1783,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("RXA-9.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-9.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1781,7 +1805,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("OBX-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("OBX-5.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1803,7 +1827,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("OBX-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("OBX-5.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1824,7 +1848,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("PD1-16=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PD1-17=[NOW]");
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1846,7 +1870,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("RXA-18.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-18.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1868,7 +1892,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("NK1-3.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("NK1-3.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1890,7 +1914,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1912,7 +1936,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1934,7 +1958,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -1956,7 +1980,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2005,7 +2029,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
               testCaseMessage.appendCustomTransformation("RXA-17.3=" + mvxItem.getTable());
 
               statusCheckTestCaseIntermediateList.add(testCaseMessage);
-              testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+              testCaseMessage.setTestPosition(incrementingInt.next());
               testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
               transformer.transform(testCaseMessage);
               testCaseMessage.setAssertResult("Accept - *");
@@ -2033,7 +2057,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
                   testCaseMessage.appendCustomTransformation("RXA-17.3=" + mvxItem.getTable());
 
                   statusCheckTestCaseIntermediateList.add(testCaseMessage);
-                  testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+                  testCaseMessage.setTestPosition(incrementingInt.next());
                   testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
                   transformer.transform(testCaseMessage);
                   testCaseMessage.setAssertResult("Accept - *");
@@ -2060,7 +2084,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("RXR-1.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXR-1.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2082,7 +2106,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("RXR-2.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXR-2.3=" + certifyItem.getTable());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2107,7 +2131,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("PID-11.5#2=PID-11.5");
       testCaseMessage.appendCustomTransformation("PID-11.7#2=" + certifyItem.getCode());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2129,7 +2153,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("PID-5.2#2=[LAST_DIFFERENT]");
       testCaseMessage.appendCustomTransformation("PID-5.7#2=" + certifyItem.getCode());
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2158,7 +2182,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         testCaseMessage.appendCustomTransformation("PID-13.2=" + certifyItem.getCode());
       }
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2191,7 +2215,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         testCaseMessage.appendCustomTransformation("PID-13.3=" + certifyItem.getCode());
       }
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2224,7 +2248,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("PID-3.5#2=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2247,7 +2271,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("PD1-11.3=" + certifyItem.getTable());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2269,7 +2293,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("PID-11.9=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2292,7 +2316,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("PID-15.3=" + certifyItem.getTable());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2324,7 +2348,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("RXA-20.1=" + completionStatus);
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2345,7 +2369,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("RXA-21=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2366,7 +2390,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("RXA-21=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2389,7 +2413,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("RXA-10.21=" + certifyItem.getCode());
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2414,7 +2438,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       }
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2436,7 +2460,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("PID-25=" + i);
 
       statusCheckTestCaseIntermediateList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseIntermediateList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2554,7 +2578,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           }
 
           statusCheckTestCaseForecastPrepList.add(testCaseMessage);
-          testCaseMessage.setTestPosition(statusCheckTestCaseForecastPrepList.size());
+          testCaseMessage.setTestPosition(incrementingInt.next());
           testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
           transformer.transform(testCaseMessage);
           testCaseMessage.setAssertResult("Accept - *");
@@ -2582,7 +2606,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2599,7 +2623,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2617,7 +2641,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2634,7 +2658,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2651,7 +2675,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2668,7 +2692,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
       testCaseMessage.appendCustomTransformation("PV1-10=AMB");
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2693,7 +2717,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("OBX-5.3=SCT");
       testCaseMessage.appendCustomTransformation("OBX-11=F");
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2717,7 +2741,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("RXA-17.2=Merck and Co., Inc.");
       testCaseMessage.appendCustomTransformation("RXA-17.3=MVX");
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2740,7 +2764,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("RXA-17.2=Merck and Co., Inc.");
       testCaseMessage.appendCustomTransformation("RXA-17.3=MVX");
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -2760,7 +2784,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.appendCustomTransformation("RXA-17.2=Merck and Co., Inc.");
       testCaseMessage.appendCustomTransformation("RXA-17.3=MVX");
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(statusCheckTestCaseExceptionalList.size());
+      testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
       transformer.transform(testCaseMessage);
       testCaseMessage.setAssertResult("Accept - *");
@@ -3041,7 +3065,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       queryTestCaseMessage.setTestCaseCategoryId("A." + makeTwoDigits(3) + "." + makeTwoDigits(count));
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       statusCheckQueryTestCaseBasicList.add(queryTestCaseMessage);
-      queryTestCaseMessage.setTestPosition(statusCheckQueryTestCaseBasicList.size());
+      queryTestCaseMessage.setTestPosition(incrementingInt.next());
       queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
       register(queryTestCaseMessage);
       try {
@@ -3107,7 +3131,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       queryTestCaseMessage.setTestCaseCategoryId("J." + makeTwoDigits(3) + "." + makeTwoDigits(count));
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       statusCheckQueryTestCaseBasicList.add(queryTestCaseMessage);
-      queryTestCaseMessage.setTestPosition(statusCheckQueryTestCaseOnc2015List.size());
+      queryTestCaseMessage.setTestPosition(incrementingInt.next());
       queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
       register(queryTestCaseMessage);
       try {
@@ -3169,7 +3193,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       queryTestCaseMessage.setTestCaseCategoryId("J." + makeTwoDigits(3) + "." + makeTwoDigits(count));
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       statusCheckQueryTestCaseBasicList.add(queryTestCaseMessage);
-      queryTestCaseMessage.setTestPosition(statusCheckQueryTestCaseOnc2015List.size());
+      queryTestCaseMessage.setTestPosition(incrementingInt.next());
       queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
       register(queryTestCaseMessage);
       try {
@@ -3253,7 +3277,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       queryTestCaseMessage.setTestCaseCategoryId("BQ." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       statusCheckQueryTestCaseIntermediateList.add(queryTestCaseMessage);
-      queryTestCaseMessage.setTestPosition(statusCheckQueryTestCaseIntermediateList.size());
+      queryTestCaseMessage.setTestPosition(incrementingInt.next());
       queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
       register(queryTestCaseMessage);
     }
@@ -3271,7 +3295,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       queryTestCaseMessage.setTestCaseCategoryId("D." + makeTwoDigits(3) + "." + makeTwoDigits(count));
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       statusCheckQueryTestCaseTolerantList.add(queryTestCaseMessage);
-      queryTestCaseMessage.setTestPosition(statusCheckQueryTestCaseTolerantList.size());
+      queryTestCaseMessage.setTestPosition(incrementingInt.next());
       queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
       register(queryTestCaseMessage);
     }
@@ -3289,7 +3313,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       queryTestCaseMessage.setTestCaseCategoryId("I." + makeTwoDigits(3) + "." + makeTwoDigits(count));
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       statusCheckQueryTestCaseProfilingList.add(queryTestCaseMessage);
-      queryTestCaseMessage.setTestPosition(statusCheckQueryTestCaseProfilingList.size());
+      queryTestCaseMessage.setTestPosition(incrementingInt.next());
       queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
       register(queryTestCaseMessage);
     }
@@ -3308,7 +3332,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       queryTestCaseMessage.setForecastTestCase(testCaseMessage.getForecastTestCase());
       statusCheckQueryTestCaseForecastPrepList.add(queryTestCaseMessage);
-      queryTestCaseMessage.setTestPosition(statusCheckQueryTestCaseForecastPrepList.size());
+      queryTestCaseMessage.setTestPosition(incrementingInt.next());
       queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
       register(queryTestCaseMessage);
     }
@@ -6087,10 +6111,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   }
 
   private void reportProgress(TestCaseMessage testMessage) {
-    reportProgress(testMessage, false);
+    reportProgress(testMessage, false, null);
   }
 
-  private void reportProgress(TestCaseMessage testMessage, boolean firstTime) {
+  private void reportProgress(TestCaseMessage testMessage, boolean firstTime, ProfileLine profileLine) {
     if (REPORT_URL == null) {
       return;
     }
@@ -6115,7 +6139,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       StringBuilder sb = new StringBuilder();
 
       sb.append("action=Submit");
-
+      if (participantResponse != null) {
+        addField(sb, PARAM_TPAR_ORGANIZATION_NAME, participantResponse.getOrganizationName());
+      }
       addField(sb, PARAM_TC_CONNECTION_LABEL, connector.getLabel());
       addField(sb, PARAM_TC_CONNECTION_TYPE, connector.getType());
       addField(sb, PARAM_TC_CONNECTION_URL, connector.getUrl());
@@ -6177,6 +6203,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       if (firstTime) {
         int i = 1;
         if (connector.getCustomTransformations() != null && !connector.getCustomTransformations().equals("")) {
+          System.out.println("--> sending transform: " + connector.getCustomTransformations());
           addField(sb, PARAM_TC_TRANSFORMS + i, "\n" + connector.getCustomTransformations());
         }
         for (String scenario : connector.getScenarioTransformationsMap().keySet()) {
@@ -6221,6 +6248,14 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         }
         if (testMessage.getForecastTestPanel() != null) {
           addField(sb, PARAM_TM_FORECAST_TEST_PANEL_ID, testMessage.getForecastTestPanel().getId());
+        }
+        if (profileLine != null) {
+          addField(sb, PARAM_TP_PROFILE_FIELD_NAME, profileLine.getField().getFieldName());
+          if (profileLine.getTestCaseMessagePresent() == testMessage) {
+            addField(sb, PARAM_TP_TEST_PROFILE_TYPE, VALUE_PROFILE_TYPE_PRESENT);
+          } else if (profileLine.getTestCaseMessageAbsent() == testMessage) {
+            addField(sb, PARAM_TP_TEST_PROFILE_TYPE, VALUE_PROFILE_TYPE_ABSENT);
+          }
         }
 
         List<Comparison> comparisonList;

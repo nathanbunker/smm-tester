@@ -5,23 +5,18 @@
 package org.immunizationsoftware.dqa.tester;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSocketFactory;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,12 +24,9 @@ import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.mover.AckAnalyzer;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
-import org.immunizationsoftware.dqa.tester.connectors.HttpConnector.AuthenticationMethod;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
 import org.immunizationsoftware.dqa.tester.manager.TestCaseMessageManager;
-import org.immunizationsoftware.dqa.tester.manager.hl7.HL7Component;
-import org.immunizationsoftware.dqa.tester.manager.hl7.HL7ComponentManager;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 import org.immunizationsoftware.dqa.transform.Transformer;
 
@@ -85,29 +77,67 @@ public class SubmitServlet extends ClientServlet
         return;
       }
       boolean debug = request.getParameter("debug") != null;
-      boolean transform = request.getParameter("transform") != null;
+      boolean transform = request.getParameter("transform") != null
+          || request.getParameter("transformSelection") != null;
       Connector connector = getConnector(id, session);
       String message = request.getParameter("message");
 
       if (transform) {
-        TestCaseMessage testCaseMessage = (TestCaseMessage) session.getAttribute("testCaseMessage");
-        String scenarioTransforms = null;
-        String additionalTransformations = "";
-        if (testCaseMessage != null) {
-          scenarioTransforms = connector.getScenarioTransformationsMap().get(testCaseMessage.getScenario());
-          additionalTransformations = testCaseMessage.getAdditionalTransformations();
-          if (additionalTransformations.equals("")) {
-            additionalTransformations = null;
+        if (request.getParameter("transform") != null) {
+          TestCaseMessage testCaseMessage = (TestCaseMessage) session.getAttribute("testCaseMessage");
+          String scenarioTransforms = null;
+          String additionalTransformations = "";
+          if (testCaseMessage != null) {
+            scenarioTransforms = connector.getScenarioTransformationsMap().get(testCaseMessage.getScenario());
+            additionalTransformations = testCaseMessage.getAdditionalTransformations();
+            if (additionalTransformations.equals("")) {
+              additionalTransformations = null;
+            }
+          }
+          if (!connector.getCustomTransformations().equals("") || scenarioTransforms != null
+              || additionalTransformations != null) {
+            Transformer transformer = new Transformer();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+            connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
+            message = transformer.transform(connector, message, scenarioTransforms, additionalTransformations);
+          }
+        } else {
+          String customTranformations = "";
+          try {
+            BufferedReader customTransformsIn = new BufferedReader(
+                new StringReader(connector.getCustomTransformations()));
+            String line;
+            int i = 0;
+            while ((line = customTransformsIn.readLine()) != null) {
+              i++;
+              if (request.getParameter("transform" + i) != null) {
+                customTranformations = customTranformations + line + "\n";
+              }
+            }
+          } catch (IOException ioe) {
+            // ignore
+          }
+          TestCaseMessage testCaseMessage = (TestCaseMessage) session.getAttribute("testCaseMessage");
+          String scenarioTransforms = null;
+          String additionalTransformations = "";
+          if (testCaseMessage != null) {
+            scenarioTransforms = connector.getScenarioTransformationsMap().get(testCaseMessage.getScenario());
+            additionalTransformations = testCaseMessage.getAdditionalTransformations();
+            if (additionalTransformations.equals("")) {
+              additionalTransformations = null;
+            }
+          }
+          if (!connector.getCustomTransformations().equals("") || scenarioTransforms != null
+              || additionalTransformations != null) {
+            Transformer transformer = new Transformer();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+            connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
+            message = transformer.transform(connector, message, customTranformations, scenarioTransforms,
+                additionalTransformations);
           }
         }
-        if (!connector.getCustomTransformations().equals("") || scenarioTransforms != null
-            || additionalTransformations != null) {
-          Transformer transformer = new Transformer();
-          SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-          connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
-          message = transformer.transform(connector, message, scenarioTransforms, additionalTransformations);
-        }
       }
+
       message = cleanMessage(message);
       request.setAttribute("requestText", message);
       String responseText = connector.submitMessage(message, debug);
@@ -116,7 +146,8 @@ public class SubmitServlet extends ClientServlet
   }
 
   // <editor-fold defaultstate="collapsed"
-  // desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+  // desc="HttpServlet methods. Click on the + sign on the left to edit the
+  // code.">
   /**
    * Handles the HTTP <code>GET</code> method.
    * 
@@ -184,7 +215,7 @@ public class SubmitServlet extends ClientServlet
       PrintWriter out = new PrintWriter(response.getWriter());
       response.setContentType("text/html;charset=UTF-8");
       printHtmlHead(out, MENU_HEADER_SEND, request);
-      printForm(id, connectors, message, out);
+      printForm(id, connectors, message, request, out);
       String responseText = null;
       if (id != 0) {
         try {
@@ -246,10 +277,10 @@ public class SubmitServlet extends ClientServlet
           String qbpMessage = QueryConverter.convertVXUtoQBP(message);
           session.setAttribute(CompareServlet.VXU_MESSAGE, message);
           out.println("<p>Submit QBP query message based from VXU displayed above</p>");
-          printForm(id, connectors, qbpMessage, out);
+          printForm(id, connectors, qbpMessage, request, out);
           String vxqMessage = QueryConverter.convertVXUtoVXQ(message);
           out.println("<p>Submit VXQ query message based from VXU displayed above</p>");
-          printForm(id, connectors, vxqMessage, out);
+          printForm(id, connectors, vxqMessage, request, out);
         }
       }
       if (responseText != null && responseText.indexOf("|RSP^") > 0) {
@@ -308,7 +339,8 @@ public class SubmitServlet extends ClientServlet
     }
   }
 
-  private void printForm(int id, List<Connector> connectors, String message, PrintWriter out) {
+  private void printForm(int id, List<Connector> connectors, String message, HttpServletRequest request,
+      PrintWriter out) {
     out.println("    <form action=\"SubmitServlet\" method=\"POST\">");
     out.println("      <table border=\"0\">");
     out.println("        <tr>");
@@ -339,10 +371,38 @@ public class SubmitServlet extends ClientServlet
     out.println("          <td><textarea name=\"message\" cols=\"70\" rows=\"10\" wrap=\"off\">" + message
         + "</textarea></td>");
     out.println("        </tr>");
-    out.println("        <tr>");
-    out.println("          <td>Transform</td>");
-    out.println("          <td><input type=\"checkbox\" name=\"transform\" value=\"true\" checked=\"true\"/> <em>Apply connection specific transforms to message before sending.</em></td>");
-    out.println("        </tr>");
+
+    if (connectors.size() == 1) {
+      if (!connectors.get(0).getCustomTransformations().equals("")) {
+        out.println("        <tr>");
+        out.println("          <td valign=\"top\">Transform</td>");
+        out.println("          <td>");
+        out.println("            <input type=\"hidden\" name=\"transformSelection\" value=\"yes\"/>");
+        boolean shouldSelectAll = request.getParameter("transformSelection") == null;
+        try {
+          BufferedReader customTransformsIn = new BufferedReader(
+              new StringReader(connectors.get(0).getCustomTransformations()));
+          String line;
+          int i = 0;
+          while ((line = customTransformsIn.readLine()) != null) {
+            i++;
+            boolean selected = shouldSelectAll || request.getParameter("transform" + i) != null;
+            out.println("            <input type=\"checkbox\" name=\"transform" + i + "\" value=\"true\""
+                + (selected ? " checked=\"true\"" : "") + "/>" + line + "<br/>");
+          }
+        } catch (IOException ioe) {
+          // ignore
+        }
+        out.println("          </td>");
+        out.println("        </tr>");
+      }
+    } else {
+      out.println("        <tr>");
+      out.println("          <td>Transform</td>");
+      out.println(
+          "          <td><input type=\"checkbox\" name=\"transform\" value=\"true\" checked=\"true\"/> <em>Apply connection specific transforms to message before sending.</em></td>");
+      out.println("        </tr>");
+    }
     out.println("        <tr>");
     out.println("          <td>Debug</td>");
     out.println("          <td><input type=\"checkbox\" name=\"debug\" value=\"true\" /></td>");
