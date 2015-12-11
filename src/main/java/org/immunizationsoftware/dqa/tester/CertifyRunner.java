@@ -46,6 +46,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
@@ -440,6 +441,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   private SendData sendData;
   private File testDir;
   private ParticipantResponse participantResponse = null;
+  private TestCaseMessage testCaseMessageBase = null;
 
   public ParticipantResponse getParticipantResponse() {
     return participantResponse;
@@ -486,7 +488,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         logStatus("Connecting directly to real-time interface");
 
         logStatus("Verify connection works by sending a message that is expected to pass");
-        TestCaseMessage testCaseMessageBase = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+        testCaseMessageBase = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
         testCaseMessageBase.setTestCaseSet(testCaseSet);
         testCaseMessageBase.setTestCaseCategoryId("BASE");
         testCaseMessageBase.setTestCaseNumber(uniqueMRNBase + testCaseMessageBase.getTestCaseCategoryId());
@@ -1210,7 +1212,14 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   private void updateAdvanced(Map<Integer, List<Issue>> issueMap) {
     TestRunner testRunner = new TestRunner();
     testRunner.setValidateResponse(run[SUITE_L_CONFORMANCE_2015]);
-    int count;
+    int overallTotal = 0;
+    for (int i = 0; i < areaScore[SUITE_C_ADVANCED].length; i++) {
+      int priority = i + 1;
+      List<Issue> issueList = issueMap.get(priority);
+      overallTotal = overallTotal + issueList.size();
+    }
+    int countPass = 0;
+    int count = 0;
     for (int i = 0; i < areaScore[SUITE_C_ADVANCED].length; i++) {
       if (!keepRunning) {
         status = STATUS_STOPPED;
@@ -1221,27 +1230,25 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       int priority = i + 1;
       List<Issue> issueList = issueMap.get(priority);
       if (issueList != null && issueList.size() > 0) {
-        int countPass = 0;
-        count = 0;
         for (Issue issue : issueList) {
           count++;
 
           TestCaseMessage testCaseMessage = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
           testCaseMessage.setTestCaseSet(testCaseSet);
-          testCaseMessage.setTestCaseCategoryId("C." + makeTwoDigits(priority) + "." + paddWithZeros(count, 3));
+          testCaseMessage.setTestCaseCategoryId("C.1." + paddWithZeros(count, 3));
           testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
           profileTestCaseLists[i].add(testCaseMessage);
           testCaseMessage.setDescription(issue.getName());
           testCaseMessage.addCauseIssues(issue.getName());
-          testCaseMessage.appendCustomTransformation("MSH-11=D");
           transformer.transform(testCaseMessage);
           register(testCaseMessage);
-          testCaseMessage.setAssertResultText(issue.getName());
-          testCaseMessage.setAssertResultStatus("Accept or Reject");
+          testCaseMessage.setAssertResult("Accept or Reject - *");
           if (testCaseMessage.hasIssue()) {
             try {
               testRunner.runTest(connector, testCaseMessage);
               performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessage);
+              testCaseMessage.setPassedTest(!CompareManager.acksAppearToBeTheSame(
+                  testCaseMessageBase.getActualResponseMessage(), testCaseMessage.getActualResponseMessage()));
               if (testCaseMessage.isPassedTest()) {
                 countPass++;
               }
@@ -1252,17 +1259,17 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           }
           testCaseMessage.setHasRun(true);
           saveTestCase(testCaseMessage);
-          areaProgress[SUITE_C_ADVANCED][i] = makeScore(count, issueList.size());
+          areaProgress[SUITE_C_ADVANCED][0] = makeScore(count, issueList.size());
           if (!keepRunning) {
             status = STATUS_STOPPED;
             reportProgress(null);
             return;
           }
         }
-        areaScore[SUITE_C_ADVANCED][i] = makeScore(countPass, issueList.size());
-        areaCount[SUITE_C_ADVANCED][i] = issueList.size();
+        areaScore[SUITE_C_ADVANCED][0] = makeScore(countPass, overallTotal);
+        areaCount[SUITE_C_ADVANCED][0] = overallTotal;
       }
-      areaProgress[SUITE_C_ADVANCED][i] = 100;
+      areaProgress[SUITE_C_ADVANCED][0] = 100;
 
     }
   }
@@ -1484,11 +1491,18 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
   private void prepareNotAccepted() {
     int count = 0;
+    addNotAccepted("PID: Patient identifier segment is missing", "remove segment PID", ++count);
     addNotAccepted("PID-3: Patient id is missing", "CLEAR PID-3", ++count);
     addNotAccepted("PID-5: Patient name is missing", "CLEAR PID-5", ++count);
-    addNotAccepted("RXA-3: Vaccination date set in the future", "RXA-3=[TOMORROW]", ++count);
-    addNotAccepted("RXA-5: Vaccination code is missing", "RXA-5.1=", ++count);
-    addNotAccepted("RXA-5: Vaccination code is invalid", "RXA-5.1=14000", ++count);
+    addNotAccepted("PID-7: Patient dob is missing", "CLEAR PID-8", ++count);
+    addNotAccepted("PID-7: Patient dob is unreadable", "PID-7=DOB", ++count);
+    addNotAccepted("PID-7: Patient dob is in the future", "PID-7=[TOMORROW]", ++count);  // 2 years from now
+    addNotAccepted("RXA: RXA segment is missing", "remove segment RXA", ++count);
+    addNotAccepted("RXA-3: Vaccination date is missing", "RXA-3=", ++count);
+    addNotAccepted("RXA-3: Vaccination date is unreadable", "RXA-3=SHOT DATE", ++count);
+    addNotAccepted("RXA-3: Vaccination date set in the future", "RXA-3=[TOMORROW]", ++count);  // 2 years from now
+    addNotAccepted("RXA-5: Vaccination code is missing", "RXA-5=", ++count);
+    addNotAccepted("RXA-5: Vaccination code is invalid", "RXA-5=14000BADVALUE", ++count);
     areaCount[SUITE_K_NOT_ACCEPTED][0] = statusCheckTestCaseNotAcceptedList.size();
   }
 
@@ -2593,67 +2607,68 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     areaCount[SUITE_E_FORECAST_PREP][0] = statusCheckTestCaseForecastPrepList.size();
   }
 
+  private static String somewhatRandomLongString(int length) {
+    String s = "";
+    int count = 0;
+    while (s.length() < length) {
+      long r = System.currentTimeMillis();
+      r = (r << count) - r;
+      s = s + r;
+      count++;
+    }
+    return s.substring(0, length);
+  }
+
   private void prepareExceptional() {
 
-    int count = 0;
+    int count = 1;
+    count = createToleranceCheck("MSH-10 Message Control Id is very long", "MSH-10=" + somewhatRandomLongString(198),
+        count);
+    count = createToleranceCheck("MSH-300 is empty with bars all the way out", "MSH-300=1\nMSH-300=", count);
+    count = createToleranceCheck("MSH-300 set to a value of 1", "MSH-300=1", count);
+    count = createToleranceCheck("PID-3.4 Patient Id Assigning Authority is very long",
+        "PID-3.4=" + somewhatRandomLongString(226), count);
+    count = createToleranceCheck("PID-3.5 Patient Id is PI instead of MR", "PID-3.5=PI", count);
+    count = createToleranceCheck("PID-7 Date/Time of Birth includes a time", "PID-7=20131003113759-0700", count);
+    count = createToleranceCheck("PID-10 Race contains invalid race",
+        "PID-10.1=KLINGON\nPID-10.2=Klingon\nPID-10.3=CDCREC", count);
+    count = createToleranceCheck("PID-22 Ethnicity contains invalid ethnicity",
+        "PID-22.1=KLINGON\nPID-22.2=Klingon\nPID-22.3=CDCREC", count);
+    count = createToleranceCheck("PID-300 is empty with bars all the way out", "PID-300=1\nPID-300=", count);
+    count = createToleranceCheck("PID-300 set to a value of 1", "PID-300=1", count);
+    count = createToleranceCheck("PV1-10 Hospital service code is set to a non-standard value", "PV1-10=AMB", count);
+    count = createToleranceCheck("Message has no vaccinations", "remove segment ORC all\nremove segment RXA all\nremove segment RXR all\nremove segment OBX all", count);
+    count = createToleranceCheck("RXA-3 Date/Time Start of Administration includes time", "RXA-3=[NOW]", count);
+    count = createToleranceCheck("RXA-4 Date/Time End of Administration is empty", "RXA-4=", count);
+    count = createToleranceCheck("RXA-5.2 Vaccination Label as escaped field separator in it",
+        "RXA-5.2=This \\F\\ That", count);
+    count = createToleranceCheck("RXA-5.2 Vaccination Label as escaped component in it", "RXA-5.2=This \\S\\ That",
+        count);
+    count = createToleranceCheck("RXA-5.2 Vaccination Label as escaped sub component separator in it",
+        "RXA-5.2=This \\T\\ That", count);
+    count = createToleranceCheck("RXA-5.2 Vaccination Label as escaped repetition separator in it",
+        "RXA-5.2=This \\R\\ That", count);
+    count = createToleranceCheck("RXA-5.2 Vaccination Label as escaped escape separator in it",
+        "RXA-5.2=This \\E\\ That", count);
+    count = createToleranceCheck("RXA-5.2 Vaccination Label as unescaped escape separator in it",
+        "RXA-5.2=This \\ That", count);
+    count = createToleranceCheck("RXA-5.2 Vaccination Label is set to a very long value",
+        "RXA-5.2=This is a very long description for a vaccine, that normally you shouldn't expect to see, but since this field should not be read by the receiver it should be accepted, HL7 allows up to 199 chars. ",
+        count);
+    count = createToleranceCheck("RXA-17.2 Manufacturer Label is set to a very long value",
+        "RXA-17.2=This is a very long description for a manufac, that normally you shouldn't expect to see, but since this field should not be read by the receiver it should be accepted, HL7 allows up to 199 chars. ",
+        count);
+    count = createToleranceCheck("RXA-17.2 Manufacturer Label includes an un-encoded ampersand", "RXA-17.2=Merk & Co",
+        count);
+    count = createToleranceCheck("RXA-300 is empty with bars all the way out", "RXA-300=1\nRXA-300=", count);
+    count = createToleranceCheck("RXA-300 set to a value of 1", "RXA-300=1", count);
 
     {
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.appendOriginalMessage("OBX|5|NM|6287-7^Baker's yeast IgE Ab in Serum^LN||1945||||||F\n");
-      testCaseMessage.setDescription("Tolerance Check : Message includes observation not typically sent to IIS");
-      testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
-      statusCheckTestCaseExceptionalList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(incrementingInt.next());
-      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
-      transformer.transform(testCaseMessage);
-      testCaseMessage.setAssertResult("Accept - *");
-      register(testCaseMessage);
-    }
-
-    {
-      SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssZ");
-      count++;
-      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
-      testCaseMessage.appendCustomTransformation("RXA-3=" + sdf.format(new Date()));
-      testCaseMessage.setDescription(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " RXA-3 contains a time component");
-      testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
-      statusCheckTestCaseExceptionalList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(incrementingInt.next());
-      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
-      transformer.transform(testCaseMessage);
-      testCaseMessage.setAssertResult("Accept - *");
-      register(testCaseMessage);
-    }
-
-    {
-      count++;
-      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
-      testCaseMessage.appendCustomTransformation(
-          "RXA-5.2=This is a very long description for a vaccine, that normally you shouldn't expect to see, but since this field should not be read by the receiver it should cause no problem, furthermore HL7 allows this field to have up to 999 characters, which should not cause a problem to the receiver. Also this tests to verify that the receiver is not trying to verify the text of the vaccine. ");
-      testCaseMessage.setDescription(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK
-          + " Message includes description for vaccine that is extremely long");
-      testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
-      statusCheckTestCaseExceptionalList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(incrementingInt.next());
-      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
-      transformer.transform(testCaseMessage);
-      testCaseMessage.setAssertResult("Accept - *");
-      register(testCaseMessage);
-    }
-
-    {
-      count++;
-      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
-      testCaseMessage.appendCustomTransformation("PID-3.4=LOCAL_FACILITY_ASSIGNED_ID");
       testCaseMessage.setDescription(
-          VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " Patient identifier assigning authority is very long");
+          VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " Message includes observation not typically sent to IIS");
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
@@ -2674,23 +2689,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage.setTestCaseSet(testCaseSet);
       testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
-      statusCheckTestCaseExceptionalList.add(testCaseMessage);
-      testCaseMessage.setTestPosition(incrementingInt.next());
-      testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
-      transformer.transform(testCaseMessage);
-      testCaseMessage.setAssertResult("Accept - *");
-      register(testCaseMessage);
-    }
-
-    {
-      count++;
-      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
-      testCaseMessage.setDescription(
-          VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " Hospital service code is set to a non-standard value");
-      testCaseMessage.setTestCaseSet(testCaseSet);
-      testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
-      testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
-      testCaseMessage.appendCustomTransformation("PV1-10=AMB");
       statusCheckTestCaseExceptionalList.add(testCaseMessage);
       testCaseMessage.setTestPosition(incrementingInt.next());
       testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
@@ -2827,6 +2825,22 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       ioe.printStackTrace();
     }
     areaCount[SUITE_D_EXCEPTIONAL][0] = statusCheckTestCaseExceptionalList.size();
+  }
+
+  public int createToleranceCheck(String label, String customTransformation, int count) {
+    TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+    testCaseMessage.setAdditionalTransformations(customTransformation + "\n");
+    testCaseMessage.setDescription(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " " + label);
+    testCaseMessage.setTestCaseSet(testCaseSet);
+    testCaseMessage.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+    testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
+    statusCheckTestCaseExceptionalList.add(testCaseMessage);
+    testCaseMessage.setTestPosition(incrementingInt.next());
+    testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
+    transformer.transform(testCaseMessage);
+    testCaseMessage.setAssertResult("Accept - *");
+    register(testCaseMessage);
+    return count++;
   }
 
   private int createCertfiedMessageTestCaseMessage(Transformer transformer, int count, StringBuilder sb,
@@ -5140,7 +5154,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     }
 
     for (int i = 0; i < areaScore[SUITE_C_ADVANCED].length; i++) {
-      if (profileTestCaseLists[i] == null || areaProgress[SUITE_C_ADVANCED][i] < 100) {
+      if (profileTestCaseLists[i] == null || areaProgress[SUITE_C_ADVANCED][0] < 100) {
         continue;
       }
 
