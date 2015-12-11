@@ -6,7 +6,42 @@ import java.util.List;
 
 import org.immunizationsoftware.dqa.transform.Comparison;
 
-public class CompareManager {
+public class CompareManager
+{
+
+  public static boolean acksAppearToBeTheSame(String ackMessageOriginal, String ackMessageCompare) {
+    HL7Reader ack1Reader = new HL7Reader(ackMessageOriginal);
+    HL7Reader ack2Reader = new HL7Reader(ackMessageCompare);
+    if (ack1Reader.advanceToSegment("MSA")) {
+      if (ack2Reader.advanceToSegment("MSA")) {
+        if (ack1Reader.getValue(1).equals(ack2Reader.getValue(1))) {
+          boolean anotherErr1 = ack1Reader.advanceToSegment("ERR");
+          boolean anotherErr2 = ack2Reader.advanceToSegment("ERR");
+          while (anotherErr1 == anotherErr2) {
+            if (!anotherErr1) {
+              return true;
+            }
+            if (!ack1Reader.getValue(4).equals(ack2Reader.getValue(4))) {
+              return false;
+            }
+            if (!ack1Reader.getValue(3).equals(ack2Reader.getValue(3))) {
+              return false;
+            }
+            anotherErr1 = ack1Reader.advanceToSegment("ERR");
+            anotherErr2 = ack2Reader.advanceToSegment("ERR");
+          }
+          return false;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    } else if (ack2Reader.advanceToSegment("MSA")) {
+      return false;
+    }
+    return true;
+  }
 
   public static List<Comparison> compareMessages(String vxuMessage, String rspMessage) {
     List<Comparison> comparisonList = new ArrayList<Comparison>();
