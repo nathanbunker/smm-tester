@@ -83,7 +83,7 @@ import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
 public class CertifyRunner extends Thread implements RecordServletInterface
 {
 
-  private static final String REPORT_URL = "http://localhost:8289/record";
+  private static final String REPORT_URL = "http://ois-pt.org/dqacm/record";
   // "http://localhost:8289/record";
   // "http://ois-pt.org/dqacm/record";
 
@@ -1261,6 +1261,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           }
           testCaseMessage.setHasRun(true);
           saveTestCase(testCaseMessage);
+          reportProgress(testCaseMessage);
           areaProgress[SUITE_C_ADVANCED][0] = makeScore(count, issueList.size());
           if (!keepRunning) {
             status = STATUS_STOPPED;
@@ -1272,8 +1273,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         areaCount[SUITE_C_ADVANCED][0] = overallTotal;
       }
       areaProgress[SUITE_C_ADVANCED][0] = 100;
-
     }
+    reportProgress(null);
   }
 
   private TestCaseMessage getPresentTestCase(ProfileLine profileLine, int count,
