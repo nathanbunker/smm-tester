@@ -83,7 +83,7 @@ import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
 public class CertifyRunner extends Thread implements RecordServletInterface
 {
 
-  private static final String REPORT_URL = "http://ois-pt.org/dqacm/record";
+  private static final String REPORT_URL = "http://localhost:8289/record";
   // "http://localhost:8289/record";
   // "http://ois-pt.org/dqacm/record";
 
@@ -510,6 +510,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           }
         } catch (Throwable t) {
           logStatus("Exception running base test case message: " + t.getMessage());
+          t.printStackTrace();
           goodToGo = false;
         }
         reportProgress(testCaseMessageBase);
@@ -1247,8 +1248,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface
             try {
               testRunner.runTest(connector, testCaseMessage);
               performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessage);
-              testCaseMessage.setPassedTest(!CompareManager.acksAppearToBeTheSame(
-                  testCaseMessageBase.getActualResponseMessage(), testCaseMessage.getActualResponseMessage()));
+              testCaseMessage
+                  .setPassedTest(!CompareManager.acksAppearToBeTheSame(testCaseMessageBase.getActualResponseMessage(),
+                      testCaseMessage.getActualResponseMessage()));
               if (testCaseMessage.isPassedTest()) {
                 countPass++;
               }
@@ -1496,11 +1498,17 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     addNotAccepted("PID-5: Patient name is missing", "CLEAR PID-5", ++count);
     addNotAccepted("PID-7: Patient dob is missing", "CLEAR PID-8", ++count);
     addNotAccepted("PID-7: Patient dob is unreadable", "PID-7=DOB", ++count);
-    addNotAccepted("PID-7: Patient dob is in the future", "PID-7=[TOMORROW]", ++count);  // 2 years from now
+    addNotAccepted("PID-7: Patient dob is in the future", "PID-7=[TOMORROW]", ++count); // 2
+                                                                                        // years
+                                                                                        // from
+                                                                                        // now
     addNotAccepted("RXA: RXA segment is missing", "remove segment RXA", ++count);
     addNotAccepted("RXA-3: Vaccination date is missing", "RXA-3=", ++count);
     addNotAccepted("RXA-3: Vaccination date is unreadable", "RXA-3=SHOT DATE", ++count);
-    addNotAccepted("RXA-3: Vaccination date set in the future", "RXA-3=[TOMORROW]", ++count);  // 2 years from now
+    addNotAccepted("RXA-3: Vaccination date set in the future", "RXA-3=[TOMORROW]", ++count); // 2
+                                                                                              // years
+                                                                                              // from
+                                                                                              // now
     addNotAccepted("RXA-5: Vaccination code is missing", "RXA-5=", ++count);
     addNotAccepted("RXA-5: Vaccination code is invalid", "RXA-5=14000BADVALUE", ++count);
     areaCount[SUITE_K_NOT_ACCEPTED][0] = statusCheckTestCaseNotAcceptedList.size();
@@ -2637,7 +2645,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     count = createToleranceCheck("PID-300 is empty with bars all the way out", "PID-300=1\nPID-300=", count);
     count = createToleranceCheck("PID-300 set to a value of 1", "PID-300=1", count);
     count = createToleranceCheck("PV1-10 Hospital service code is set to a non-standard value", "PV1-10=AMB", count);
-    count = createToleranceCheck("Message has no vaccinations", "remove segment ORC all\nremove segment RXA all\nremove segment RXR all\nremove segment OBX all", count);
+    count = createToleranceCheck("Message has no vaccinations",
+        "remove segment ORC all\nremove segment RXA all\nremove segment RXR all\nremove segment OBX all", count);
     count = createToleranceCheck("RXA-3 Date/Time Start of Administration includes time", "RXA-3=[NOW]", count);
     count = createToleranceCheck("RXA-4 Date/Time End of Administration is empty", "RXA-4=", count);
     count = createToleranceCheck("RXA-5.2 Vaccination Label as escaped field separator in it",
@@ -6257,6 +6266,22 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         addField(sb, PARAM_TM_RESULT_ACCEPTED_MESSAGE, testMessage.getActualResultAckMessage());
         addField(sb, PARAM_TM_RESULT_RESPONSE_TYPE, testMessage.getActualMessageResponseType());
         addField(sb, PARAM_TM_RESULT_ACK_TYPE, testMessage.getActualResultAckType());
+        if (testMessage.getValidationReport() == null) {
+          addField(sb, PARAM_TM_RESULT_ACK_CONFORMANCE, VALUE_RESULT_ACK_CONFORMANCE_NOT_RUN);
+        } else {
+          boolean errorFound = false;
+          for (Assertion assertion : testMessage.getValidationReport().getAssertionList()) {
+            if (assertion.getResult().equalsIgnoreCase("ERROR")) {
+              errorFound = true;
+              break;
+            }
+          }
+          if (errorFound) {
+            addField(sb, PARAM_TM_RESULT_ACK_CONFORMANCE, VALUE_RESULT_ACK_CONFORMANCE_ERROR);
+          } else {
+            addField(sb, PARAM_TM_RESULT_ACK_CONFORMANCE, VALUE_RESULT_ACK_CONFORMANCE_OK);
+          }
+        }
         if (testMessage.getForecastTestCase() != null) {
           addField(sb, PARAM_TM_FORECAST_TEST_PANEL_CASE_ID, testMessage.getForecastTestCase().getTestPanelCaseId());
         }

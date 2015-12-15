@@ -90,6 +90,10 @@ public interface RecordServletInterface {
   public static final String[] PARAMS_TS = { PARAM_TS_TEST_SECTION_TYPE, PARAM_TS_TEST_ENABLED, PARAM_TS_SCORE_LEVEL1, PARAM_TS_SCORE_LEVEL2,
       PARAM_TS_SCORE_LEVEL3, PARAM_TS_PROGRESS_LEVEL1, PARAM_TS_PROGRESS_LEVEL2, PARAM_TS_PROGRESS_LEVEL3, PARAM_TS_COUNT_LEVEL1,
       PARAM_TS_COUNT_LEVEL2, PARAM_TS_COUNT_LEVEL3 };
+  
+  public static final String VALUE_RESULT_ACK_CONFORMANCE_ERROR = "ERROR";
+  public static final String VALUE_RESULT_ACK_CONFORMANCE_OK = "OK";
+  public static final String VALUE_RESULT_ACK_CONFORMANCE_NOT_RUN = "NOT RUN";
 
   public static final String PARAM_TM_TEST_POSITION = "tm_testPosition";
   public static final String PARAM_TM_TEST_TYPE = "tm_testType";
@@ -119,6 +123,7 @@ public interface RecordServletInterface {
   public static final String PARAM_TM_RESULT_ACCEPTED_MESSAGE = "tm_resultAcceptedMessage";
   public static final String PARAM_TM_RESULT_RESPONSE_TYPE = "tm_resultResponseType";
   public static final String PARAM_TM_RESULT_ACK_TYPE = "tm_resultAckType";
+  public static final String PARAM_TM_RESULT_ACK_CONFORMANCE = "tm_resultAckConformance";
   public static final String PARAM_TM_FORECAST_TEST_PANEL_CASE_ID = "tm_forecastTestPanelCaseId";
   public static final String PARAM_TM_FORECAST_TEST_PANEL_ID = "tm_forecastTestPanelId";
 

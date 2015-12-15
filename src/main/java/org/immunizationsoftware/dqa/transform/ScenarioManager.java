@@ -225,14 +225,12 @@ public class ScenarioManager
     } else if (scenario.equals(SCENARIO_2_R_ADMIN_ADULT)) {
       description = "NIST IZ #2: Administered for Adult (replica)";
       originalMessage = "MSH|\nPID|\nORC|\nRXA|\nOBX|\nOBX|\nOBX|\nOBX|\n";
-      quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY",
-          "VAC1_ADMIN" };
+      quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "VAC1_ADMIN" };
       patientType = PatientType.ADULT;
     } else if (scenario.equals(SCENARIO_3_R_HISTORICAL_CHILD)) {
       description = "NIST IZ #3: Historical for Child (replica)";
       originalMessage = "MSH|\nPID|\nORC|\nRXA|\n";
-      quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY",
-          "VAC1_HIST" };
+      quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "VAC1_HIST" };
       patientType = PatientType.TWEEN;
     } else if (scenario.equals(SCENARIO_3_R_HISTORICAL_TWO_YEARS_OLD)) {
       description = "NIST IZ #3: Historical for Child (replica) 2 years old";
@@ -309,8 +307,7 @@ public class ScenarioManager
       quickTransformations = new String[] { "2.5.1", "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "MOTHER", "RACE",
           "ETHNICITY", "VAC1_ADMIN", "VAC2_HIST", "VAC3_ADMIN" };
       patientType = PatientType.TODDLER;
-      customTransformations = "MSH-15=NE\nMSH-16=AL\nMSH-22=[RESPONSIBLE_ORG_NAME]\n"
-          + "PID-11.2=[STREET2]\n"
+      customTransformations = "MSH-15=NE\nMSH-16=AL\nMSH-22=[RESPONSIBLE_ORG_NAME]\n" + "PID-11.2=[STREET2]\n"
           + "PID-15=[LANGUAGE]\nPID-15.2=[LANGUAGE_LABEL]\nPID-15.3=HL70296\nPID-13.2#2=NET\nPID-13.3#2=X.400\nPID-13.4#2=[EMAIL]\n"
           + "PID-14.2=WPN\nPID-14.3=PH\nPID-14.6=[PHONE_ALT_AREA]\nPID-14.7=[PHONE_ALT_LOCAL]\nPID-24=N\nPID-25=1\nPID-30=N\n"
           + "PD1-11.1=02\nPD1-11.2=Reminder/recall - any method\nPD1-11.3=HL70215\nPD1-12=N\nPD1-13=[TODAY]\nPD1-16=A\nPD1-17=[TODAY]\nPD1-18=[TODAY]\n"
@@ -320,11 +317,9 @@ public class ScenarioManager
           + "NK1-6.2=WPN\nNK1-6.3=PH\nNK1-6.6=[PHONE_ALT_AREA]\nNK1-6.7=[PHONE_ALT_LOCAL]\n"
           + "ORC-10.1=[ENTERED_BY_NPI]\nORC-10.2=[ENTERED_BY_LAST]\nORC-10.3=[ENTERED_BY_FIRST]\nORC-10.4=[ENTERED_BY_MIDDLE]\nORC-10.9=CNS\nORC-10.10=L\nORC-10.13=NPI\n"
           + "ORC-12.1=[ORDERED_BY_NPI]\nORC-12.2=[ORDERED_BY_LAST]\nORC-12.3=[ORDERED_BY_FIRST]\nORC-12.4=[ORDERED_BY_MIDDLE]\nORC-12.9=CMS\nORC-10.10=L\nORC-12.13=NPI\n"
-          + "ORC-17.1=[ADMIN_ORG_1_ID]\nORC-17.2=[ADMIN_ORG_1_NAME]\nORC-17.3=HL70362\n"
-          + "RXA-4=[VAC1_DATE]\n"
+          + "ORC-17.1=[ADMIN_ORG_1_ID]\nORC-17.2=[ADMIN_ORG_1_NAME]\nORC-17.3=HL70362\n" + "RXA-4=[VAC1_DATE]\n"
           + "RXA-10.1=[ADMIN_BY_NPI]\nRXA-10.2=[ADMIN_BY_LAST]\nRXA-10.3=[ADMIN_BY_FIRST]\nRXA-10.4=[ADMIN_BY_MIDDLE]\nRXA-10.9=CMS\nRXA-10.10=L\nRXA-10.13=NPI\n"
-          + "RXA-11.4=[ADMIN_ORG_1_ID]\n"
-          + "RXA-16=[FUTURE]\nRXA#3-16=[FUTURE]\nRXA*-20=CP\nRXA-22=[NOW]\n"
+          + "RXA-11.4=[ADMIN_ORG_1_ID]\n" + "RXA-16=[FUTURE]\nRXA#3-16=[FUTURE]\nRXA*-20=CP\nRXA-22=[NOW]\n"
           + "RXA#2-4=[VAC2_DATE]\n"
           + "ORC#3-10.1=[ENTERED_BY_NPI]\nORC#3-10.2=[ENTERED_BY_LAST]\nORC#3-10.3=[ENTERED_BY_FIRST]\nORC#3-10.4=[ENTERED_BY_MIDDLE]\nORC#3-10.9=CMS\nORC#3-10.10=L\nORC#3-10.13=NPI\n"
           + "ORC#3-12.1=[ORDERED_BY_NPI]\nORC#3-12.2=[ORDERED_BY_LAST]\nORC#3-12.3=[ORDERED_BY_FIRST]\nORC#3-12.4=[ORDERED_BY_MIDDLE]\nORC#3-12.9=CMS\nORC#3-10.10=L\nORC#3-12.13=NPI\n"
@@ -361,16 +356,14 @@ public class ScenarioManager
     } else if (scenario.equals(SCENARIO_3_R_HISTORICAL_CHILD)) {
       description = "NIST IZ #3.1: Historical for Child";
       originalMessage = "MSH|^~\\&|Test EHR Application|X68||NIST Test Iz Reg|201207010822||VXU^V04^VXU_V04|NIST-IZ-007.00|P|2.5.1|||AL|ER\n"
-          + "PID|1||MR-99922^^^NIST MPI^MR||Montgomery^Lewis^^^^^L||20010821|M\n"
-          + "ORC|RE||IZ-783276^NDA\n"
+          + "PID|1||MR-99922^^^NIST MPI^MR||Montgomery^Lewis^^^^^L||20010821|M\n" + "ORC|RE||IZ-783276^NDA\n"
           + "RXA|0|1|20110215||62^HPV^CVX|999|||01^Historical information - source unspecified^NIP001\n";
       quickTransformations = new String[] {};
       patientType = PatientType.TWEEN;
     } else if (scenario.equals(SCENARIO_4_R_CONSENTED_CHILD)) {
       description = "NIST IZ #4.1: Consented for Child";
       originalMessage = "MSH|^~\\&|Test EHR Application|X68||NIST Test Iz Reg|201207010822||VXU^V04^VXU_V04|NIST-IZ-010.00|P|2.5.1|||AL|ER\n"
-          + "PID|1||X-6523^^^NIST MPI^MR||Newton^Lea^^^^^L||20010905|F\n"
-          + "PD1||||||||||||N|20120701\n"
+          + "PID|1||X-6523^^^NIST MPI^MR||Newton^Lea^^^^^L||20010905|F\n" + "PD1||||||||||||N|20120701\n"
           + "ORC|RE||IZ-783277^NDA\n"
           + "RXA|0|1|20110214||115^Tdap^CVX|999|||01^Historical information - source unspecified^NIP001\n";
       quickTransformations = new String[] {};
@@ -378,16 +371,14 @@ public class ScenarioManager
     } else if (scenario.equals(SCENARIO_5_1_REFUSED_TODDLER)) {
       description = "NIST IZ #5.1: Refused for Toddler";
       originalMessage = "MSH|^~\\&|Test EHR Application|X68||NIST Test Iz Reg|201207010822||VXU^V04^VXU_V04|NIST-IZ-013.00|P|2.5.1|||AL|ER\n"
-          + "PID|1||MR-67323^^^NIST MPI^MR||Fleming^Chad^^^^^L||20100830|M\n"
-          + "ORC|RE||9999^CDC\n"
+          + "PID|1||MR-67323^^^NIST MPI^MR||Fleming^Chad^^^^^L||20100830|M\n" + "ORC|RE||9999^CDC\n"
           + "RXA|0|1|20120815||03^MMR^CVX|999||||||||||||00^Parental Refusal^NIP002||RE\n";
       patientType = PatientType.TODDLER;
       quickTransformations = new String[] {};
     } else if (scenario.equals(SCENARIO_6_R_VARICELLA_HISTORY_CHILD)) {
       description = "NIST IZ #6.1: Varicella History for Child";
       originalMessage = "MSH|^~\\&|Test EHR Application|X68||NIST Test Iz Reg|201207010822||VXU^V04^VXU_V04|NIST-IZ-016.00|P|2.5.1|||AL|ER\n"
-          + "PID|1||MR-11891^^^NIST MPI^MR||Wolfe^Aron^^^^^L||20010907|M\n"
-          + "ORC|RE||9999^CDC\n"
+          + "PID|1||MR-11891^^^NIST MPI^MR||Wolfe^Aron^^^^^L||20010907|M\n" + "ORC|RE||9999^CDC\n"
           + "RXA|0|1|20110215||998^No vaccine administered^CVX|999||||||||||||||NA\n"
           + "OBX|1|CE|59784-9^Disease with presumed immunity^LN|1|38907003^Varicella infection^SCT||||||F\n";
       quickTransformations = new String[] {};
