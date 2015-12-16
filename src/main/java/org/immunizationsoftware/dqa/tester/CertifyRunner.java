@@ -6227,7 +6227,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       if (firstTime) {
         int i = 1;
         if (connector.getCustomTransformations() != null && !connector.getCustomTransformations().equals("")) {
-          System.out.println("--> sending transform: " + connector.getCustomTransformations());
           addField(sb, PARAM_TC_TRANSFORMS + i, "\n" + connector.getCustomTransformations());
         }
         for (String scenario : connector.getScenarioTransformationsMap().keySet()) {
