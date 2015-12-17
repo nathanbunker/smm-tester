@@ -12,6 +12,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -19,17 +20,13 @@ import java.util.Random;
 import java.util.TimeZone;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
 
 /**
  * 
  * @author nathan
  */
-public class ORConnector extends Connector {
+public class ORConnector extends HttpConnector {
 
   private static String XML_START_1 = "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:vac=\"http://vaccination.org/\">";
   private static String XML_START_2 = "<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\"><wsse:Security soap:mustUnderstand=\"true\" xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\"><wsse:UsernameToken wsu:Id=\"UsernameToken-1FE3EACC843FB85E7314423175070027\"><wsse:Username>";
@@ -91,18 +88,20 @@ public class ORConnector extends Connector {
       debugLog = new StringBuilder();
     }
     try {
-      SSLSocketFactory factory = null; // setupSSLSocketFactory(debug, debugLog);
-      HttpURLConnection urlConn;
+      SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
+      URLConnection urlConn;
       DataOutputStream printout;
       InputStreamReader input = null;
       URL url = new URL(conn.getUrl());
-
-      urlConn = (HttpURLConnection) url.openConnection();
+      urlConn = url.openConnection();
       if (factory != null && urlConn instanceof HttpsURLConnection) {
+        if (debug) {
+          debugLog.append("Using custom factory for SSL \r");
+        }
         ((HttpsURLConnection) urlConn).setSSLSocketFactory(factory);
       }
 
-      urlConn.setRequestMethod("POST");
+//      urlConn.setRequestMethod("POST");
 
       urlConn.setRequestProperty("Content-Type",
           "application/soap+xml; charset=utf-8;action=\"http://vaccination.org/IVaccinationService/UpdateHistoryRequest\"");
@@ -172,6 +171,7 @@ public class ORConnector extends Connector {
 
   }
 
+  /*
   protected SSLSocketFactory setupSSLSocketFactory(boolean debug, StringBuilder debugLog) {
     SSLSocketFactory factory = null;
 
@@ -209,7 +209,8 @@ public class ORConnector extends Connector {
 
     return factory;
   }
-
+*/
+  
   @Override
   public String connectivityTest(String message) throws Exception {
     return "Not supported yet";
