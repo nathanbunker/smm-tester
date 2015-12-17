@@ -14,7 +14,7 @@ import java.util.List;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
-public class MOConnector extends ORConnector
+public class MOConnector extends HttpConnector
 {
 
   private static final String HL7_REQUEST_RESULT_START_TAG = "<SMVHL7VAL_x0028__x0029_Result>";

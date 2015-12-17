@@ -33,16 +33,17 @@ public class AckAnalyzer
   static {
     // AckType.NJSIIS.inHL7Format = false;
     AckType.NMSIIS.description = "The NMSIIS interface is first assumed to have a setup problem if any one of three conditions occurs: \n"
-        + " + Message is shorter than 240 characters\n"
-        + " + Message contains phrase |BAD MESSAGE|\n"
-        + " + Message contains phrase FILE REJECTED\n\n"
-        + "Transmission will stop if a setup problem is detected\n\n"
+        + " + Message is shorter than 240 characters\n" + " + Message contains phrase |BAD MESSAGE|\n"
+        + " + Message contains phrase FILE REJECTED\n\n" + "Transmission will stop if a setup problem is detected\n\n"
         + "A message is considered accepted if the following phrases are not found in the message: \n"
         + " + RECORD REJECTED\n" + " + MESSAGE REJECTED\n" + " + WARNING:  RXA #[n] IGNORED - REQUIRED FIELD RXA-\n\n";
 
     AckType.IRIS_ID.description = "The Idaho IRIS acknowledgement is considered accepted if it does not contain the phrase 'MESSAGE REJECTED'. \n\n"
         + "In addition special steps were taken to handle fact that some ACK messages are incorrectly labeled as VXU messages. "
         + "In the case where the ACK message is labeled as a VXU the responses is assumed to be an acknowledgement and read as such. \n";
+
+    AckType.ALERT.description = "Follows the CDC/AIRA standard except if the message contains the phrase \"Record Rejected\" or \"RXA #[n] IGNORED\" "
+        + "then this is an error even if it's not a E. ";
   }
 
   public static HL7Reader getMessageReader(String ackMessageText, AckType ackType) {
@@ -204,6 +205,20 @@ public class AckAnalyzer
       ackMessage = true;
       ackCode = getFieldValue("MSA", 1);
 
+      boolean alertProblem = false;
+      if (ackType.equals(AckType.ALERT)) {
+        int warningRxaPos1 = ackUpperCase.indexOf("|RXA #");
+        int warningRxaPos2 = -1;
+        if (warningRxaPos1 > -1) {
+          warningRxaPos2 = ackUpperCase.indexOf(" IGNORED");
+          alertProblem = warningRxaPos2 != -1;
+        } else {
+          if (ackUpperCase.indexOf("RECORD REJECTED") != -1) {
+            alertProblem = true;
+          }
+        }
+      }
+
       if (ackType.equals(AckType.NMSIIS)) {
         setupProblem = ackUpperCase.indexOf("|BAD MESSAGE|") != -1 || ackUpperCase.indexOf("FILE REJECTED") != -1;
         if (setupProblem) {
@@ -286,22 +301,9 @@ public class AckAnalyzer
         if (!positive) {
           log("The phrase \"MESSAGE REJECTED\" appeared in the message so major issue must have happened");
         }
-      } else if (ackType.equals(AckType.ALERT)) {
-        positive = true;
-        int pos = 1;
-        String[] values = null;
-        while ((values = getFieldValues("MSA", pos, 1)) != null) {
-          if (values.length > 0) {
-            if (values[0].equals("AE")) {
-              positive = false;
-              break;
-            }
-          }
-          pos++;
-        }
-        if (!positive) {
-          log("At least one MSA-1 field was found with a value of AE so message was rejected");
-        }
+      } else if (ackType.equals(AckType.ALERT) && alertProblem) {
+        positive = false;
+        log("The phrase in response indicates important information was not accepted");
       } else if (ackType.equals(AckType.WEBIZ)) {
         if (ackCode.equals("AA")) {
           positive = true;

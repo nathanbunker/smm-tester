@@ -13,7 +13,7 @@ import java.util.List;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
-public class NJConnector extends ORConnector {
+public class NJConnector extends HttpConnector {
 
   private static final String HL7_REQUEST_RESULT_START_TAG = "ResponseHL7Message>";
   private static final String HL7_REQUEST_RESULT_END_TAG = "</";

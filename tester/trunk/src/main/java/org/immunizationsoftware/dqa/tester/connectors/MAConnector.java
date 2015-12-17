@@ -15,7 +15,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.codec.binary.Base64;
 
-public class MAConnector extends ORConnector
+public class MAConnector extends HttpConnector
 {
 
   private static final String HL7_REQUEST_RESULT_START_TAG = "<urn:return>"; // "<urn:submitSingleMessageResponse xmlns:urn=\"urn:cdc:iisb:2011\">";
