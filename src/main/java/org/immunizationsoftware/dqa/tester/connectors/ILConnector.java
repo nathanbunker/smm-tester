@@ -14,7 +14,7 @@ import java.util.List;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
-public class ILConnector extends ORConnector
+public class ILConnector extends HttpConnector
 {
 
   private static final String HL7_REQUEST_RESULT_START_TAG = "<HL7RequestResult>";

@@ -2434,6 +2434,8 @@ public class Transformer
       t.value = transformRequest.getToday();
     } else if (t.value.equalsIgnoreCase("[TOMORROW]")) {
       t.value = transformRequest.getTomorrow();
+    } else if (t.value.equalsIgnoreCase("[LONG_TIME_FROM_NOW]")) {
+      t.value = transformRequest.getLongTimeFromNow();
     } else if (t.value.equalsIgnoreCase("[YESTERDAY]")) {
       t.value = transformRequest.getYesterday();
     } else if (t.value.equalsIgnoreCase("[CONTROL_ID]")) {

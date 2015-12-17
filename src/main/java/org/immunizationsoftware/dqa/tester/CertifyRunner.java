@@ -1497,19 +1497,13 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     addNotAccepted("PID: Patient identifier segment is missing", "remove segment PID", ++count);
     addNotAccepted("PID-3: Patient id is missing", "CLEAR PID-3", ++count);
     addNotAccepted("PID-5: Patient name is missing", "CLEAR PID-5", ++count);
-    addNotAccepted("PID-7: Patient dob is missing", "CLEAR PID-8", ++count);
+    addNotAccepted("PID-7: Patient dob is missing", "CLEAR PID-7", ++count);
     addNotAccepted("PID-7: Patient dob is unreadable", "PID-7=DOB", ++count);
-    addNotAccepted("PID-7: Patient dob is in the future", "PID-7=[TOMORROW]", ++count); // 2
-                                                                                        // years
-                                                                                        // from
-                                                                                        // now
+    addNotAccepted("PID-7: Patient dob is in the future", "PID-7=[LONG_TIME_FROM_NOW]", ++count); 
     addNotAccepted("RXA: RXA segment is missing", "remove segment RXA", ++count);
     addNotAccepted("RXA-3: Vaccination date is missing", "RXA-3=", ++count);
     addNotAccepted("RXA-3: Vaccination date is unreadable", "RXA-3=SHOT DATE", ++count);
-    addNotAccepted("RXA-3: Vaccination date set in the future", "RXA-3=[TOMORROW]", ++count); // 2
-                                                                                              // years
-                                                                                              // from
-                                                                                              // now
+    addNotAccepted("RXA-3: Vaccination date set in the future", "RXA-3=[LONG_TIME_FROM_NOW]", ++count); 
     addNotAccepted("RXA-5: Vaccination code is missing", "RXA-5=", ++count);
     addNotAccepted("RXA-5: Vaccination code is invalid", "RXA-5=14000BADVALUE", ++count);
     areaCount[SUITE_K_NOT_ACCEPTED][0] = statusCheckTestCaseNotAcceptedList.size();
@@ -2630,7 +2624,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
   private void prepareExceptional() {
 
-    int count = 1;
+    int count = 100;
     count = createToleranceCheck("MSH-10 Message Control Id is very long", "MSH-10=" + somewhatRandomLongString(198),
         count);
     count = createToleranceCheck("MSH-300 is empty with bars all the way out", "MSH-300=1\nMSH-300=", count);
@@ -2673,6 +2667,35 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     count = createToleranceCheck("RXA-300 is empty with bars all the way out", "RXA-300=1\nRXA-300=", count);
     count = createToleranceCheck("RXA-300 set to a value of 1", "RXA-300=1", count);
 
+    {
+      count++;
+      TestCaseMessage testCaseMessage1 = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+      testCaseMessage1.setDescription(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " Same message to be sent again");
+      testCaseMessage1.setTestCaseSet(testCaseSet);
+      testCaseMessage1.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage1.setTestCaseNumber(uniqueMRNBase + testCaseMessage1.getTestCaseCategoryId());
+      statusCheckTestCaseExceptionalList.add(testCaseMessage1);
+      testCaseMessage1.setTestPosition(incrementingInt.next());
+      testCaseMessage1.setTestType(VALUE_TEST_TYPE_UPDATE);
+      transformer.transform(testCaseMessage1);
+      testCaseMessage1.setAssertResult("Accept - *");
+      register(testCaseMessage1);
+
+      count++;
+      TestCaseMessage testCaseMessage2 = new TestCaseMessage();
+      testCaseMessage2.setDescription(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " Same message as before");
+      testCaseMessage2.setMessageText(testCaseMessage1.getMessageText());
+      testCaseMessage2.setTestCaseCategoryId("E." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage2.setTestCaseNumber(uniqueMRNBase + testCaseMessage2.getTestCaseCategoryId());
+      statusCheckTestCaseExceptionalList.add(testCaseMessage2);
+      testCaseMessage2.setTestPosition(incrementingInt.next());
+      testCaseMessage2.setTestType(VALUE_TEST_TYPE_UPDATE);
+      testCaseMessage2.setAssertResult("Accept - *");
+      register(testCaseMessage2);
+    }
+    
+    
+    count = 200;
     {
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
@@ -2838,6 +2861,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   }
 
   public int createToleranceCheck(String label, String customTransformation, int count) {
+    count++;
     TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
     testCaseMessage.setAdditionalTransformations(customTransformation + "\n");
     testCaseMessage.setDescription(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " " + label);
@@ -2850,7 +2874,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     transformer.transform(testCaseMessage);
     testCaseMessage.setAssertResult("Accept - *");
     register(testCaseMessage);
-    return count++;
+    return count;
   }
 
   private int createCertfiedMessageTestCaseMessage(Transformer transformer, int count, StringBuilder sb,

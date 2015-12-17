@@ -22,16 +22,21 @@ import java.util.TimeZone;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.apache.commons.codec.binary.Base64;
+
 /**
  * 
  * @author nathan
  */
-public class ORConnector extends HttpConnector {
+public class ORConnector extends HttpConnector
+{
 
   private static String XML_START_1 = "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:vac=\"http://vaccination.org/\">";
-  private static String XML_START_2 = "<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\"><wsse:Security soap:mustUnderstand=\"true\" xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\"><wsse:UsernameToken wsu:Id=\"UsernameToken-1FE3EACC843FB85E7314423175070027\"><wsse:Username>";
+  private static String XML_START_2a = "<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\"><wsse:Security soap:mustUnderstand=\"true\" xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\"><wsse:UsernameToken wsu:Id=\"UsernameToken-";
+  private static String XML_START_2b = "\"><wsse:Username>";
   private static String XML_START_3 = "</wsse:Username><wsse:Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText\">";
-  private static String XML_START_4 = "</wsse:Password><wsse:Nonce EncodingType=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary\">W8Xz6MljKoZsKeievKnDDQ==</wsse:Nonce><wsu:Created>";
+  private static String XML_START_4a = "</wsse:Password><wsse:Nonce EncodingType=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary\">";
+  private static String XML_START_4b = "</wsse:Nonce><wsu:Created>";
   private static String XML_START_5 = "</wsu:Created></wsse:UsernameToken></wsse:Security><wsa:Action>http://vaccination.org/IVaccinationService/UpdateHistoryRequest</wsa:Action><wsa:MessageID>";
   private static String XML_START_6 = "</wsa:MessageID></soap:Header><soap:Body><vac:UpdateHistory><arg0><![CDATA[";
   private static String XML_END = "]]></arg0></vac:UpdateHistory></soap:Body></soap:Envelope>";
@@ -87,12 +92,12 @@ public class ORConnector extends HttpConnector {
 
   public String sendRequest(String request, ClientConnection conn, boolean debug) throws IOException {
     StringBuilder debugLog = null;
+    URLConnection urlConn = null;
     if (debug) {
       debugLog = new StringBuilder();
     }
     try {
       SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
-      URLConnection urlConn;
       DataOutputStream printout;
       InputStreamReader input = null;
       URL url = new URL(conn.getUrl());
@@ -104,7 +109,7 @@ public class ORConnector extends HttpConnector {
         ((HttpsURLConnection) urlConn).setSSLSocketFactory(factory);
       }
 
-//      urlConn.setRequestMethod("POST");
+      ((HttpURLConnection) urlConn).setRequestMethod("POST");
 
       urlConn.setRequestProperty("Content-Type",
           "application/soap+xml; charset=utf-8;action=\"http://vaccination.org/IVaccinationService/UpdateHistoryRequest\"");
@@ -112,8 +117,6 @@ public class ORConnector extends HttpConnector {
       urlConn.setDoOutput(true);
       urlConn.setUseCaches(false);
       String content;
-
-      Random random = new Random();
 
       SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd"); // 2011-12-22T21:55:18.593Z
       SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss.SSS");
@@ -123,20 +126,23 @@ public class ORConnector extends HttpConnector {
       String messageDate = sdfDate.format(today) + "T" + sdfTime.format(today) + "Z";
       StringBuilder sb = new StringBuilder();
       sb.append(XML_START_1);
-      sb.append(XML_START_2);
+      sb.append(XML_START_2a);
+      sb.append(randomHex(32));
+      sb.append(XML_START_2b);
       sb.append(userid);
       sb.append(XML_START_3);
       sb.append(password);
-      sb.append(XML_START_4);
+      sb.append(XML_START_4a);
+      sb.append(Base64.encodeBase64(randomHex(16).getBytes()));
+      sb.append(XML_START_4b);
       sb.append(messageDate);
       sb.append(XML_START_5);
-      sb.append("uuid:3aa9b7f4-3269-44e5-b52a-028e" + (random.nextInt(90000000) + 10000000));
+      sb.append(
+          "uuid:" + randomHex(8) + "-" + randomHex(4) + "-" + randomHex(4) + "-" + randomHex(4) + "-" + randomHex(12));
       sb.append(XML_START_6);
       sb.append(request);
       sb.append(XML_END);
       content = sb.toString();
-
-      System.out.println(content);
 
       printout = new DataOutputStream(urlConn.getOutputStream());
       printout.writeBytes(content);
@@ -151,13 +157,13 @@ public class ORConnector extends HttpConnector {
         response.append('\r');
       }
       input.close();
-//      String responseString = response.toString();
-//      int startPos = responseString.indexOf(HL7_REQUEST_RESULT_START_TAG);
-//      int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG);
-//      if (startPos > 0 && endPos > startPos) {
-//        responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
-//        response = new StringBuilder(responseString);
-//      }
+      String responseString = response.toString();
+      int startPos = responseString.indexOf(HL7_REQUEST_RESULT_START_TAG);
+      int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG);
+      if (startPos > 0 && endPos > startPos) {
+        responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
+        response = new StringBuilder(responseString);
+      }
       if (debug) {
         response.append("\r");
         response.append("DEBUG LOG: \r");
@@ -165,6 +171,17 @@ public class ORConnector extends HttpConnector {
       }
       return response.toString();
     } catch (IOException e) {
+      e.printStackTrace(System.out);
+      if (urlConn != null) {
+        InputStreamReader input = new InputStreamReader(((HttpURLConnection) urlConn).getErrorStream());
+        StringBuilder response = new StringBuilder();
+        BufferedReader in = new BufferedReader(input);
+        String line;
+        while ((line = in.readLine()) != null) {
+          System.out.println(line);
+        }
+        input.close();
+      }
       if (debug) {
         StringWriter stringWriter = new StringWriter();
         PrintWriter out = new PrintWriter(stringWriter);
@@ -181,46 +198,6 @@ public class ORConnector extends HttpConnector {
 
   }
 
-  /*
-  protected SSLSocketFactory setupSSLSocketFactory(boolean debug, StringBuilder debugLog) {
-    SSLSocketFactory factory = null;
-
-    if (getKeyStore() != null) {
-      if (debug) {
-        debugLog.append("Key store defined, looking to load it for use on this connection \r");
-      }
-      try {
-        SSLContext context = SSLContext.getInstance("TLSv1");
-        final TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        tmf.init(getKeyStore());
-        X509TrustManager defaultTrustManager = (X509TrustManager) tmf.getTrustManagers()[0];
-        SavingTrustManager tm = new SavingTrustManager(defaultTrustManager);
-        context.init(null, new TrustManager[] { tm }, null);
-        factory = context.getSocketFactory();
-        if (debug) {
-          debugLog.append("Key store loaded \r");
-        }
-        // context.init(new KeyManager[] { new
-        // FilteredKeyManager((X509KeyManager)originalKeyManagers[0],
-        // desiredCertsForConnection) },
-        // tmf.getTrustManagers(), new SecureRandom());
-
-      } catch (Exception e) {
-        e.printStackTrace();
-        if (debug) {
-          debugLog.append("Unable to load key store: " + e.getMessage() + " \r");
-        }
-      }
-    } else {
-      if (debug) {
-        debugLog.append("Key store was not defined, using default for this connection \r");
-      }
-    }
-
-    return factory;
-  }
-*/
-  
   @Override
   public String connectivityTest(String message) throws Exception {
     return "Not supported yet";
@@ -241,5 +218,20 @@ public class ORConnector extends HttpConnector {
     // sb.append("Deduplicate: true\n");
     // }
 
+  }
+
+  Random random = new Random();
+
+  private String randomHex(int length) {
+    String s = "";
+    for (int i = 0; i < length; i++) {
+      int v = random.nextInt(16);
+      if (v < 10) {
+        s += v;
+      } else {
+        s += (char) (((int) 'A') + (v - 10));
+      }
+    }
+    return s;
   }
 }
