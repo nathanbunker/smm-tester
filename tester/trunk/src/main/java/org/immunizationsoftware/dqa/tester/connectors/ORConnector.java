@@ -36,6 +36,9 @@ public class ORConnector extends HttpConnector {
   private static String XML_START_6 = "</wsa:MessageID></soap:Header><soap:Body><vac:UpdateHistory><arg0><![CDATA[";
   private static String XML_END = "]]></arg0></vac:UpdateHistory></soap:Body></soap:Envelope>";
 
+  private static final String HL7_REQUEST_RESULT_START_TAG = "<return>";
+  private static final String HL7_REQUEST_RESULT_END_TAG = "</return>";
+
   protected ORConnector(String label, String url, String type) {
     super(label, type);
     this.url = url;
@@ -148,6 +151,13 @@ public class ORConnector extends HttpConnector {
         response.append('\r');
       }
       input.close();
+      String responseString = response.toString();
+      int startPos = responseString.indexOf(HL7_REQUEST_RESULT_START_TAG);
+      int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG);
+      if (startPos > 0 && endPos > startPos) {
+        responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
+        response = new StringBuilder(responseString);
+      }
       if (debug) {
         response.append("\r");
         response.append("DEBUG LOG: \r");
