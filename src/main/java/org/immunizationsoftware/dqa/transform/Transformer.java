@@ -155,8 +155,14 @@ public class Transformer
     in.close();
   }
 
-  public String getValue(String concept) throws IOException {
+  public String getValue(String concept) {
+    try {
     return getValue(concept, 0);
+    }
+    catch (IOException ioe)
+    {
+      return "Unable to get value: " + ioe.getMessage();
+    }
   }
 
   public String getValue(String concept, int pos) throws IOException {

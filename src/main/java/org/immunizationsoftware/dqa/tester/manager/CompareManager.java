@@ -1,8 +1,10 @@
 package org.immunizationsoftware.dqa.tester.manager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.immunizationsoftware.dqa.transform.Comparison;
 
@@ -39,6 +41,68 @@ public class CompareManager
       }
     } else if (ack2Reader.advanceToSegment("MSA")) {
       return false;
+    }
+    return true;
+  }
+
+  public static boolean queryReturnedMostImportantData(String vxu, String rsp) {
+    HL7Reader vxuReader = new HL7Reader(vxu);
+    HL7Reader rspReader = new HL7Reader(rsp);
+    if (vxuReader.advanceToSegment("PID")) {
+      if (!rspReader.advanceToSegment("PID")) {
+        return false;
+      }
+      {
+        String vxuLastName = vxuReader.getValue(5, 1);
+        String rspLastName = rspReader.getValue(5, 1);
+        if (!vxuLastName.equalsIgnoreCase(rspLastName)) {
+          return false;
+        }
+      }
+      {
+        String vxuFirstName = vxuReader.getValue(5, 2);
+        String rpsFirstName = rspReader.getValue(5, 2);
+        if (!vxuFirstName.equalsIgnoreCase(rpsFirstName)) {
+          return false;
+        }
+      }
+      {
+        String vxuDob = vxuReader.getValue(7);
+        String rspDob = rspReader.getValue(7);
+        if (!vxuDob.equalsIgnoreCase(rspDob)) {
+          return false;
+        }
+      }
+      while(vxuReader.advanceToSegment("RXA"))
+      {
+        String cvxCode = vxuReader.getValue(5);
+        String adminDate = trunc(vxuReader.getValue(3), 8);
+        if (cvxCode.equals("") || adminDate.equals("") || cvxCode.equals("999") || cvxCode.equals("998")) {
+          continue;
+        }
+        if (adminDate.length() > 8) {
+          adminDate = adminDate.substring(0, 8);
+        }
+        rspReader.resetPostion();
+        boolean found = false;
+        while (rspReader.advanceToSegment("RXA")) {
+          String rspCvxCode = rspReader.getValue(5);
+          String rspCvxCode2 = aliasMap.get(rspCvxCode);
+          if (rspCvxCode.equals(cvxCode) || (rspCvxCode2 != null && rspCvxCode2.equals(cvxCode))) {
+            if (cvxCode.equals("998")) {
+              found = true;
+              break;
+            } else if (trunc(rspReader.getValue(3), 8).equals(adminDate)) {
+              found = true;
+              break;
+            }
+          }
+        }
+        if (!found)
+        {
+          return false;
+        }
+      }
     }
     return true;
   }
@@ -799,5 +863,274 @@ public class CompareManager
       return s.substring(0, length);
     }
     return s;
+  }
+  
+  private static Map<String, String> aliasMap = new HashMap<String, String>();
+  static
+  {
+    aliasMap.put("01", "1");
+    aliasMap.put("02", "2");
+    aliasMap.put("03", "3");
+    aliasMap.put("04", "4");
+    aliasMap.put("05", "5");
+    aliasMap.put("06", "6");
+    aliasMap.put("07", "7");
+    aliasMap.put("08", "8");
+    aliasMap.put("09", "9");
+    aliasMap.put("1", "01");
+    aliasMap.put("2", "02");
+    aliasMap.put("3", "03");
+    aliasMap.put("4", "04");
+    aliasMap.put("5", "05");
+    aliasMap.put("6", "06");
+    aliasMap.put("7", "07");
+    aliasMap.put("8", "08");
+    aliasMap.put("9", "09");
+    aliasMap.put("49281-0623-15", "158");
+    aliasMap.put("49281-0515-25", "161");
+    aliasMap.put("49281-0415-50", "150");
+    aliasMap.put("49281-0415-10", "150");
+    aliasMap.put("33332-0115-10", "141");
+    aliasMap.put("33332-0015-01", "140");
+    aliasMap.put("66019-0302-10", "149");
+    aliasMap.put("42874-0015-10", "155");
+    aliasMap.put("66521-0118-02", "140");
+    aliasMap.put("66521-0118-10", "141");
+    aliasMap.put("58160-0883-52", "140");
+    aliasMap.put("66521-0000-11", "");
+    aliasMap.put("66019-0301-10", "149");
+    aliasMap.put("33332-0014-01", "140");
+    aliasMap.put("33332-0114-10", "141");
+    aliasMap.put("63851-0613-01", "153");
+    aliasMap.put("66521-0117-10", "141");
+    aliasMap.put("66521-0117-02", "140");
+    aliasMap.put("00006-4093-02", "8");
+    aliasMap.put("00006-4094-02", "43");
+    aliasMap.put("00006-4095-02", "83");
+    aliasMap.put("00006-4096-02", "52");
+    aliasMap.put("00006-4963-00", "121");
+    aliasMap.put("00006-4963-41", "121");
+    aliasMap.put("42874-0014-10", "155");
+    aliasMap.put("49281-0414-50", "150");
+    aliasMap.put("49281-0395-65", "135");
+    aliasMap.put("49281-0709-55", "144");
+    aliasMap.put("58160-0881-52", "140");
+    aliasMap.put("58160-0809-05", "148");
+    aliasMap.put("62577-0613-01", "153");
+    aliasMap.put("19515-0893-07", "141");
+    aliasMap.put("49281-0621-15", "158");
+    aliasMap.put("00005-0100-02", "162");
+    aliasMap.put("00005-0100-05", "162");
+    aliasMap.put("00005-0100-10", "162");
+    aliasMap.put("00006-4047-20", "116");
+    aliasMap.put("00006-4109-02", "62");
+    aliasMap.put("62577-0613-01", "153");
+    aliasMap.put("00006-4121-02", "165");
+    aliasMap.put("00006-4119-02", "165");
+    aliasMap.put("00006-4119-03", "165");
+    aliasMap.put("63851-0501-02", "18");
+    aliasMap.put("49281-0562-10", "130");
+    aliasMap.put("46028-0114-02", "163");
+    aliasMap.put("46028-0114-01", "163");
+    aliasMap.put("00006-4171-00", "94");
+    aliasMap.put("13533-0131-01", "9");
+    aliasMap.put("13533-0131-01", "9");
+    aliasMap.put("49281-0396-15", "141");
+    aliasMap.put("49281-0397-65", "135");
+    aliasMap.put("62577-0614-01", "153");
+    aliasMap.put("58160-0903-52", "150");
+    aliasMap.put("19515-0898-11", "158");
+    aliasMap.put("19515-0901-52", "150");
+    aliasMap.put("49281-0393-65", "135");
+    aliasMap.put("58160-0810-52", "20");
+    aliasMap.put("58160-0810-11", "20");
+    aliasMap.put("49281-0790-51", "101");
+    aliasMap.put("49281-0790-20", "101");
+    aliasMap.put("49281-0640-15", "127");
+    aliasMap.put("49281-0650-10", "126");
+    aliasMap.put("49281-0650-90", "126");
+    aliasMap.put("49281-0650-25", "126");
+    aliasMap.put("49281-0650-70", "126");
+    aliasMap.put("49281-0650-50", "126");
+    aliasMap.put("49281-0707-55", "144");
+    aliasMap.put("66019-0110-10", "111");
+    aliasMap.put("00006-4681-00", "3");
+    aliasMap.put("49281-0215-10", "113");
+    aliasMap.put("49281-0215-15", "113");
+    aliasMap.put("46028-0208-01", "136");
+    aliasMap.put("49281-0387-65", "135");
+    aliasMap.put("49281-0386-15", "141");
+    aliasMap.put("49281-0010-10", "140");
+    aliasMap.put("49281-0010-25", "140");
+    aliasMap.put("49281-0010-50", "140");
+    aliasMap.put("54868-0980-00", "3");
+    aliasMap.put("58160-0830-52", "118");
+    aliasMap.put("58160-0830-34", "118");
+    aliasMap.put("00005-1971-04", "133");
+    aliasMap.put("00005-1971-05", "133");
+    aliasMap.put("00005-1971-02", "133");
+    aliasMap.put("17478-0131-01", "9");
+    aliasMap.put("17478-0131-01", "9");
+    aliasMap.put("54868-2219-01", "");
+    aliasMap.put("54868-2219-00", "");
+    aliasMap.put("58160-0812-52", "130");
+    aliasMap.put("58160-0812-11", "130");
+    aliasMap.put("66019-0108-10", "111");
+    aliasMap.put("00006-4898-00", "51");
+    aliasMap.put("58160-0801-11", "148");
+    aliasMap.put("63851-0612-01", "153");
+    aliasMap.put("00006-4992-00", "44");
+    aliasMap.put("00006-4981-00", "8");
+    aliasMap.put("00006-4980-00", "8");
+    aliasMap.put("00006-4093-09", "8");
+    aliasMap.put("00006-4094-09", "43");
+    aliasMap.put("00006-4109-09", "62");
+    aliasMap.put("55045-3841-01", "");
+    aliasMap.put("66521-0112-02", "140");
+    aliasMap.put("66521-0112-10", "141");
+    aliasMap.put("66019-0107-01", "111");
+    aliasMap.put("49281-0225-10", "28");
+    aliasMap.put("49281-0705-55", "144");
+    aliasMap.put("42515-0001-01", "134");
+    aliasMap.put("58160-0879-52", "140");
+    aliasMap.put("58160-0880-52", "140");
+    aliasMap.put("58160-0820-11", "8");
+    aliasMap.put("58160-0820-52", "8");
+    aliasMap.put("58160-0821-11", "43");
+    aliasMap.put("58160-0821-52", "43");
+    aliasMap.put("58160-0821-34", "43");
+    aliasMap.put("42874-0012-10", "155");
+    aliasMap.put("49281-0278-10", "28");
+    aliasMap.put("66019-0109-10", "111");
+    aliasMap.put("19515-0890-07", "141");
+    aliasMap.put("19515-0889-07", "141");
+    aliasMap.put("58160-0900-52", "150");
+    aliasMap.put("49281-0860-55", "10");
+    aliasMap.put("49281-0860-10", "10");
+    aliasMap.put("49281-0389-65", "135");
+    aliasMap.put("49281-0388-15", "141");
+    aliasMap.put("49281-0011-10", "140");
+    aliasMap.put("49281-0011-50", "140");
+    aliasMap.put("49281-0703-55", "144");
+    aliasMap.put("49281-0111-25", "140");
+    aliasMap.put("54868-0734-00", "");
+    aliasMap.put("66521-0200-10", "126");
+    aliasMap.put("66521-0200-02", "127");
+    aliasMap.put("54868-6177-00", "");
+    aliasMap.put("54868-6180-00", "");
+    aliasMap.put("49281-0298-10", "20");
+    aliasMap.put("58160-0806-05", "48");
+    aliasMap.put("33332-0013-01", "140");
+    aliasMap.put("33332-0113-10", "141");
+    aliasMap.put("49281-0391-65", "135");
+    aliasMap.put("49281-0012-50", "140");
+    aliasMap.put("49281-0012-10", "140");
+    aliasMap.put("49281-0112-25", "140");
+    aliasMap.put("49281-0390-15", "141");
+    aliasMap.put("00006-4897-00", "49");
+    aliasMap.put("49281-0291-83", "113");
+    aliasMap.put("49281-0291-10", "113");
+    aliasMap.put("49281-0413-50", "150");
+    aliasMap.put("49281-0413-10", "150");
+    aliasMap.put("49281-0513-25", "161");
+    aliasMap.put("66521-0113-02", "140");
+    aliasMap.put("66521-0113-10", "141");
+    aliasMap.put("00005-1970-50", "100");
+    aliasMap.put("00006-4047-41", "116");
+    aliasMap.put("58160-0811-52", "110");
+    aliasMap.put("58160-0811-51", "110");
+    aliasMap.put("00006-4827-00", "21");
+    aliasMap.put("00006-4826-00", "21");
+    aliasMap.put("58160-0842-51", "115");
+    aliasMap.put("58160-0842-11", "115");
+    aliasMap.put("58160-0842-52", "115");
+    aliasMap.put("58160-0842-34", "115");
+    aliasMap.put("66019-0300-10", "149");
+    aliasMap.put("49281-0589-05", "114");
+    aliasMap.put("00006-4095-09", "83");
+    aliasMap.put("00006-4096-09", "52");
+    aliasMap.put("00006-4831-41", "83");
+    aliasMap.put("63851-0501-01", "18");
+    aliasMap.put("66019-0200-10", "125");
+    aliasMap.put("14362-0111-04", "9");
+    aliasMap.put("33332-0519-01", "126");
+    aliasMap.put("33332-0519-25", "126");
+    aliasMap.put("33332-0629-10", "127");
+    aliasMap.put("58160-0825-52", "83");
+    aliasMap.put("58160-0825-11", "83");
+    aliasMap.put("58160-0826-52", "52");
+    aliasMap.put("58160-0826-34", "52");
+    aliasMap.put("58160-0826-11", "52");
+    aliasMap.put("33332-0010-01", "140");
+    aliasMap.put("33332-0110-10", "141");
+    aliasMap.put("66521-0115-10", "141");
+    aliasMap.put("66521-0115-02", "140");
+    aliasMap.put("00006-4133-41", "9");
+    aliasMap.put("00006-4133-41", "9");
+    aliasMap.put("54868-4320-00", "33");
+    aliasMap.put("54868-3339-01", "33");
+    aliasMap.put("00052-0603-02", "19");
+    aliasMap.put("64678-0211-01", "24");
+    aliasMap.put("76420-0470-10", "");
+    aliasMap.put("00006-4739-00", "33");
+    aliasMap.put("00006-4943-00", "33");
+    aliasMap.put("49281-0013-10", "140");
+    aliasMap.put("49281-0013-50", "140");
+    aliasMap.put("49281-0392-15", "141");
+    aliasMap.put("49281-0113-25", "140");
+    aliasMap.put("49281-0820-10", "35");
+    aliasMap.put("49281-0800-83", "35");
+    aliasMap.put("49281-0400-15", "115");
+    aliasMap.put("76420-0483-01", "");
+    aliasMap.put("76420-0482-01", "");
+    aliasMap.put("49281-0286-01", "106");
+    aliasMap.put("49281-0286-05", "106");
+    aliasMap.put("49281-0286-10", "106");
+    aliasMap.put("21695-0413-01", "");
+    aliasMap.put("58160-0815-46", "104");
+    aliasMap.put("58160-0815-52", "104");
+    aliasMap.put("58160-0815-34", "104");
+    aliasMap.put("58160-0815-48", "104");
+    aliasMap.put("58160-0815-11", "104");
+    aliasMap.put("66521-0114-10", "141");
+    aliasMap.put("66521-0114-02", "140");
+    aliasMap.put("19515-0895-11", "158");
+    aliasMap.put("76420-0471-01", "");
+    aliasMap.put("00006-4999-00", "94");
+    aliasMap.put("49281-0510-05", "120");
+    aliasMap.put("51285-0138-50", "143");
+    aliasMap.put("49281-0250-51", "18");
+    aliasMap.put("49281-0489-01", "32");
+    aliasMap.put("49281-0915-01", "37");
+    aliasMap.put("49281-0545-05", "48");
+    aliasMap.put("58160-0854-52", "119");
+    aliasMap.put("49281-0915-05", "37");
+    aliasMap.put("49281-0489-91", "32");
+    aliasMap.put("46028-0208-01", "136");
+    aliasMap.put("51285-0138-50", "143");
+    aliasMap.put("49281-0510-05", "120");
+    aliasMap.put("49281-0400-05", "115");
+    aliasMap.put("49281-0400-10", "115");
+    aliasMap.put("42874-0013-10", "155");
+    aliasMap.put("66521-0116-10", "141");
+    aliasMap.put("66521-0116-02", "140");
+    aliasMap.put("00006-4045-00", "62");
+    aliasMap.put("00006-4045-41", "62");
+    aliasMap.put("00006-4995-41", "43");
+    aliasMap.put("00006-4995-00", "43");
+    aliasMap.put("00006-4841-41", "52");
+    aliasMap.put("00006-4841-00", "52");
+    aliasMap.put("58160-0808-15", "160");
+    aliasMap.put("58160-0808-15", "160");
+    aliasMap.put("58160-0901-52", "150");
+    aliasMap.put("00006-4837-03", "33");
+    aliasMap.put("19515-0891-11", "158");
+    aliasMap.put("19515-0893-07", "141");
+    aliasMap.put("19515-0894-52", "150");
+    aliasMap.put("49281-0514-25", "161");
+    aliasMap.put("49281-0394-15", "141");
+    aliasMap.put("49281-0014-50", "140");
+    aliasMap.put("49281-0414-10", "150");
+
   }
 }

@@ -108,6 +108,7 @@ public class TestCaseMessage
   private String assertResultStatus = "";
   private String assertResultText = "";
   private String originalMessage = "";
+  private String originalMessageResponse = "";
   private String preparedMessage = null;
   private String[] quickTransformations = new String[] {};
   private String quickTransformationsConverted = "";
@@ -143,6 +144,32 @@ public class TestCaseMessage
   private ValidationReport validationReport = null;
   private ValidationResource validationResource = null;
   private boolean validationReportPass = false;
+  private String resultStoreStatus = ""; 
+  private boolean originalAccepted = false;
+  
+  public boolean isOriginalAccepted() {
+    return originalAccepted;
+  }
+
+  public void setOriginalAccepted(boolean originalAccepted) {
+    this.originalAccepted = originalAccepted;
+  }
+
+  public String getOriginalMessageResponse() {
+    return originalMessageResponse;
+  }
+
+  public void setOriginalMessageResponse(String originalMessageAck) {
+    this.originalMessageResponse = originalMessageAck;
+  }
+
+  public String getResultStoreStatus() {
+    return resultStoreStatus;
+  }
+
+  public void setResultStoreStatus(String resultStoreStatus) {
+    this.resultStoreStatus = resultStoreStatus;
+  }
 
   public boolean isValidationReportPass() {
     return validationReportPass;
