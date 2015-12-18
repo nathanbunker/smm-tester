@@ -28,6 +28,7 @@ public interface RecordServletInterface {
   public static final String VALUE_TEST_SECTION_TYPE_PROFILING = "Profiling";
   public static final String VALUE_TEST_SECTION_TYPE_ONC_2015 = "ONC 2015";
   public static final String VALUE_TEST_SECTION_TYPE_NOT_ACCEPTED = "Not Accepted";
+  public static final String VALUE_TEST_SECTION_TYPE_QBP_SUPPORT = "QBP Support";
 
   public static final String PARAM_TC_CONNECTION_LABEL = "tc_connectionLabel";
   public static final String PARAM_TC_CONNECTION_TYPE = "tc_connectionType";
@@ -94,6 +95,11 @@ public interface RecordServletInterface {
   public static final String VALUE_RESULT_ACK_CONFORMANCE_ERROR = "ERROR";
   public static final String VALUE_RESULT_ACK_CONFORMANCE_OK = "OK";
   public static final String VALUE_RESULT_ACK_CONFORMANCE_NOT_RUN = "NOT RUN";
+  
+  public static final String VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_RETURNED = "a-r";
+  public static final String VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_NOT_RETURNED = "a-nr";
+  public static final String VALUE_RESULT_ACK_STORE_STATUS_NOT_ACCEPTED_RETURNED = "na-r";
+  public static final String VALUE_RESULT_ACK_STORE_STATUS_NOT_ACCEPTED_NOT_RETURNED = "na-nr";
 
   public static final String PARAM_TM_TEST_POSITION = "tm_testPosition";
   public static final String PARAM_TM_TEST_TYPE = "tm_testType";
@@ -115,6 +121,7 @@ public interface RecordServletInterface {
   public static final String PARAM_TM_PREP_SCENARIO_NAME = "tm_prepScenarioName";
   public static final String PARAM_TM_PREP_MESSAGE_DERIVED_FROM = "tm_prepMessageDerivedFrom";
   public static final String PARAM_TM_PREP_MESSAGE_ORIGINAL = "tm_prepMessageOriginal";
+  public static final String PARAM_TM_PREP_MESSAGE_ORIGINAL_RESPONSE = "tm_prepMessageOriginalResponse";
   public static final String PARAM_TM_PREP_MESSAGE_ACTUAL = "tm_prepMessageActual";
   public static final String PARAM_TM_RESULT_MESSAGE_ACTUAL = "tm_resultMessageActual";
   public static final String PARAM_TM_RESULT_STATUS = "tm_resultStatus";
@@ -124,6 +131,7 @@ public interface RecordServletInterface {
   public static final String PARAM_TM_RESULT_RESPONSE_TYPE = "tm_resultResponseType";
   public static final String PARAM_TM_RESULT_ACK_TYPE = "tm_resultAckType";
   public static final String PARAM_TM_RESULT_ACK_CONFORMANCE = "tm_resultAckConformance";
+  public static final String PARAM_TM_RESULT_ACK_STORE_STATUS = "tm_resultStoreStatus";
   public static final String PARAM_TM_FORECAST_TEST_PANEL_CASE_ID = "tm_forecastTestPanelCaseId";
   public static final String PARAM_TM_FORECAST_TEST_PANEL_ID = "tm_forecastTestPanelId";
 

@@ -46,7 +46,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
@@ -83,7 +82,7 @@ import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
 public class CertifyRunner extends Thread implements RecordServletInterface
 {
 
-  private static final String REPORT_URL = "http://ois-pt.org/dqacm/record";
+  private static final String REPORT_URL = "http://localhost:8289/record";
   // "http://localhost:8289/record";
   // "http://ois-pt.org/dqacm/record";
 
@@ -133,7 +132,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   public static final int SUITE_J_ONC_2015 = 9;
   public static final int SUITE_K_NOT_ACCEPTED = 10;
   public static final int SUITE_L_CONFORMANCE_2015 = 11;
-  public static final int SUITE_COUNT = 12;
+  public static final int SUITE_M_QBP_SUPPORT = 12;
+  public static final int SUITE_COUNT = 13;
 
   private int currentSuite = SUITE_A_BASIC;
   private IncrementingInt incrementingInt = null;
@@ -179,6 +179,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     areaLabel[SUITE_J_ONC_2015] = VALUE_TEST_SECTION_TYPE_ONC_2015;
     areaLabel[SUITE_K_NOT_ACCEPTED] = VALUE_TEST_SECTION_TYPE_NOT_ACCEPTED;
     areaLabel[SUITE_L_CONFORMANCE_2015] = VALUE_TEST_SECTION_TYPE_CONFORMANCE_2015;
+    areaLabel[SUITE_M_QBP_SUPPORT] = VALUE_TEST_SECTION_TYPE_QBP_SUPPORT;
   }
 
   private Map<String, PrintWriter> exampleOutSet = new HashMap<String, PrintWriter>();
@@ -360,17 +361,21 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   private List<TestCaseMessage> statusCheckTestCaseIntermediateList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckTestCaseExceptionalList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckTestCaseProfilingList = new ArrayList<TestCaseMessage>();
+  private List<TestCaseMessage> statusCheckTestCaseAdvancedList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckTestCaseForecastPrepList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckTestCaseOnc2015List = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckTestCaseNotAcceptedList = new ArrayList<TestCaseMessage>();
+  private List<TestCaseMessage> statusCheckTestCaseQuerySupportList = new ArrayList<TestCaseMessage>();
 
   private List<TestCaseMessage> statusCheckQueryTestCaseBasicList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckQueryTestCaseIntermediateList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckQueryTestCaseProfilingList = new ArrayList<TestCaseMessage>();
+  private List<TestCaseMessage> statusCheckQueryTestCaseAdvancedList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckQueryTestCaseTolerantList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckQueryTestCaseForecastPrepList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckQueryTestCaseOnc2015List = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckQueryTestCaseNotAcceptedList = new ArrayList<TestCaseMessage>();
+  private List<TestCaseMessage> statusCheckQueryTestQuerySupportList = new ArrayList<TestCaseMessage>();
 
   private List<TestCaseMessage> ackAnalysisList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> rspAnalysisList = new ArrayList<TestCaseMessage>();
@@ -702,6 +707,23 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         }
       }
 
+      if (run[SUITE_M_QBP_SUPPORT]) {
+
+        currentSuite = SUITE_M_QBP_SUPPORT;
+        logStatus("Preparing Query Support messages");
+        prepareQuerySupport();
+
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          reportProgress(null);
+          return;
+        }
+
+        logStatus("Sending query support messages");
+        updateQuerySupport();
+        // printReportToFile();
+      }
+
       if (performance.getTotalUpdateCount() > 0) {
         areaScore[SUITE_G_PERFORMANCE][0] = (int) performance.getUpdateAverage();
         areaProgress[SUITE_G_PERFORMANCE][0] = 100;
@@ -842,7 +864,24 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           }
           logStatus("Submit query for profiling messages");
           query(SUITE_I_PROFILING, statusCheckQueryTestCaseProfilingList);
-          // printReportToFile();
+          if (!keepRunning) {
+            status = STATUS_STOPPED;
+            reportProgress(null);
+            return;
+          }
+        }
+
+        if (run[SUITE_C_ADVANCED]) {
+          currentSuite = SUITE_I_PROFILING;
+          logStatus("Prepare query for advanced messages");
+          prepareQueryAdvanced();
+          if (!keepRunning) {
+            status = STATUS_STOPPED;
+            reportProgress(null);
+            return;
+          }
+          logStatus("Submit query for advanced messages");
+          query(SUITE_C_ADVANCED, statusCheckQueryTestCaseAdvancedList);
           if (!keepRunning) {
             status = STATUS_STOPPED;
             reportProgress(null);
@@ -888,6 +927,17 @@ public class CertifyRunner extends Thread implements RecordServletInterface
             reportProgress(null);
             return;
           }
+        }
+
+        if (run[SUITE_M_QBP_SUPPORT]) {
+          currentSuite = SUITE_M_QBP_SUPPORT;
+          logStatus("Submit query for Query Support messages");
+          queryQbpSupport();
+        }
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          reportProgress(null);
+          return;
         }
 
         if (performance.getTotalQueryCount() > 0) {
@@ -1262,6 +1312,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           testCaseMessage.setHasRun(true);
           saveTestCase(testCaseMessage);
           reportProgress(testCaseMessage);
+          statusCheckTestCaseAdvancedList.add(testCaseMessage);
           areaProgress[SUITE_C_ADVANCED][0] = makeScore(count, issueList.size());
           if (!keepRunning) {
             status = STATUS_STOPPED;
@@ -1499,19 +1550,72 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     addNotAccepted("PID-5: Patient name is missing", "CLEAR PID-5", ++count);
     addNotAccepted("PID-7: Patient dob is missing", "CLEAR PID-7", ++count);
     addNotAccepted("PID-7: Patient dob is unreadable", "PID-7=DOB", ++count);
-    addNotAccepted("PID-7: Patient dob is in the future", "PID-7=[LONG_TIME_FROM_NOW]", ++count); 
+    addNotAccepted("PID-7: Patient dob is in the future", "PID-7=[LONG_TIME_FROM_NOW]", ++count);
     addNotAccepted("RXA: RXA segment is missing", "remove segment RXA", ++count);
     addNotAccepted("RXA-3: Vaccination date is missing", "RXA-3=", ++count);
     addNotAccepted("RXA-3: Vaccination date is unreadable", "RXA-3=SHOT DATE", ++count);
-    addNotAccepted("RXA-3: Vaccination date set in the future", "RXA-3=[LONG_TIME_FROM_NOW]", ++count); 
+    addNotAccepted("RXA-3: Vaccination date set in the future", "RXA-3=[LONG_TIME_FROM_NOW]", ++count);
     addNotAccepted("RXA-5: Vaccination code is missing", "RXA-5=", ++count);
     addNotAccepted("RXA-5: Vaccination code is invalid", "RXA-5=14000BADVALUE", ++count);
     areaCount[SUITE_K_NOT_ACCEPTED][0] = statusCheckTestCaseNotAcceptedList.size();
   }
 
+  private void prepareQuerySupport() {
+    int count = 0;
+    addQuerySupport("Query support base message", null, ++count);
+    addQuerySupport("First Twin", "PID-24=Y\rPID-25=1", ++count);
+    {
+      String middleNameOriginal = "";
+      String middleInitial = "";
+      String middleName = "";
+      String gender = "";
+      TestCaseMessage testCaseMessage1 = statusCheckTestCaseQuerySupportList
+          .get(statusCheckTestCaseQuerySupportList.size() - 1);
+      HL7Reader vxuReader = new HL7Reader(testCaseMessage1.getMessageText());
+      vxuReader.advanceToSegment("PID");
+      middleNameOriginal = vxuReader.getValue(5, 3);
+      if (middleNameOriginal.length() > 0) {
+        middleInitial = middleNameOriginal.substring(0, 1);
+      } else {
+        middleInitial = "";
+      }
+      gender = vxuReader.getValue(8);
+      int tryCount = 0;
+      while (middleName.equals("") || !(middleInitial.equals("") || middleName.startsWith(middleInitial))) {
+        middleName = transformer.getValue(gender.equals("M") ? "BOY" : "GIRL");
+        tryCount++;
+        if (tryCount > 1000) {
+          // give up already! We'll go with what we have
+          break;
+        }
+      }
+
+      TestCaseMessage testCaseMessage2 = new TestCaseMessage();
+      testCaseMessage2.setOriginalMessage(testCaseMessage1.getMessageText());
+      testCaseMessage2.setDescription("Second Twin");
+      testCaseMessage2.setTestCaseSet(testCaseSet);
+      testCaseMessage2.setTestCaseCategoryId("M." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+      testCaseMessage2.setTestCaseNumber(uniqueMRNBase + testCaseMessage2.getTestCaseCategoryId());
+      testCaseMessage2.appendCustomTransformation("MSH-10=" + testCaseMessage2.getTestCaseNumber() + "."
+          + Transformer.makeBase62Number(System.currentTimeMillis() % 10000));
+      testCaseMessage2.appendCustomTransformation("PID-5.3=" + middleName);
+      testCaseMessage2.appendCustomTransformation("PID-24=Y");
+      testCaseMessage2.appendCustomTransformation("PID-25=2");
+      statusCheckTestCaseQuerySupportList.add(testCaseMessage2);
+      testCaseMessage2.setTestPosition(incrementingInt.next());
+      testCaseMessage2.setTestType(VALUE_TEST_TYPE_UPDATE);
+      transformer.transform(testCaseMessage2);
+      testCaseMessage2.setAssertResult("Accept - *");
+      register(testCaseMessage2);
+    }
+    areaCount[SUITE_M_QBP_SUPPORT][0] = statusCheckTestCaseQuerySupportList.size();
+  }
+
   public void addNotAccepted(String description, String customTransformation, int count) {
     TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
-    testCaseMessage.appendCustomTransformation(customTransformation);
+    if (customTransformation != null) {
+      testCaseMessage.appendCustomTransformation(customTransformation);
+    }
     testCaseMessage.setDescription(description);
     testCaseMessage.setTestCaseSet(testCaseSet);
     testCaseMessage.setTestCaseCategoryId("K." + makeTwoDigits(1) + "." + makeTwoDigits(count));
@@ -1521,6 +1625,23 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
     transformer.transform(testCaseMessage);
     testCaseMessage.setAssertResult("Error - *");
+    register(testCaseMessage);
+  }
+
+  public void addQuerySupport(String description, String customTransformation, int count) {
+    TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+    if (customTransformation != null) {
+      testCaseMessage.appendCustomTransformation(customTransformation);
+    }
+    testCaseMessage.setDescription(description);
+    testCaseMessage.setTestCaseSet(testCaseSet);
+    testCaseMessage.setTestCaseCategoryId("M." + makeTwoDigits(1) + "." + makeTwoDigits(count));
+    testCaseMessage.setTestCaseNumber(uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
+    statusCheckTestCaseQuerySupportList.add(testCaseMessage);
+    testCaseMessage.setTestPosition(incrementingInt.next());
+    testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
+    transformer.transform(testCaseMessage);
+    testCaseMessage.setAssertResult("Accept - *");
     register(testCaseMessage);
   }
 
@@ -1663,6 +1784,40 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     }
     areaScore[SUITE_K_NOT_ACCEPTED][0] = makeScore(testPass, statusCheckTestCaseNotAcceptedList.size());
     areaProgress[SUITE_K_NOT_ACCEPTED][0] = 100;
+    reportProgress(null);
+  }
+
+  private void updateQuerySupport() {
+    int count;
+    int testPass = 0;
+    TestRunner testRunner = new TestRunner();
+    testRunner.setValidateResponse(run[SUITE_L_CONFORMANCE_2015]);
+    count = 0;
+    for (TestCaseMessage testCaseMessage : statusCheckTestCaseQuerySupportList) {
+      count++;
+      try {
+        testRunner.runTest(connector, testCaseMessage);
+        boolean pass = testCaseMessage.isPassedTest();
+        performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessage);
+        if (pass) {
+          testPass++;
+        }
+        testCaseMessage.setErrorList(testRunner.getErrorList());
+        printExampleMessage(testCaseMessage, "M Query Support");
+      } catch (Throwable t) {
+        testCaseMessage.setException(t);
+      }
+      areaProgress[SUITE_M_QBP_SUPPORT][0] = makeScore(count, statusCheckTestCaseQuerySupportList.size());
+      saveTestCase(testCaseMessage);
+      reportProgress(testCaseMessage);
+      if (!keepRunning) {
+        status = STATUS_STOPPED;
+        reportProgress(null);
+        return;
+      }
+    }
+    areaScore[SUITE_M_QBP_SUPPORT][0] = makeScore(testPass, statusCheckTestCaseQuerySupportList.size());
+    areaProgress[SUITE_M_QBP_SUPPORT][0] = 100;
     reportProgress(null);
   }
 
@@ -2693,8 +2848,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage2.setAssertResult("Accept - *");
       register(testCaseMessage2);
     }
-    
-    
+
     count = 200;
     {
       count++;
@@ -3106,7 +3260,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       String vxuMessage = testCaseMessage.getMessageText();
 
       TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
-      queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
+      setDerivedFrom(testCaseMessage, queryTestCaseMessage);
       queryTestCaseMessage.setDescription("Query for " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
@@ -3119,10 +3273,12 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       try {
         long startTime = System.currentTimeMillis();
         String message = prepareSendQueryMessage(queryTestCaseMessage);
+        queryTestCaseMessage.setMessageTextSent(message);
         String rspMessage = doSafeQuery(message);
         performance.addTotalQueryTime(System.currentTimeMillis() - startTime, queryTestCaseMessage);
         queryTestCaseMessage.setHasRun(true);
         queryTestCaseMessage.setActualResponseMessage(rspMessage);
+        setQueryReturnedMostImportantData(queryTestCaseMessage);
         List<Comparison> comparisonList = CompareManager.compareMessages(vxuMessage, rspMessage);
         queryTestCaseMessage.setComparisonList(comparisonList);
         for (Comparison comparison : comparisonList) {
@@ -3166,13 +3322,26 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     int testQueryPassOptional = 0;
     int testQueryCountRequired = 0;
     int testQueryCountOptional = 0;
+    TestCaseMessage testCaseMessagePrevious = null;
     count = 0;
     for (TestCaseMessage testCaseMessage : statusCheckTestCaseOnc2015List) {
       count++;
-      String vxuMessage = testCaseMessage.getMessageText();
-
+      if (testCaseMessage.getScenario().equals(SCENARIO_ONC_2015_IZ_AD_3_R)
+          || testCaseMessage.getScenario().equals(SCENARIO_ONC_2015_IZ_AD_5_R)) {
+        testCaseMessagePrevious = testCaseMessage;
+        continue;
+      }
       TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
-      queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
+      if (testCaseMessage.getScenario().equals(SCENARIO_ONC_2015_IZ_AD_4_R)
+          || testCaseMessage.getScenario().equals(SCENARIO_ONC_2015_IZ_AD_6_R)) {
+        queryTestCaseMessage
+            .setDerivedFromVXUMessage(testCaseMessagePrevious.getMessageText() + testCaseMessage.getMessageText());
+        queryTestCaseMessage.setOriginalMessageResponse(
+            testCaseMessagePrevious.getActualResponseMessage() + testCaseMessage.getActualResponseMessage());
+        queryTestCaseMessage.setOriginalAccepted(testCaseMessagePrevious.isAccepted() && testCaseMessage.isAccepted());
+      } else {
+        setDerivedFrom(testCaseMessage, queryTestCaseMessage);
+      }
       queryTestCaseMessage.setDescription("Query for " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
@@ -3185,11 +3354,14 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       try {
         long startTime = System.currentTimeMillis();
         String message = prepareSendQueryMessage(queryTestCaseMessage);
+        queryTestCaseMessage.setMessageTextSent(message);
         String rspMessage = doSafeQuery(message);
         performance.addTotalQueryTime(System.currentTimeMillis() - startTime, queryTestCaseMessage);
         queryTestCaseMessage.setHasRun(true);
         queryTestCaseMessage.setActualResponseMessage(rspMessage);
-        List<Comparison> comparisonList = CompareManager.compareMessages(vxuMessage, rspMessage);
+        setQueryReturnedMostImportantData(queryTestCaseMessage);
+        List<Comparison> comparisonList = CompareManager
+            .compareMessages(queryTestCaseMessage.getDerivedFromVXUMessage(), rspMessage);
         queryTestCaseMessage.setComparisonList(comparisonList);
         for (Comparison comparison : comparisonList) {
           if (comparison.isTested() && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
@@ -3213,6 +3385,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       areaProgress[SUITE_J_ONC_2015][1] = areaProgress[SUITE_J_ONC_2015][2];
       saveTestCase(queryTestCaseMessage);
       reportProgress(queryTestCaseMessage);
+      statusCheckQueryTestCaseOnc2015List.add(queryTestCaseMessage);
       if (!keepRunning) {
         status = STATUS_STOPPED;
         reportProgress(null);
@@ -3226,6 +3399,33 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     reportProgress(null);
   }
 
+  public void setDerivedFrom(TestCaseMessage testCaseMessage, TestCaseMessage queryTestCaseMessage) {
+    queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
+    queryTestCaseMessage.setOriginalMessageResponse(testCaseMessage.getActualResponseMessage());
+    queryTestCaseMessage.setOriginalAccepted(testCaseMessage.isAccepted());
+  }
+
+  public void setQueryReturnedMostImportantData(TestCaseMessage queryTestCaseMessage) {
+    if (CompareManager.queryReturnedMostImportantData(queryTestCaseMessage.getDerivedFromVXUMessage(),
+        queryTestCaseMessage.getActualResponseMessage())) {
+      if (queryTestCaseMessage.isOriginalAccepted()) {
+        queryTestCaseMessage
+            .setResultStoreStatus(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_RETURNED);
+      } else {
+        queryTestCaseMessage
+            .setResultStoreStatus(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_NOT_ACCEPTED_RETURNED);
+      }
+    } else {
+      if (queryTestCaseMessage.isOriginalAccepted()) {
+        queryTestCaseMessage
+            .setResultStoreStatus(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_NOT_RETURNED);
+      } else {
+        queryTestCaseMessage
+            .setResultStoreStatus(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_NOT_ACCEPTED_NOT_RETURNED);
+      }
+    }
+  }
+
   private void queryNotAccepted() {
     int count;
     count = 0;
@@ -3234,7 +3434,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       String vxuMessage = testCaseMessage.getMessageText();
 
       TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
-      queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
+      setDerivedFrom(testCaseMessage, queryTestCaseMessage);
       queryTestCaseMessage.setDescription("Query for " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
@@ -3247,10 +3447,12 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       try {
         long startTime = System.currentTimeMillis();
         String message = prepareSendQueryMessage(queryTestCaseMessage);
+        queryTestCaseMessage.setMessageTextSent(message);
         String rspMessage = doSafeQuery(message);
         performance.addTotalQueryTime(System.currentTimeMillis() - startTime, queryTestCaseMessage);
         queryTestCaseMessage.setHasRun(true);
         queryTestCaseMessage.setActualResponseMessage(rspMessage);
+        setQueryReturnedMostImportantData(queryTestCaseMessage);
         List<Comparison> comparisonList = CompareManager.compareMessages(vxuMessage, rspMessage);
         queryTestCaseMessage.setComparisonList(comparisonList);
       } catch (Throwable t) {
@@ -3271,6 +3473,193 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     areaCount[SUITE_K_NOT_ACCEPTED][1] = count;
     areaCount[SUITE_K_NOT_ACCEPTED][2] = count;
     reportProgress(null);
+  }
+
+  private void queryQbpSupport() {
+
+    int passCount = 0;
+    int count = 0;
+    for (TestCaseMessage testCaseMessage : statusCheckTestCaseQuerySupportList) {
+      count++;
+      {
+        TestCaseMessage queryTestCaseMessage = runQuery("Z34 Query, Expecting Z32 Complete Immunization History", count,
+            testCaseMessage, false, false);
+
+        queryTestCaseMessage.setPassedTest(false);
+        HL7Reader rspReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
+        if (rspReader.advanceToSegment("MSH")) {
+          String messageType = rspReader.getValue(9, 1);
+          String profileId = rspReader.getValue(21, 1);
+          if (messageType.equals("RSP") && profileId.equals("Z32")) {
+            if (queryTestCaseMessage.getResultStoreStatus()
+                .equals(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_RETURNED)) {
+              passCount++;
+              queryTestCaseMessage.setPassedTest(true);
+            }
+          }
+        }
+      }
+      count++;
+      {
+        TestCaseMessage queryTestCaseMessage = runQuery("Z44 Query, Expecting Z42 Evaluated History and Forecast",
+            count, testCaseMessage, true, false);
+        queryTestCaseMessage.setPassedTest(false);
+        HL7Reader rspReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
+        if (rspReader.advanceToSegment("MSH")) {
+          String messageType = rspReader.getValue(9, 1);
+          String profileId = rspReader.getValue(21, 1);
+          if (messageType.equals("RSP") && profileId.equals("Z42")) {
+            if (queryTestCaseMessage.getResultStoreStatus()
+                .equals(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_RETURNED)) {
+              passCount++;
+              queryTestCaseMessage.setPassedTest(true);
+            }
+          }
+        }
+      }
+
+      if (!keepRunning) {
+        status = STATUS_STOPPED;
+        reportProgress(null);
+        return;
+      }
+      if (testCaseMessage.getDescription().equals("First Twin")) {
+        count++;
+        {
+          TestCaseMessage queryTestCaseMessage = runQuery("Z34 Query for Twins, Expecting Z31 List of Candidates",
+              count, testCaseMessage, false, true);
+          queryTestCaseMessage.setPassedTest(false);
+          HL7Reader rspReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
+          if (rspReader.advanceToSegment("MSH")) {
+            String messageType = rspReader.getValue(9, 1);
+            String profileId = rspReader.getValue(21, 1);
+            if (messageType.equals("RSP") && profileId.equals("Z31")) {
+              queryTestCaseMessage.setPassedTest(true);
+              passCount++;
+            }
+          }
+        }
+        count++;
+        {
+          TestCaseMessage queryTestCaseMessage = runQuery(
+              "Z44 Query for Twins, Expecting Z33 No Person Records, Too Many", count, testCaseMessage, true, true);
+          queryTestCaseMessage.setPassedTest(false);
+          HL7Reader rspReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
+          if (rspReader.advanceToSegment("MSH")) {
+            String messageType = rspReader.getValue(9, 1);
+            String profileId = rspReader.getValue(21, 1);
+            if (messageType.equals("RSP") && profileId.equals("Z33")) {
+              if (rspReader.advanceToSegment("QAK")) {
+                if (rspReader.getValue(2).equals("TM")) {
+                  queryTestCaseMessage.setPassedTest(true);
+                  passCount++;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    {
+      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+      transformer.transform(testCaseMessage);
+
+      count++;
+      // Z42 - return evaluated history and forecast
+      // Z33 - Return an ack with no person records
+      // Z31 - Return a list of candidates profile
+      // Z32 - Return complete immunization history
+      {
+        TestCaseMessage queryTestCaseMessage = runQuery("Z34 Query, Expecting Z33 No Person Records, Not Found", count,
+            testCaseMessage, false, false);
+        queryTestCaseMessage.setPassedTest(false);
+        HL7Reader rspReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
+        if (rspReader.advanceToSegment("MSH")) {
+          String messageType = rspReader.getValue(9, 1);
+          String profileId = rspReader.getValue(21, 1);
+          if (messageType.equals("RSP") && profileId.equals("Z33")) {
+            if (rspReader.advanceToSegment("QAK")) {
+              if (rspReader.getValue(2).equals("NF")) {
+                queryTestCaseMessage.setPassedTest(true);
+                passCount++;
+              }
+            }
+          }
+        }
+      }
+      count++;
+      {
+        TestCaseMessage queryTestCaseMessage = runQuery("Z44 Query, Expecting Z33 No Person Records, Not Found", count,
+            testCaseMessage, true, false);
+        queryTestCaseMessage.setPassedTest(false);
+        HL7Reader rspReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
+        if (rspReader.advanceToSegment("MSH")) {
+          String messageType = rspReader.getValue(9, 1);
+          String profileId = rspReader.getValue(21, 1);
+          if (messageType.equals("RSP") && profileId.equals("Z33")) {
+            if (rspReader.advanceToSegment("QAK")) {
+              if (rspReader.getValue(2).equals("NF")) {
+                queryTestCaseMessage.setPassedTest(true);
+                passCount++;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    areaScore[SUITE_M_QBP_SUPPORT][1] = makeScore(passCount, count);
+    areaScore[SUITE_M_QBP_SUPPORT][2] = areaScore[SUITE_M_QBP_SUPPORT][1];
+    areaCount[SUITE_M_QBP_SUPPORT][1] = count;
+    areaCount[SUITE_M_QBP_SUPPORT][2] = count;
+    reportProgress(null);
+  }
+
+  public TestCaseMessage runQuery(String description, int count, TestCaseMessage testCaseMessage, boolean z44,
+      boolean removeMultipleBirth) {
+    String vxuMessage = testCaseMessage.getMessageText();
+    TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
+    setDerivedFrom(testCaseMessage, queryTestCaseMessage);
+    queryTestCaseMessage.setDescription(description);
+    if (z44) {
+      queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBPZ44(testCaseMessage.getMessageText()));
+    } else {
+      queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText()));
+    }
+    queryTestCaseMessage.setOriginalMessage(queryTestCaseMessage.getMessageText());
+    queryTestCaseMessage.setTestCaseSet(testCaseSet);
+    queryTestCaseMessage.setTestCaseCategoryId("M." + makeTwoDigits(3) + "." + makeTwoDigits(count));
+    queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
+    statusCheckQueryTestCaseBasicList.add(queryTestCaseMessage);
+    queryTestCaseMessage.setTestPosition(incrementingInt.next());
+    queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
+    if (removeMultipleBirth) {
+      queryTestCaseMessage.appendCustomTransformation("QPD-4.3=");
+      queryTestCaseMessage.appendCustomTransformation("clear QPD-10");
+      queryTestCaseMessage.appendCustomTransformation("clear QPD-11");
+      transformer.transform(queryTestCaseMessage);
+    }
+    register(queryTestCaseMessage);
+    try {
+      long startTime = System.currentTimeMillis();
+      String message = prepareSendQueryMessage(queryTestCaseMessage);
+      queryTestCaseMessage.setMessageTextSent(message);
+      String rspMessage = doSafeQuery(message);
+      performance.addTotalQueryTime(System.currentTimeMillis() - startTime, queryTestCaseMessage);
+      queryTestCaseMessage.setHasRun(true);
+      queryTestCaseMessage.setActualResponseMessage(rspMessage);
+      setQueryReturnedMostImportantData(queryTestCaseMessage);
+      List<Comparison> comparisonList = CompareManager.compareMessages(vxuMessage, rspMessage);
+      queryTestCaseMessage.setComparisonList(comparisonList);
+    } catch (Throwable t) {
+      queryTestCaseMessage.setException(t);
+    }
+    areaProgress[SUITE_M_QBP_SUPPORT][1] = makeScore(count, statusCheckTestCaseQuerySupportList.size() * 2 + 4);
+    areaProgress[SUITE_M_QBP_SUPPORT][2] = areaProgress[SUITE_M_QBP_SUPPORT][1];
+    saveTestCase(queryTestCaseMessage);
+    reportProgress(queryTestCaseMessage);
+    statusCheckQueryTestQuerySupportList.add(queryTestCaseMessage);
+    return queryTestCaseMessage;
   }
 
   public String doSafeQuery(String message) throws Exception {
@@ -3318,7 +3707,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     for (TestCaseMessage testCaseMessage : statusCheckTestCaseIntermediateList) {
       count++;
       TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
-      queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
+      setDerivedFrom(testCaseMessage, queryTestCaseMessage);
       queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
@@ -3336,7 +3725,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     for (TestCaseMessage testCaseMessage : statusCheckTestCaseExceptionalList) {
       count++;
       TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
-      queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
+      setDerivedFrom(testCaseMessage, queryTestCaseMessage);
       queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
@@ -3354,11 +3743,29 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     for (TestCaseMessage testCaseMessage : statusCheckTestCaseProfilingList) {
       count++;
       TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
-      queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
+      setDerivedFrom(testCaseMessage, queryTestCaseMessage);
       queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
       queryTestCaseMessage.setTestCaseCategoryId("I." + makeTwoDigits(3) + "." + makeTwoDigits(count));
+      queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
+      statusCheckQueryTestCaseProfilingList.add(queryTestCaseMessage);
+      queryTestCaseMessage.setTestPosition(incrementingInt.next());
+      queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
+      register(queryTestCaseMessage);
+    }
+  }
+
+  private void prepareQueryAdvanced() {
+    int count = 0;
+    for (TestCaseMessage testCaseMessage : statusCheckTestCaseAdvancedList) {
+      count++;
+      TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
+      setDerivedFrom(testCaseMessage, queryTestCaseMessage);
+      queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
+      queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
+      queryTestCaseMessage.setTestCaseSet(testCaseSet);
+      queryTestCaseMessage.setTestCaseCategoryId("C." + makeTwoDigits(3) + "." + makeTwoDigits(count));
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
       statusCheckQueryTestCaseProfilingList.add(queryTestCaseMessage);
       queryTestCaseMessage.setTestPosition(incrementingInt.next());
@@ -3372,7 +3779,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     for (TestCaseMessage testCaseMessage : statusCheckTestCaseForecastPrepList) {
       count++;
       TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
-      queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageText());
+      setDerivedFrom(testCaseMessage, queryTestCaseMessage);
       queryTestCaseMessage.setDescription("Query " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
@@ -3399,10 +3806,12 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       try {
         long startTime = System.currentTimeMillis();
         String message = prepareSendQueryMessage(queryTestCaseMessage);
+        queryTestCaseMessage.setMessageTextSent(message);
         String rspMessage = doSafeQuery(message);
         performance.addTotalQueryTime(System.currentTimeMillis() - startTime, queryTestCaseMessage);
         queryTestCaseMessage.setHasRun(true);
         queryTestCaseMessage.setActualResponseMessage(rspMessage);
+        setQueryReturnedMostImportantData(queryTestCaseMessage);
         List<Comparison> comparisonList = CompareManager
             .compareMessages(queryTestCaseMessage.getDerivedFromVXUMessage(), rspMessage);
         queryTestCaseMessage.setComparisonList(comparisonList);
@@ -3935,6 +4344,43 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           }
         }
       }
+      out.println("  </tr>");
+    }
+    if (run[SUITE_M_QBP_SUPPORT]) {
+      out.println("  <tr>");
+      out.println(
+          "    <th><font size=\"+1\">QBP Support</font><br/><font size=\"-2\">IIS can support QBP requests</font></th>");
+      if (areaScore[SUITE_M_QBP_SUPPORT][0] >= 100) {
+        out.println(
+            "    <td class=\"pass\">All preparatory messages accepted <font size=\"-1\"><a href=\"#areaKLevel1\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_M_QBP_SUPPORT][0] >= 0) {
+        out.println("    <td class=\"fail\">Messages that were not accepted (" + areaScore[SUITE_M_QBP_SUPPORT][0]
+            + "% no error) <font size=\"-1\"><a href=\"#areaKLevel1\">(details)</a></font></td>");
+      } else {
+        if (areaProgress[SUITE_M_QBP_SUPPORT][0] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_M_QBP_SUPPORT][0] + "% complete</td>");
+        } else {
+          out.println("    <td>updates not sent yet</td>");
+        }
+      }
+      if (areaScore[SUITE_M_QBP_SUPPORT][1] >= 100) {
+        out.println(
+            "    <td class=\"pass\">Results as expected.  <font size=\"-1\"><a href=\"#areaKLevel1\">(details)</a></font></td>");
+      } else if (areaScore[SUITE_M_QBP_SUPPORT][1] >= 0) {
+        out.println("    <td class=\"fail\">Unexpected results. (" + areaScore[SUITE_M_QBP_SUPPORT][1]
+            + "% of tests passed) <font size=\"-1\"><a href=\"#areaKLevel1\">(details)</a></font></td>");
+      } else {
+        if (areaProgress[SUITE_M_QBP_SUPPORT][1] > -1) {
+          out.println("    <td>running now ... <br/>" + areaProgress[SUITE_M_QBP_SUPPORT][1] + "% complete</td>");
+        } else {
+          if (willQuery) {
+            out.println("    <td>queries not sent yet</td>");
+          } else {
+            out.println("    <td>query tests not enabled</td>");
+          }
+        }
+      }
+      out.println("    <td>not defined</td>");
       out.println("  </tr>");
     }
     out.println("  <tr>");
@@ -4570,6 +5016,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     out.println("  <tr>");
     out.println("    <th>Not Accepted Tests</th>");
     out.println("    <td>" + (run[SUITE_K_NOT_ACCEPTED] ? "Enabled" : "Not Enabled") + "</td>");
+    out.println("  </tr>");
+    out.println("  <tr>");
+    out.println("    <th>Query Support Tests</th>");
+    out.println("    <td>" + (run[SUITE_M_QBP_SUPPORT] ? "Enabled" : "Not Enabled") + "</td>");
     out.println("  </tr>");
     out.println("  <tr>");
     out.println("    <th>Update Test Count</th>");
@@ -5459,6 +5909,71 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       out.println("</br>");
     }
 
+    if (areaProgress[SUITE_M_QBP_SUPPORT][0] > 0) {
+      out.println("<h2>Query Support Tests</h2>");
+      out.println("<p><b>Purpose</b>: Test to see if the IIS can respond to QBP queries.  </p>");
+      out.println("<p><b>Requirements</b>: IIS should respond to QBP queries. </p>");
+      out.println("<ul>");
+      out.println("  <li>Level 1: The IIS must accept data that will be later queried.  </li>");
+      out.println("  <li>Level 2: The IIS should respond to queries.</li>");
+      out.println("</ul>");
+      out.println("<div id=\"areaKLevel1\"/>");
+      out.println("<table border=\"1\" cellspacing=\"0\">");
+      for (TestCaseMessage testCaseMessage : statusCheckTestCaseQuerySupportList) {
+        testNum++;
+        out.println("  <tr>");
+        out.println("    <td><em>" + testCaseMessage.getDescription() + "</em></td>");
+        if (testCaseMessage.isPassedTest()) {
+          out.println(
+              "    <td class=\"pass\">Accepted. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+        } else if (testCaseMessage.isHasRun()) {
+          out.println("    <td class=\"fail\">");
+          out.println("Not accepted. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+          out.println("</td>");
+        } else if (testCaseMessage.getException() != null) {
+          out.println("    <td class=\"fail\">");
+          out.println("Exception when transmitting message: " + testCaseMessage.getException().getMessage() + ". "
+              + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+          out.println("</td>");
+        } else {
+          out.println("    <td class=\"nottested\">not run yet</td>");
+        }
+        out.println("  </tr>");
+      }
+      out.println("</table>");
+      out.println("</br>");
+      if (areaProgress[SUITE_M_QBP_SUPPORT][1] > 0) {
+        out.println("<table border=\"1\" cellspacing=\"0\">");
+        for (TestCaseMessage testCaseMessage : statusCheckQueryTestQuerySupportList) {
+          out.println("  <tr>");
+          out.println("    <td><em>" + testCaseMessage.getDescription() + "</em></td>");
+          {
+            if (testCaseMessage.isPassedTest()) {
+              out.println("    <td class=\"pass\">Expected response returned. "
+                  + makeCompareDetailsLink(testCaseMessage, toFile, false));
+              out.println(makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+              out.println("    </td>");
+            } else if (testCaseMessage.isHasRun()) {
+              out.println("    <td class=\"fail\">Unexpected response returned. "
+                  + makeCompareDetailsLink(testCaseMessage, toFile, false));
+              out.println(makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+              out.println("    </td>");
+            } else if (testCaseMessage.getException() != null) {
+              out.println("    <td class=\"fail\">");
+              out.println("Exception when transmitting message: " + testCaseMessage.getException().getMessage() + ". "
+                  + makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
+              out.println("</td>");
+            } else {
+              out.println("    <td class=\"nottested\">not run yet</td>");
+            }
+          }
+          out.println("  </tr>");
+        }
+        out.println("</table>");
+        out.println("</br>");
+      }
+
+    }
     if (areaProgress[SUITE_H_CONFORMANCE][0] > 0) {
       out.println("<h2>Conformance Tests</h2>");
       out.println("<p><b>Purpose</b>: Test to see if the IIS can respond correctly to requests. </p>");
@@ -6282,6 +6797,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         addField(sb, PARAM_TM_PREP_SCENARIO_NAME, testMessage.getScenario());
         addField(sb, PARAM_TM_PREP_MESSAGE_DERIVED_FROM, testMessage.getDerivedFromVXUMessage());
         addField(sb, PARAM_TM_PREP_MESSAGE_ORIGINAL, testMessage.getOriginalMessage());
+        addField(sb, PARAM_TM_PREP_MESSAGE_ORIGINAL_RESPONSE, testMessage.getOriginalMessageResponse());
         addField(sb, PARAM_TM_PREP_MESSAGE_ACTUAL, testMessage.getMessageTextSent());
         addField(sb, PARAM_TM_RESULT_MESSAGE_ACTUAL, testMessage.getActualResponseMessage());
         addField(sb, PARAM_TM_RESULT_STATUS, testMessage.getActualResultStatus());
@@ -6306,6 +6822,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
             addField(sb, PARAM_TM_RESULT_ACK_CONFORMANCE, VALUE_RESULT_ACK_CONFORMANCE_OK);
           }
         }
+        addField(sb, PARAM_TM_RESULT_ACK_STORE_STATUS, testMessage.getResultStoreStatus());
         if (testMessage.getForecastTestCase() != null) {
           addField(sb, PARAM_TM_FORECAST_TEST_PANEL_CASE_ID, testMessage.getForecastTestCase().getTestPanelCaseId());
         }

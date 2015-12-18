@@ -278,6 +278,9 @@ public class SubmitServlet extends ClientServlet
           session.setAttribute(CompareServlet.VXU_MESSAGE, message);
           out.println("<p>Submit QBP query message based from VXU displayed above</p>");
           printForm(id, connectors, qbpMessage, request, out);
+          String qbpZ44Message = QueryConverter.convertVXUtoVXQ(message);
+          out.println("<p>Submit QBP Z44 query message based from VXU displayed above</p>");
+          printForm(id, connectors, qbpZ44Message, request, out);
           String vxqMessage = QueryConverter.convertVXUtoVXQ(message);
           out.println("<p>Submit VXQ query message based from VXU displayed above</p>");
           printForm(id, connectors, vxqMessage, request, out);
