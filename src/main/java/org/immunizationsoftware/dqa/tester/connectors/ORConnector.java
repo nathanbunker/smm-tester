@@ -164,6 +164,7 @@ public class ORConnector extends HttpConnector
         responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
         response = new StringBuilder(responseString);
       }
+      responseString = responseString.replaceAll("\\Q&amp;\\E", "&");
       if (debug) {
         response.append("\r");
         response.append("DEBUG LOG: \r");
