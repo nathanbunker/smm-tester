@@ -1562,7 +1562,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
   private void prepareQuerySupport() {
     int count = 0;
-    addQuerySupport("Query support base message", null, ++count);
+    addQuerySupport("Base Message", null, ++count);
     addQuerySupport("First Twin", "PID-24=Y\rPID-25=1", ++count);
     {
       String middleNameOriginal = "";
@@ -3051,8 +3051,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     transformer.transform(testCaseMessage);
     testCaseMessage.setAssertResult("Accept - *");
     testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
+    testCaseMessage.setTestPosition(incrementingInt.next());
     register(testCaseMessage);
     return count;
+    
   }
 
   private void changePatientIdentifyingInformation(String messageText, TestCaseMessage testCaseMessage) {
@@ -3482,7 +3484,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     for (TestCaseMessage testCaseMessage : statusCheckTestCaseQuerySupportList) {
       count++;
       {
-        TestCaseMessage queryTestCaseMessage = runQuery("Z34 Query, Expecting Z32 Complete Immunization History", count,
+        TestCaseMessage queryTestCaseMessage = runQuery("Expecting Z32 Complete Immunization History", count,
             testCaseMessage, false, false);
 
         queryTestCaseMessage.setPassedTest(false);
@@ -3491,28 +3493,36 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           String messageType = rspReader.getValue(9, 1);
           String profileId = rspReader.getValue(21, 1);
           if (messageType.equals("RSP") && profileId.equals("Z32")) {
-            if (queryTestCaseMessage.getResultStoreStatus()
-                .equals(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_RETURNED)) {
-              passCount++;
-              queryTestCaseMessage.setPassedTest(true);
+            if (rspReader.advanceToSegment("QAK")) {
+              if (rspReader.getValue(2).equals("OK")) {
+                if (queryTestCaseMessage.getResultStoreStatus()
+                    .equals(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_RETURNED)) {
+                  passCount++;
+                  queryTestCaseMessage.setPassedTest(true);
+                }
+              }
             }
           }
         }
       }
       count++;
       {
-        TestCaseMessage queryTestCaseMessage = runQuery("Z44 Query, Expecting Z42 Evaluated History and Forecast",
-            count, testCaseMessage, true, false);
+        TestCaseMessage queryTestCaseMessage = runQuery("Expecting Z42 Evaluated History and Forecast", count,
+            testCaseMessage, true, false);
         queryTestCaseMessage.setPassedTest(false);
         HL7Reader rspReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
         if (rspReader.advanceToSegment("MSH")) {
           String messageType = rspReader.getValue(9, 1);
           String profileId = rspReader.getValue(21, 1);
           if (messageType.equals("RSP") && profileId.equals("Z42")) {
-            if (queryTestCaseMessage.getResultStoreStatus()
-                .equals(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_RETURNED)) {
-              passCount++;
-              queryTestCaseMessage.setPassedTest(true);
+            if (rspReader.advanceToSegment("QAK")) {
+              if (rspReader.getValue(2).equals("OK")) {
+                if (queryTestCaseMessage.getResultStoreStatus()
+                    .equals(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_RETURNED)) {
+                  passCount++;
+                  queryTestCaseMessage.setPassedTest(true);
+                }
+              }
             }
           }
         }
@@ -3526,8 +3536,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       if (testCaseMessage.getDescription().equals("First Twin")) {
         count++;
         {
-          TestCaseMessage queryTestCaseMessage = runQuery("Z34 Query for Twins, Expecting Z31 List of Candidates",
-              count, testCaseMessage, false, true);
+          TestCaseMessage queryTestCaseMessage = runQuery("Expecting Z31 List of Candidates", count, testCaseMessage,
+              false, true);
           queryTestCaseMessage.setPassedTest(false);
           HL7Reader rspReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
           if (rspReader.advanceToSegment("MSH")) {
@@ -3541,8 +3551,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         }
         count++;
         {
-          TestCaseMessage queryTestCaseMessage = runQuery(
-              "Z44 Query for Twins, Expecting Z33 No Person Records, Too Many", count, testCaseMessage, true, true);
+          TestCaseMessage queryTestCaseMessage = runQuery("Expecting Z33 Too Many", count, testCaseMessage, true, true);
           queryTestCaseMessage.setPassedTest(false);
           HL7Reader rspReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
           if (rspReader.advanceToSegment("MSH")) {
@@ -3563,6 +3572,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     {
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       transformer.transform(testCaseMessage);
+      testCaseMessage.setDescription("Unsubmitted Patient");
 
       count++;
       // Z42 - return evaluated history and forecast
@@ -3570,8 +3580,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       // Z31 - Return a list of candidates profile
       // Z32 - Return complete immunization history
       {
-        TestCaseMessage queryTestCaseMessage = runQuery("Z34 Query, Expecting Z33 No Person Records, Not Found", count,
-            testCaseMessage, false, false);
+        TestCaseMessage queryTestCaseMessage = runQuery("Expecting Z33 Not Found", count, testCaseMessage, false,
+            false);
         queryTestCaseMessage.setPassedTest(false);
         HL7Reader rspReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
         if (rspReader.advanceToSegment("MSH")) {
@@ -3589,8 +3599,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       }
       count++;
       {
-        TestCaseMessage queryTestCaseMessage = runQuery("Z44 Query, Expecting Z33 No Person Records, Not Found", count,
-            testCaseMessage, true, false);
+        TestCaseMessage queryTestCaseMessage = runQuery("Expecting Z33 Not Found", count, testCaseMessage, true, false);
         queryTestCaseMessage.setPassedTest(false);
         HL7Reader rspReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
         if (rspReader.advanceToSegment("MSH")) {
@@ -3620,7 +3629,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     String vxuMessage = testCaseMessage.getMessageText();
     TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
     setDerivedFrom(testCaseMessage, queryTestCaseMessage);
-    queryTestCaseMessage.setDescription(description);
+    queryTestCaseMessage.setDescription(description + " for " + testCaseMessage.getDescription());
     if (z44) {
       queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBPZ44(testCaseMessage.getMessageText()));
     } else {

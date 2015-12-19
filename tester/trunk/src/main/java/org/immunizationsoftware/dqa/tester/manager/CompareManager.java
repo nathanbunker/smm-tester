@@ -67,6 +67,13 @@ public class CompareManager
         }
       }
       {
+        String vxuMiddleName = vxuReader.getValue(5, 2);
+        String rpsMiddleName = rspReader.getValue(5, 2);
+        if (!rpsMiddleName.equals("") && !vxuMiddleName.equals("") && !vxuMiddleName.equalsIgnoreCase(rpsMiddleName)) {
+          return false;
+        }
+      }
+      {
         String vxuDob = vxuReader.getValue(7);
         String rspDob = rspReader.getValue(7);
         if (!vxuDob.equalsIgnoreCase(rspDob)) {
