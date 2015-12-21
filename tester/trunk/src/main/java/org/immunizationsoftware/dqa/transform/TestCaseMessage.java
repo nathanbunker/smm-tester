@@ -35,12 +35,11 @@ public class TestCaseMessage
   public static final String QUICK_TRANSFORMATIONS = "Quick Transformations:";
   public static final String CUSTOM_TRANSFORMATIONS = "Custom Transformations:";
   public static final String ADDITIONAL_TRANSFORMATIONS = "Additional Transformations:";
+  public static final String EXCLUDE_TRANSFORMATIONS = "Exclude Transformations:";
   public static final String CAUSE_ISSUES = "Cause Issues:";
   public static final String COMMENT = "Comment:";
   public static final String PATIENT_TYPE = "Patient Type:";
   public static final String SCENARIO = "Scenario:";
-
-  
 
   public static void main(String[] args) {
     for (int i = 0; i < args.length; i++) {
@@ -76,7 +75,8 @@ public class TestCaseMessage
     return result;
   }
 
-  protected static void addTestMessageToList(List<TestCaseMessage> testCaseMessageList, TestCaseMessage testCaseMessage) {
+  protected static void addTestMessageToList(List<TestCaseMessage> testCaseMessageList,
+      TestCaseMessage testCaseMessage) {
     if (testCaseMessage.getMessageText().startsWith("MSH|TRANSFORM")) {
       Transformer transformer = new Transformer();
       transformer.transform(testCaseMessage);
@@ -114,6 +114,7 @@ public class TestCaseMessage
   private String quickTransformationsConverted = "";
   private String customTransformations = "";
   private String additionalTransformations = "";
+  private String excludeTransformations = "";
   private String causeIssueTransforms = "";
   private String causeIssues = "";
   private List<Comment> comments = new ArrayList<Comment>();
@@ -144,9 +145,17 @@ public class TestCaseMessage
   private ValidationReport validationReport = null;
   private ValidationResource validationResource = null;
   private boolean validationReportPass = false;
-  private String resultStoreStatus = ""; 
+  private String resultStoreStatus = "";
   private boolean originalAccepted = false;
-  
+
+  public String getExcludeTransformations() {
+    return excludeTransformations;
+  }
+
+  public void setExcludeTransformations(String ignoreTransformations) {
+    this.excludeTransformations = ignoreTransformations;
+  }
+
   public boolean isOriginalAccepted() {
     return originalAccepted;
   }
@@ -227,8 +236,6 @@ public class TestCaseMessage
     this.messageAcceptStatusDebug = messageAcceptStatusDebug;
   }
 
-
-  
   public String getTestCaseCategoryId() {
     return testCaseCategoryId;
   }
@@ -236,8 +243,7 @@ public class TestCaseMessage
   public void setTestCaseCategoryId(String testCaseCategoryId) {
     this.testCaseCategoryId = testCaseCategoryId;
   }
-  
-  
+
   public String getAdditionalTransformations() {
     return additionalTransformations;
   }
@@ -465,6 +471,9 @@ public class TestCaseMessage
     if (!updated.getAdditionalTransformations().equals("")) {
       additionalTransformations = updated.getAdditionalTransformations();
     }
+    if (!updated.getExcludeTransformations().equals("")) {
+      additionalTransformations = updated.getExcludeTransformations();
+    }
     if (!updated.getCauseIssues().equals("")) {
       causeIssues = updated.getCauseIssues();
     }
@@ -683,10 +692,6 @@ public class TestCaseMessage
     this.quickTransformations = quickTransformations;
   }
 
- 
-
-
-
   public String createText() {
     return createText(false);
   }
@@ -741,6 +746,15 @@ public class TestCaseMessage
       if (additionalTransformations != null && !additionalTransformations.equals("")) {
         stringOut.println(ADDITIONAL_TRANSFORMATIONS + " ");
         BufferedReader inTransform = new BufferedReader(new StringReader(additionalTransformations));
+        String line;
+        while ((line = inTransform.readLine()) != null) {
+          line = line.trim();
+          stringOut.println(" + " + line);
+        }
+      }
+      if (excludeTransformations != null && !excludeTransformations.equals("")) {
+        stringOut.println(EXCLUDE_TRANSFORMATIONS + " ");
+        BufferedReader inTransform = new BufferedReader(new StringReader(excludeTransformations));
         String line;
         while ((line = inTransform.readLine()) != null) {
           line = line.trim();
@@ -842,5 +856,4 @@ public class TestCaseMessage
     preparedMessage = sb.toString();
   }
 
- 
 }

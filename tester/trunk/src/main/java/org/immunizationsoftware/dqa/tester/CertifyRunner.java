@@ -82,7 +82,7 @@ import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
 public class CertifyRunner extends Thread implements RecordServletInterface
 {
 
-  private static final String REPORT_URL = "http://localhost:8289/record";
+  private static final String REPORT_URL = "http://ois-pt.org/dqacm/record";
   // "http://localhost:8289/record";
   // "http://ois-pt.org/dqacm/record";
 
@@ -133,7 +133,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   public static final int SUITE_K_NOT_ACCEPTED = 10;
   public static final int SUITE_L_CONFORMANCE_2015 = 11;
   public static final int SUITE_M_QBP_SUPPORT = 12;
-  public static final int SUITE_COUNT = 13;
+  public static final int SUITE_N_TRANSFORM = 13;
+  public static final int SUITE_O_EXTRA = 14;
+  public static final int SUITE_COUNT = 15;
 
   private int currentSuite = SUITE_A_BASIC;
   private IncrementingInt incrementingInt = null;
@@ -180,6 +182,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     areaLabel[SUITE_K_NOT_ACCEPTED] = VALUE_TEST_SECTION_TYPE_NOT_ACCEPTED;
     areaLabel[SUITE_L_CONFORMANCE_2015] = VALUE_TEST_SECTION_TYPE_CONFORMANCE_2015;
     areaLabel[SUITE_M_QBP_SUPPORT] = VALUE_TEST_SECTION_TYPE_QBP_SUPPORT;
+    areaLabel[SUITE_N_TRANSFORM] = VALUE_TEST_SECTION_TYPE_QBP_SUPPORT;
+    areaLabel[SUITE_O_EXTRA] = VALUE_TEST_SECTION_TYPE_QBP_SUPPORT;
   }
 
   private Map<String, PrintWriter> exampleOutSet = new HashMap<String, PrintWriter>();
@@ -366,6 +370,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   private List<TestCaseMessage> statusCheckTestCaseOnc2015List = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckTestCaseNotAcceptedList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckTestCaseQuerySupportList = new ArrayList<TestCaseMessage>();
+  private List<TestCaseMessage> statusCheckTestCaseTransformList = new ArrayList<TestCaseMessage>();
+  private List<TestCaseMessage> statusCheckTestCaseExtraList = new ArrayList<TestCaseMessage>();
 
   private List<TestCaseMessage> statusCheckQueryTestCaseBasicList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckQueryTestCaseIntermediateList = new ArrayList<TestCaseMessage>();
@@ -376,6 +382,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   private List<TestCaseMessage> statusCheckQueryTestCaseOnc2015List = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckQueryTestCaseNotAcceptedList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> statusCheckQueryTestQuerySupportList = new ArrayList<TestCaseMessage>();
+  private List<TestCaseMessage> statusCheckQueryTestTransformList = new ArrayList<TestCaseMessage>();
+  private List<TestCaseMessage> statusCheckQueryTestExtraList = new ArrayList<TestCaseMessage>();
 
   private List<TestCaseMessage> ackAnalysisList = new ArrayList<TestCaseMessage>();
   private List<TestCaseMessage> rspAnalysisList = new ArrayList<TestCaseMessage>();
@@ -603,7 +611,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         }
 
         logStatus("Sending basic messages");
-        updateNotAccepted();
+        update("J ONC 2015", statusCheckTestCaseNotAcceptedList);
         // printReportToFile();
       }
 
@@ -724,6 +732,32 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         // printReportToFile();
       }
 
+      if (run[SUITE_N_TRANSFORM]) {
+        currentSuite = SUITE_N_TRANSFORM;
+        logStatus("Preparing Transform messages");
+        prepareTransform();
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          reportProgress(null);
+          return;
+        }
+        logStatus("Sending transform messages");
+        update("N Transform", statusCheckTestCaseTransformList);
+      }
+
+      if (run[SUITE_O_EXTRA]) {
+        currentSuite = SUITE_O_EXTRA;
+        logStatus("Preparing Extra messages");
+        prepareExtra();
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          reportProgress(null);
+          return;
+        }
+        logStatus("Sending Extra messages");
+        update("O Extra", statusCheckTestCaseExtraList);
+      }
+
       if (performance.getTotalUpdateCount() > 0) {
         areaScore[SUITE_G_PERFORMANCE][0] = (int) performance.getUpdateAverage();
         areaProgress[SUITE_G_PERFORMANCE][0] = 100;
@@ -825,7 +859,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         if (run[SUITE_K_NOT_ACCEPTED]) {
           currentSuite = SUITE_K_NOT_ACCEPTED;
           logStatus("Submit query for Not Accepted messages");
-          queryNotAccepted();
+          query(statusCheckTestCaseNotAcceptedList, statusCheckQueryTestCaseBasicList, "K");
         }
         if (!keepRunning) {
           status = STATUS_STOPPED;
@@ -933,6 +967,28 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           currentSuite = SUITE_M_QBP_SUPPORT;
           logStatus("Submit query for Query Support messages");
           queryQbpSupport();
+        }
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          reportProgress(null);
+          return;
+        }
+
+        if (run[SUITE_N_TRANSFORM]) {
+          currentSuite = SUITE_N_TRANSFORM;
+          logStatus("Submit query for Transform messages");
+          query(statusCheckTestCaseTransformList, statusCheckQueryTestTransformList, "N");
+        }
+        if (!keepRunning) {
+          status = STATUS_STOPPED;
+          reportProgress(null);
+          return;
+        }
+
+        if (run[SUITE_O_EXTRA]) {
+          currentSuite = SUITE_O_EXTRA;
+          logStatus("Submit query for Extra messages");
+          query(statusCheckTestCaseExtraList, statusCheckQueryTestExtraList, "O");
         }
         if (!keepRunning) {
           status = STATUS_STOPPED;
@@ -1543,6 +1599,14 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     areaCount[SUITE_J_ONC_2015][0] = statusCheckTestCaseBasicList.size();
   }
 
+  private void prepareTransform() {
+    // todo
+  }
+
+  private void prepareExtra() {
+    // todo
+  }
+
   private void prepareNotAccepted() {
     int count = 0;
     addNotAccepted("PID: Patient identifier segment is missing", "remove segment PID", ++count);
@@ -1596,8 +1660,11 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       testCaseMessage2.setTestCaseSet(testCaseSet);
       testCaseMessage2.setTestCaseCategoryId("M." + makeTwoDigits(1) + "." + makeTwoDigits(count));
       testCaseMessage2.setTestCaseNumber(uniqueMRNBase + testCaseMessage2.getTestCaseCategoryId());
-      testCaseMessage2.appendCustomTransformation("MSH-10=" + testCaseMessage2.getTestCaseNumber() + "."
-          + Transformer.makeBase62Number(System.currentTimeMillis() % 10000));
+      String uniqueId = testCaseMessage2.getTestCaseNumber();
+      testCaseMessage2.appendCustomTransformation(
+          "MSH-10=" + uniqueId + "." + Transformer.makeBase62Number(System.currentTimeMillis() % 10000));
+      testCaseMessage2.appendCustomTransformation(
+          "PID-3.1=" + (uniqueId.length() <= 15 ? uniqueId : uniqueId.substring(uniqueId.length() - 15)));
       testCaseMessage2.appendCustomTransformation("PID-5.3=" + middleName);
       testCaseMessage2.appendCustomTransformation("PID-24=Y");
       testCaseMessage2.appendCustomTransformation("PID-25=2");
@@ -1753,13 +1820,13 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     reportProgress(null);
   }
 
-  private void updateNotAccepted() {
+  private void update(String label, List<TestCaseMessage> testCaseMessageList) {
     int count;
     int testPass = 0;
     TestRunner testRunner = new TestRunner();
     testRunner.setValidateResponse(run[SUITE_L_CONFORMANCE_2015]);
     count = 0;
-    for (TestCaseMessage testCaseMessage : statusCheckTestCaseNotAcceptedList) {
+    for (TestCaseMessage testCaseMessage : testCaseMessageList) {
       count++;
       try {
         testRunner.runTest(connector, testCaseMessage);
@@ -1769,11 +1836,11 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           testPass++;
         }
         testCaseMessage.setErrorList(testRunner.getErrorList());
-        printExampleMessage(testCaseMessage, "J ONC 2015");
+        printExampleMessage(testCaseMessage, label);
       } catch (Throwable t) {
         testCaseMessage.setException(t);
       }
-      areaProgress[SUITE_K_NOT_ACCEPTED][0] = makeScore(count, statusCheckTestCaseNotAcceptedList.size());
+      areaProgress[currentSuite][0] = makeScore(count, testCaseMessageList.size());
       saveTestCase(testCaseMessage);
       reportProgress(testCaseMessage);
       if (!keepRunning) {
@@ -1782,8 +1849,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         return;
       }
     }
-    areaScore[SUITE_K_NOT_ACCEPTED][0] = makeScore(testPass, statusCheckTestCaseNotAcceptedList.size());
-    areaProgress[SUITE_K_NOT_ACCEPTED][0] = 100;
+    areaScore[currentSuite][0] = makeScore(testPass, testCaseMessageList.size());
+    areaProgress[currentSuite][0] = 100;
     reportProgress(null);
   }
 
@@ -3054,7 +3121,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     testCaseMessage.setTestPosition(incrementingInt.next());
     register(testCaseMessage);
     return count;
-    
+
   }
 
   private void changePatientIdentifyingInformation(String messageText, TestCaseMessage testCaseMessage) {
@@ -3428,10 +3495,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     }
   }
 
-  private void queryNotAccepted() {
+  private void query(List<TestCaseMessage> updateList, List<TestCaseMessage> queryList, String testCasePrefix) {
     int count;
     count = 0;
-    for (TestCaseMessage testCaseMessage : statusCheckTestCaseNotAcceptedList) {
+    for (TestCaseMessage testCaseMessage : updateList) {
       count++;
       String vxuMessage = testCaseMessage.getMessageText();
 
@@ -3440,9 +3507,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       queryTestCaseMessage.setDescription("Query for " + testCaseMessage.getDescription());
       queryTestCaseMessage.setMessageText(convertToQuery(testCaseMessage));
       queryTestCaseMessage.setTestCaseSet(testCaseSet);
-      queryTestCaseMessage.setTestCaseCategoryId("J." + makeTwoDigits(3) + "." + makeTwoDigits(count));
+      queryTestCaseMessage.setTestCaseCategoryId(testCasePrefix + "." + makeTwoDigits(3) + "." + makeTwoDigits(count));
       queryTestCaseMessage.setTestCaseNumber(uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
-      statusCheckQueryTestCaseBasicList.add(queryTestCaseMessage);
+      queryList.add(queryTestCaseMessage);
       queryTestCaseMessage.setTestPosition(incrementingInt.next());
       queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
       register(queryTestCaseMessage);
@@ -3460,8 +3527,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       } catch (Throwable t) {
         queryTestCaseMessage.setException(t);
       }
-      areaProgress[SUITE_K_NOT_ACCEPTED][1] = makeScore(count, statusCheckTestCaseNotAcceptedList.size());
-      areaProgress[SUITE_K_NOT_ACCEPTED][2] = areaProgress[SUITE_K_NOT_ACCEPTED][1];
+      areaProgress[currentSuite][1] = makeScore(count, updateList.size());
+      areaProgress[currentSuite][2] = areaProgress[currentSuite][1];
       saveTestCase(queryTestCaseMessage);
       reportProgress(queryTestCaseMessage);
       if (!keepRunning) {
@@ -3470,10 +3537,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         return;
       }
     }
-    areaScore[SUITE_K_NOT_ACCEPTED][1] = makeScore(count, statusCheckTestCaseNotAcceptedList.size());
-    areaScore[SUITE_K_NOT_ACCEPTED][2] = areaScore[SUITE_K_NOT_ACCEPTED][1];
-    areaCount[SUITE_K_NOT_ACCEPTED][1] = count;
-    areaCount[SUITE_K_NOT_ACCEPTED][2] = count;
+    areaScore[currentSuite][1] = makeScore(count, updateList.size());
+    areaScore[currentSuite][2] = areaScore[currentSuite][1];
+    areaCount[currentSuite][1] = count;
+    areaCount[currentSuite][2] = count;
     reportProgress(null);
   }
 
@@ -6818,11 +6885,13 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         if (testMessage.getValidationReport() == null) {
           addField(sb, PARAM_TM_RESULT_ACK_CONFORMANCE, VALUE_RESULT_ACK_CONFORMANCE_NOT_RUN);
         } else {
-          boolean errorFound = false;
-          for (Assertion assertion : testMessage.getValidationReport().getAssertionList()) {
-            if (assertion.getResult().equalsIgnoreCase("ERROR")) {
-              errorFound = true;
-              break;
+          boolean errorFound = (testMessage.getValidationReport().getAssertionList().size() == 0);
+          if (!errorFound) {
+            for (Assertion assertion : testMessage.getValidationReport().getAssertionList()) {
+              if (assertion.getResult().equalsIgnoreCase("ERROR") || assertion.getResult().equals("")) {
+                errorFound = true;
+                break;
+              }
             }
           }
           if (errorFound) {

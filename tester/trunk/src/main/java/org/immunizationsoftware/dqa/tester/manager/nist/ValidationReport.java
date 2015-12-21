@@ -78,17 +78,10 @@ public class ValidationReport
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = dBuilder.parse(new ByteArrayInputStream(xml.getBytes()));
         doc.getDocumentElement().normalize();
-        NodeList nList = doc.getElementsByTagNameNS("http://www.nist.gov/healthcare/validation/message/hl7/v2/report",
-            "HL7V2MessageValidationReport");
-        if (nList.getLength() == 0) {
-          nList = doc.getElementsByTagName("HL7V2MessageValidationReport");
-          if (nList.getLength() == 0) {
-            nList = doc.getElementsByTagName("ns6:HL7V2MessageValidationReport");
-          }
-        }
+        NodeList nList = doc.getChildNodes();
         for (int i = 0; i < nList.getLength(); i++) {
           Node nNode = nList.item(i);
-          if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+          if (nNode.getNodeType() == Node.ELEMENT_NODE && nNode.getNodeName().indexOf("HL7V2MessageValidationReport") != -1) {
             NodeList documentNodeList = nNode.getChildNodes();
             for (int d = 0; d < documentNodeList.getLength(); d++) {
               Node documentNode = documentNodeList.item(d);

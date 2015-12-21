@@ -29,6 +29,8 @@ public interface RecordServletInterface {
   public static final String VALUE_TEST_SECTION_TYPE_ONC_2015 = "ONC 2015";
   public static final String VALUE_TEST_SECTION_TYPE_NOT_ACCEPTED = "Not Accepted";
   public static final String VALUE_TEST_SECTION_TYPE_QBP_SUPPORT = "QBP Support";
+  public static final String VALUE_TEST_SECTION_TYPE_QBP_TRANSFORM = "Transform";
+  public static final String VALUE_TEST_SECTION_TYPE_QBP_EXTRA = "Extra";
 
   public static final String PARAM_TC_CONNECTION_LABEL = "tc_connectionLabel";
   public static final String PARAM_TC_CONNECTION_TYPE = "tc_connectionType";

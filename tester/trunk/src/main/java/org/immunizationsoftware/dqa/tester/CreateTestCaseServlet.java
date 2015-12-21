@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.mover.SendData;
+import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.transform.PatientType;
 import org.immunizationsoftware.dqa.transform.ScenarioManager;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
@@ -48,8 +50,8 @@ public class CreateTestCaseServlet extends ClientServlet
    * @throws IOException
    *           if an I/O error occurs
    */
-  protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException,
-      IOException {
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
 
@@ -199,24 +201,24 @@ public class CreateTestCaseServlet extends ClientServlet
         if (testCaseMessage.getTestCaseNumber().length() > 0) {
           getTestCaseMessageMap(session).put(testCaseNumber, testCaseMessage);
         }
+        Transformer transformer = new Transformer();
+        testCaseMessage.setPreparedMessage(null);
+        transformer.transform(testCaseMessage);
+        session.setAttribute("message", testCaseMessage.getMessageText());
         saveTestCase(testCaseMessage, session);
         saveTestCaseHtml(testCaseMessage, session);
       }
 
-      Transformer transformer = new Transformer();
-      testCaseMessage.setPreparedMessage(null);
-      transformer.transform(testCaseMessage);
-      session.setAttribute("message", testCaseMessage.getMessageText());
       try {
         printHtmlHead(out, MENU_HEADER_EDIT, request);
         out.println("    <form action=\"CreateTestCaseServlet\" method=\"POST\">");
         out.println("      <table>");
         out.println("        <tr>");
         out.println("          <td valign=\"top\">Test Case Num</td>");
-        out.println("          <td><input type=\"text\" name=\"testCase\" value=\""
-            + testCaseMessage.getTestCaseNumber()
-            + "\" size=\"15\"> Set <input type=\"text\" name=\"testCaseSet\" value=\""
-            + testCaseMessage.getTestCaseSet() + "\" size=\"15\"></td>");
+        out.println(
+            "          <td><input type=\"text\" name=\"testCase\" value=\"" + testCaseMessage.getTestCaseNumber()
+                + "\" size=\"15\"> Set <input type=\"text\" name=\"testCaseSet\" value=\""
+                + testCaseMessage.getTestCaseSet() + "\" size=\"15\"></td>");
         out.println("          <input type=\"hidden\" name=\"runTimes\" value=\"" + runTimes + "\"></td>");
         out.println("          <td align=\"right\">");
         makeButtons(selectedTestCaseMessageList, out, testCasePos);
@@ -276,18 +278,16 @@ public class CreateTestCaseServlet extends ClientServlet
             + isChecked(PatientType.ADULT, testCaseMessage.getPatientType()) + "/> Adult <br/>");
         out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.BABY + "\""
             + isChecked(PatientType.BABY, testCaseMessage.getPatientType()) + "/> Baby ");
-        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.TODDLER
-            + "\"" + isChecked(PatientType.TODDLER, testCaseMessage.getPatientType()) + "/> Toddler");
+        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.TODDLER + "\""
+            + isChecked(PatientType.TODDLER, testCaseMessage.getPatientType()) + "/> Toddler");
         out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.TWEEN + "\""
             + isChecked(PatientType.TWEEN, testCaseMessage.getPatientType()) + "/> Tween <br/>");
-        out.println("                  <input type=\"radio\" name=\"patientType\" value=\""
-            + PatientType.TWO_MONTHS_OLD + "\""
-            + isChecked(PatientType.TWO_MONTHS_OLD, testCaseMessage.getPatientType()) + "/> 2 Months ");
+        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.TWO_MONTHS_OLD
+            + "\"" + isChecked(PatientType.TWO_MONTHS_OLD, testCaseMessage.getPatientType()) + "/> 2 Months ");
         out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.TWO_YEARS_OLD
             + "\"" + isChecked(PatientType.TWO_YEARS_OLD, testCaseMessage.getPatientType()) + "/> 2 Years <br/>");
-        out.println("                  <input type=\"radio\" name=\"patientType\" value=\""
-            + PatientType.FOUR_YEARS_OLD + "\""
-            + isChecked(PatientType.FOUR_YEARS_OLD, testCaseMessage.getPatientType()) + "/> 4 Years ");
+        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.FOUR_YEARS_OLD
+            + "\"" + isChecked(PatientType.FOUR_YEARS_OLD, testCaseMessage.getPatientType()) + "/> 4 Years ");
         out.println("                  <input type=\"radio\" name=\"patientType\" value=\""
             + PatientType.TWELVE_YEARS_OLD + "\""
             + isChecked(PatientType.TWELVE_YEARS_OLD, testCaseMessage.getPatientType()) + "/> 12 Years <br/>");
@@ -344,10 +344,35 @@ public class CreateTestCaseServlet extends ClientServlet
         out.println("            </table>");
         out.println("          </td>");
         out.println("        </tr>");
+        List<Connector> connectors = ConnectServlet.getConnectors(session);
+        if (connectors.size() == 1) {
+          if (!connectors.get(0).getCustomTransformations().equals("")) {
+            out.println("        <tr>");
+            out.println("          <td valign=\"top\">Exclude Transform</td>");
+            out.println("          <td>");
+            try {
+              BufferedReader customTransformsIn = new BufferedReader(
+                  new StringReader(connectors.get(0).getCustomTransformations()));
+              String line;
+              int i = 0;
+              while ((line = customTransformsIn.readLine()) != null) {
+                i++;
+                boolean selected = request.getParameter("excludeTransform" + i) != null;
+                out.println("            <input type=\"checkbox\" name=\"excludeTransform" + i + "\" value=\"true\""
+                    + (selected ? " checked=\"true\"" : "") + "/>" + line + "<br/>");
+              }
+            } catch (IOException ioe) {
+              // ignore
+            }
+            out.println("          </td>");
+            out.println("        </tr>");
+          }
+        }
         out.println("        <tr>");
         out.println("          <td valign=\"top\">Test Case</td>");
-        out.println("          <td colspan=\"2\"><pre style=\"text-align: left; height: 250px; width: 520px;overflow:auto;\">"
-            + testCaseMessage.createText(true) + "</pre></td>");
+        out.println(
+            "          <td colspan=\"2\"><pre style=\"text-align: left; height: 250px; width: 520px;overflow:auto;\">"
+                + testCaseMessage.createText(true) + "</pre></td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td colspan=\"3\" align=\"right\">");
@@ -378,60 +403,94 @@ public class CreateTestCaseServlet extends ClientServlet
             + "that the Data Quality Test tool uses to make a pretty test case report. Here are "
             + "the steps to creating a test case:</p>");
         out.println("   <ol>");
-        out.println("     <li><b>Test Case Num and Set</b> Indicate the test case number you wish to use for this test case. If you don't supply a number then one will be automatically assigned. (This assigned number will increment by 1 every time you submit this page.) The set is for grouping test cases into more manageble sections. </li>");
-        out.println("     <li><b>Description</b> Write a human readable description that describes what you are trying to test. </li>");
-        out.println("     <li><b>Expected Result</b> Write a human readable description of describes what you expect to happen when you submit this message.</li>");
-        out.println("     <li><b>Actual Result</b> Select what kind of result you are expecting and the exact value of either the acknowledgement text or warning text");
+        out.println(
+            "     <li><b>Test Case Num and Set</b> Indicate the test case number you wish to use for this test case. If you don't supply a number then one will be automatically assigned. (This assigned number will increment by 1 every time you submit this page.) The set is for grouping test cases into more manageble sections. </li>");
+        out.println(
+            "     <li><b>Description</b> Write a human readable description that describes what you are trying to test. </li>");
+        out.println(
+            "     <li><b>Expected Result</b> Write a human readable description of describes what you expect to happen when you submit this message.</li>");
+        out.println(
+            "     <li><b>Actual Result</b> Select what kind of result you are expecting and the exact value of either the acknowledgement text or warning text");
         out.println("       <ul>");
-        out.println("         <li><b>Accept</b> The message should return with a positive ACK. In the value write the exact acknowledgement text you expect.</li>");
-        out.println("         <li><b>Accept and Warn</b> The message should return with a positive ACK but should have a warning listed. In the value write the exact warning text you expect.</li>");
-        out.println("         <li><b>Reject</b> The message should return with a negative ACK (not a positive ACK). The value should be the exact negative acknolwedgment text returned.</li>");
+        out.println(
+            "         <li><b>Accept</b> The message should return with a positive ACK. In the value write the exact acknowledgement text you expect.</li>");
+        out.println(
+            "         <li><b>Accept and Warn</b> The message should return with a positive ACK but should have a warning listed. In the value write the exact warning text you expect.</li>");
+        out.println(
+            "         <li><b>Reject</b> The message should return with a negative ACK (not a positive ACK). The value should be the exact negative acknolwedgment text returned.</li>");
         out.println("       </ul>");
         out.println("     </li>");
-        out.println("     <li><b>Start Message</b> The base message that you wish to start with. All that is required is that every segment you wish to be in the final message is listed. This process will not create new segments or reorder segments, but it can set field values. You do not have to supply a start message, the default one will work.</li>");
-        out.println("     <li><b>Transform</b> The transform section indicates the changes you want to make to the base message. If you are using the default base message you will have to indicate transforms in order to make a vaid HL7 message.");
+        out.println(
+            "     <li><b>Start Message</b> The base message that you wish to start with. All that is required is that every segment you wish to be in the final message is listed. This process will not create new segments or reorder segments, but it can set field values. You do not have to supply a start message, the default one will work.</li>");
+        out.println(
+            "     <li><b>Transform</b> The transform section indicates the changes you want to make to the base message. If you are using the default base message you will have to indicate transforms in order to make a vaid HL7 message.");
         out.println("       <ul>");
-        out.println("         <li><b>Quick Transforms</b> This is a list of basic transforms that you will commonly do. Select each option you wish to use. Items on the same line are normaly mutually exclusive. Checking a box from each line will result in a valid HL7 message. Please remember: if you don't have the segment defined in the original message these quick transforms do not automatically create the segment!");
+        out.println(
+            "         <li><b>Quick Transforms</b> This is a list of basic transforms that you will commonly do. Select each option you wish to use. Items on the same line are normaly mutually exclusive. Checking a box from each line will result in a valid HL7 message. Please remember: if you don't have the segment defined in the original message these quick transforms do not automatically create the segment!");
         out.println("           <ul>");
-        out.println("             <li><b>2.5.1 or 2.3.1</b> Select what kind of message you are generating and the required fields not listed below will be filled in. </li>");
-        out.println("             <li><b>Boy or Girl</b> Selecting boy or girl will populate the last name, first name, middle name and birth date of the patient. The last name is a random last name out of over 1000 last names derived from US county names. The first and middle name are a random selection of the top 1000 most popular baby names for either girl or boy. The gender is M for boy and F for girl. </li>");
+        out.println(
+            "             <li><b>2.5.1 or 2.3.1</b> Select what kind of message you are generating and the required fields not listed below will be filled in. </li>");
+        out.println(
+            "             <li><b>Boy or Girl</b> Selecting boy or girl will populate the last name, first name, middle name and birth date of the patient. The last name is a random last name out of over 1000 last names derived from US county names. The first and middle name are a random selection of the top 1000 most popular baby names for either girl or boy. The gender is M for boy and F for girl. </li>");
         out.println("             <li><b>Date of Birth</b> The birth date is a random date in 2009 or 2010. </li>");
-        out.println("             <li><b>Address</b> The street number is randomly generated number betewen 1 and 400, the street name a randomly selected county name, the street type a randomly selected value of 5 common street types. The city, state and zip code are correct for a real city in the state of Michigan.</li>");
-        out.println("             <li><b>Phone</b> The area code is the correct area code for the address randomly selected and represents a real area code used in Michigan. The rest of the number is in the format 555-xxxx where the last 4 digits are randomly generated.</li>");
-        out.println("             <li><b>Mother or Father</b> Sets the NK1 last name as the same as the patients. Sets the first name as a randomly chosen baby girl or baby boy name. Sets the NK1 type to either mother or father.</li>");
-        out.println("             <li><b>Vacc #1 Admin or Hist</b> Sets the first vaccination date to a random date about 2 months after the randomly selected patient's date of birth. Sets RXA-9 to indiate the whether this is administered or historical.</li>");
-        out.println("             <li><b>Vacc #2 Admin or Hist</b> Sets the second vaccination date to a random date about 2 months after the randomly selected patient's date of birth. Sets RXA-9 to indiate the whether this is administered or historical.</li>");
+        out.println(
+            "             <li><b>Address</b> The street number is randomly generated number betewen 1 and 400, the street name a randomly selected county name, the street type a randomly selected value of 5 common street types. The city, state and zip code are correct for a real city in the state of Michigan.</li>");
+        out.println(
+            "             <li><b>Phone</b> The area code is the correct area code for the address randomly selected and represents a real area code used in Michigan. The rest of the number is in the format 555-xxxx where the last 4 digits are randomly generated.</li>");
+        out.println(
+            "             <li><b>Mother or Father</b> Sets the NK1 last name as the same as the patients. Sets the first name as a randomly chosen baby girl or baby boy name. Sets the NK1 type to either mother or father.</li>");
+        out.println(
+            "             <li><b>Vacc #1 Admin or Hist</b> Sets the first vaccination date to a random date about 2 months after the randomly selected patient's date of birth. Sets RXA-9 to indiate the whether this is administered or historical.</li>");
+        out.println(
+            "             <li><b>Vacc #2 Admin or Hist</b> Sets the second vaccination date to a random date about 2 months after the randomly selected patient's date of birth. Sets RXA-9 to indiate the whether this is administered or historical.</li>");
         out.println("           </ul>");
         out.println("         </li>");
-        out.println("         <li><b>Quick Transforms Applied</b> These are the transformed that are currently being applied. Selecting a check box does not automatically update this area. To update this area, simply click Submit. The transforms listed here may be copied to the Custom Transforms area and changed as desired. </li>");
-        out.println("         <li><b>Custom Transforms</b> You can indicate your own transforms by using the same format as the quick transforms. The format is this: <code>{SEG_NAME}[#{SEG_REP_NUM}]-{FIELD_NUM}[.{SUB_FIELD{NUM}]={value}</code>. The custom transforms will be run after the quick transforms. You may set any value here and it will be placed in the message exactly as you write it. It is okay to use HL7 special characters but they will not be escaped. Putting a blank value will blank out a specific field. Values such as PID#1-1 and PID-1 are equivalant, and PID-3.1 and PID-3 are also equivalant. There are also a set of defined values that you can access by placing the defined value code with bracket around it. Note: These values are generate each time a new message is generated, but stay the same while transforming the entire message, which means that if you use [BOY] a randomly choosen baby boy's name will be choosen but it will be the same throughout a transformation of a single message. The following defind value codes are supported:");
+        out.println(
+            "         <li><b>Quick Transforms Applied</b> These are the transformed that are currently being applied. Selecting a check box does not automatically update this area. To update this area, simply click Submit. The transforms listed here may be copied to the Custom Transforms area and changed as desired. </li>");
+        out.println(
+            "         <li><b>Custom Transforms</b> You can indicate your own transforms by using the same format as the quick transforms. The format is this: <code>{SEG_NAME}[#{SEG_REP_NUM}]-{FIELD_NUM}[.{SUB_FIELD{NUM}]={value}</code>. The custom transforms will be run after the quick transforms. You may set any value here and it will be placed in the message exactly as you write it. It is okay to use HL7 special characters but they will not be escaped. Putting a blank value will blank out a specific field. Values such as PID#1-1 and PID-1 are equivalant, and PID-3.1 and PID-3 are also equivalant. There are also a set of defined values that you can access by placing the defined value code with bracket around it. Note: These values are generate each time a new message is generated, but stay the same while transforming the entire message, which means that if you use [BOY] a randomly choosen baby boy's name will be choosen but it will be the same throughout a transformation of a single message. The following defind value codes are supported:");
         out.println("           <ul>");
-        out.println("             <li><b>[BOY]</b> A randomly choosen name for a list of 1000 most common male baby names in 2010.</li>");
-        out.println("             <li><b>[GIRL]</b> A randomly choosen name for a list of 1000 most common female baby names in 2010.</li>");
-        out.println("             <li><b>[FATHER]</b> A randomly choosen name for a list of 1000 most common male baby names in 2010.</li>");
-        out.println("             <li><b>[MOTHER]</b> A randomly choosen name for a list of 1000 most common female baby names in 2010.</li>");
-        out.println("             <li><b>[MOTHER_MAIDEN]</b> A randomly choosen name for a list of over 1000 names derived from current US county names.</li>");
+        out.println(
+            "             <li><b>[BOY]</b> A randomly choosen name for a list of 1000 most common male baby names in 2010.</li>");
+        out.println(
+            "             <li><b>[GIRL]</b> A randomly choosen name for a list of 1000 most common female baby names in 2010.</li>");
+        out.println(
+            "             <li><b>[FATHER]</b> A randomly choosen name for a list of 1000 most common male baby names in 2010.</li>");
+        out.println(
+            "             <li><b>[MOTHER]</b> A randomly choosen name for a list of 1000 most common female baby names in 2010.</li>");
+        out.println(
+            "             <li><b>[MOTHER_MAIDEN]</b> A randomly choosen name for a list of over 1000 names derived from current US county names.</li>");
         out.println("             <li><b>[DOB]</b> A randomly choosen date in 2009 or 2010.</li>");
-        out.println("             <li><b>[NOW]</b> An HL7 formatted date and time representing the current time now.</li>");
-        out.println("             <li><b>[TODAY]</b> An HL7 formatted date with no time representing the current date today.</li>");
-        out.println("             <li><b>[LAST]</b> A randomly choosen name for a list of over 1000 names derived from current US county names.</li>");
-        out.println("             <li><b>[GIRL_MIDDLE]</b> A randomly choosen name for a list of 1000 most common female baby names in 2010.</li>");
-        out.println("             <li><b>[BOY_MIDDLE]</b> A randomly choosen name for a list of 1000 most common male baby names in 2010.</li>");
+        out.println(
+            "             <li><b>[NOW]</b> An HL7 formatted date and time representing the current time now.</li>");
+        out.println(
+            "             <li><b>[TODAY]</b> An HL7 formatted date with no time representing the current date today.</li>");
+        out.println(
+            "             <li><b>[LAST]</b> A randomly choosen name for a list of over 1000 names derived from current US county names.</li>");
+        out.println(
+            "             <li><b>[GIRL_MIDDLE]</b> A randomly choosen name for a list of 1000 most common female baby names in 2010.</li>");
+        out.println(
+            "             <li><b>[BOY_MIDDLE]</b> A randomly choosen name for a list of 1000 most common male baby names in 2010.</li>");
         out.println("             <li><b>[GIRL_MIDDLE_INITIAL] The first initial of [GIRL_MIDDLE]</b> </li>");
         out.println("             <li><b>[BOY_MIDDLE_INITIAL]</b> The first initial of [BOY_MIDDLE]</li>");
         out.println("             <li><b>[VAC1_DATE]</b> A randomly choosen date about 2 months after [DOB]</li>");
-        out.println("             <li><b>[VAC2_DATE]</b> A randomly choosen date about 2 months after [VAC1_DATE]</li>");
-        out.println("             <li><b>[VAC3_DATE]</b> A randomly choosen date about 2 months after [VAC2_DATE]</li>");
+        out.println(
+            "             <li><b>[VAC2_DATE]</b> A randomly choosen date about 2 months after [VAC1_DATE]</li>");
+        out.println(
+            "             <li><b>[VAC3_DATE]</b> A randomly choosen date about 2 months after [VAC2_DATE]</li>");
         out.println("             <li><b>[CITY]</b> A randomly choosen name of a city in Michigan.</li>");
-        out.println("             <li><b>[STREET]</b> A randomly generated street with a street number between 1 and 400 a street name from a randomly choosen US county name, and the street type from a list of 5 commmon street types.</li>");
+        out.println(
+            "             <li><b>[STREET]</b> A randomly generated street with a street number between 1 and 400 a street name from a randomly choosen US county name, and the street type from a list of 5 commmon street types.</li>");
         out.println("             <li><b>[STATE]</b> The correct state for the real city picked [CITY]</li>");
         out.println("             <li><b>[ZIP]</b> The correct zip for the real city picked for [CITY]</li>");
-        out.println("             <li><b>[PHONE]</b> A randomly generated phone, but with a area code correct for city picked for [CITY]. </li>");
+        out.println(
+            "             <li><b>[PHONE]</b> A randomly generated phone, but with a area code correct for city picked for [CITY]. </li>");
         out.println("           </ul>");
         out.println("         </li>");
         out.println("       </ul>");
         out.println("     </li>");
-        out.println("     <li><b>Test Case</b> After hitting the submit button a test case will be generated. This can be copied and then pasted in the data quality tester to verify the test and the immunization registry. </li>");
+        out.println(
+            "     <li><b>Test Case</b> After hitting the submit button a test case will be generated. This can be copied and then pasted in the data quality tester to verify the test and the immunization registry. </li>");
         out.println("   </ol>");
         out.println("  </div>");
         ClientServlet.printHtmlFoot(out);
@@ -461,7 +520,8 @@ public class CreateTestCaseServlet extends ClientServlet
   }
 
   // <editor-fold defaultstate="collapsed"
-  // desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+  // desc="HttpServlet methods. Click on the + sign on the left to edit the
+  // code.">
   /**
    * Handles the HTTP <code>GET</code> method.
    * 
@@ -606,7 +666,7 @@ public class CreateTestCaseServlet extends ClientServlet
     if (user != null && user.hasSendData()) {
       File testCaseDir = user.getSendData().getTestCaseDir(false);
       if (testCaseDir != null) {
-        readTestCases(session, testCaseDir);
+        readTestCases(session, testCaseDir, null);
         File[] dirs = testCaseDir.listFiles(new FileFilter() {
           public boolean accept(File arg0) {
             return arg0.isDirectory() && !arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
@@ -614,7 +674,7 @@ public class CreateTestCaseServlet extends ClientServlet
         });
         if (dirs != null) {
           for (File dir : dirs) {
-            readTestCases(session, dir);
+            readTestCases(session, dir, dir.getName());
           }
         }
       }
@@ -651,10 +711,9 @@ public class CreateTestCaseServlet extends ClientServlet
     return fileList;
   }
 
-  private static void readTestCases(HttpSession session, File testCaseDir) throws FileNotFoundException, IOException,
-      ServletException {
+  private static void readTestCases(HttpSession session, File testCaseDir, String prefix)
+      throws FileNotFoundException, IOException, ServletException {
     String[] filenames = testCaseDir.list(new FilenameFilter() {
-
       public boolean accept(File file, String arg1) {
         return arg1.startsWith("TC-") && arg1.endsWith(".txt");
       }
@@ -670,15 +729,16 @@ public class CreateTestCaseServlet extends ClientServlet
         }
         in.close();
 
-        List<TestCaseMessage> testCaseMessageList = TestCaseServlet
-            .parseAndAddTestCases(testScript.toString(), session);
+        List<TestCaseMessage> testCaseMessageList = TestCaseServlet.parseAndAddTestCases(testScript.toString(),
+            session);
         for (TestCaseMessage testCaseMessage : testCaseMessageList) {
           if (!testCaseMessage.getTestCaseNumber().equals("")) {
-            CreateTestCaseServlet.getTestCaseMessageMap(session).put(testCaseMessage.getTestCaseNumber(),
-                testCaseMessage);
+            if (prefix == null) {
+              CreateTestCaseServlet.getTestCaseMessageMap(session)
+                  .put(prefix + "-" + testCaseMessage.getTestCaseNumber(), testCaseMessage);
+            }
           }
         }
-
       }
     }
   }
