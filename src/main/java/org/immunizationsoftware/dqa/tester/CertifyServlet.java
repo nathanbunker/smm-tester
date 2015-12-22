@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.mover.SendData;
+import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
 import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
@@ -67,9 +68,8 @@ public class CertifyServlet extends ClientServlet
         int id = Integer.parseInt(request.getParameter("id"));
         String queryType = request.getParameter("queryType");
 
-        certifyRunner = new CertifyRunner(connectors.get(id - 1), user.getSendData());
+        certifyRunner = new CertifyRunner(connectors.get(id - 1), user.getSendData(), queryType);
         certifyRunner.setParticipantResponse((ParticipantResponse) session.getAttribute("participantResponse"));
-        certifyRunner.setQueryType(queryType);
         certifyRunner.setRun(true, CertifyRunner.SUITE_A_BASIC);
         certifyRunner.setRun(request.getParameter("runA") != null, CertifyRunner.SUITE_A_BASIC);
         certifyRunner.setRun(request.getParameter("runB") != null, CertifyRunner.SUITE_B_INTERMEDIATE);
@@ -77,12 +77,17 @@ public class CertifyServlet extends ClientServlet
         certifyRunner.setRun(request.getParameter("runD") != null, CertifyRunner.SUITE_D_EXCEPTIONAL);
         certifyRunner.setRun(request.getParameter("runF") != null, CertifyRunner.SUITE_E_FORECAST_PREP);
         certifyRunner.setRun(request.getParameter("runF") != null, CertifyRunner.SUITE_F_FORECAST);
+        certifyRunner.setRun(true, CertifyRunner.SUITE_G_PERFORMANCE);
         certifyRunner.setRun(request.getParameter("runH") != null, CertifyRunner.SUITE_H_CONFORMANCE);
         certifyRunner.setRun(request.getParameter("runI") != null, CertifyRunner.SUITE_I_PROFILING);
         certifyRunner.setRun(request.getParameter("runJ") != null, CertifyRunner.SUITE_J_ONC_2015);
         certifyRunner.setRun(request.getParameter("runK") != null, CertifyRunner.SUITE_K_NOT_ACCEPTED);
         certifyRunner.setRun(request.getParameter("runL") != null, CertifyRunner.SUITE_L_CONFORMANCE_2015);
         certifyRunner.setRun(request.getParameter("runM") != null, CertifyRunner.SUITE_M_QBP_SUPPORT);
+        certifyRunner.setRun(request.getParameter("runN") != null, CertifyRunner.SUITE_N_TRANSFORM);
+        certifyRunner.setRun(request.getParameter("runO") != null, CertifyRunner.SUITE_O_EXTRA);
+        certifyRunner.setRun(request.getParameter("runP") != null, CertifyRunner.SUITE_P_DEDUPLICATION_ENGAGED);
+        certifyRunner.setRun(request.getParameter("runQ") != null, CertifyRunner.SUITE_Q_FORECASTER_ENGAGED);
         certifyRunner.setPauseBeforeQuerying(request.getParameter("pauseBeforeQuerying") != null);
         if (certifyRunner.isRun(CertifyRunner.SUITE_E_FORECAST_PREP)) {
           Map<Integer, ForecastTestPanel> forecastTestPanelIdMap = new HashMap<Integer, ForecastTestPanel>();
@@ -221,7 +226,7 @@ public class CertifyServlet extends ClientServlet
           out.println("</script>");
         }
 
-        out.println("    <h2>" + certifyRunner.getConnector().getLabel() + " Test Results</h2>");
+        out.println("    <h2>" + certifyRunner.getConnector().getLabel() + " " + certifyRunner.getStatus() + "</h2>");
         certifyRunner.printResults(out);
         out.println("    <form action=\"CertifyServlet\" method=\"POST\">");
         out.println("      <input type=\"submit\" name=\"action\" value=\"Refresh\"/>");
@@ -243,9 +248,14 @@ public class CertifyServlet extends ClientServlet
         out.println("        <tr>");
         out.println("          <td>Query Type</td>");
         out.println("          <td>");
-        out.println("            <input type=\"radio\" name=\"queryType\" value=\"N\" checked=\"true\"> None");
-        out.println("            <input type=\"radio\" name=\"queryType\" value=\"Q\"> QBP");
-        out.println("            <input type=\"radio\" name=\"queryType\" value=\"V\"> VXQ");
+        out.println("            <input type=\"radio\" name=\"queryType\" value=\"" + CertifyRunner.QUERY_TYPE_NONE
+            + "\" checked=\"true\"> " + CertifyRunner.QUERY_TYPE_NONE + "");
+        out.println("            <input type=\"radio\" name=\"queryType\" value=\"" + CertifyRunner.QUERY_TYPE_QBP_Z34
+            + "\"> " + CertifyRunner.QUERY_TYPE_QBP_Z34);
+        out.println("            <input type=\"radio\" name=\"queryType\" value=\"" + CertifyRunner.QUERY_TYPE_QBP_Z44
+            + "\"> " + CertifyRunner.QUERY_TYPE_QBP_Z44);
+        out.println("            <input type=\"radio\" name=\"queryType\" value=\"" + CertifyRunner.QUERY_TYPE_VXQ
+            + "\"> " + CertifyRunner.QUERY_TYPE_VXQ);
         out.println("            <input type=\"checkbox\" name=\"pauseBeforeQuerying\" value=\"true\"/> Pause");
         out.println("          </td>");
         out.println("        </tr>");
@@ -365,8 +375,31 @@ public class CertifyServlet extends ClientServlet
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println(
-            "            <input type=\"checkbox\" name=\"runM\" value=\"true\" checked=\"true\"/> QBP Support");
+        out.println("            <input type=\"checkbox\" name=\"runM\" value=\"true\" checked=\"true\"/> QBP Support");
+        out.println("          </td>");
+        out.println("          <td></td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td>");
+        out.println("            <input type=\"checkbox\" name=\"runN\" value=\"true\"/> Transform Confirmation");
+        out.println("          </td>");
+        out.println("          <td></td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td>");
+        out.println("            <input type=\"checkbox\" name=\"runO\" value=\"true\"/> Extra Tests");
+        out.println("          </td>");
+        out.println("          <td></td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td>");
+        out.println("            <input type=\"checkbox\" name=\"runP\" value=\"true\"/> Deduplication Engaged");
+        out.println("          </td>");
+        out.println("          <td></td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td>");
+        out.println("            <input type=\"checkbox\" name=\"runQ\" value=\"true\"/> Forecaster Engaged");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
@@ -399,14 +432,14 @@ public class CertifyServlet extends ClientServlet
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input type=\"checkbox\" name=\"runH\" value=\"true\" checked=\"true\"/> Conformance");
+        out.println("            <input type=\"checkbox\" name=\"runH\" value=\"true\"/> Conformance (Deprecated)");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
         out.println(
-            "            <input type=\"checkbox\" name=\"runL\" value=\"true\" checked=\"true\"/> Conformance 2015");
+            "            <input type=\"checkbox\" name=\"runL\" value=\"true\" checked=\"true\"/> NIST Conformance 2015");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");

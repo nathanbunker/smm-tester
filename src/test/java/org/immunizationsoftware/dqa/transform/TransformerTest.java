@@ -2,7 +2,7 @@ package org.immunizationsoftware.dqa.transform;
 
 import static org.junit.Assert.assertEquals;
 
-import org.immunizationsoftware.dqa.tester.CertifyRunner;
+import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
 import org.junit.Test;
 
 import junit.framework.TestCase;
