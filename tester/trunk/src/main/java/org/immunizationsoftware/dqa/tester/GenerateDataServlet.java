@@ -222,7 +222,7 @@ public class GenerateDataServlet extends ClientServlet
       out.println("<pre>");
 
       for (TestCaseMessage testCaseMessage : testCaseMessageList) {
-        String qbpMessage = QueryConverter.convertVXUtoQBP(testCaseMessage.getMessageText());
+        String qbpMessage = QueryConverter.convertVXUtoQBPZ34(testCaseMessage.getMessageText());
         out.print(qbpMessage);
       }
       out.println("</pre>");

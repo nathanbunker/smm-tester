@@ -3,7 +3,7 @@ package org.immunizationsoftware.dqa;
 import java.util.List;
 
 import org.immunizationsoftware.dqa.mover.ManagerServlet;
-import org.immunizationsoftware.dqa.tester.CertifyRunner;
+import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
 import org.immunizationsoftware.dqa.tester.manager.ParticipantResponseManager;
 import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;

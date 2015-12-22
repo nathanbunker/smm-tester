@@ -274,7 +274,7 @@ public class SubmitServlet extends ClientServlet
 
       if (message != null) {
         if (message.indexOf("|VXU^") > 0) {
-          String qbpMessage = QueryConverter.convertVXUtoQBP(message);
+          String qbpMessage = QueryConverter.convertVXUtoQBPZ34(message);
           session.setAttribute(CompareServlet.VXU_MESSAGE, message);
           out.println("<p>Submit QBP query message based from VXU displayed above</p>");
           printForm(id, connectors, qbpMessage, request, out);

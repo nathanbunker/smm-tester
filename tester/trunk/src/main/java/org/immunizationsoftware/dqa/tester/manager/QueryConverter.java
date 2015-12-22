@@ -140,7 +140,7 @@ public class QueryConverter
     return sb.toString();
   }
 
-  public static String convertVXUtoQBP(String message) {
+  public static String convertVXUtoQBPZ34(String message) {
     StringBuilder sb = new StringBuilder();
     List<String> mshFields = new ArrayList<String>();
     List<String> pidFields = new ArrayList<String>();
