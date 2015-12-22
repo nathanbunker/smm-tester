@@ -152,6 +152,7 @@ public class CAProfiling extends CertifyArea
                   testCaseMessageMap);
               if (testRunner.isWasRun()) {
                 certifyRunner.performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessagePresent);
+                incrementUpdateProgress();
               }
             }
             profileLine.setTestCaseMessageAbsent(testCaseMessageAbsent);
@@ -159,6 +160,7 @@ public class CAProfiling extends CertifyArea
               testRunner.runTestIfNew(certifyRunner.connector, testCaseMessageAbsent, testCaseMessageMap);
               if (testRunner.isWasRun()) {
                 certifyRunner.performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessageAbsent);
+                incrementUpdateProgress();
               }
             }
             if (testCaseMessagePresent.isAccepted() && !testCaseMessageAbsent.isAccepted()) {
@@ -202,7 +204,6 @@ public class CAProfiling extends CertifyArea
               countPass++;
               profileLine.setPassed(true);
             }
-            incrementUpdateProgress();
             countTested++;
             profileLine.setHasRun(true);
             certifyRunner.printExampleMessage(testCaseMessagePresent, "I Profiling");

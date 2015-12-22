@@ -1491,7 +1491,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       out.println("    <td>" + statusMessageList.get(statusMessageList.size() - 1) + "</td>");
       out.println("  </tr>");
     }
-    
+
     if (connector.getQueryResponseFieldsNotReturnedSet() != null) {
       out.println("  <tr>");
       out.println("    <th>Query Fields Not Returned</th>");
@@ -2071,7 +2071,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           && certifyAreas[SUITE_B_INTERMEDIATE].getAreaProgress()[0] == 100
           && certifyAreas[SUITE_D_EXCEPTIONAL].getAreaProgress()[0] == 100
           && certifyAreas[SUITE_I_PROFILING].getAreaProgress()[0] == 100
-          && certifyAreas[SUITE_H_CONFORMANCE].getAreaProgress()[0] == 100;
+          && certifyAreas[SUITE_L_CONFORMANCE_2015].getAreaProgress()[0] == 100
+          && certifyAreas[SUITE_C_ADVANCED].getAreaProgress()[0] == 100
+          && certifyAreas[SUITE_K_NOT_ACCEPTED].getAreaProgress()[0] == 100
+          && certifyAreas[SUITE_J_ONC_2015].getAreaProgress()[0] == 100;
       addField(sb, PARAM_TC_COMPLETE_TEST, latestTest);
 
       addField(sb, PARAM_TC_QUERY_TYPE, queryType);
