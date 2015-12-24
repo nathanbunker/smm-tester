@@ -1454,7 +1454,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       out.println("  <tr>");
       out.println("    <th>Elapsed Test Time</th>");
       long elapsedTime = testFinished.getTime() - testStarted.getTime();
-      int elapsedMinutes = (int) elapsedTime / 1000;
+      int elapsedMinutes = (int) (elapsedTime / (1000.0 * 60.0) + 0.5);
       int elapsedHours = 0;
       if (elapsedMinutes > 60) {
         elapsedHours = elapsedMinutes / 60;
