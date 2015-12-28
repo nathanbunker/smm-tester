@@ -151,6 +151,24 @@ public class TestCaseMessage
   private String resultStoreStatus = "";
   private boolean originalAccepted = false;
   private String resultForecastStatus = "";
+  private TestCaseMessage updateTestCaseMessage = null;
+  private boolean doNotQueryFor = false;
+
+  public TestCaseMessage getUpdateTestCaseMessage() {
+    return updateTestCaseMessage;
+  }
+
+  public void setUpdateTestCaseMessage(TestCaseMessage updateTestCaseMessage) {
+    this.updateTestCaseMessage = updateTestCaseMessage;
+  }
+
+  public boolean isDoNotQueryFor() {
+    return doNotQueryFor;
+  }
+
+  public void setDoNotQueryFor(boolean doNotQueryFor) {
+    this.doNotQueryFor = doNotQueryFor;
+  }
 
   public String getResultForecastStatus() {
     return resultForecastStatus;
