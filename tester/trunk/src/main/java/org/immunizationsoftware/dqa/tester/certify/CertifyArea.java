@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
+import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTesterManager;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 import org.immunizationsoftware.dqa.transform.Comparison;
 import org.immunizationsoftware.dqa.transform.ScenarioManager;
@@ -182,6 +183,7 @@ public abstract class CertifyArea implements RecordServletInterface
     if (customTransformation != null) {
       testCaseMessage.appendCustomTransformation(customTransformation);
     }
+    testCaseMessage.setDescription(description);
     return register(count, testCaseMessage);
   }
 
@@ -243,7 +245,7 @@ public abstract class CertifyArea implements RecordServletInterface
       TestCaseMessage testCaseMessage) {
     try {
       testRunner.runTest(certifyRunner.connector, testCaseMessage);
-      boolean pass = testCaseMessage.isAccepted();
+      boolean pass = testCaseMessage.isPassedTest();
       testCaseMessage.setMajorChangesMade(!verifyNoMajorChangesMade(testCaseMessage));
       certifyRunner.performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessage);
       if (passIfAcksDifferentThanBase) {
@@ -276,6 +278,11 @@ public abstract class CertifyArea implements RecordServletInterface
 
   protected void reportProgress(TestCaseMessage testMessage) {
     certifyRunner.reportProgress(testMessage);
+  }
+  
+  protected void reportForecastProgress(TestCaseMessage testMessage)
+  {
+    certifyRunner.reportForecastProgress(testMessage);
   }
 
   public void setDerivedFrom(TestCaseMessage tcm, TestCaseMessage tcmPrevious, TestCaseMessage tcmQuery) {
@@ -314,7 +321,7 @@ public abstract class CertifyArea implements RecordServletInterface
     queryList.add(queryTestCaseMessage);
     queryTestCaseMessage.setTestPosition(certifyRunner.incrementingInt.next());
     queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
-    queryTestCaseMessage.setAssertResult("Match - *");
+    queryTestCaseMessage.setAssertResult(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH);
     queryTestCaseMessage.setForecastTestCase(testCaseMessage.getForecastTestCase());
     String message = Transformer.transform(certifyRunner.queryConnector, queryTestCaseMessage);
     queryTestCaseMessage.setMessageTextSent(message);
@@ -351,39 +358,32 @@ public abstract class CertifyArea implements RecordServletInterface
       List<Comparison> comparisonList = CompareManager.compareMessages(queryTestCaseMessage.getDerivedFromVXUMessage(),
           rspMessage);
       queryTestCaseMessage.setComparisonList(comparisonList);
-      if (false) {
-        for (Comparison comparison : comparisonList) {
-          if (comparison.isTested() && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
-            // testQueryCountOptional++;
-            if (comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED) {
-              // testQueryCountRequired++;
-            }
-
-            if (comparison.isPass() || fieldNotSupported(comparison)) {
-              // testQueryPassOptional++;
-              if (comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_REQUIRED) {
-                // testQueryPassRequired++;
-              }
-            }
-          }
-        }
-      }
       testPass = setPassFailForQuery(queryTestCaseMessage, testPass);
-      recordForecastResults(queryTestCaseMessage, rspMessage);
+      readForecastActual(queryTestCaseMessage);
+      if (queryTestCaseMessage.getForecastActualList().size() > 0) {
+        queryTestCaseMessage.setResultForecastStatus(RecordServletInterface.VALUE_RESULT_FORECAST_STATUS_INCLUDED);
+      } else {
+        queryTestCaseMessage.setResultForecastStatus(RecordServletInterface.VALUE_RESULT_FORECAST_STATUS_NOT_INCLUDED);
+      }
+      recordForecastResults(queryTestCaseMessage);
     } catch (Throwable t) {
       queryTestCaseMessage.setException(t);
     }
     certifyRunner.saveTestCase(queryTestCaseMessage);
     reportProgress(queryTestCaseMessage);
+    reportForecastProgress(queryTestCaseMessage);
     return testPass;
   }
 
-  public void recordForecastResults(TestCaseMessage queryTestCaseMessage, String rspMessage) {
+  public void readForecastActual(TestCaseMessage queryTestCaseMessage) {
+    ForecastTesterManager.readForecastActual(queryTestCaseMessage);
+  }
+
+  public void recordForecastResults(TestCaseMessage queryTestCaseMessage) {
     if (queryTestCaseMessage.getForecastTestCase() != null) {
       if (certifyRunner.connector.getTchForecastTesterSoftwareId() > 0) {
         try {
-          String results = certifyRunner.forecastTesterManager.reportForecastResults(
-              queryTestCaseMessage.getForecastTestCase(), rspMessage,
+          String results = certifyRunner.forecastTesterManager.reportForecastResults(queryTestCaseMessage,
               certifyRunner.connector.getTchForecastTesterSoftwareId());
           if (queryTestCaseMessage.getTestCaseNumber() != null
               && !queryTestCaseMessage.getTestCaseNumber().equals("")) {
@@ -408,103 +408,67 @@ public abstract class CertifyArea implements RecordServletInterface
   }
 
   public int setPassFailForQuery(TestCaseMessage queryTestCaseMessage, int testPass) {
-    if (queryTestCaseMessage.getAssertResultStatus().equalsIgnoreCase("Match")) {
+    String queryType = "";
+    {
       HL7Reader responseReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
       if (responseReader.advanceToSegment("MSH")) {
         String messageType = responseReader.getValue(9);
         if (messageType.equals("VXR")) {
-          queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_PASS);
+          queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH;
+        } else if (messageType.equals("VXX")) {
+          queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST;
+        } else if (messageType.equals("QCK")) {
+          if (responseReader.advanceToSegment("QAK") && responseReader.getValue(2).equals("NF")) {
+            queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND;
+          }
+        } else if (messageType.equals("ACK")) {
+          queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR;
         } else if (messageType.equals("RSP")) {
           String profile = responseReader.getValue(21);
           if (profile.equalsIgnoreCase("Z32") || profile.equalsIgnoreCase("Z42")) {
-            queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_PASS);
-          } else {
-            queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_FAIL);
+            queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH;
+          } else if (profile.equalsIgnoreCase("Z31")) {
+            queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST;
+          } else if (profile.equalsIgnoreCase("Z33")) {
+            if (responseReader.advanceToSegment("QAK")) {
+              String responseStatus = responseReader.getValue(2);
+              if (responseStatus.equals("NF")) {
+                queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND;
+              } else if (responseStatus.equals("TM")) {
+                queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY;
+              }
+            }
           }
-        } else {
-          queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_FAIL);
-        }
-      }
-    } else if (queryTestCaseMessage.getAssertResultStatus().equalsIgnoreCase("List")) {
-      HL7Reader responseReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
-      if (responseReader.advanceToSegment("MSH")) {
-        String messageType = responseReader.getValue(9);
-        if (messageType.equals("VXX")) {
-          queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_PASS);
-        } else if (messageType.equals("RSP")) {
-          String profile = responseReader.getValue(21);
-          if (profile.equalsIgnoreCase("Z31")) {
-            queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_PASS);
-          } else {
-            queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_FAIL);
-          }
-        } else {
-          queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_FAIL);
-        }
-      }
-    } else if (queryTestCaseMessage.getAssertResultStatus().equalsIgnoreCase("No Match")) {
-      HL7Reader responseReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
-      if (responseReader.advanceToSegment("MSH")) {
-        String messageType = responseReader.getValue(9);
-        if (messageType.equals("VXX")) {
-          if (responseReader.advanceToSegment("QAK") && responseReader.getValue(2).equals("NF")) {
-            queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_PASS);
-          } else {
-            queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_FAIL);
-          }
-        } else if (messageType.equals("RSP")) {
-          String profile = responseReader.getValue(21);
-          if (profile.equalsIgnoreCase("Z33") && responseReader.advanceToSegment("QAK")
-              && responseReader.getValue(2).equals("NF")) {
-            queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_PASS);
-          } else if (responseReader.advanceToSegment("QAK") && responseReader.getValue(2).equals("NF")) {
-            queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_PASS);
-          } else {
-            queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_FAIL);
-          }
-        } else {
-          queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_FAIL);
-        }
-      }
-    } else if (queryTestCaseMessage.getAssertResultStatus().equalsIgnoreCase("Too Many")) {
-      HL7Reader responseReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
-      if (responseReader.advanceToSegment("MSH")) {
-        String messageType = responseReader.getValue(9);
-        if (messageType.equals("VXX")) {
-          queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_PASS);
-        } else if (messageType.equals("RSP")) {
-          String profile = responseReader.getValue(21);
-          if (profile.equalsIgnoreCase("Z33") && responseReader.advanceToSegment("QAK")
-              && responseReader.getValue(2).equals("TM")) {
-            queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_PASS);
-          } else if (responseReader.advanceToSegment("QAK") && responseReader.getValue(2).equals("TM")) {
-            queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_PASS);
-          } else {
-            queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_FAIL);
-          }
-        } else {
-          queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_FAIL);
-        }
-      }
-    } else if (queryTestCaseMessage.getAssertResultStatus().equalsIgnoreCase("Reject")) {
-      HL7Reader responseReader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
-      if (responseReader.advanceToSegment("MSH")) {
-        String messageType = responseReader.getValue(9);
-        if (messageType.equals("ACK")) {
-          queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_PASS);
-        } else if (responseReader.advanceToSegment("QAK")) {
-          if (responseReader.getValue(2).equals("AE") || responseReader.getValue(2).equals("AR")) {
-            queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_PASS);
-          } else {
-            queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_FAIL);
-          }
-        } else {
-          queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_FAIL);
         }
       }
     }
-    if (queryTestCaseMessage.getActualResultStatus().equals(TestRunner.ACTUAL_RESULT_STATUS_PASS)) {
+
+    queryTestCaseMessage.setActualResultQueryType(queryType);
+
+    boolean passed = queryTestCaseMessage.getAssertResultStatus().equals(queryType);
+
+    if (queryTestCaseMessage.getAssertResultStatus()
+        .equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH)) {
+      passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH);
+    } else if (queryTestCaseMessage.getAssertResultStatus()
+        .equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST)) {
+      passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST);
+    } else if (queryTestCaseMessage.getAssertResultStatus()
+        .equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND)) {
+      passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND);
+    } else if (queryTestCaseMessage.getAssertResultStatus()
+        .equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY)) {
+      passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY);
+    } else if (queryTestCaseMessage.getAssertResultStatus()
+        .equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR)) {
+      passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR);
+    }
+
+    if (passed) {
+      queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_PASS);
       testPass++;
+    } else {
+      queryTestCaseMessage.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_FAIL);
     }
     return testPass;
   }

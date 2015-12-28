@@ -12,6 +12,8 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.immunizationsoftware.dqa.tester.manager.forecast.EvaluationActual;
+import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastActual;
 import org.immunizationsoftware.dqa.tester.manager.nist.ValidationReport;
 import org.immunizationsoftware.dqa.tester.manager.nist.ValidationResource;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestCase;
@@ -120,6 +122,7 @@ public class TestCaseMessage
   private List<Comment> comments = new ArrayList<Comment>();
   private String actualResultStatus = "";
   private String actualResultAckType = "";
+  private String actualResultQueryType = "";
   private String actualResultAckMessage = "";
   private String actualMessageResponseType = "";
   private PatientType patientType = PatientType.ANY_CHILD;
@@ -147,6 +150,42 @@ public class TestCaseMessage
   private boolean validationReportPass = false;
   private String resultStoreStatus = "";
   private boolean originalAccepted = false;
+  private String resultForecastStatus = "";
+
+  public String getResultForecastStatus() {
+    return resultForecastStatus;
+  }
+
+  public void setResultForecastStatus(String resultForecastStatus) {
+    this.resultForecastStatus = resultForecastStatus;
+  }
+
+  private List<ForecastActual> forecastActualList = null;
+  private List<EvaluationActual> evaluationActualList = null;
+
+  public List<ForecastActual> getForecastActualList() {
+    return forecastActualList;
+  }
+
+  public void setForecastActualList(List<ForecastActual> forecastActualList) {
+    this.forecastActualList = forecastActualList;
+  }
+
+  public List<EvaluationActual> getEvaluationActualList() {
+    return evaluationActualList;
+  }
+
+  public void setEvaluationActualList(List<EvaluationActual> evaluationActualList) {
+    this.evaluationActualList = evaluationActualList;
+  }
+
+  public String getActualResultQueryType() {
+    return actualResultQueryType;
+  }
+
+  public void setActualResultQueryType(String actualResultQueryType) {
+    this.actualResultQueryType = actualResultQueryType;
+  }
 
   public String getExcludeTransformations() {
     return excludeTransformations;

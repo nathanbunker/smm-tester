@@ -65,6 +65,9 @@ public class CAPerformance extends CertifyArea
   }
 
   public long getUpdateAverage() {
+    if (totalUpdateCount == 0) {
+      return 0;
+    }
     long averageUpdate = totalUpdateTime / totalUpdateCount;
     return averageUpdate;
   }

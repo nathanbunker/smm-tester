@@ -75,7 +75,6 @@ public class CertifyServlet extends ClientServlet
         certifyRunner.setRun(request.getParameter("runB") != null, CertifyRunner.SUITE_B_INTERMEDIATE);
         certifyRunner.setRun(request.getParameter("runC") != null, CertifyRunner.SUITE_C_ADVANCED);
         certifyRunner.setRun(request.getParameter("runD") != null, CertifyRunner.SUITE_D_EXCEPTIONAL);
-        certifyRunner.setRun(request.getParameter("runF") != null, CertifyRunner.SUITE_E_FORECAST_PREP);
         certifyRunner.setRun(request.getParameter("runF") != null, CertifyRunner.SUITE_F_FORECAST);
         certifyRunner.setRun(true, CertifyRunner.SUITE_G_PERFORMANCE);
         certifyRunner.setRun(request.getParameter("runH") != null, CertifyRunner.SUITE_H_CONFORMANCE);
@@ -89,7 +88,7 @@ public class CertifyServlet extends ClientServlet
         certifyRunner.setRun(request.getParameter("runP") != null, CertifyRunner.SUITE_P_DEDUPLICATION_ENGAGED);
         certifyRunner.setRun(request.getParameter("runQ") != null, CertifyRunner.SUITE_Q_FORECASTER_ENGAGED);
         certifyRunner.setPauseBeforeQuerying(request.getParameter("pauseBeforeQuerying") != null);
-        if (certifyRunner.isRun(CertifyRunner.SUITE_E_FORECAST_PREP)) {
+        if (certifyRunner.isRun(CertifyRunner.SUITE_F_FORECAST)) {
           Map<Integer, ForecastTestPanel> forecastTestPanelIdMap = new HashMap<Integer, ForecastTestPanel>();
           for (ForecastTestPanel forecastTestPanel : ForecastTestPanel.values()) {
             forecastTestPanelIdMap.put(forecastTestPanel.getId(), forecastTestPanel);
@@ -249,13 +248,15 @@ public class CertifyServlet extends ClientServlet
         out.println("          <td>Query Type</td>");
         out.println("          <td>");
         out.println("            <input type=\"radio\" name=\"queryType\" value=\"" + CertifyRunner.QUERY_TYPE_NONE
-            + "\" checked=\"true\"> " + CertifyRunner.QUERY_TYPE_NONE + "");
+            + "\" checked=\"true\" onClick=\"checkQueryOptions(false);\"> " + CertifyRunner.QUERY_TYPE_NONE + "");
         out.println("            <input type=\"radio\" name=\"queryType\" value=\"" + CertifyRunner.QUERY_TYPE_QBP_Z34
-            + "\"> " + CertifyRunner.QUERY_TYPE_QBP_Z34);
+            + "\" onClick=\"checkQueryOptions(true);\"> " + CertifyRunner.QUERY_TYPE_QBP_Z34);
+        out.println("            <input type=\"radio\" name=\"queryType\" value=\"" + CertifyRunner.QUERY_TYPE_QBP_Z34_Z44
+            + "\" onClick=\"checkQueryOptions(true);\"> " + CertifyRunner.QUERY_TYPE_QBP_Z34_Z44);
         out.println("            <input type=\"radio\" name=\"queryType\" value=\"" + CertifyRunner.QUERY_TYPE_QBP_Z44
-            + "\"> " + CertifyRunner.QUERY_TYPE_QBP_Z44);
+            + "\" onClick=\"checkQueryOptions(true);\"> " + CertifyRunner.QUERY_TYPE_QBP_Z44);
         out.println("            <input type=\"radio\" name=\"queryType\" value=\"" + CertifyRunner.QUERY_TYPE_VXQ
-            + "\"> " + CertifyRunner.QUERY_TYPE_VXQ);
+            + "\" onClick=\"checkQueryOptions(true);\"> " + CertifyRunner.QUERY_TYPE_VXQ);
         out.println("            <input type=\"checkbox\" name=\"pauseBeforeQuerying\" value=\"true\"/> Pause");
         out.println("          </td>");
         out.println("        </tr>");
@@ -279,13 +280,15 @@ public class CertifyServlet extends ClientServlet
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input id=\"ChkBasic\" type=\"checkbox\" name=\"runA\" value=\"true\" checked=\"true\"/> Basic");
+        out.println(
+            "            <input id=\"ChkBasic\" type=\"checkbox\" name=\"runA\" value=\"true\" checked=\"true\"/> Basic");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input id=\"ChkONC2015\" type=\"checkbox\" name=\"runJ\" value=\"true\" checked=\"true\"/> ONC 2015");
+        out.println(
+            "            <input id=\"ChkONC2015\" type=\"checkbox\" name=\"runJ\" value=\"true\" checked=\"true\"/> ONC 2015");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
@@ -305,14 +308,16 @@ public class CertifyServlet extends ClientServlet
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input id=\"ChkAdvanced\" type=\"checkbox\" name=\"runC\" value=\"true\" checked=\"true\"/> Advanced");
+        out.println(
+            "            <input id=\"ChkAdvanced\" type=\"checkbox\" name=\"runC\" value=\"true\" checked=\"true\"/> Advanced");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
         if (profileManager != null) {
           out.println("        <tr>");
           out.println("          <td valign=\"top\">");
-          out.println("            <input id=\"ChkProfiling\" type=\"checkbox\" name=\"runI\" value=\"true\" checked=\"true\"/> Profiling");
+          out.println(
+              "            <input id=\"ChkProfiling\" type=\"checkbox\" name=\"runI\" value=\"true\" checked=\"true\"/> Profiling");
           out.println("          </td>");
           int profileUsageId = profileManager.getProfileUsageList().size();
           if (session.getAttribute("profileUsageId") != null) {
@@ -369,43 +374,50 @@ public class CertifyServlet extends ClientServlet
         }
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input id=\"ChkExceptional\" type=\"checkbox\" name=\"runD\" value=\"true\" checked=\"true\"/> Exceptional");
+        out.println(
+            "            <input id=\"ChkExceptional\" type=\"checkbox\" name=\"runD\" value=\"true\" checked=\"true\"/> Exceptional");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input id=\"ChkQBPSupport\" type=\"checkbox\" name=\"runM\" value=\"true\" checked=\"true\"/> QBP Support");
+        out.println(
+            "            <input id=\"ChkQBPSupport\" type=\"checkbox\" name=\"runM\" value=\"true\"/> QBP Support");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input id=\"ChkTransformConfirmation\" type=\"checkbox\" name=\"runN\" value=\"true\"/> Transform Confirmation");
+        out.println(
+            "            <input id=\"ChkTransformConfirmation\" type=\"checkbox\" name=\"runN\" value=\"true\"/> Transform Confirmation");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input id=\"ChkExtraTests\" type=\"checkbox\" name=\"runO\" value=\"true\"/> Extra Tests");
+        out.println(
+            "            <input id=\"ChkExtraTests\" type=\"checkbox\" name=\"runO\" value=\"true\"/> Extra Tests");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input id=\"ChkDeduplicationEngaged\" type=\"checkbox\" name=\"runP\" value=\"true\"/> Deduplication Engaged");
+        out.println(
+            "            <input id=\"ChkDeduplicationEngaged\" type=\"checkbox\" name=\"runP\" value=\"true\"/> Deduplication Engaged");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input id=\"ChkForecasterEngaged\" type=\"checkbox\" name=\"runQ\" value=\"true\"/> Forecaster Engaged");
+        out.println(
+            "            <input id=\"ChkForecasterEngaged\" type=\"checkbox\" name=\"runQ\" value=\"true\"/> Forecaster Engaged");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td valign=\"top\">");
-        out.println("            <input id=\"ChkForecasting\" type=\"checkbox\" name=\"runF\" value=\"true\"/> Forecasting");
+        out.println(
+            "            <input id=\"ChkForecasting\" type=\"checkbox\" name=\"runF\" value=\"true\"/> Forecasting");
         List<ForecastTestPanel> forecastTestPanelList = Arrays.asList(ForecastTestPanel.values());
         out.println("          </td>");
         out.println("          <td>TCH Forecaster Test Panel<br/>");
@@ -432,7 +444,8 @@ public class CertifyServlet extends ClientServlet
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input id=\"ChkConformance\" type=\"checkbox\" name=\"runH\" value=\"true\"/> Conformance (Deprecated)");
+        out.println(
+            "            <input id=\"ChkConformance\" type=\"checkbox\" name=\"runH\" value=\"true\"/> Conformance (Deprecated)");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
@@ -445,8 +458,10 @@ public class CertifyServlet extends ClientServlet
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input type=\"submit\" name=\"uncheck\" onclick=\"return toggleCheckboxes(false);\" value=\"uncheck All\"/>");
-        out.println("            <input type=\"submit\" name=\"check\" onclick=\"return toggleCheckboxes(true);\" value=\"check All\"/>");
+        out.println(
+            "            <input type=\"submit\" name=\"uncheck\" onclick=\"return toggleCheckboxes(false);\" value=\"Uncheck All\"/>");
+        out.println(
+            "            <input type=\"submit\" name=\"check\" onclick=\"return toggleCheckboxes(true);\" value=\"Check All\"/>");
         out.println("            <script language=\"javascript\">");
         out.println("              function toggleCheckboxes(toggle) {");
         out.println("                document.getElementById(\"ChkBasic\").checked = toggle;");
@@ -466,6 +481,12 @@ public class CertifyServlet extends ClientServlet
         out.println("                document.getElementById(\"ChkNISTConformance2015\").checked = toggle;");
         out.println("                return false;");
         out.println("              }");
+        out.println("              function checkQueryOptions(toggle) {");
+        out.println("                document.getElementById(\"ChkQBPSupport\").checked = toggle;");
+        out.println("                document.getElementById(\"ChkDeduplicationEngaged\").checked = toggle;");
+        out.println("                document.getElementById(\"ChkForecasterEngaged\").checked = toggle;");
+        out.println("                return false;");
+        out.println("              }");
         out.println("            </script>");
         out.println("          </td>");
         out.println("          <td align=\"right\">");
@@ -480,6 +501,8 @@ public class CertifyServlet extends ClientServlet
         certifyRunner.printProgressDetails(out, false);
       }
       printHtmlFoot(out);
+    } catch (Throwable t) {
+      t.printStackTrace(System.out);
     } finally {
       out.close();
     }

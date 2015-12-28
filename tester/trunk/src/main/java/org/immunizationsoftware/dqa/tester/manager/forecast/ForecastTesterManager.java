@@ -17,6 +17,8 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.immunizationsoftware.dqa.tester.connectors.HttpConnector.AuthenticationMethod;
+import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
+import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastExpected;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestCase;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestEvent;
@@ -170,12 +172,10 @@ public class ForecastTesterManager
   private static final String POST_SOFTWARE_ID = "softwareId";
   private static final String POST_TEST_CASE_ID = "testCaseId";
 
-  public String reportForecastResults(ForecastTestCase forecastTestCase, String rspMessage, int softwareId)
-      throws IOException {
+  public String reportForecastResults(TestCaseMessage queryTestCaseMessage, int softwareId) throws IOException {
     StringBuilder submittedResults = new StringBuilder();
-    List<ForecastActual> forecastActualList = readForecastActual(rspMessage);
 
-    for (ForecastActual forecastActual : forecastActualList) {
+    for (ForecastActual forecastActual : queryTestCaseMessage.getForecastActualList()) {
 
       DataOutputStream printout;
       URL url = new URL(forecastTesterUrl);
@@ -188,14 +188,15 @@ public class ForecastTesterManager
       urlConn.setUseCaches(false);
 
       StringBuilder sb = new StringBuilder();
-      sb.append(POST_TEST_CASE_ID + "=" + forecastTestCase.getTestCaseId());
+      sb.append(POST_TEST_CASE_ID + "=" + queryTestCaseMessage.getForecastTestCase().getTestCaseId());
       sb.append("&");
       sb.append(POST_SOFTWARE_ID + "=" + softwareId);
       sb.append("&");
       sb.append(POST_FORECAST_CVX + "=" + forecastActual.getVaccineCvx());
       sb.append("&");
       sb.append(POST_LOG + "=");
-      BufferedReader buffReader = new BufferedReader(new StringReader(rspMessage));
+      BufferedReader buffReader = new BufferedReader(
+          new StringReader(queryTestCaseMessage.getActualMessageResponseType()));
       String line;
       while ((line = buffReader.readLine()) != null) {
         sb.append(URLEncoder.encode(line + "\n", "UTF-8"));
@@ -226,56 +227,114 @@ public class ForecastTesterManager
     return submittedResults.toString();
   }
 
-  protected static List<ForecastActual> readForecastActual(String rspMessage) {
+  public static void readForecastActual(TestCaseMessage queryTestCaseMessage) {
     List<ForecastActual> forecastActualList = new ArrayList<ForecastActual>();
+    queryTestCaseMessage.setForecastActualList(forecastActualList);
+    List<EvaluationActual> evaluationActualList = new ArrayList<EvaluationActual>();
+    queryTestCaseMessage.setEvaluationActualList(evaluationActualList);
     ForecastActual forecastActual = null;
-    BufferedReader in = new BufferedReader(new StringReader(rspMessage));
-    String line;
-    try {
-      while ((line = in.readLine()) != null) {
-        if (line.startsWith("OBX|")) {
-          String[] fields = line.split("\\|");
-          if (fields.length > 5 && fields[3] != null) {
-            if (fields[3].startsWith("30979-9^")) {
-              forecastActual = new ForecastActual();
-              forecastActualList.add(forecastActual);
-              if (fields[5] != null) {
-                String[] subFields = fields[5].split("\\^");
-                if (subFields.length > 0 && subFields[0] != null) {
-                  forecastActual.setVaccineCvx(subFields[0]);
-                }
-              }
-            } else if (forecastActual != null) {
-              if (fields[3].startsWith("30979-9&30980-7") || fields[3].startsWith("30980-7")) {
-                if (fields[5] != null) {
-                  String[] subFields = fields[5].split("\\^");
-                  if (subFields.length > 0 && subFields[0] != null) {
-                    forecastActual.setDueDate(subFields[0]);
-                  }
-                }
-              } else if (fields[3].startsWith("30981-5")) {
-                if (fields[5] != null) {
-                  String[] subFields = fields[5].split("\\^");
-                  if (subFields.length > 0 && subFields[0] != null) {
-                    forecastActual.setValidDate(subFields[0]);
-                  }
-                }
-              } else if (fields[3].startsWith("30973-2")) {
-                if (fields[5] != null) {
-                  String[] subFields = fields[5].split("\\^");
-                  if (subFields.length > 0 && subFields[0] != null) {
-                    forecastActual.setDoseNumber(subFields[0]);
-                  }
-                }
-              }
+    EvaluationActual evaluationActual = null;
+    boolean addEvaluationToList = false;
+    boolean addForecastToList = false;
+    HL7Reader reader = new HL7Reader(queryTestCaseMessage.getActualResponseMessage());
+    boolean isEvaluation = false;
+    boolean isForecast = false;
+    String vaccineCvx = "";
+    String vaccineDate = "";
+    while (reader.advance()) {
+      if (reader.getSegmentName().equals("RXA")) {
+        addToList(forecastActualList, evaluationActualList, forecastActual, evaluationActual, addEvaluationToList,
+            addForecastToList);
+        addEvaluationToList = false;
+        addForecastToList = false;
+        forecastActual = null;
+        evaluationActual = null;
+        vaccineDate = reader.getValue(3);
+        vaccineCvx = reader.getValue(5);
+        if (vaccineCvx.equals("998")) {
+          isEvaluation = false;
+          isForecast = true;
+        } else {
+          isEvaluation = true;
+          isForecast = true;
+        }
+      } else if (reader.getSegmentName().equals("OBX")) {
+        String obs = reader.getValue(3);
+        String obs2 = reader.getValue(3, 1, 2);
+        String obsValue = reader.getValue(5);
+        if (isForecast) {
+          if (obs.equals("30956-7") || (obs.equals("30979-9") && obs2.equals("")) || obs.equals("38890-0")) {
+            if (forecastActual != null) {
+              addToList(forecastActualList, evaluationActualList, forecastActual, evaluationActual, false,
+                  addForecastToList);
+            }
+            forecastActual = new ForecastActual();
+            forecastActual.setVaccineCvx(obsValue);
+            addForecastToList = !isEvaluation;
+          } else if (forecastActual != null) {
+            if (obs.equals("30980-7") || (obs.equals("30979-9") && obs2.equals("30980-7"))) {
+              addForecastToList = true;
+              forecastActual.setDueDate(obsValue);
+            } else if (obs.equals("30981-5")) {
+              forecastActual.setValidDate(obsValue);
+            } else if (obs.equals("30973-2")) {
+              forecastActual.setDoseNumber(obsValue);
+            } else if (obs.equals("30982-3")) {
+              forecastActual.setReasonCode(obsValue);
+            } else if (obs.equals("59779-9")) {
+              forecastActual.setScheduleName(obsValue);
+            } else if (obs.equals("59777-3")) {
+              forecastActual.setFinishedDate(obsValue);
+            } else if (obs.equals("59778-1")) {
+              forecastActual.setOverdueDate(obsValue);
+            } else if (obs.equals("59783-1")) {
+              forecastActual.setSeriesStatus(obsValue);
+            } else if (obs.equals("59780-7")) {
+              forecastActual.setSeriesName(obsValue);
+            } else if (obs.equals("59782-3")) {
+              forecastActual.setSeriesDoseCount(obsValue);
+            }
+          }
+        }
+        if (isEvaluation) {
+          if (obs.equals("30956-7") || obs.equals("30979-9") || obs.equals("38890-0")) {
+            evaluationActual = new EvaluationActual();
+            evaluationActual.setVaccineCvx(vaccineCvx);
+            evaluationActual.setVaccineDate(vaccineDate);
+            evaluationActual.setComponentCvx(obsValue);
+          } else if (evaluationActual != null) {
+            if (obs.equals("30973-2")) {
+              evaluationActual.setDoseNumber(obsValue);
+              addEvaluationToList = true;
+            } else if (obs.equals("59779-9")) {
+              evaluationActual.setScheduleName(obsValue);
+              addEvaluationToList = true;
+            } else if (obs.equals("30982-3")) {
+              evaluationActual.setReasonCode(obsValue);
+            } else if (obs.equals("59780-7")) {
+              evaluationActual.setSeriesName(obsValue);
+            } else if (obs.equals("59781-5")) {
+              evaluationActual.setDoseValidity(obsValue);
+            } else if (obs.equals("59782-3")) {
+              evaluationActual.setSeriesDoseCount(obsValue);
             }
           }
         }
       }
-    } catch (IOException e) {
-      // not expecting io exception while reading string
-      e.printStackTrace();
     }
-    return forecastActualList;
+    addToList(forecastActualList, evaluationActualList, forecastActual, evaluationActual, addEvaluationToList,
+        addForecastToList);
+
+  }
+
+  public static void addToList(List<ForecastActual> forecastActualList, List<EvaluationActual> evaluationActualList,
+      ForecastActual forecastActual, EvaluationActual evaluationActual, boolean addEvaluationToList,
+      boolean addForecastToList) {
+    if (addEvaluationToList) {
+      evaluationActualList.add(evaluationActual);
+    }
+    if (addForecastToList) {
+      forecastActualList.add(forecastActual);
+    }
   }
 }

@@ -2,10 +2,11 @@ package org.immunizationsoftware.dqa.transform.forecast;
 
 public enum ForecastTestPanel {
   
-  TCH_INITIAL(2, "TCH Initial", true),
-  CDSI_TEST_CASES_V1_0(13, "CDSI v1", true),
-  IHS_ROLLOUT_2013(18, "IHS Rollout", true),
-  IHS_FROM_RPMS(12, "IHS from RPMS", true),
+  AIRA_INTEROP_TESTING(72, "AIRA Interop Testing", true),
+  TCH_INITIAL(2, "TCH Initial"),
+  CDSI_TEST_CASES_V2_1(71, "CDSI v2.1 Nov 2015", true),
+  IHS_ROLLOUT_2013(18, "IHS Rollout"),
+  IHS_FROM_RPMS(12, "IHS from RPMS"),
   VDH(15, "VDH"),
   ADDITIONAL_ENVISION_DTAP(38, "Additional Envision DTaP"),
   ADDITIONAL_ENVISION_FLU(39, "Additional Envision Flu"),
