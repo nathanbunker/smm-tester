@@ -33,6 +33,8 @@ import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
+import org.immunizationsoftware.dqa.tester.manager.forecast.EvaluationActual;
+import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastActual;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTesterManager;
 import org.immunizationsoftware.dqa.tester.manager.nist.Assertion;
 import org.immunizationsoftware.dqa.tester.profile.CompatibilityConformance;
@@ -52,13 +54,16 @@ import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
 public class CertifyRunner extends Thread implements RecordServletInterface
 {
 
-  private static final String REPORT_URL = "http://ois-pt.org/dqacm/record";
+  private static final String REPORT_URL = "http://localhost:8289/record";
   // "http://localhost:8289/record";
   // "http://ois-pt.org/dqacm/record";
+
+  private static final boolean SAVE_TEST_CASES_TO_DIR = false;
 
   private static final String REPORT_EXPLANATION_URL = "http://ois-pt.org/tester/reportExplanation.html";
 
   public static final String QUERY_TYPE_QBP_Z34 = "QBP-Z34";
+  public static final String QUERY_TYPE_QBP_Z34_Z44 = "QBP-Z34-Z44";
   public static final String QUERY_TYPE_QBP_Z44 = "QBP-Z44";
   public static final String QUERY_TYPE_VXQ = "VXQ";
   public static final String QUERY_TYPE_NONE = "None";
@@ -458,9 +463,11 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       if (sendData == null) {
         testDir = null;
       } else {
-        testDir = new File(sendData.getRootDir(), testCaseSet);
-        if (!testDir.exists()) {
-          testDir.mkdir();
+        if (SAVE_TEST_CASES_TO_DIR) {
+          testDir = new File(sendData.getRootDir(), testCaseSet);
+          if (!testDir.exists()) {
+            testDir.mkdir();
+          }
         }
       }
 
@@ -588,20 +595,22 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
   public PrintWriter setupExampleFile(String name, TestCaseMessage testCaseMessage) {
     if (testCaseMessage != null) {
-      if (testDir != null) {
-        logStatus("Saving example");
-        File exampleFile;
-        if (testCaseMessage.getForecastTestPanel() != null) {
-          exampleFile = new File(testDir,
-              "Example Messages " + name + "" + testCaseMessage.getForecastTestPanel().getLabel() + ".hl7");
-        } else {
-          exampleFile = new File(testDir, "Example Messages " + name + ".hl7");
-        }
-        try {
-          return new PrintWriter(exampleFile);
-        } catch (IOException ioe) {
-          ioe.printStackTrace();
-          logStatus("Unable to write examples out: " + ioe);
+      if (SAVE_TEST_CASES_TO_DIR) {
+        if (testDir != null) {
+          logStatus("Saving example");
+          File exampleFile;
+          if (testCaseMessage.getForecastTestPanel() != null) {
+            exampleFile = new File(testDir,
+                "Example Messages " + name + "" + testCaseMessage.getForecastTestPanel().getLabel() + ".hl7");
+          } else {
+            exampleFile = new File(testDir, "Example Messages " + name + ".hl7");
+          }
+          try {
+            return new PrintWriter(exampleFile);
+          } catch (IOException ioe) {
+            ioe.printStackTrace();
+            logStatus("Unable to write examples out: " + ioe);
+          }
         }
       }
     }
@@ -673,28 +682,30 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   }
 
   public void printExampleMessage(TestCaseMessage testCaseMessage, String type) {
-    {
-      PrintWriter exampleOut = exampleOutSet.get(type);
-      if (exampleOut == null) {
-        exampleOut = setupExampleFile(type, testCaseMessage);
+    if (SAVE_TEST_CASES_TO_DIR) {
+      {
+        PrintWriter exampleOut = exampleOutSet.get(type);
+        if (exampleOut == null) {
+          exampleOut = setupExampleFile(type, testCaseMessage);
+          if (exampleOut != null) {
+            exampleOutSet.put(type, exampleOut);
+          }
+        }
         if (exampleOut != null) {
-          exampleOutSet.put(type, exampleOut);
+          exampleOut.print(testCaseMessage.getMessageTextSent());
         }
       }
-      if (exampleOut != null) {
-        exampleOut.print(testCaseMessage.getMessageTextSent());
-      }
-    }
-    {
-      PrintWriter exampleAckOut = exampleAckOutSet.get(type);
-      if (exampleAckOut == null) {
-        exampleAckOut = setupAckFile(type, testCaseMessage);
+      {
+        PrintWriter exampleAckOut = exampleAckOutSet.get(type);
+        if (exampleAckOut == null) {
+          exampleAckOut = setupAckFile(type, testCaseMessage);
+          if (exampleAckOut != null) {
+            exampleAckOutSet.put(type, exampleAckOut);
+          }
+        }
         if (exampleAckOut != null) {
-          exampleAckOutSet.put(type, exampleAckOut);
+          exampleAckOut.print(testCaseMessage.getActualResponseMessage());
         }
-      }
-      if (exampleAckOut != null) {
-        exampleAckOut.print(testCaseMessage.getActualResponseMessage());
       }
     }
   }
@@ -776,27 +787,14 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       }
       if (!okay) {
         response = responseReader.getOriginalSegment();
-        if (responseReader.advanceToSegment("MSA")) {
-          response += responseReader.getOriginalSegment();
-          if (responseReader.advanceToSegment("QAK")) {
-            response += responseReader.getOriginalSegment();
-            if (responseReader.advanceToSegment("QPD")) {
-              response += responseReader.getOriginalSegment();
-              while (responseReader.advanceToSegment("PID")) {
-                response += "PID|" + responseReader.getOriginalField(1) + "|" + responseReader.getOriginalField(2) + "|"
-                    + responseReader.getOriginalField(3) + "|[Redacted by IIS Tester]";
-              }
-              responseReader.resetPostion();
-              while (responseReader.advanceToSegment("ORC")) {
-                response += responseReader.getOriginalSegment();
-                if (responseReader.advanceToSegment("RXA")) {
-                  response += responseReader.getOriginalSegment();
-                }
-              }
-            }
+        while (responseReader.advance()) {
+          if (responseReader.getSegmentName().equals("PID") || responseReader.getSegmentName().equals("NK1")) {
+            response += responseReader.getSegmentName() + "|[Redacted by IIS Tester]\r";
+          } else {
+            response += responseReader.getOriginalSegment() + "\r";
           }
         }
-        response += "\r[IIS Tester has redacted patient identifying information because single match was not found. The message above has not been saved in it's original form. ]";
+        response += "\r[IIS Tester has redacted patient identifying information because a single match was not found. PID and NK1 segments were truncated by the IIS Tester. ]";
       }
     } else {
       response = "[IIS Tester: Unrecognized response message, entire result redacted]";
@@ -807,6 +805,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   public String convertToQuery(TestCaseMessage testCaseMessage) {
     if (queryType.equals(QUERY_TYPE_QBP_Z34)) {
       return QueryConverter.convertVXUtoQBPZ34(testCaseMessage.getMessageText());
+    }
+    if (queryType.equals(QUERY_TYPE_QBP_Z34_Z44)) {
+      return QueryConverter.convertVXUtoQBPZ34Z44(testCaseMessage.getMessageText());
     }
     if (queryType.equals(QUERY_TYPE_QBP_Z44)) {
       return QueryConverter.convertVXUtoQBPZ44(testCaseMessage.getMessageText());
@@ -819,8 +820,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   }
 
   protected void saveTestCase(TestCaseMessage tcm) {
-    if (testDir != null) {
-      CreateTestCaseServlet.saveTestCaseHtml(tcm, testDir);
+    if (SAVE_TEST_CASES_TO_DIR) {
+      if (testDir != null) {
+        CreateTestCaseServlet.saveTestCaseHtml(tcm, testDir);
+      }
     }
   }
 
@@ -1256,13 +1259,15 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       out.println("</p>");
 
       out.println("<div id=\"performance\"/>");
-      out.println("<h2>Performance</h2>");
-      if (certifyAreas[SUITE_G_PERFORMANCE].getAreaScore()[0] < 3000) {
-        out.println("    <p>Response time was as fast enough: " + printSeconds(performance.getUpdateAverage())
-            + " average processing time per test message. </p>");
-      } else {
-        out.println("    <p>Response time was as slower than anticipated: "
-            + printSeconds(performance.getUpdateAverage()) + " average processing time per test message. </p>");
+      if (certifyAreas[SUITE_G_PERFORMANCE].getAreaCount()[0] > 0) {
+        out.println("<h2>Performance</h2>");
+        if (certifyAreas[SUITE_G_PERFORMANCE].getAreaScore()[0] < 3000) {
+          out.println("    <p>Response time was as fast enough: " + printSeconds(performance.getUpdateAverage())
+              + " average processing time per test message. </p>");
+        } else {
+          out.println("    <p>Response time was as slower than anticipated: "
+              + printSeconds(performance.getUpdateAverage()) + " average processing time per test message. </p>");
+        }
       }
       if (performance != null && performance.getTotalUpdateCount() > 0) {
         out.println("<table border=\"1\" cellspacing=\"0\">");
@@ -2186,7 +2191,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface
             addField(sb, PARAM_TM_RESULT_ACK_CONFORMANCE, VALUE_RESULT_ACK_CONFORMANCE_OK);
           }
         }
+        addField(sb, PARAM_TM_RESULT_QUERY_TYPE, testMessage.getActualResultQueryType());
         addField(sb, PARAM_TM_RESULT_ACK_STORE_STATUS, testMessage.getResultStoreStatus());
+        addField(sb, PARAM_TM_RESULT_FORECAST_STATUS, testMessage.getResultForecastStatus());
         if (testMessage.getForecastTestCase() != null) {
           addField(sb, PARAM_TM_FORECAST_TEST_PANEL_CASE_ID, testMessage.getForecastTestCase().getTestPanelCaseId());
         }
@@ -2239,6 +2246,93 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           }
           // to save on memory remove validation report
           testMessage.setValidationReport(null);
+        }
+      }
+
+      content = sb.toString();
+      printout = new DataOutputStream(urlConn.getOutputStream());
+      printout.writeBytes(content);
+      printout.flush();
+      printout.close();
+      input = new InputStreamReader(urlConn.getInputStream());
+      StringBuilder response = new StringBuilder();
+      BufferedReader in = new BufferedReader(input);
+      String line;
+      while ((line = in.readLine()) != null) {
+        response.append(line);
+        response.append('\r');
+      }
+      input.close();
+      response.toString();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+  }
+
+  protected void reportForecastProgress(TestCaseMessage testMessage) {
+    if (REPORT_URL == null) {
+      return;
+    }
+    try {
+
+      HttpURLConnection urlConn;
+      DataOutputStream printout;
+      InputStreamReader input = null;
+      URL url = new URL(REPORT_URL);
+
+      urlConn = (HttpURLConnection) url.openConnection();
+
+      urlConn.setRequestMethod("POST");
+
+      urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+      urlConn.setDoInput(true);
+      urlConn.setDoOutput(true);
+      urlConn.setUseCaches(false);
+      String content;
+      StringBuilder sb = new StringBuilder();
+
+      sb.append("action=Submit");
+      addField(sb, PARAM_TC_CONNECTION_LABEL, connector.getLabel());
+
+      addField(sb, PARAM_TC_TEST_STARTED_TIME, testStarted);
+      addField(sb, PARAM_TS_TEST_SECTION_TYPE, certifyAreas[currentSuite].getAreaLabel());
+      addField(sb, PARAM_TM_TEST_POSITION, testMessage.getTestPosition());
+
+      if (testMessage.getForecastActualList() != null) {
+        int position = 0;
+        for (ForecastActual forecastActual : testMessage.getForecastActualList()) {
+          position++;
+          addField(sb, PARAM_F_VACCINE_CODE + position, forecastActual.getVaccineCvx());
+          addField(sb, PARAM_F_FORECAST_TYPE + position, VALUE_FORECAST_TYPE_ACTUAL);
+          addField(sb, PARAM_F_SCHEDULE_NAME + position, forecastActual.getScheduleName());
+          addField(sb, PARAM_F_SERIES_NAME + position, forecastActual.getSeriesName());
+          addField(sb, PARAM_F_SERIES_DOSE_COUNT + position, forecastActual.getSeriesDoseCount());
+          addField(sb, PARAM_F_DOSE_NUMBER + position, forecastActual.getDoseNumber());
+          addField(sb, PARAM_F_DATE_EARLIEST + position, forecastActual.getValidDate());
+          addField(sb, PARAM_F_DATE_DUE + position, forecastActual.getDueDate());
+          addField(sb, PARAM_F_DATE_OVERDUE + position, forecastActual.getOverdueDate());
+          addField(sb, PARAM_F_DATE_LATEST + position, forecastActual.getFinishedDate());
+          addField(sb, PARAM_F_SERIES_STATUS + position, forecastActual.getSeriesStatus());
+          addField(sb, PARAM_F_REASON_CODE + position, forecastActual.getReasonCode());
+        }
+      }
+
+      if (testMessage.getEvaluationActualList() != null) {
+        int position = 0;
+        for (EvaluationActual evaluationActual : testMessage.getEvaluationActualList()) {
+          position++;
+          addField(sb, PARAM_E_COMPONENT_CODE + position, evaluationActual.getComponentCvx());
+          addField(sb, PARAM_E_VACCINE_CODE + position, evaluationActual.getVaccineCvx());
+          addField(sb, PARAM_E_VACCINE_DATE + position, evaluationActual.getVaccineDate());
+          addField(sb, PARAM_E_EVALUATION_TYPE + position, VALUE_FORECAST_TYPE_ACTUAL);
+          addField(sb, PARAM_E_SCHEDULE_NAME + position, evaluationActual.getScheduleName());
+          addField(sb, PARAM_E_DOSE_NUMBER + position, evaluationActual.getDoseNumber());
+          addField(sb, PARAM_E_DOSE_VALIDITY + position, evaluationActual.getDoseValidity());
+          addField(sb, PARAM_E_SERIES_NAME + position, evaluationActual.getSeriesName());
+          addField(sb, PARAM_E_SERIES_DOSE_COUNT + position, evaluationActual.getSeriesDoseCount());
+          addField(sb, PARAM_E_SERIES_STATUS + position, evaluationActual.getSeriesStatus());
+          addField(sb, PARAM_E_REASON_CODE + position, evaluationActual.getReasonCode());
         }
       }
 

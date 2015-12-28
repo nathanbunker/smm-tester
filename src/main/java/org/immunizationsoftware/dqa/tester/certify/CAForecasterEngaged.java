@@ -1,6 +1,11 @@
 package org.immunizationsoftware.dqa.tester.certify;
 
-public class CAForecasterEngaged extends CertifyArea
+import java.util.ArrayList;
+import java.util.List;
+
+import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
+
+public class CAForecasterEngaged extends CAForecast
 {
 
   public CAForecasterEngaged(CertifyRunner certifyRunner) {
@@ -9,26 +14,9 @@ public class CAForecasterEngaged extends CertifyArea
 
   @Override
   public void prepareUpdates() {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void sendUpdates() {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void prepareQueries() {
-    doPrepareQueries();
-  }
-
- 
-
-  @Override
-  public void sendQueries() {
-    runQueries();
+    List<ForecastTestPanel> ftpList = new ArrayList<ForecastTestPanel>();
+    ftpList.add(ForecastTestPanel.AIRA_INTEROP_TESTING);
+    prepareForecastUpdates(ftpList);
   }
 
 }

@@ -74,6 +74,18 @@ public class HL7Reader
     return "";
   }
 
+  public boolean advance() {
+    if (segmentList != null && segmentPosition < segmentList.size()) {
+      segmentPosition++;
+      if (segmentPosition < segmentList.size()) {
+        fieldList = segmentList.get(segmentPosition);
+        return true;
+      }
+    }
+    fieldList = null;
+    return false;
+  }
+
   public boolean advanceToSegment(String segmentName) {
     if (segmentList != null && segmentPosition < segmentList.size()) {
       segmentPosition++;
@@ -184,13 +196,10 @@ public class HL7Reader
     }
     return "";
   }
-  
-  public String getOriginalSegment()
-  {
-    if (originalLineList != null)
-    {
-      if (segmentPosition >= 0 && segmentPosition < originalLineList.size())
-      {
+
+  public String getOriginalSegment() {
+    if (originalLineList != null) {
+      if (segmentPosition >= 0 && segmentPosition < originalLineList.size()) {
         return originalLineList.get(segmentPosition);
       }
     }
@@ -216,6 +225,11 @@ public class HL7Reader
     return getValueInternal(componentNum, field);
   }
 
+  public String getValue(int fieldNum, int componentNum, int subcomponentNum) {
+    String field = getOriginalField(fieldNum);
+    return getValueInternal(componentNum, field, subcomponentNum);
+  }
+
   private String getValueInternal(int componentNum, String field) {
     int i = 1;
     while (i < componentNum) {
@@ -228,6 +242,33 @@ public class HL7Reader
     }
     field = cutoff(field, "~");
     field = cutoff(field, "^");
+    field = cutoff(field, "&");
+    return field;
+  }
+
+  private String getValueInternal(int componentNum, String field, int subcomponentNum) {
+    int i = 1;
+    while (i < componentNum) {
+      int pos = field.indexOf("^");
+      if (pos == -1 || (pos + 1) == field.length()) {
+        return "";
+      }
+      field = field.substring(pos + 1);
+      i++;
+    }
+    field = cutoff(field, "~");
+    field = cutoff(field, "^");
+    i = 1;
+    while (i < subcomponentNum)
+    {
+      int pos = field.indexOf("&");
+      if (pos == -1 || (pos + 1) == field.length())
+      {
+        return "";
+      }
+      field = field.substring(pos + 1);
+      i++;
+    }
     field = cutoff(field, "&");
     return field;
   }
@@ -258,16 +299,13 @@ public class HL7Reader
       if (found) {
         return getValueInternal(componentNum, fieldRep);
       }
-      
+
       pos = endPos + 1;
 
-      if (pos < field.length())
-      {
+      if (pos < field.length()) {
         field = field.substring(pos);
         pos = 0;
-      }
-      else
-      {
+      } else {
         return "";
       }
     }

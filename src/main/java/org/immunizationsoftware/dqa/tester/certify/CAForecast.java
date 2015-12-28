@@ -1,12 +1,10 @@
 package org.immunizationsoftware.dqa.tester.certify;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTesterManager;
-import org.immunizationsoftware.dqa.tester.run.TestRunner;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestCase;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestEvent;
@@ -18,12 +16,23 @@ public class CAForecast extends CertifyArea
   public CAForecast(CertifyRunner certifyRunner) {
     super("F", VALUE_TEST_SECTION_TYPE_FORECAST, certifyRunner);
   }
-
-  private static final String TCH_FORECAST_TESTER_URL = "http://tchforecasttester.org/ft/ExternalTestServlet";
-
   
+  protected CAForecast(String areaLetter, String areaLabel, CertifyRunner certifyRunner)
+  {
+    super(areaLetter, areaLabel, certifyRunner);
+  }
+
+  private static final String TCH_FORECAST_TESTER_URL = "http://localhost:8181/ExternalTestServlet";
+  // http://localhost:8181/ExternalTestServlet
+  // http://tchforecasttester.org/ft/ExternalTestServlet
+
   @Override
   public void prepareUpdates() {
+    List<ForecastTestPanel> ftpList = forecastTestPanelList;
+    prepareForecastUpdates(ftpList);
+  }
+
+  protected void prepareForecastUpdates(List<ForecastTestPanel> ftpList) {
     Calendar calendar = Calendar.getInstance();
     calendar.add(Calendar.YEAR, -18);
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
@@ -31,9 +40,13 @@ public class CAForecast extends CertifyArea
 
     int count = 0;
     certifyRunner.forecastTesterManager = new ForecastTesterManager(TCH_FORECAST_TESTER_URL);
+    logStatus("Will connect to " + TCH_FORECAST_TESTER_URL + " to retrieve test cases");
     try {
-      for (ForecastTestPanel testPanel : forecastTestPanelList) {
-        List<ForecastTestCase> forecastTestCaseList = certifyRunner.forecastTesterManager.getForecastTestCaseList(testPanel);
+      for (ForecastTestPanel testPanel : ftpList) {
+        logStatus("Downloding Result for Test Panel " + testPanel.getLabel());
+        List<ForecastTestCase> forecastTestCaseList = certifyRunner.forecastTesterManager
+            .getForecastTestCaseList(testPanel);
+        logStatus("Found " + forecastTestCaseList.size() + " test case(s)");
         for (ForecastTestCase forecastTestCase : forecastTestCaseList) {
           count++;
           TestCaseMessage testCaseMessage = new TestCaseMessage();
@@ -104,8 +117,6 @@ public class CAForecast extends CertifyArea
   public void prepareQueries() {
     doPrepareQueries();
   }
-
- 
 
   @Override
   public void sendQueries() {

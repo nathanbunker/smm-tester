@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 
 public interface RecordServletInterface {
   public static final SimpleDateFormat VALUE_DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmmss+z");
+  public static final SimpleDateFormat VALUE_DATE_NO_TIME_FORMAT = new SimpleDateFormat("yyyyMMdd");
 
   public static final String VALUE_EXCEPTIONAL_PREFIX_CERTIFIED_MESSAGE = "Certified Message:";
   public static final String VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK = "Tolerance Check:";
@@ -106,6 +107,16 @@ public interface RecordServletInterface {
   public static final String VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_NOT_RETURNED = "a-nr";
   public static final String VALUE_RESULT_ACK_STORE_STATUS_NOT_ACCEPTED_RETURNED = "na-r";
   public static final String VALUE_RESULT_ACK_STORE_STATUS_NOT_ACCEPTED_NOT_RETURNED = "na-nr";
+  
+  public static final String VALUE_RESULT_QUERY_TYPE_MATCH = "Match";
+  public static final String VALUE_RESULT_QUERY_TYPE_LIST = "List";
+  public static final String VALUE_RESULT_QUERY_TYPE_NOT_FOUND = "Not Found";
+  public static final String VALUE_RESULT_QUERY_TYPE_TOO_MANY = "Too Many";
+  public static final String VALUE_RESULT_QUERY_TYPE_ERROR = "Error";
+  
+  public static final String VALUE_RESULT_FORECAST_STATUS_INCLUDED = "Included";
+  public static final String VALUE_RESULT_FORECAST_STATUS_NOT_INCLUDED = "Not Included";
+
 
   public static final String PARAM_TM_TEST_POSITION = "tm_testPosition";
   public static final String PARAM_TM_TEST_TYPE = "tm_testType";
@@ -137,7 +148,9 @@ public interface RecordServletInterface {
   public static final String PARAM_TM_RESULT_RESPONSE_TYPE = "tm_resultResponseType";
   public static final String PARAM_TM_RESULT_ACK_TYPE = "tm_resultAckType";
   public static final String PARAM_TM_RESULT_ACK_CONFORMANCE = "tm_resultAckConformance";
+  public static final String PARAM_TM_RESULT_QUERY_TYPE = "tm_resultQueryType";
   public static final String PARAM_TM_RESULT_ACK_STORE_STATUS = "tm_resultStoreStatus";
+  public static final String PARAM_TM_RESULT_FORECAST_STATUS = "tm_resultForecastStatus";
   public static final String PARAM_TM_FORECAST_TEST_PANEL_CASE_ID = "tm_forecastTestPanelCaseId";
   public static final String PARAM_TM_FORECAST_TEST_PANEL_ID = "tm_forecastTestPanelId";
 
@@ -223,4 +236,35 @@ public interface RecordServletInterface {
   public static final String PARAM_A_ASSERTION_DESCRIPTION = "a_assertionDescription";
   
   public static final String[] PARAMS_A = {PARAM_A_ASSERTION_RESULT, PARAM_A_LOCATION_PATH, PARAM_A_ASSERTION_TYPE, PARAM_A_ASSERTION_DESCRIPTION};
+  
+  public static final String VALUE_FORECAST_TYPE_ACTUAL = "Actual";
+  public static final String VALUE_FORECAST_TYPE_EXPECTED = "Expected";
+  
+  public static final String PARAM_F_VACCINE_CODE = "f_vaccineCode";
+  public static final String PARAM_F_FORECAST_TYPE = "f_forecastType";
+  public static final String PARAM_F_SCHEDULE_NAME = "f_scheduleName";
+  public static final String PARAM_F_SERIES_NAME = "f_seriesName";
+  public static final String PARAM_F_SERIES_DOSE_COUNT = "f_seriesDoseCount";
+  public static final String PARAM_F_DOSE_NUMBER = "f_doseNumber";
+  public static final String PARAM_F_DATE_EARLIEST = "f_dateEarliest";
+  public static final String PARAM_F_DATE_DUE = "f_dateDue";
+  public static final String PARAM_F_DATE_OVERDUE = "f_dateOverdue";
+  public static final String PARAM_F_DATE_LATEST = "f_dateLatest";
+  public static final String PARAM_F_SERIES_STATUS = "f_seriesStatus";
+  public static final String PARAM_F_REASON_CODE = "f_reasonCode";
+  
+  public static final String VALUE_EVALUATION_TYPE_ACTUAL = "Actual";
+  public static final String VALUE_EVALUATION_TYPE_EXPECTED = "Expected";
+
+  public static final String PARAM_E_COMPONENT_CODE = "e_componentCode";
+  public static final String PARAM_E_VACCINE_CODE = "e_vaccineCode";
+  public static final String PARAM_E_VACCINE_DATE = "e_vaccineDate";
+  public static final String PARAM_E_EVALUATION_TYPE = "e_evaluationType";
+  public static final String PARAM_E_SCHEDULE_NAME = "e_scheduleName";
+  public static final String PARAM_E_DOSE_NUMBER = "e_doseNumber";
+  public static final String PARAM_E_DOSE_VALIDITY = "e_doseValidity";
+  public static final String PARAM_E_SERIES_NAME = "e_seriesName";
+  public static final String PARAM_E_SERIES_DOSE_COUNT = "e_seriesDoseCount";
+  public static final String PARAM_E_SERIES_STATUS = "e_seriesStatus";
+  public static final String PARAM_E_REASON_CODE = "e_reasonCode";
 }

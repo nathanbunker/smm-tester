@@ -82,32 +82,31 @@ public class CAQbpSupport extends CertifyArea
 
   @Override
   public void prepareQueries() {
-    int passCount = 0;
     int count = 0;
     for (TestCaseMessage testCaseMessage : updateList) {
       count++;
       {
         TestCaseMessage queryTestCaseMessage = prepareQuery("Expecting Z32 Complete Immunization History", count,
             testCaseMessage, false, false);
-        queryTestCaseMessage.setAssertResult("Match");
+        queryTestCaseMessage.setAssertResult(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH);
       }
       count++;
       {
         TestCaseMessage queryTestCaseMessage = prepareQuery("Expecting Z42 Evaluated History and Forecast", count,
             testCaseMessage, true, false);
-        queryTestCaseMessage.setAssertResult("Match");
+        queryTestCaseMessage.setAssertResult(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH);
       }
       if (testCaseMessage.getDescription().equals("First Twin")) {
         count++;
         {
           TestCaseMessage queryTestCaseMessage = prepareQuery("Expecting Z31 List of Candidates", count, testCaseMessage,
               false, true);
-          queryTestCaseMessage.setAssertResult("List");
+          queryTestCaseMessage.setAssertResult(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST);
         }
         count++;
         {
           TestCaseMessage queryTestCaseMessage = prepareQuery("Expecting Z33 Too Many", count, testCaseMessage, true, true);
-          queryTestCaseMessage.setAssertResult("Too Many");
+          queryTestCaseMessage.setAssertResult(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY);
         }
       }
     }
@@ -124,12 +123,12 @@ public class CAQbpSupport extends CertifyArea
       {
         TestCaseMessage queryTestCaseMessage = prepareQuery("Expecting Z33 Not Found", count, testCaseMessage, false,
             false);
-        queryTestCaseMessage.setAssertResult("Not Found");
+        queryTestCaseMessage.setAssertResult(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND);
       }
       count++;
       {
         TestCaseMessage queryTestCaseMessage = prepareQuery("Expecting Z33 Not Found", count, testCaseMessage, true, false);
-        queryTestCaseMessage.setAssertResult("Not Found");
+        queryTestCaseMessage.setAssertResult(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND);
       }
     }
   }
