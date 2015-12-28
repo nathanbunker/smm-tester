@@ -24,11 +24,20 @@ public class CAOnc2015 extends CertifyArea
   @Override
   public void prepareUpdates() {
     int count = 0;
+    TestCaseMessage original = null;
     for (String scenario : onc2015Scenarios) {
       count++;
       TestCaseMessage testCaseMessage = createTestCaseMessage(scenario);
       testCaseMessage.setAssertResult("Accept - *");
       register(count, testCaseMessage);
+      if (testCaseMessage.getScenario().equals(SCENARIO_ONC_2015_IZ_AD_3_R)
+          || testCaseMessage.getScenario().equals(SCENARIO_ONC_2015_IZ_AD_5_R)) {
+        testCaseMessage.setDoNotQueryFor(true);
+        original = testCaseMessage;
+      } else if (testCaseMessage.getScenario().equals(SCENARIO_ONC_2015_IZ_AD_4_R)
+          || testCaseMessage.getScenario().equals(SCENARIO_ONC_2015_IZ_AD_6_R)) {
+        testCaseMessage.setUpdateTestCaseMessage(original);
+      }
     }
   }
 
@@ -39,23 +48,7 @@ public class CAOnc2015 extends CertifyArea
 
   @Override
   public void prepareQueries() {
-    int count = 0;
-    TestCaseMessage testCaseMessagePrevious = null;
-    for (TestCaseMessage testCaseMessage : updateList) {
-      count++;
-      if (testCaseMessage.getScenario().equals(SCENARIO_ONC_2015_IZ_AD_3_R)
-          || testCaseMessage.getScenario().equals(SCENARIO_ONC_2015_IZ_AD_5_R)) {
-        testCaseMessagePrevious = testCaseMessage;
-        continue;
-      }
-      if (testCaseMessage.getScenario().equals(SCENARIO_ONC_2015_IZ_AD_4_R)
-          || testCaseMessage.getScenario().equals(SCENARIO_ONC_2015_IZ_AD_6_R)) {
-        registerQuery(count, 1, testCaseMessage, testCaseMessagePrevious);
-      } else {
-        registerQuery(count, 1, testCaseMessage, null);
-      }
-    }
-
+    doPrepareQueries();
   }
 
   @Override

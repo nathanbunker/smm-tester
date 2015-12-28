@@ -279,45 +279,44 @@ public abstract class CertifyArea implements RecordServletInterface
   protected void reportProgress(TestCaseMessage testMessage) {
     certifyRunner.reportProgress(testMessage);
   }
-  
-  protected void reportForecastProgress(TestCaseMessage testMessage)
-  {
+
+  protected void reportForecastProgress(TestCaseMessage testMessage) {
     certifyRunner.reportForecastProgress(testMessage);
   }
 
-  public void setDerivedFrom(TestCaseMessage tcm, TestCaseMessage tcmPrevious, TestCaseMessage tcmQuery) {
+  public void setDerivedFrom(TestCaseMessage tcm, TestCaseMessage tcmQuery) {
 
-    if (tcmPrevious != null) {
-      tcmQuery.setDerivedFromVXUMessage(tcmPrevious.getMessageText() + tcm.getMessageText());
-      tcmQuery.setOriginalMessageResponse(tcmPrevious.getActualResponseMessage() + tcm.getActualResponseMessage());
-      tcmQuery.setOriginalAccepted(tcmPrevious.isAccepted() && tcm.isAccepted());
-    } else {
-      tcmQuery.setDerivedFromVXUMessage(tcm.getMessageText());
-      tcmQuery.setOriginalMessageResponse(tcm.getActualResponseMessage());
-      tcmQuery.setOriginalAccepted(tcm.isAccepted());
+    tcmQuery.setDerivedFromVXUMessage(tcm.getMessageText());
+    tcmQuery.setOriginalMessageResponse(tcm.getActualResponseMessage());
+    tcmQuery.setOriginalAccepted(tcm.isAccepted());
+    TestCaseMessage tcmUpdates = tcm.getUpdateTestCaseMessage();
+    while (tcmUpdates != null) {
+      tcmQuery.setDerivedFromVXUMessage(tcmUpdates.getMessageText() + tcmQuery.getDerivedFromVXUMessage());
+      tcmQuery
+          .setOriginalMessageResponse(tcmUpdates.getActualResponseMessage() + tcmQuery.getOriginalMessageResponse());
+      tcmQuery.setOriginalAccepted(tcmUpdates.isAccepted() && tcmQuery.isOriginalAccepted());
+      tcmUpdates = tcmUpdates.getUpdateTestCaseMessage();
     }
-
   }
 
   public TestCaseMessage registerQuery(int count, TestCaseMessage testCaseMessage) {
-    return registerQuery(count, 2, testCaseMessage, null);
+    return registerQuery(count, 2, testCaseMessage);
   }
 
-  public TestCaseMessage registerQuery(int count, int masterCount, TestCaseMessage testCaseMessage,
-      TestCaseMessage testCaseMessagePrevious) {
+  public TestCaseMessage registerQuery(int count, int masterCount, TestCaseMessage testCaseMessage) {
     TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
     queryTestCaseMessage.setDescription("Query for " + testCaseMessage.getDescription());
     queryTestCaseMessage.setMessageText(certifyRunner.convertToQuery(testCaseMessage));
-    return registerQuery(count, masterCount, testCaseMessage, testCaseMessagePrevious, queryTestCaseMessage);
+    return registerQuery(count, masterCount, testCaseMessage, queryTestCaseMessage);
   }
 
   public TestCaseMessage registerQuery(int count, int masterCount, TestCaseMessage testCaseMessage,
-      TestCaseMessage testCaseMessagePrevious, TestCaseMessage queryTestCaseMessage) {
+      TestCaseMessage queryTestCaseMessage) {
     queryTestCaseMessage.setTestCaseSet(certifyRunner.testCaseSet);
     queryTestCaseMessage
         .setTestCaseCategoryId(areaLetter + "Q." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
     queryTestCaseMessage.setTestCaseNumber(certifyRunner.uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
-    setDerivedFrom(testCaseMessage, testCaseMessagePrevious, queryTestCaseMessage);
+    setDerivedFrom(testCaseMessage, queryTestCaseMessage);
     queryList.add(queryTestCaseMessage);
     queryTestCaseMessage.setTestPosition(certifyRunner.incrementingInt.next());
     queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
@@ -481,8 +480,62 @@ public abstract class CertifyArea implements RecordServletInterface
   public void doPrepareQueries() {
     int count = 0;
     for (TestCaseMessage testCaseMessage : updateList) {
+      if (testCaseMessage.isDoNotQueryFor()) {
+        continue;
+      }
       count++;
       registerQuery(count, testCaseMessage);
+    }
+  }
+
+  public void addQuerySupport(String description, String customTransformation, int count) {
+    TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+    if (customTransformation != null) {
+      testCaseMessage.appendCustomTransformation(customTransformation);
+    }
+    testCaseMessage.setDescription(description);
+    register(count, 1, testCaseMessage);
+  }
+
+  public void addTwins(int count) {
+    addQuerySupport("First Twin", "PID-24=Y\rPID-25=1", ++count);
+    {
+      String middleNameOriginal = "";
+      String middleInitial = "";
+      String middleName = "";
+      String gender = "";
+      TestCaseMessage testCaseMessage1 = updateList.get(updateList.size() - 1);
+      HL7Reader vxuReader = new HL7Reader(testCaseMessage1.getMessageText());
+      vxuReader.advanceToSegment("PID");
+      middleNameOriginal = vxuReader.getValue(5, 3);
+      if (middleNameOriginal.length() > 0) {
+        middleInitial = middleNameOriginal.substring(0, 1);
+      } else {
+        middleInitial = "";
+      }
+      gender = vxuReader.getValue(8);
+      int tryCount = 0;
+      while (middleName.equals("") || !(middleInitial.equals("") || middleName.startsWith(middleInitial))) {
+        middleName = certifyRunner.transformer.getValue(gender.equals("M") ? "BOY" : "GIRL");
+        tryCount++;
+        if (tryCount > 1000) {
+          // give up already! We'll go with what we have
+          break;
+        }
+      }
+
+      TestCaseMessage testCaseMessage2 = new TestCaseMessage();
+      testCaseMessage2.setOriginalMessage(testCaseMessage1.getMessageText());
+      testCaseMessage2.setDescription("Second Twin");
+      String uniqueId = testCaseMessage2.getTestCaseNumber();
+      testCaseMessage2.appendCustomTransformation(
+          "MSH-10=" + uniqueId + "." + Transformer.makeBase62Number(System.currentTimeMillis() % 10000));
+      testCaseMessage2.appendCustomTransformation(
+          "PID-3.1=" + (uniqueId.length() <= 15 ? uniqueId : uniqueId.substring(uniqueId.length() - 15)));
+      testCaseMessage2.appendCustomTransformation("PID-5.3=" + middleName);
+      testCaseMessage2.appendCustomTransformation("PID-24=Y");
+      testCaseMessage2.appendCustomTransformation("PID-25=2");
+      register(count, 1, testCaseMessage2);
     }
   }
 }
