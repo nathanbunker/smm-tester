@@ -88,6 +88,9 @@ public class CertifyServlet extends ClientServlet
         certifyRunner.setRun(request.getParameter("runP") != null, CertifyRunner.SUITE_P_DEDUPLICATION_ENGAGED);
         certifyRunner.setRun(request.getParameter("runQ") != null, CertifyRunner.SUITE_Q_FORECASTER_ENGAGED);
         certifyRunner.setPauseBeforeQuerying(request.getParameter("pauseBeforeQuerying") != null);
+        certifyRunner.setRedactListResponses(request.getParameter("redactListResponses") != null);
+        certifyRunner.setReportErrorsOnly(request.getParameter("reportErrorsOnly") != null);
+        certifyRunner.setCondenseErrors(request.getParameter("condenseErrors") != null);
         if (certifyRunner.isRun(CertifyRunner.SUITE_F_FORECAST)) {
           Map<Integer, ForecastTestPanel> forecastTestPanelIdMap = new HashMap<Integer, ForecastTestPanel>();
           for (ForecastTestPanel forecastTestPanel : ForecastTestPanel.values()) {
@@ -257,7 +260,13 @@ public class CertifyServlet extends ClientServlet
             + "\" onClick=\"checkQueryOptions(true);\"> " + CertifyRunner.QUERY_TYPE_QBP_Z44);
         out.println("            <input type=\"radio\" name=\"queryType\" value=\"" + CertifyRunner.QUERY_TYPE_VXQ
             + "\" onClick=\"checkQueryOptions(true);\"> " + CertifyRunner.QUERY_TYPE_VXQ);
+        out.println("          </td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td>Query Options</td>");
+        out.println("          <td>");
         out.println("            <input type=\"checkbox\" name=\"pauseBeforeQuerying\" value=\"true\"/> Pause");
+        out.println("            <input type=\"checkbox\" name=\"redactListResponses\" value=\"true\" checked=\"true\"/> Redact List Responses");
         out.println("          </td>");
         out.println("        </tr>");
         SendData sendData = user.getSendData();
@@ -453,6 +462,8 @@ public class CertifyServlet extends ClientServlet
         out.println("          <td>");
         out.println(
             "            <input id=\"ChkNISTConformance2015\" type=\"checkbox\" name=\"runL\" value=\"true\" checked=\"true\"/> NIST Conformance 2015");
+        out.println("            <input type=\"checkbox\" name=\"reportErrorsOnly\" value=\"true\" checked=\"true\"/> Report Errors Only");
+        out.println("            <input type=\"checkbox\" name=\"condenseErrors\" value=\"true\" checked=\"true\"/> Condense Errors");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
