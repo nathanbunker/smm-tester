@@ -54,14 +54,18 @@ public class CAConformance extends CertifyArea
   public void sendQueries() {
     int count = 0;
     int pass = 0;
-    for (TestCaseMessage testCaseMessage : certifyRunner.statusCheckTestCaseList) {
-      if (testCaseMessage.isHasRun() && testCaseMessage.getActualMessageResponseType().equals("RSP")
-          && !testCaseMessage.isResultNotExpectedToConform()) {
-        count++;
-        HL7Component comp = TestCaseMessageManager.createHL7Component(testCaseMessage);
-        incrementQueryProgress();
-        if (comp != null && comp.hasNoErrors()) {
-          pass++;
+    for (CertifyArea certifyArea : certifyRunner.certifyAreas) {
+      if (certifyArea.isRun() && !certifyArea.isPerformanceConformance()) {
+        for (TestCaseMessage testCaseMessage : certifyArea.queryList) {
+          if (testCaseMessage.isHasRun() && testCaseMessage.getActualMessageResponseType().equals("RSP")
+              && !testCaseMessage.isResultNotExpectedToConform()) {
+            count++;
+            HL7Component comp = TestCaseMessageManager.createHL7Component(testCaseMessage);
+            incrementQueryProgress();
+            if (comp != null && comp.hasNoErrors()) {
+              pass++;
+            }
+          }
         }
       }
     }

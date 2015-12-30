@@ -22,7 +22,7 @@ public class CAForecast extends CertifyArea
     super(areaLetter, areaLabel, certifyRunner);
   }
 
-  private static final String TCH_FORECAST_TESTER_URL = "http://localhost:8181/ExternalTestServlet";
+  private static final String TCH_FORECAST_TESTER_URL = "http://tchforecasttester.org/ft/ExternalTestServlet";
   // http://localhost:8181/ExternalTestServlet
   // http://tchforecasttester.org/ft/ExternalTestServlet
 

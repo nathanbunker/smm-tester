@@ -48,14 +48,18 @@ public class CAConformance2015 extends CertifyArea
 
   @Override
   public void sendQueries() {
+    logStatus("Analyze format queries");
     int count = 0;
     int pass = 0;
-    for (TestCaseMessage testCaseMessage : certifyRunner.statusCheckTestCaseList) {
-      if (testCaseMessage.isHasRun() && testCaseMessage.getActualMessageResponseType().equals("RSP")
-          && !testCaseMessage.isResultNotExpectedToConform()) {
-        count++;
-        if (testCaseMessage.isValidationReportPass()) {
-          pass++;
+    for (CertifyArea certifyArea : certifyRunner.certifyAreas) {
+      if (certifyArea.isRun() && !certifyArea.isPerformanceConformance()) {
+        for (TestCaseMessage testCaseMessage : certifyArea.queryList) {
+          if (testCaseMessage.isHasRun() && !testCaseMessage.isResultNotExpectedToConform()) {
+            count++;
+            if (testCaseMessage.isValidationReportPass()) {
+              pass++;
+            }
+          }
         }
       }
     }

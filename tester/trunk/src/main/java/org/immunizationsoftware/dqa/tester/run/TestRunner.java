@@ -310,7 +310,7 @@ public class TestRunner
     return passedTest;
   }
 
-  private void ascertainValidationResource(TestCaseMessage testCaseMessage, String messageText) {
+  public static void ascertainValidationResource(TestCaseMessage testCaseMessage, String messageText) {
     ValidationResource validationResource = null;
     HL7Reader hl7Reader = new HL7Reader(messageText);
     if (hl7Reader.advanceToSegment("MSH")) {

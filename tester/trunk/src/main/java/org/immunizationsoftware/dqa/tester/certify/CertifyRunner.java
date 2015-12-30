@@ -21,8 +21,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.ClientServlet;
@@ -54,7 +56,9 @@ import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
 public class CertifyRunner extends Thread implements RecordServletInterface
 {
 
-  private static final String REPORT_URL = "http://localhost:8289/record";
+  public static final String REDACTION_NOTICE = "[IIS Tester: Message has been redacted. It may contain non-test patient information.]";
+
+  private static final String REPORT_URL = "http://ois-pt.org/dqacm/record";
   // "http://localhost:8289/record";
   // "http://ois-pt.org/dqacm/record";
 
@@ -309,7 +313,35 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   private String queryType = "";
   private boolean willQuery = false;
   private boolean pauseBeforeQuerying = false;
+  private boolean redactListResponses = false;
+  private boolean reportErrorsOnly = false;
+  private boolean condenseErrors = false;
+
   protected String uniqueMRNBase = "";
+
+  public boolean isCondenseErrors() {
+    return condenseErrors;
+  }
+
+  public void setCondenseErrors(boolean condenseErrors) {
+    this.condenseErrors = condenseErrors;
+  }
+
+  public boolean isReportErrorsOnly() {
+    return reportErrorsOnly;
+  }
+
+  public void setReportErrorsOnly(boolean reportErrorsOnly) {
+    this.reportErrorsOnly = reportErrorsOnly;
+  }
+
+  public boolean isRedactListResponses() {
+    return redactListResponses;
+  }
+
+  public void setRedactListResponses(boolean redactListResponses) {
+    this.redactListResponses = redactListResponses;
+  }
 
   public boolean isPauseBeforeQuerying() {
     return pauseBeforeQuerying;
@@ -531,6 +563,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           reportProgress(null);
           return;
         }
+        caTotal.getAreaCount()[1] = 0;
         for (int i = 0; i < certifyAreas.length; i++) {
           if (certifyAreas[i].isRun() && !certifyAreas[i].isPerformanceConformance()) {
             currentSuite = i;
@@ -773,31 +806,33 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
   public String doSafeQuery(String message) throws Exception {
     String response = queryConnector.submitMessage(message, false);
-    HL7Reader responseReader = new HL7Reader(response);
-    if (responseReader.advanceToSegment("MSH")) {
-      boolean okay = false;
-      String messageType = responseReader.getValue(9);
-      if (messageType.equals("VXR")) {
-        okay = true;
-      } else if (messageType.equals("RSP")) {
-        String profile = responseReader.getValue(21);
-        if (profile.equalsIgnoreCase("Z32") || profile.equalsIgnoreCase("Z34")) {
+    if (redactListResponses) {
+      HL7Reader responseReader = new HL7Reader(response);
+      if (responseReader.advanceToSegment("MSH")) {
+        boolean okay = false;
+        String messageType = responseReader.getValue(9);
+        if (messageType.equals("VXR")) {
           okay = true;
-        }
-      }
-      if (!okay) {
-        response = responseReader.getOriginalSegment();
-        while (responseReader.advance()) {
-          if (responseReader.getSegmentName().equals("PID") || responseReader.getSegmentName().equals("NK1")) {
-            response += responseReader.getSegmentName() + "|[Redacted by IIS Tester]\r";
-          } else {
-            response += responseReader.getOriginalSegment() + "\r";
+        } else if (messageType.equals("RSP")) {
+          String profile = responseReader.getValue(21);
+          if (profile.equalsIgnoreCase("Z32") || profile.equalsIgnoreCase("Z34")) {
+            okay = true;
           }
         }
-        response += "\r[IIS Tester has redacted patient identifying information because a single match was not found. PID and NK1 segments were truncated by the IIS Tester. ]";
+        if (!okay) {
+          response = responseReader.getOriginalSegment();
+          while (responseReader.advance()) {
+            if (responseReader.getSegmentName().equals("PID") || responseReader.getSegmentName().equals("NK1")) {
+              response += responseReader.getSegmentName() + "|---\r";
+            } else {
+              response += responseReader.getOriginalSegment() + "\r";
+            }
+          }
+          response += REDACTION_NOTICE + "\r";
+        }
+      } else {
+        response = REDACTION_NOTICE + "\r";
       }
-    } else {
-      response = "[IIS Tester: Unrecognized response message, entire result redacted]";
     }
     return response;
   }
@@ -2236,8 +2271,21 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           }
         }
         if (testMessage.getValidationReport() != null) {
+          Set<String> descriptionSet = null;
+          if (condenseErrors) {
+            descriptionSet = new HashSet<String>();
+          }
           position = 0;
           for (Assertion assertion : testMessage.getValidationReport().getAssertionList()) {
+            if (reportErrorsOnly && !assertion.getResult().equalsIgnoreCase("error")) {
+              continue;
+            }
+            if (condenseErrors) {
+              if (descriptionSet.contains(assertion.getDescription())) {
+                continue;
+              }
+              descriptionSet.add(assertion.getDescription());
+            }
             position++;
             addField(sb, PARAM_A_ASSERTION_DESCRIPTION + position, assertion.getDescription());
             addField(sb, PARAM_A_ASSERTION_RESULT + position, assertion.getResult());

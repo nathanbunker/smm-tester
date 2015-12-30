@@ -12,6 +12,8 @@ import java.util.List;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTesterManager;
+import org.immunizationsoftware.dqa.tester.manager.nist.NISTValidator;
+import org.immunizationsoftware.dqa.tester.manager.nist.ValidationReport;
 import org.immunizationsoftware.dqa.tester.run.TestRunner;
 import org.immunizationsoftware.dqa.transform.Comparison;
 import org.immunizationsoftware.dqa.transform.ScenarioManager;
@@ -174,8 +176,12 @@ public abstract class CertifyArea implements RecordServletInterface
 
   public TestRunner createTestRunner() {
     TestRunner testRunner = new TestRunner();
-    testRunner.setValidateResponse(certifyRunner.certifyAreas[CertifyRunner.SUITE_L_CONFORMANCE_2015].isRun());
+    testRunner.setValidateResponse(shouldValidate());
     return testRunner;
+  }
+
+  public boolean shouldValidate() {
+    return certifyRunner.certifyAreas[CertifyRunner.SUITE_L_CONFORMANCE_2015].isRun();
   }
 
   public TestCaseMessage registerAdminChild(String description, String customTransformation, int count) {
@@ -255,6 +261,7 @@ public abstract class CertifyArea implements RecordServletInterface
           testPass++;
         }
         testCaseMessage.setPassedTest(!same);
+        testCaseMessage.setActualResultStatus(same ? TestRunner.ACTUAL_RESULT_STATUS_FAIL : TestRunner.ACTUAL_RESULT_STATUS_PASS);
       } else {
         if (pass) {
           testPass++;
@@ -365,9 +372,25 @@ public abstract class CertifyArea implements RecordServletInterface
         queryTestCaseMessage.setResultForecastStatus(RecordServletInterface.VALUE_RESULT_FORECAST_STATUS_NOT_INCLUDED);
       }
       recordForecastResults(queryTestCaseMessage);
+      if (shouldValidate()
+          && (!certifyRunner.isRedactListResponses() || rspMessage.indexOf(CertifyRunner.REDACTION_NOTICE) == -1)) {
+        TestRunner.ascertainValidationResource(queryTestCaseMessage, rspMessage);
+        if (queryTestCaseMessage.getValidationResource() != null) {
+          ValidationReport validationReport = NISTValidator.validate(rspMessage,
+              queryTestCaseMessage.getValidationResource());
+          queryTestCaseMessage.setValidationReport(validationReport);
+          if (validationReport != null) {
+            queryTestCaseMessage
+                .setValidationReportPass(validationReport.getHeaderReport().getValidationStatus().equals("Complete")
+                    && validationReport.getHeaderReport().getErrorCount() == 0);
+          }
+        }
+      }
+
     } catch (Throwable t) {
       queryTestCaseMessage.setException(t);
     }
+
     certifyRunner.saveTestCase(queryTestCaseMessage);
     reportProgress(queryTestCaseMessage);
     reportForecastProgress(queryTestCaseMessage);
