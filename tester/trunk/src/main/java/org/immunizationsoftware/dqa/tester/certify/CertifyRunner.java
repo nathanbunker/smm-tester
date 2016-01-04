@@ -83,6 +83,15 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   protected Throwable exception = null;
   protected boolean keepRunning = true;
   protected CAPerformance performance = null;
+  protected Map<String, Map<String, TestCaseMessage>> testMessageMapMap;
+
+  public Map<String, Map<String, TestCaseMessage>> getTestMessageMapMap() {
+    return testMessageMapMap;
+  }
+
+  public void setTestMessageMapMap(Map<String, Map<String, TestCaseMessage>> testMessageMapMap) {
+    this.testMessageMapMap = testMessageMapMap;
+  }
 
   protected void logStatus(String status) {
     synchronized (statusMessageList) {
@@ -395,14 +404,14 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     statusMessageList = new ArrayList<String>();
 
-    willQuery = queryType != null && (queryType.equals(QUERY_TYPE_QBP_Z34) || queryType.equals(QUERY_TYPE_QBP_Z44)
+    willQuery = queryType != null && (queryType.equals(QUERY_TYPE_QBP_Z34) || queryType.equals(QUERY_TYPE_QBP_Z34_Z44) || queryType.equals(QUERY_TYPE_QBP_Z44)
         || queryType.equals(QUERY_TYPE_VXQ));
     if (willQuery) {
       logStatus("Query will be run: " + queryType);
     } else {
       logStatus("Query was not enabled");
     }
-
+    
     logStatus("IIS Tester Initialized");
   }
 
@@ -465,7 +474,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         testCaseMessageBase.setTestCaseCategoryId("BASE");
         testCaseMessageBase.setTestCaseNumber(uniqueMRNBase + testCaseMessageBase.getTestCaseCategoryId());
         transformer.transform(testCaseMessageBase);
-        testCaseMessageBase.setAssertResult("Accept - *");
+        testCaseMessageBase.setAssertResult("Accept");
         testCaseMessageBase.setTestType(VALUE_TEST_TYPE_PREP);
         testCaseMessageBase.setTestPosition(incrementingInt.next());
         TestRunner testRunner = new TestRunner();

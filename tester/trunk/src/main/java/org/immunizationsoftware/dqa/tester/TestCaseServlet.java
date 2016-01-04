@@ -84,7 +84,7 @@ public class TestCaseServlet extends ClientServlet
         String testCase = request.getParameter("source");
         List<TestCaseMessage> testCaseMessageList = parseAndAddTestCases(testCase, session);
 
-        Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(session);
+        Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(null, session);
         for (String testCaseNumber : testCaseNumberSelectedSet) {
           TestCaseMessage tcm = testCaseMessageMap.get(testCaseNumber);
           if (tcm != null) {
@@ -197,7 +197,7 @@ public class TestCaseServlet extends ClientServlet
             }
             out.println("</div>");
             if (!testCaseMessage.getTestCaseNumber().equals("")) {
-              CreateTestCaseServlet.getTestCaseMessageMap(session).put(testCaseMessage.getTestCaseNumber(),
+              CreateTestCaseServlet.getTestCaseMessageMap(testCaseMessage.getTestCaseSet(), session).put(testCaseMessage.getTestCaseNumber(),
                   testCaseMessage);
             }
           } catch (Exception e) {
@@ -217,7 +217,6 @@ public class TestCaseServlet extends ClientServlet
         out.println("<th>Test Case</th>");
         out.println("<th>Test Status</th>");
         out.println("<th>Expected Result</th>");
-        out.println("<th>Expected Message</th>");
         out.println("<th>Actual Result</th>");
         out.println("<th>Actual Message</th>");
         out.println("</tr>");
@@ -231,8 +230,7 @@ public class TestCaseServlet extends ClientServlet
           } else {
             out.println("<td>" + testCaseMessage.getActualResultStatus() + "</td>");
           }
-          out.println("<td>" + testCaseMessage.getAssertResultStatus() + "</td>");
-          out.println("<td>" + testCaseMessage.getAssertResultText() + "</td>");
+          out.println("<td>" + testCaseMessage.getAssertResult() + "</td>");
           out.println("<td>" + testCaseMessage.getActualResultAckType() + "</td>");
           out.println("<td>" + testCaseMessage.getActualResultAckMessage() + "</td>");
           out.println("</tr>");

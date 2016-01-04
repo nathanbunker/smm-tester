@@ -106,11 +106,11 @@ public class CAProfiling extends CertifyArea
           testCaseMessagePresent.setDescription("Field " + profileLine.getField().getFieldName() + " is present");
           register(count, 1, testCaseMessagePresent);
           if (profileLine.getMessageAcceptStatus() == MessageAcceptStatus.ONLY_IF_PRESENT) {
-            testCaseMessagePresent.setAssertResult("Accept - *");
+            testCaseMessagePresent.setAssertResult("Accept");
           } else if (profileLine.getMessageAcceptStatus() == MessageAcceptStatus.ONLY_IF_ABSENT) {
-            testCaseMessagePresent.setAssertResult("Reject - *");
+            testCaseMessagePresent.setAssertResult("Reject");
           } else {
-            testCaseMessagePresent.setAssertResult("Accept - *");
+            testCaseMessagePresent.setAssertResult("Accept");
           }
           testCaseMessagePresent.setMessageAcceptStatusDebug(profileLine.getMessageAcceptStatusDebug());
         }
@@ -118,11 +118,11 @@ public class CAProfiling extends CertifyArea
           testCaseMessageAbsent.setDescription("Field " + profileLine.getField().getFieldName() + " is absent");
           register(count, 1, testCaseMessageAbsent);
           if (profileLine.getMessageAcceptStatus() == MessageAcceptStatus.ONLY_IF_PRESENT) {
-            testCaseMessageAbsent.setAssertResult("Reject - *");
+            testCaseMessageAbsent.setAssertResult("Reject");
           } else if (profileLine.getMessageAcceptStatus() == MessageAcceptStatus.ONLY_IF_ABSENT) {
-            testCaseMessageAbsent.setAssertResult("Accept - *");
+            testCaseMessageAbsent.setAssertResult("Accept");
           } else {
-            testCaseMessageAbsent.setAssertResult("Accept - *");
+            testCaseMessageAbsent.setAssertResult("Accept");
           }
           testCaseMessageAbsent.setMessageAcceptStatusDebug(profileLine.getMessageAcceptStatusDebug());
         }

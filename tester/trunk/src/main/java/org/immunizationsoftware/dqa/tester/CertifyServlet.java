@@ -60,7 +60,11 @@ public class CertifyServlet extends ClientServlet
     if (username == null) {
       response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
     } else if (action.equals("Start")) {
-      if (certifyRunner != null && !certifyRunner.getStatus().equals(CertifyRunner.STATUS_COMPLETED)
+      if (request.getParameter("id") == null)
+      {
+        problem = "Unable to start service is not selected";
+      }
+      else if (certifyRunner != null && !certifyRunner.getStatus().equals(CertifyRunner.STATUS_COMPLETED)
           && !certifyRunner.getStatus().equals(CertifyRunner.STATUS_STOPPED)) {
         problem = "Unable to start new certification as current certification is still running.";
       } else {
@@ -91,6 +95,7 @@ public class CertifyServlet extends ClientServlet
         certifyRunner.setRedactListResponses(request.getParameter("redactListResponses") != null);
         certifyRunner.setReportErrorsOnly(request.getParameter("reportErrorsOnly") != null);
         certifyRunner.setCondenseErrors(request.getParameter("condenseErrors") != null);
+        certifyRunner.setTestMessageMapMap(CreateTestCaseServlet.getTestCaseMessageMapMap(session));
         if (certifyRunner.isRun(CertifyRunner.SUITE_F_FORECAST)) {
           Map<Integer, ForecastTestPanel> forecastTestPanelIdMap = new HashMap<Integer, ForecastTestPanel>();
           for (ForecastTestPanel forecastTestPanel : ForecastTestPanel.values()) {

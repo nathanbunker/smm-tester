@@ -107,8 +107,6 @@ public class TestCaseMessage
   private String messageText = "";
   private String messageTextSent = "";
   private String assertResult = "";
-  private String assertResultStatus = "";
-  private String assertResultText = "";
   private String originalMessage = "";
   private String originalMessageResponse = "";
   private String preparedMessage = null;
@@ -472,12 +470,11 @@ public class TestCaseMessage
     this.expectedResult = copy.expectedResult;
     this.messageText = copy.messageText;
     this.assertResult = copy.assertResult;
-    this.assertResultStatus = copy.assertResultStatus;
-    this.assertResultText = copy.assertResultText;
     this.originalMessage = copy.originalMessage;
     this.quickTransformations = new String[copy.quickTransformations.length];
     System.arraycopy(copy.quickTransformations, 0, this.quickTransformations, 0, copy.quickTransformations.length);
     this.quickTransformationsConverted = copy.quickTransformationsConverted;
+    this.excludeTransformations = copy.excludeTransformations;
     this.customTransformations = copy.customTransformations;
     this.additionalTransformations = copy.additionalTransformations;
     this.causeIssueTransforms = copy.causeIssueTransforms;
@@ -506,12 +503,6 @@ public class TestCaseMessage
     }
     if (!updated.getExpectedResult().equals("")) {
       expectedResult = updated.getExpectedResult();
-    }
-    if (!updated.getAssertResultStatus().equals("")) {
-      assertResultStatus = updated.getAssertResultStatus();
-    }
-    if (!updated.getAssertResultText().equals("")) {
-      assertResultText = updated.getAssertResultText();
     }
     if (!updated.getOriginalMessage().equals("")) {
       originalMessage = updated.getOriginalMessage();
@@ -609,22 +600,6 @@ public class TestCaseMessage
     }
   }
 
-  public String getAssertResultStatus() {
-    return assertResultStatus;
-  }
-
-  public void setAssertResultStatus(String assertResultStatus) {
-    this.assertResultStatus = assertResultStatus;
-  }
-
-  public String getAssertResultText() {
-    return assertResultText;
-  }
-
-  public void setAssertResultText(String assertResultText) {
-    this.assertResultText = assertResultText;
-  }
-
   public String getDescription() {
     return description;
   }
@@ -671,18 +646,6 @@ public class TestCaseMessage
 
   public void setAssertResult(String assertResult) {
     this.assertResult = assertResult;
-    if (assertResult != null) {
-      int pos = assertResult.indexOf("-");
-      if (pos != -1) {
-        assertResultStatus = assertResult.substring(0, pos).trim();
-        pos++;
-        if (pos < assertResult.length()) {
-          assertResultText = assertResult.substring(pos).trim();
-        }
-      } else {
-        assertResultStatus = assertResult;
-      }
-    }
   }
 
   public String getCustomTransformations() {
@@ -710,6 +673,13 @@ public class TestCaseMessage
       this.customTransformations = "";
     }
     this.customTransformations += customTransformation + "\n";
+  }
+
+  public void appendExcludeTransformation(String t) {
+    if (this.excludeTransformations == null) {
+      this.excludeTransformations = "";
+    }
+    this.excludeTransformations += t + "\n";
   }
 
   public void appendAdditionalTransformation(String additionalTransformation) {
@@ -762,8 +732,8 @@ public class TestCaseMessage
       stringOut.println(TEST_CASE_SET + " " + testCaseSet);
       stringOut.println(DESCRIPTION + " " + description);
       stringOut.println(EXPECTED_RESULT + " " + expectedResult);
-      if (!assertResultText.equals("")) {
-        stringOut.println(ASSERT_RESULT + " " + assertResultStatus + " - " + assertResultText);
+      if (!assertResult.equals("")) {
+        stringOut.println(ASSERT_RESULT + " " + assertResult);
       }
       for (Comment comment : comments) {
         stringOut.println(COMMENT + " " + comment.getName() + " - " + comment.getText());

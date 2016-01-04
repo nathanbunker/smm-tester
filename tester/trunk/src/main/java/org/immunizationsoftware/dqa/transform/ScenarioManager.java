@@ -173,8 +173,7 @@ public class ScenarioManager
     String customTransformations = "";
     String description = "";
     String expectedResult = "";
-    String assertResultText = "";
-    String assertResultStatus = "";
+    String assertResult = "";
     String testCaseSet = "";
     String[] quickTransformations = {};
     PatientType patientType = PatientType.ANY_CHILD;
@@ -499,8 +498,7 @@ public class ScenarioManager
     }
 
     testCaseMessage.setTestCaseSet(testCaseSet);
-    testCaseMessage.setAssertResultStatus(assertResultStatus);
-    testCaseMessage.setAssertResultText(assertResultText);
+    testCaseMessage.setAssertResult(assertResult);
     testCaseMessage.setCustomTransformations(customTransformations);
     testCaseMessage.setDescription(description);
     testCaseMessage.setExpectedResult(expectedResult);

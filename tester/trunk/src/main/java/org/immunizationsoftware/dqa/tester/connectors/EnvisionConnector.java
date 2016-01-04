@@ -12,6 +12,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -78,6 +79,29 @@ public class EnvisionConnector extends HttpConnector
 
   }
 
+  private static class CharSequence
+  {
+    int char1 = 0;
+    int char2 = 0;
+    int char3 = 0;
+    String replace = "";
+  }
+
+  private static List<CharSequence> charSequenceList = new ArrayList<EnvisionConnector.CharSequence>();
+
+  static {
+    CharSequence charSeq1 = new CharSequence();
+    charSeq1.char1 = 226;
+    charSeq1.char2 = 8364;
+    charSeq1.char3 = 65533;
+    charSequenceList.add(charSeq1);
+    CharSequence charSeq2 = new CharSequence();
+    charSeq2.char1 = 226;
+    charSeq2.char2 = 8364;
+    charSeq2.char3 = 339;
+    charSequenceList.add(charSeq2);
+  }
+
   public String sendRequest(String request, ClientConnection conn, boolean debug) throws IOException {
     StringBuilder debugLog = null;
     if (debug) {
@@ -112,7 +136,8 @@ public class EnvisionConnector extends HttpConnector
       StringBuilder sb = new StringBuilder();
       if (useSoap11) {
         sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-        sb.append("<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
+        sb.append(
+            "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
         sb.append("  <soap:Body>");
         sb.append("    <ExecuteHL7Message xmlns=\"http://tempuri.org/\">");
         sb.append("      <userName>" + userid + "</userName>");
@@ -123,7 +148,8 @@ public class EnvisionConnector extends HttpConnector
         sb.append("</soap:Envelope>");
       } else {
         sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-        sb.append("<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">");
+        sb.append(
+            "<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">");
         sb.append("  <soap12:Body>");
         sb.append("    <ExecuteHL7Message xmlns=\"http://tempuri.org/\">");
         sb.append("      <userName>" + userid + "</userName>");
@@ -155,7 +181,31 @@ public class EnvisionConnector extends HttpConnector
       if (startPos > 0 && endPos > startPos) {
         responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
         responseString = responseString.replaceAll("\\Q&amp;\\E", "&");
-        response = new StringBuilder(responseString);
+        response = new StringBuilder();
+        boolean found226 = false;
+        boolean found8364 = false;
+        for (int i = 0; i < responseString.length(); i++) {
+          char c = responseString.charAt(i);
+          if (c == 226) {
+            found226 = true;
+          } else if (found226 && c == 8364) {
+            found8364 = true;
+          } else if (found8364) {
+            if ((c == 339 || c == 65533)) {
+              response.append("\"");
+            } else {
+              response.append("??" + ((int) c) + "??");
+            }
+            found226 = false;
+            found8364 = false;
+          } else if (c < 256) {
+            response.append(c);
+            found226 = false;
+            found8364 = false;
+          } else {
+            response.append("??" + ((int) c) + "??");
+          }
+        }
       }
       if (debug) {
         response.append("\r");
@@ -224,7 +274,8 @@ public class EnvisionConnector extends HttpConnector
 
       StringBuilder sb = new StringBuilder();
       sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-      sb.append("<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">");
+      sb.append(
+          "<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">");
       sb.append("  <soap12:Body>");
       sb.append("    <connectivityTest xmlns=\"http://tempuri.org/\">");
       sb.append("      <echoBack>" + replaceAmpersand(message) + "</echoBack>");

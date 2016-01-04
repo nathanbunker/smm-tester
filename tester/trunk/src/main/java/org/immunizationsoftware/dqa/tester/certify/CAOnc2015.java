@@ -28,7 +28,7 @@ public class CAOnc2015 extends CertifyArea
     for (String scenario : onc2015Scenarios) {
       count++;
       TestCaseMessage testCaseMessage = createTestCaseMessage(scenario);
-      testCaseMessage.setAssertResult("Accept - *");
+      testCaseMessage.setAssertResult("Accept");
       register(count, testCaseMessage);
       if (testCaseMessage.getScenario().equals(SCENARIO_ONC_2015_IZ_AD_3_R)
           || testCaseMessage.getScenario().equals(SCENARIO_ONC_2015_IZ_AD_5_R)) {
