@@ -73,12 +73,17 @@ public class TestCaseMessageManager {
           } else if (line.startsWith(TestCaseMessage.CUSTOM_TRANSFORMATIONS)) {
             testCaseMessage.setCustomTransformations(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
             lastList = "CT";
+          } else if (line.startsWith(TestCaseMessage.EXCLUDE_TRANSFORMATIONS)) {
+            testCaseMessage.setExcludeTransformations(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
+            lastList = "ET";
           } else if (line.startsWith(TestCaseMessage.CAUSE_ISSUES)) {
             testCaseMessage.setCauseIssues(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
             lastList = "CI";
           } else if (line.startsWith("+") && line.length() > 1) {
             if (lastList.equals("CT")) {
               testCaseMessage.appendCustomTransformation(line.substring(1).trim());
+            } else if (lastList.equals("ET")) {
+              testCaseMessage.appendExcludeTransformation(line.substring(1).trim());
             } else if (lastList.equals("CI")) {
               testCaseMessage.appendCauseIssue(line.substring(1).trim());
             }

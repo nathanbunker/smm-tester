@@ -41,7 +41,7 @@ public class CAAdvanced extends CertifyArea
           TestCaseMessage testCaseMessage = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
           testCaseMessage.setDescription(issue.getName());
           testCaseMessage.addCauseIssues(issue.getName());
-          registerIfHasIssue(count, priority, testCaseMessage).setAssertResult("Accept or Reject - *");
+          registerIfHasIssue(count, priority, testCaseMessage).setAssertResult("Accept or Reject");
         }
       }
     }
@@ -53,7 +53,7 @@ public class CAAdvanced extends CertifyArea
     testCaseMessage.setTestCaseNumber(certifyRunner.uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
     testCaseMessage.setTestPosition(certifyRunner.incrementingInt.next());
     testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
-    testCaseMessage.setAssertResult("Accept - *");
+    testCaseMessage.setAssertResult("Accept");
     certifyRunner.transformer.transform(testCaseMessage);
     if (testCaseMessage.hasIssue()) {
       certifyRunner.register(testCaseMessage);

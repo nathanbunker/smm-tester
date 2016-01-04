@@ -99,7 +99,7 @@ public class SubmitServlet extends ClientServlet
             Transformer transformer = new Transformer();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
             connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
-            message = transformer.transform(connector, message, scenarioTransforms, additionalTransformations);
+            message = transformer.transform(connector, message, scenarioTransforms, null, additionalTransformations);
           }
         } else {
           String customTranformations = "";
@@ -132,7 +132,7 @@ public class SubmitServlet extends ClientServlet
             Transformer transformer = new Transformer();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
             connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
-            message = transformer.transform(connector, message, customTranformations, scenarioTransforms,
+            message = transformer.transform(connector, message, customTranformations, scenarioTransforms, null,
                 additionalTransformations);
           }
         }
@@ -207,6 +207,8 @@ public class SubmitServlet extends ClientServlet
           message = "";
         }
       }
+      TestCaseMessage testCaseMessage = (TestCaseMessage) session.getAttribute("testCaseMessage");
+
       session.setAttribute("userId", userId);
       session.setAttribute("facilityId", facilityId);
       session.setAttribute("password", password);
@@ -215,7 +217,7 @@ public class SubmitServlet extends ClientServlet
       PrintWriter out = new PrintWriter(response.getWriter());
       response.setContentType("text/html;charset=UTF-8");
       printHtmlHead(out, MENU_HEADER_SEND, request);
-      printForm(id, connectors, message, request, out);
+      printForm(id, connectors, message, testCaseMessage, request, out);
       String responseText = null;
       if (id != 0) {
         try {
@@ -274,16 +276,27 @@ public class SubmitServlet extends ClientServlet
 
       if (message != null) {
         if (message.indexOf("|VXU^") > 0) {
-          String qbpMessage = QueryConverter.convertVXUtoQBPZ34(message);
-          session.setAttribute(CompareServlet.VXU_MESSAGE, message);
-          out.println("<p>Submit QBP query message based from VXU displayed above</p>");
-          printForm(id, connectors, qbpMessage, request, out);
-          String qbpZ44Message = QueryConverter.convertVXUtoVXQ(message);
-          out.println("<p>Submit QBP Z44 query message based from VXU displayed above</p>");
-          printForm(id, connectors, qbpZ44Message, request, out);
-          String vxqMessage = QueryConverter.convertVXUtoVXQ(message);
-          out.println("<p>Submit VXQ query message based from VXU displayed above</p>");
-          printForm(id, connectors, vxqMessage, request, out);
+          {
+            String qbpMessage = QueryConverter.convertVXUtoQBPZ34(message);
+            session.setAttribute(CompareServlet.VXU_MESSAGE, message);
+            out.println("<p>Submit QBP Z34 query message based from VXU displayed above</p>");
+            printForm(id, connectors, qbpMessage, testCaseMessage, request, out);
+          }
+          {
+            String qbpZ44Message = QueryConverter.convertVXUtoQBPZ34Z44(message);
+            out.println("<p>Submit QBP Z34 with Z44 request based from VXU displayed above</p>");
+            printForm(id, connectors, qbpZ44Message, testCaseMessage, request, out);
+          }
+          {
+            String qbpZ44Message = QueryConverter.convertVXUtoQBPZ44(message);
+            out.println("<p>Submit QBP Z44 query message based from VXU displayed above</p>");
+            printForm(id, connectors, qbpZ44Message, testCaseMessage, request, out);
+          }
+          {
+            String vxqMessage = QueryConverter.convertVXUtoVXQ(message);
+            out.println("<p>Submit VXQ query message based from VXU displayed above</p>");
+            printForm(id, connectors, vxqMessage, testCaseMessage, request, out);
+          }
         }
       }
       if (responseText != null && responseText.indexOf("|RSP^") > 0) {
@@ -342,8 +355,8 @@ public class SubmitServlet extends ClientServlet
     }
   }
 
-  private void printForm(int id, List<Connector> connectors, String message, HttpServletRequest request,
-      PrintWriter out) {
+  private void printForm(int id, List<Connector> connectors, String message, TestCaseMessage testCaseMessage,
+      HttpServletRequest request, PrintWriter out) {
     out.println("    <form action=\"SubmitServlet\" method=\"POST\">");
     out.println("      <table border=\"0\">");
     out.println("        <tr>");
@@ -386,10 +399,26 @@ public class SubmitServlet extends ClientServlet
           BufferedReader customTransformsIn = new BufferedReader(
               new StringReader(connectors.get(0).getCustomTransformations()));
           String line;
+
           int i = 0;
           while ((line = customTransformsIn.readLine()) != null) {
             i++;
-            boolean selected = shouldSelectAll || request.getParameter("transform" + i) != null;
+            boolean confirmed = true;
+            if (testCaseMessage != null) {
+              try {
+                BufferedReader etIn = new BufferedReader(new StringReader(testCaseMessage.getExcludeTransformations()));
+                String l;
+                while ((l = etIn.readLine()) != null) {
+                  if (l.equals(line)) {
+                    confirmed = false;
+                    break;
+                  }
+                }
+              } catch (IOException ioe) {
+                // ignore
+              }
+            }
+            boolean selected = (shouldSelectAll && confirmed) || request.getParameter("transform" + i) != null;
             out.println("            <input type=\"checkbox\" name=\"transform" + i + "\" value=\"true\""
                 + (selected ? " checked=\"true\"" : "") + "/>" + line + "<br/>");
           }
@@ -426,8 +455,7 @@ public class SubmitServlet extends ClientServlet
 
   protected void testTestCaseMessage(PrintWriter out) {
     TestCaseMessage tcm = new TestCaseMessage();
-    tcm.setAssertResultStatus("Accept");
-    tcm.setAssertResultText("Way good!");
+    tcm.setAssertResult("Accept");
     tcm.setComment("NAB", "Okay");
     tcm.setCustomTransformations("PID-4=HAPPY\nPID-5=SAD\n");
     tcm.setDescription("This is a description");

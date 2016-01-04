@@ -7,7 +7,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
@@ -168,7 +170,9 @@ public abstract class CertifyArea implements RecordServletInterface
     updateList.add(testCaseMessage);
     testCaseMessage.setTestPosition(certifyRunner.incrementingInt.next());
     testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
-    testCaseMessage.setAssertResult("Accept - *");
+    if (testCaseMessage.getAssertResult() == null || testCaseMessage.getAssertResult().equals("")) {
+      testCaseMessage.setAssertResult("Accept");
+    }
     certifyRunner.transformer.transform(testCaseMessage);
     certifyRunner.register(testCaseMessage);
     return testCaseMessage;
@@ -261,7 +265,8 @@ public abstract class CertifyArea implements RecordServletInterface
           testPass++;
         }
         testCaseMessage.setPassedTest(!same);
-        testCaseMessage.setActualResultStatus(same ? TestRunner.ACTUAL_RESULT_STATUS_FAIL : TestRunner.ACTUAL_RESULT_STATUS_PASS);
+        testCaseMessage
+            .setActualResultStatus(same ? TestRunner.ACTUAL_RESULT_STATUS_FAIL : TestRunner.ACTUAL_RESULT_STATUS_PASS);
       } else {
         if (pass) {
           testPass++;
@@ -467,21 +472,20 @@ public abstract class CertifyArea implements RecordServletInterface
 
     queryTestCaseMessage.setActualResultQueryType(queryType);
 
-    boolean passed = queryTestCaseMessage.getAssertResultStatus().equals(queryType);
+    boolean passed = queryTestCaseMessage.getAssertResult().equals(queryType);
 
-    if (queryTestCaseMessage.getAssertResultStatus()
-        .equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH)) {
+    if (queryTestCaseMessage.getAssertResult().equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH)) {
       passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH);
-    } else if (queryTestCaseMessage.getAssertResultStatus()
+    } else if (queryTestCaseMessage.getAssertResult()
         .equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST)) {
       passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST);
-    } else if (queryTestCaseMessage.getAssertResultStatus()
+    } else if (queryTestCaseMessage.getAssertResult()
         .equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND)) {
       passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND);
-    } else if (queryTestCaseMessage.getAssertResultStatus()
+    } else if (queryTestCaseMessage.getAssertResult()
         .equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY)) {
       passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY);
-    } else if (queryTestCaseMessage.getAssertResultStatus()
+    } else if (queryTestCaseMessage.getAssertResult()
         .equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR)) {
       passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR);
     }
@@ -559,6 +563,21 @@ public abstract class CertifyArea implements RecordServletInterface
       testCaseMessage2.appendCustomTransformation("PID-24=Y");
       testCaseMessage2.appendCustomTransformation("PID-25=2");
       register(count, 1, testCaseMessage2);
+    }
+  }
+
+  public void addTestCasesFromSavedSet(String testCaseSet) {
+    Map<String, TestCaseMessage> testCaseMessageMap = certifyRunner.testMessageMapMap.get(testCaseSet);
+    if (testCaseMessageMap != null && testCaseMessageMap.size() > 0) {
+      List<String> testNumList = new ArrayList<String>(testCaseMessageMap.keySet());
+      Collections.sort(testNumList);
+      int count = 0;
+      for (String testNum : testNumList) {
+        count++;
+        TestCaseMessage testCaseMessage = testCaseMessageMap.get(testNum);
+        TestCaseMessage tcm = new TestCaseMessage(testCaseMessage);
+        register(count, tcm);
+      }
     }
   }
 }

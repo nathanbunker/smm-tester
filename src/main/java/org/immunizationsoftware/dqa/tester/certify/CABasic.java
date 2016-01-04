@@ -34,7 +34,7 @@ public class CABasic extends CertifyArea
     for (String scenario : statusCheckScenarios) {
       count++;
       TestCaseMessage testCaseMessage = createTestCaseMessage(scenario);
-      testCaseMessage.setAssertResult("Accept - *");
+      testCaseMessage.setAssertResult("Accept");
       register(count, testCaseMessage);
     }
   }

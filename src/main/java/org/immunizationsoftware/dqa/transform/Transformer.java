@@ -157,10 +157,8 @@ public class Transformer
 
   public String getValue(String concept) {
     try {
-    return getValue(concept, 0);
-    }
-    catch (IOException ioe)
-    {
+      return getValue(concept, 0);
+    } catch (IOException ioe) {
       return "Unable to get value: " + ioe.getMessage();
     }
   }
@@ -457,13 +455,14 @@ public class Transformer
       Transformer transformer = new Transformer();
       SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
       connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
-      message = transformer.transform(connector, message, scenarioTransforms, additionalTransformations);
+      message = transformer.transform(connector, message, scenarioTransforms,
+          testCaseMessage.getExcludeTransformations(), additionalTransformations);
     }
     return message;
   }
 
   public String transform(Connector connector, String messageText, String scenarioTransformations,
-      String additionalTransformations) {
+      String excludeTransformations, String additionalTransformations) {
     String quickTransforms = "";
 
     if (connector.getQuickTransformations() != null) {
@@ -477,20 +476,51 @@ public class Transformer
     }
     String transforms = quickTransforms + "\n";
     if (!connector.getCustomTransformations().equals("")) {
-      transforms += connector.getCustomTransformations() + "\n";
+      if (excludeTransformations != null && !excludeTransformations.equals("")) {
+        try {
+          BufferedReader customTransformsIn = new BufferedReader(
+              new StringReader(connector.getCustomTransformations()));
+          String line;
+          while ((line = customTransformsIn.readLine()) != null) {
+            BufferedReader etIn = new BufferedReader(new StringReader(excludeTransformations));
+            String l;
+            boolean exclude = false;
+            while ((l = etIn.readLine()) != null) {
+              if (l.equals(line)) {
+                exclude = true;
+                break;
+              }
+            }
+            if (!exclude)
+            {
+              transforms += line + "\n";
+            }
+          }
+        } catch (IOException ioe) {
+          // shouldn't happen, but if it does then just keep going
+        }
+      } else {
+        transforms += connector.getCustomTransformations() + "\n";
+      }
     }
-    if (scenarioTransformations != null) {
+    if (scenarioTransformations != null)
+
+    {
       transforms += scenarioTransformations;
     }
-    if (additionalTransformations != null) {
+    if (additionalTransformations != null)
+
+    {
       transforms += additionalTransformations;
     }
 
-    return transform(messageText, transforms, PatientType.NONE, connector);
+    return
+
+    transform(messageText, transforms, PatientType.NONE, connector);
   }
-  
-  public String transform(Connector connector, String messageText, String customTransformations, String scenarioTransformations,
-      String additionalTransformations) {
+
+  public String transform(Connector connector, String messageText, String customTransformations,
+      String scenarioTransformations, String excludeTransformations, String additionalTransformations) {
     String quickTransforms = "";
 
     if (connector.getQuickTransformations() != null) {
@@ -1278,10 +1308,8 @@ public class Transformer
         if (lineResult.length() > 0) {
           if (lineResult.startsWith("OBX")) {
             String[] fields = lineResult.split("\\|");
-            if (fields.length <= 3
-                || fields[3] == null
-                || (!fields[3].equalsIgnoreCase(obsCode) && !fields[3].toLowerCase().startsWith(
-                    obsCode.toLowerCase() + "^"))) {
+            if (fields.length <= 3 || fields[3] == null || (!fields[3].equalsIgnoreCase(obsCode)
+                && !fields[3].toLowerCase().startsWith(obsCode.toLowerCase() + "^"))) {
               resultText += lineResult + transformRequest.getSegmentSeparator();
             }
           } else {
@@ -1835,8 +1863,8 @@ public class Transformer
           repeatCount++;
           if (t.segmentRepeat == repeatCount) {
             int pos = lineResult.indexOf("|");
-            int count = (lineResult.startsWith("MSH|") || lineResult.startsWith("FHS|") || lineResult
-                .startsWith("BHS|")) ? 2 : 1;
+            int count = (lineResult.startsWith("MSH|") || lineResult.startsWith("FHS|")
+                || lineResult.startsWith("BHS|")) ? 2 : 1;
             while (pos != -1 && count < t.field) {
               pos = lineResult.indexOf("|", pos + 1);
               count++;
@@ -2036,8 +2064,8 @@ public class Transformer
               lineResult = t.segment + "|";
             } else {
               int pos = lineResult.indexOf("|");
-              int count = (lineResult.startsWith("MSH|") || lineResult.startsWith("FHS|") || lineResult
-                  .startsWith("BHS|")) ? 2 : 1;
+              int count = (lineResult.startsWith("MSH|") || lineResult.startsWith("FHS|")
+                  || lineResult.startsWith("BHS|")) ? 2 : 1;
               while (pos != -1 && count < t.field) {
                 pos = lineResult.indexOf("|", pos + 1);
                 count++;
@@ -2051,8 +2079,8 @@ public class Transformer
                     lineResult = lineResult.substring(0, pos + 1) + lineResult.substring(endPosBar);
                   }
                 } else {
-                  boolean isMSH2 = ((lineResult.startsWith("MSH|") || lineResult.startsWith("FHS|") || lineResult
-                      .startsWith("BHS|"))) && t.field == 2;
+                  boolean isMSH2 = ((lineResult.startsWith("MSH|") || lineResult.startsWith("FHS|")
+                      || lineResult.startsWith("BHS|"))) && t.field == 2;
                   count = 1;
                   pos++;
                   int tildePos = pos;
@@ -2213,8 +2241,8 @@ public class Transformer
           repeatCount++;
           if (t.segmentRepeat == repeatCount) {
             int pos = lineResult.indexOf("|");
-            int count = (lineResult.startsWith("MSH|") || lineResult.startsWith("FHS|") || lineResult
-                .startsWith("BHS|")) ? 2 : 1;
+            int count = (lineResult.startsWith("MSH|") || lineResult.startsWith("FHS|")
+                || lineResult.startsWith("BHS|")) ? 2 : 1;
             while (pos != -1 && count < t.field) {
               pos = lineResult.indexOf("|", pos + 1);
               count++;
@@ -2827,13 +2855,13 @@ public class Transformer
         + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
     patient.setPhone("(" + patient.getPhoneArea() + ")" + patient.getPhoneLocal());
     patient.setPhoneAltArea(patient.getAddress()[3]);
-    patient.setPhoneAltLocal("" + (random.nextInt(8) + 2) + random.nextInt(10) + random.nextInt(10)
-        + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
+    patient.setPhoneAltLocal("" + (random.nextInt(8) + 2) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
+        + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
     patient.setPhoneAlt("(" + patient.getPhoneAltArea() + ")" + patient.getPhoneAltLocal());
     if (PatientType.ADULT == patientType) {
       if (patient.getGender().equals("M")) {
-        patient.setEmail(patient.getBoyName().toLowerCase() + "." + patient.getLastName().toLowerCase()
-            + "@madeupemailaddress.com");
+        patient.setEmail(
+            patient.getBoyName().toLowerCase() + "." + patient.getLastName().toLowerCase() + "@madeupemailaddress.com");
       } else {
         patient.setEmail(patient.getGirlName().toLowerCase() + "." + patient.getLastName().toLowerCase()
             + "@madeupemailaddress.com");
@@ -2852,27 +2880,27 @@ public class Transformer
       patient.setEnteredByFirstName(getValue(enteredByBoy ? "BOY" : "GIRL"));
       patient.setEnteredByMiddleName(getValue(enteredByBoy ? "BOY" : "GIRL"));
       patient.setEnteredByLastName(getValue("LAST_NAME"));
-      patient.setEnteredByNPI("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
-          + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
-          + random.nextInt(10));
+      patient.setEnteredByNPI(
+          "" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
+              + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
     }
     {
       boolean orderedByBoy = random.nextBoolean();
       patient.setOrderedByFirstName(getValue(orderedByBoy ? "BOY" : "GIRL"));
       patient.setOrderedByMiddleName(getValue(orderedByBoy ? "BOY" : "GIRL"));
       patient.setOrderedByLastName(getValue("LAST_NAME"));
-      patient.setOrderedByNPI("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
-          + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
-          + random.nextInt(10));
+      patient.setOrderedByNPI(
+          "" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
+              + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
     }
     {
       boolean adminByBoy = random.nextBoolean();
       patient.setAdminByFirstName(getValue(adminByBoy ? "BOY" : "GIRL"));
       patient.setAdminByMiddleName(getValue(adminByBoy ? "BOY" : "GIRL"));
       patient.setAdminByLastName(getValue("LAST_NAME"));
-      patient.setAdminByNPI("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
-          + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
-          + random.nextInt(10));
+      patient.setAdminByNPI(
+          "" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
+              + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10));
     }
     patient.setResponsibleOrg(getValueArray("RESPONSIBLE ORG", 2));
     if (patient.getResponsibleOrg()[0].equals("") && patient.getResponsibleOrg()[1].equals("")) {

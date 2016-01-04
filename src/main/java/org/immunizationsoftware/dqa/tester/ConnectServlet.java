@@ -239,7 +239,7 @@ public class ConnectServlet extends ClientServlet
   }
 
   public static String addNewConnection(HttpSession session, Authenticate.User user, String message, int internalId, boolean removeOtherConnections) {
-    CreateTestCaseServlet.getTestCaseMessageMap(session).clear();
+    CreateTestCaseServlet.getTestCaseMessageMapMap(session).clear();
     if (internalId == 0)
     {
       user.setSendData(null);
@@ -268,7 +268,7 @@ public class ConnectServlet extends ClientServlet
   {
     List<TestCaseMessage> testCaseMessageList = new ArrayList<TestCaseMessage>();
     Set<String> testCaseNumberSelectedSet = TestCaseServlet.setTestCaseNumberSelectedSet(request, session);
-    Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(session);
+    Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(null, session);
     for (String testCaseNumber : testCaseNumberSelectedSet)
     {
       TestCaseMessage tcm = testCaseMessageMap.get(testCaseNumber);

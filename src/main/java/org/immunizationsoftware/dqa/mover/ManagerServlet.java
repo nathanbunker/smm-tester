@@ -32,7 +32,8 @@ import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.profile.ProfileCategory;
 import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 
-public class ManagerServlet extends ClientServlet {
+public class ManagerServlet extends ClientServlet
+{
 
   public static final String STANDARD_DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
   public static final String STANDARD_TIME_FORMAT = "HH:mm:ss";
@@ -265,7 +266,8 @@ public class ManagerServlet extends ClientServlet {
                 }
               }
               if (iisParticipantResponsesAndAccountInfoFile == null) {
-                iisParticipantResponsesAndAccountInfoFile = new File(scanStartFile, IIS_PARTICIPANT_RESPONSES_AND_ACCOUNT_INFO);
+                iisParticipantResponsesAndAccountInfoFile = new File(scanStartFile,
+                    IIS_PARTICIPANT_RESPONSES_AND_ACCOUNT_INFO);
                 if (!iisParticipantResponsesAndAccountInfoFile.exists()) {
                   iisParticipantResponsesAndAccountInfoFile = null;
                 } else {
@@ -342,12 +344,20 @@ public class ManagerServlet extends ClientServlet {
     for (File profileFile : profileFileList) {
       String name = profileFile.getName();
       if (name.startsWith(REQUIREMENT_TEST_PROFILE_START) && name.endsWith(REQUIREMENT_TEST_PROFILE_END)) {
-        name = name.substring(REQUIREMENT_TEST_PROFILE_START.length(), name.length() - REQUIREMENT_TEST_PROFILE_END.length()).trim();
+        name = name
+            .substring(REQUIREMENT_TEST_PROFILE_START.length(), name.length() - REQUIREMENT_TEST_PROFILE_END.length())
+            .trim();
         int pos = name.indexOf("-");
         if (pos > 0) {
           try {
             ProfileUsage profileUsage = new ProfileUsage();
-            ProfileCategory category = ProfileCategory.valueOf(name.substring(0, pos).trim().toUpperCase());
+            ProfileCategory category;
+            try {
+              category = ProfileCategory.valueOf(name.substring(0, pos).trim().toUpperCase());
+            } catch (IllegalArgumentException iae) {
+              throw new Exception("Unable to read requirements file named '" + name + "' because the profile catagory '"
+                  + name.substring(0, pos).trim() + "' is not recognized. ");
+            }
             profileUsage.setCategory(category);
             name = name.substring(pos + 1).trim();
             pos = name.indexOf("-");
