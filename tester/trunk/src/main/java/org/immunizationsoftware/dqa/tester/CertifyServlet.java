@@ -403,14 +403,14 @@ public class CertifyServlet extends ClientServlet
         out.println("        <tr>");
         out.println("          <td>");
         out.println(
-            "            <input id=\"ChkTransformConfirmation\" type=\"checkbox\" name=\"runN\" value=\"true\"/> Transform Confirmation");
+            "            <input id=\"ChkTransformConfirmation\" type=\"checkbox\" name=\"runN\" value=\"true\" checked=\"true\"/> Transform Confirmation");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
         out.println(
-            "            <input id=\"ChkExtraTests\" type=\"checkbox\" name=\"runO\" value=\"true\"/> Extra Tests");
+            "            <input id=\"ChkExtraTests\" type=\"checkbox\" name=\"runO\" value=\"true\" checked=\"true\"/> Extra Tests");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
