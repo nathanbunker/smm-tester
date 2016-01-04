@@ -121,73 +121,73 @@ public class CreateTestCaseServlet extends ClientServlet
       {
         String scenario = request.getParameter("scenario");
         if (scenario == null) {
-          if (action != null && action.equals("Update")) {
-            String originalMessage = request.getParameter("base");
-            String customTransformations = request.getParameter("customTransforms");
-            String description = request.getParameter("description");
-            String expectedResult = request.getParameter("expectedResult");
-            String assertResult = request.getParameter("assertResult");
-            String[] quickTransformations = request.getParameterValues("extra");
-            PatientType patientType = PatientType.ANY_CHILD;
-            if (request.getParameter("patientType") != null) {
-              patientType = PatientType.valueOf(request.getParameter("patientType"));
+          String originalMessage = request.getParameter("base");
+          String customTransformations = request.getParameter("customTransforms");
+          String description = request.getParameter("description");
+          String expectedResult = request.getParameter("expectedResult");
+          String assertResult = request.getParameter("assertResult");
+          String[] quickTransformations = request.getParameterValues("extra");
+          PatientType patientType = PatientType.ANY_CHILD;
+          if (request.getParameter("patientType") != null) {
+            patientType = PatientType.valueOf(request.getParameter("patientType"));
+          }
+          if (quickTransformations == null && request.getParameter("settingQuickTransformations") == null) {
+            if (testCaseMessage != null) {
+              quickTransformations = testCaseMessage.getQuickTransformations();
+            } else {
+              quickTransformations = new String[] { "2.5.1", "BOY", "DOB", "ADDRESS", "PHONE", "MOTHER", "VAC1_HIST",
+                  "VAC2_HIST", "VAC3_ADMIN" };
             }
-            if (quickTransformations == null && request.getParameter("settingQuickTransformations") == null) {
-              if (testCaseMessage != null) {
-                quickTransformations = testCaseMessage.getQuickTransformations();
-              } else {
-                quickTransformations = new String[] { "2.5.1", "BOY", "DOB", "ADDRESS", "PHONE", "MOTHER", "VAC1_HIST",
-                    "VAC2_HIST", "VAC3_ADMIN" };
-              }
-            }
-            if (testCaseSet == null && testCaseMessage != null) {
-              testCaseSet = testCaseMessage.getTestCaseSet();
-            }
-            if (testCaseSet == null) {
-              testCaseSet = "";
-            }
-            if (description == null && testCaseMessage != null) {
-              description = testCaseMessage.getDescription();
-            }
-            if (description == null) {
-              description = "";
-            }
-            if (expectedResult == null && testCaseMessage != null) {
-              expectedResult = testCaseMessage.getExpectedResult();
-            }
-            if (expectedResult == null) {
-              expectedResult = "";
-            }
-            if (originalMessage == null && testCaseMessage != null) {
-              originalMessage = testCaseMessage.getOriginalMessage();
-            }
-            if (originalMessage == null) {
-              originalMessage = "MSH|\nPID|\nNK1|\nPV1|\nORC|\nRXA|\nORC|\nRXA|\nORC|\nRXA|\nOBX|\nOBX|\nOBX|\nOBX|\n";
-            }
-            if (customTransformations == null && testCaseMessage != null) {
-              customTransformations = testCaseMessage.getCustomTransformations();
-            }
-            if (customTransformations == null) {
-              customTransformations = "";
-            }
-            if (assertResult == null && testCaseMessage != null) {
-              customTransformations = testCaseMessage.getAssertResult();
-            }
-            if (assertResult == null) {
-              assertResult = "Accept";
-            }
-            if (testCaseMessage == null) {
-              testCaseMessage = new TestCaseMessage();
-            }
-            testCaseMessage.setTestCaseNumber(testCaseNumber);
-            testCaseMessage.setTestCaseSet(testCaseSet);
-            testCaseMessage.setAssertResult(assertResult);
-            testCaseMessage.setCustomTransformations(customTransformations);
-            testCaseMessage.setDescription(description);
-            testCaseMessage.setExpectedResult(expectedResult);
-            testCaseMessage.setOriginalMessage(originalMessage);
-            testCaseMessage.setQuickTransformations(quickTransformations);
-            testCaseMessage.setPatientType(patientType);
+          }
+          if (testCaseSet == null && testCaseMessage != null) {
+            testCaseSet = testCaseMessage.getTestCaseSet();
+          }
+          if (testCaseSet == null) {
+            testCaseSet = "";
+          }
+          if (description == null && testCaseMessage != null) {
+            description = testCaseMessage.getDescription();
+          }
+          if (description == null) {
+            description = "";
+          }
+          if (expectedResult == null && testCaseMessage != null) {
+            expectedResult = testCaseMessage.getExpectedResult();
+          }
+          if (expectedResult == null) {
+            expectedResult = "";
+          }
+          if (originalMessage == null && testCaseMessage != null) {
+            originalMessage = testCaseMessage.getOriginalMessage();
+          }
+          if (originalMessage == null) {
+            originalMessage = "MSH|\nPID|\nNK1|\nPV1|\nORC|\nRXA|\nORC|\nRXA|\nORC|\nRXA|\nOBX|\nOBX|\nOBX|\nOBX|\n";
+          }
+          if (customTransformations == null && testCaseMessage != null) {
+            customTransformations = testCaseMessage.getCustomTransformations();
+          }
+          if (customTransformations == null) {
+            customTransformations = "";
+          }
+          if (assertResult == null && testCaseMessage != null) {
+            customTransformations = testCaseMessage.getAssertResult();
+          }
+          if (assertResult == null) {
+            assertResult = "Accept";
+          }
+          if (testCaseMessage == null) {
+            testCaseMessage = new TestCaseMessage();
+          }
+          testCaseMessage.setTestCaseNumber(testCaseNumber);
+          testCaseMessage.setTestCaseSet(testCaseSet);
+          testCaseMessage.setAssertResult(assertResult);
+          testCaseMessage.setCustomTransformations(customTransformations);
+          testCaseMessage.setDescription(description);
+          testCaseMessage.setExpectedResult(expectedResult);
+          testCaseMessage.setOriginalMessage(originalMessage);
+          testCaseMessage.setQuickTransformations(quickTransformations);
+          testCaseMessage.setPatientType(patientType);
+          if (request.getParameter("excludeTransform") != null) {
             if (connectors.size() == 1) {
               if (!connectors.get(0).getCustomTransformations().equals("")) {
                 BufferedReader customTransformsIn = new BufferedReader(
@@ -213,6 +213,7 @@ public class CreateTestCaseServlet extends ClientServlet
 
         }
         session.setAttribute("baseMessage", testCaseMessage.getOriginalMessage());
+
         if (testCaseMessage.getTestCaseNumber().length() > 0) {
           getTestCaseMessageMap(testCaseSet, session).put(testCaseNumber, testCaseMessage);
         }
@@ -364,6 +365,7 @@ public class CreateTestCaseServlet extends ClientServlet
             out.println("        <tr>");
             out.println("          <td valign=\"top\">Exclude Transform</td>");
             out.println("          <td>");
+            out.println("            <input type=\"hidden\" name=\"excludeTransform\" value=\"true\"/>");
             try {
               BufferedReader ctIn = new BufferedReader(new StringReader(connectors.get(0).getCustomTransformations()));
               String line;
