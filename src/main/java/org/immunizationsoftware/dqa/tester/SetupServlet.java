@@ -90,7 +90,6 @@ public class SetupServlet extends ClientServlet
       PrintWriter out = response.getWriter();
       try {
         printHtmlHead(out, MENU_HEADER_SETUP, request);
-        out.println("<table border=\"0\">");
        
         Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(testSetSelected,
             session);
@@ -100,6 +99,7 @@ public class SetupServlet extends ClientServlet
         if (testCaseNumberList.size() > 0 || testCaseSetList.size() > 1) {
           out.println("<h2>Test Cases Saved</h2>");
           out.println("<form action=\"SetupServlet\" method=\"POST\">");
+          out.println("<table border=\"0\">");
           {
             out.println("  <tr>");
             out.println("    <td>Test Set</td>");
@@ -156,10 +156,12 @@ public class SetupServlet extends ClientServlet
             out.println("    </td>");
             out.println("  </tr>");
           }
+          out.println("</table>");
           out.println("</form>");
         }
         out.println("<h2>Load Test Cases</h2>");
         out.println("<form action=\"SetupServlet\" method=\"POST\">");
+        out.println("<table border=\"0\">");
         out.println("  <tr>");
         out.println("    <td valign=\"top\">Script</td>");
         out.println("    <td><textarea name=\"testScript\" cols=\"60\" rows=\"7\" wrap=\"off\"></textarea></td>");

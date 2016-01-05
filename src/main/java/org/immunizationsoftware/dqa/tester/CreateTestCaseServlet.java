@@ -74,14 +74,11 @@ public class CreateTestCaseServlet extends ClientServlet
       }
       if (action != null && (action.equals("Prev") || action.equals("Next"))) {
         if (!selectedTestCaseMessageList.isEmpty()) {
-          if (request.getParameter("testCasePos") != null) {
-            testCasePos = Integer.parseInt(request.getParameter("testCasePos"));
-            if (action.equals("Prev")) {
-              testCasePos--;
-            }
-            if (action.equals("Next")) {
-              testCasePos++;
-            }
+          if (action.equals("Prev")) {
+            testCasePos--;
+          }
+          if (action.equals("Next")) {
+            testCasePos++;
           }
         }
       }
@@ -97,7 +94,11 @@ public class CreateTestCaseServlet extends ClientServlet
         testCaseNumber = request.getParameter("testCaseNumber");
         testCaseSet = request.getParameter("testCaseSet");
         if (testCaseNumber != null && testCaseNumber.length() > 0) {
-          testCaseMessage = getTestCaseMessageMap(testCaseSet, session).get(testCaseNumber);
+          if (request.getParameter("global") != null) {
+            testCaseMessage = getTestCaseMessageMap("Global: " + testCaseSet, session).get(testCaseNumber);
+          } else {
+            testCaseMessage = getTestCaseMessageMap(testCaseSet, session).get(testCaseNumber);
+          }
         } else {
           testCaseMessage = (TestCaseMessage) session.getAttribute("testCaseMessage");
           if (testCaseMessage != null) {
@@ -121,101 +122,117 @@ public class CreateTestCaseServlet extends ClientServlet
       {
         String scenario = request.getParameter("scenario");
         if (scenario == null) {
-          String originalMessage = request.getParameter("base");
-          String customTransformations = request.getParameter("customTransforms");
-          String description = request.getParameter("description");
-          String expectedResult = request.getParameter("expectedResult");
-          String assertResult = request.getParameter("assertResult");
-          String[] quickTransformations = request.getParameterValues("extra");
-          PatientType patientType = PatientType.ANY_CHILD;
-          if (request.getParameter("patientType") != null) {
-            patientType = PatientType.valueOf(request.getParameter("patientType"));
-          }
-          if (quickTransformations == null && request.getParameter("settingQuickTransformations") == null) {
-            if (testCaseMessage != null) {
-              quickTransformations = testCaseMessage.getQuickTransformations();
-            } else {
-              quickTransformations = new String[] { "2.5.1", "BOY", "DOB", "ADDRESS", "PHONE", "MOTHER", "VAC1_HIST",
-                  "VAC2_HIST", "VAC3_ADMIN" };
+          if (action == null || action.equals("Update")) {
+            String originalMessage = request.getParameter("base");
+            String customTransformations = request.getParameter("customTransforms");
+            String additionalTransforms = request.getParameter("additionalTransforms");
+            String description = request.getParameter("description");
+            String expectedResult = request.getParameter("expectedResult");
+            String assertResult = request.getParameter("assertResult");
+            String[] quickTransformations = request.getParameterValues("extra");
+            PatientType patientType = PatientType.ANY_CHILD;
+            if (request.getParameter("patientType") != null) {
+              patientType = PatientType.valueOf(request.getParameter("patientType"));
             }
-          }
-          if (testCaseSet == null && testCaseMessage != null) {
-            testCaseSet = testCaseMessage.getTestCaseSet();
-          }
-          if (testCaseSet == null) {
-            testCaseSet = "";
-          }
-          if (description == null && testCaseMessage != null) {
-            description = testCaseMessage.getDescription();
-          }
-          if (description == null) {
-            description = "";
-          }
-          if (expectedResult == null && testCaseMessage != null) {
-            expectedResult = testCaseMessage.getExpectedResult();
-          }
-          if (expectedResult == null) {
-            expectedResult = "";
-          }
-          if (originalMessage == null && testCaseMessage != null) {
-            originalMessage = testCaseMessage.getOriginalMessage();
-          }
-          if (originalMessage == null) {
-            originalMessage = "MSH|\nPID|\nNK1|\nPV1|\nORC|\nRXA|\nORC|\nRXA|\nORC|\nRXA|\nOBX|\nOBX|\nOBX|\nOBX|\n";
-          }
-          if (customTransformations == null && testCaseMessage != null) {
-            customTransformations = testCaseMessage.getCustomTransformations();
-          }
-          if (customTransformations == null) {
-            customTransformations = "";
-          }
-          if (assertResult == null && testCaseMessage != null) {
-            customTransformations = testCaseMessage.getAssertResult();
-          }
-          if (assertResult == null) {
-            assertResult = "Accept";
-          }
-          if (testCaseMessage == null) {
-            testCaseMessage = new TestCaseMessage();
-          }
-          testCaseMessage.setTestCaseNumber(testCaseNumber);
-          testCaseMessage.setTestCaseSet(testCaseSet);
-          testCaseMessage.setAssertResult(assertResult);
-          testCaseMessage.setCustomTransformations(customTransformations);
-          testCaseMessage.setDescription(description);
-          testCaseMessage.setExpectedResult(expectedResult);
-          testCaseMessage.setOriginalMessage(originalMessage);
-          testCaseMessage.setQuickTransformations(quickTransformations);
-          testCaseMessage.setPatientType(patientType);
-          if (request.getParameter("excludeTransform") != null) {
-            if (connectors.size() == 1) {
-              if (!connectors.get(0).getCustomTransformations().equals("")) {
-                BufferedReader customTransformsIn = new BufferedReader(
-                    new StringReader(connectors.get(0).getCustomTransformations()));
-                String line;
-                int i = 0;
-                StringBuilder sb = new StringBuilder();
-                while ((line = customTransformsIn.readLine()) != null) {
-                  i++;
-                  boolean selected = request.getParameter("excludeTransform" + i) != null;
-                  if (selected) {
-                    sb.append(line);
-                    sb.append("\n");
+            if (quickTransformations == null && request.getParameter("settingQuickTransformations") == null) {
+              if (testCaseMessage != null) {
+                quickTransformations = testCaseMessage.getQuickTransformations();
+              } else {
+                quickTransformations = new String[] { "2.5.1", "BOY", "DOB", "ADDRESS", "PHONE", "MOTHER", "VAC1_HIST",
+                    "VAC2_HIST", "VAC3_ADMIN" };
+              }
+            }
+            if (testCaseSet == null && testCaseMessage != null) {
+              testCaseSet = testCaseMessage.getTestCaseSet();
+            }
+            if (testCaseSet == null) {
+              testCaseSet = "";
+            }
+            if (description == null && testCaseMessage != null) {
+              description = testCaseMessage.getDescription();
+            }
+            if (description == null) {
+              description = "";
+            }
+            if (expectedResult == null && testCaseMessage != null) {
+              expectedResult = testCaseMessage.getExpectedResult();
+            }
+            if (expectedResult == null) {
+              expectedResult = "";
+            }
+            if (originalMessage == null && testCaseMessage != null) {
+              originalMessage = testCaseMessage.getOriginalMessage();
+            }
+            if (originalMessage == null) {
+              originalMessage = "MSH|\nPID|\nNK1|\nPV1|\nORC|\nRXA|\nORC|\nRXA|\nORC|\nRXA|\nOBX|\nOBX|\nOBX|\nOBX|\n";
+            }
+            if (customTransformations == null && testCaseMessage != null) {
+              customTransformations = testCaseMessage.getCustomTransformations();
+            }
+            if (customTransformations == null) {
+              customTransformations = "";
+            }
+            if (additionalTransforms == null && testCaseMessage != null) {
+              additionalTransforms = testCaseMessage.getAdditionalTransformations();
+            }
+            if (additionalTransforms == null) {
+              additionalTransforms = "";
+            }
+            if (assertResult == null && testCaseMessage != null) {
+              assertResult = testCaseMessage.getAssertResult();
+            }
+            if (assertResult == null) {
+              assertResult = "Accept";
+            }
+            if (testCaseMessage == null) {
+              testCaseMessage = new TestCaseMessage();
+            }
+            testCaseMessage.setTestCaseNumber(testCaseNumber);
+            testCaseMessage.setTestCaseSet(testCaseSet);
+            testCaseMessage.setAssertResult(assertResult);
+            testCaseMessage.setCustomTransformations(customTransformations);
+            testCaseMessage.setAdditionalTransformations(additionalTransforms);
+            testCaseMessage.setDescription(description);
+            testCaseMessage.setExpectedResult(expectedResult);
+            testCaseMessage.setOriginalMessage(originalMessage);
+            testCaseMessage.setQuickTransformations(quickTransformations);
+            testCaseMessage.setPatientType(patientType);
+            if (request.getParameter("testCasePos") != null) {
+              testCaseMessage.setGlobal(request.getParameter("global") != null);
+            }
+            if (request.getParameter("excludeTransform") != null) {
+              if (connectors.size() == 1) {
+                if (!connectors.get(0).getCustomTransformations().equals("")) {
+                  BufferedReader customTransformsIn = new BufferedReader(
+                      new StringReader(connectors.get(0).getCustomTransformations()));
+                  String line;
+                  int i = 0;
+                  StringBuilder sb = new StringBuilder();
+                  while ((line = customTransformsIn.readLine()) != null) {
+                    i++;
+                    boolean selected = request.getParameter("excludeTransform" + i) != null;
+                    if (selected) {
+                      sb.append(line);
+                      sb.append("\n");
+                    }
                   }
+                  testCaseMessage.setExcludeTransformations(sb.toString());
                 }
-                testCaseMessage.setExcludeTransformations(sb.toString());
               }
             }
           }
         } else {
           testCaseMessage = ScenarioManager.createTestCaseMessage(scenario);
           testCaseMessage.setTestCaseNumber(testCaseNumber);
-
         }
         session.setAttribute("baseMessage", testCaseMessage.getOriginalMessage());
 
         if (testCaseMessage.getTestCaseNumber().length() > 0) {
-          getTestCaseMessageMap(testCaseSet, session).put(testCaseNumber, testCaseMessage);
+          if (testCaseMessage.isGlobal()) {
+            getTestCaseMessageMap("Gobal: " + testCaseSet, session).put(testCaseNumber, testCaseMessage);
+          } else {
+            getTestCaseMessageMap(testCaseSet, session).put(testCaseNumber, testCaseMessage);
+          }
         }
         Transformer transformer = new Transformer();
         testCaseMessage.setPreparedMessage(null);
@@ -237,7 +254,9 @@ public class CreateTestCaseServlet extends ClientServlet
         out.println(
             "          <td><input type=\"text\" name=\"testCaseNumber\" value=\"" + testCaseMessage.getTestCaseNumber()
                 + "\" size=\"15\"> Test Set <input type=\"text\" name=\"testCaseSet\" value=\""
-                + testCaseMessage.getTestCaseSet() + "\" size=\"20\"></td>");
+                + testCaseMessage.getTestCaseSet() + "\" size=\"20\">");
+        out.println("                  <input type=\"checkbox\" name=\"global\" value=\"true\""
+            + (testCaseMessage.isGlobal() ? " checked" : "") + "> Global</td>");
         out.println("          <input type=\"hidden\" name=\"runTimes\" value=\"" + runTimes + "\"></td>");
         out.println("          <input type=\"hidden\" name=\"testCasePos\" value=\"" + testCasePos + "\"></td>");
         out.println("          <td align=\"right\">");
@@ -347,24 +366,9 @@ public class CreateTestCaseServlet extends ClientServlet
             + isChecked("VAC3_ADMIN", testCaseMessage.getQuickTransformations())
             + "> Admin <input type=\"checkbox\" name=\"extra\" value=\"VAC3_HIST\""
             + isChecked("VAC3_HIST", testCaseMessage.getQuickTransformations()) + "> Hist");
-        out.println("                </td>");
-        out.println("                <td valign=\"top\">");
-        out.println("                  <div class=\"smallTitle\">Quick Transforms Applied</div> ");
-        out.println("                  <pre style=\"text-align: left; height: 170px; width: 250px;overflow:auto;\">"
-            + testCaseMessage.getQuickTransformationsConverted() + "</pre><br>");
-        out.println("                  <div class=\"smallTitle\">Custom Transforms</div>");
-        out.println("                  <textarea name=\"customTransforms\" cols=\"30\" rows=\"4\" wrap=\"off\">"
-            + testCaseMessage.getCustomTransformations() + "</textarea>");
-        out.println("                </td>");
-        out.println("              </tr>");
-        out.println("            </table>");
-        out.println("          </td>");
-        out.println("        </tr>");
         if (connectors.size() == 1) {
           if (!connectors.get(0).getCustomTransformations().equals("")) {
-            out.println("        <tr>");
-            out.println("          <td valign=\"top\">Exclude Transform</td>");
-            out.println("          <td>");
+            out.println("                  <div class=\"smallTitle\">Exclude Transforms</div>");
             out.println("            <input type=\"hidden\" name=\"excludeTransform\" value=\"true\"/>");
             try {
               BufferedReader ctIn = new BufferedReader(new StringReader(connectors.get(0).getCustomTransformations()));
@@ -390,10 +394,24 @@ public class CreateTestCaseServlet extends ClientServlet
             } catch (IOException ioe) {
               // ignore
             }
-            out.println("          </td>");
-            out.println("        </tr>");
           }
         }
+        out.println("                </td>");
+        out.println("                <td valign=\"top\">");
+        out.println("                  <div class=\"smallTitle\">Quick Transforms Applied</div> ");
+        out.println("                  <pre style=\"text-align: left; height: 170px; width: 250px;overflow:auto;\">"
+            + testCaseMessage.getQuickTransformationsConverted() + "</pre><br/>");
+        out.println("                  <div class=\"smallTitle\">Custom Transforms</div>");
+        out.println("                  <textarea name=\"customTransforms\" cols=\"30\" rows=\"4\" wrap=\"off\">"
+            + testCaseMessage.getCustomTransformations() + "</textarea><br/>");
+        out.println("                  <div class=\"smallTitle\">Additional Transforms</div>");
+        out.println("                  <textarea name=\"additionalTransforms\" cols=\"30\" rows=\"4\" wrap=\"off\">"
+            + testCaseMessage.getAdditionalTransformations() + "</textarea>");
+        out.println("                </td>");
+        out.println("              </tr>");
+        out.println("            </table>");
+        out.println("          </td>");
+        out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td valign=\"top\">Test Case</td>");
         out.println(
@@ -419,7 +437,12 @@ public class CreateTestCaseServlet extends ClientServlet
         out.println("      </table>");
         session.setAttribute("testCaseMessage", testCaseMessage);
         if (!testCaseMessage.getTestCaseNumber().equals("")) {
-          getTestCaseMessageMap(testCaseSet, session).put(testCaseMessage.getTestCaseNumber(), testCaseMessage);
+          if (testCaseMessage.isGlobal()) {
+            getTestCaseMessageMap("Gobal: " + testCaseSet, session).put(testCaseMessage.getTestCaseNumber(),
+                testCaseMessage);
+          } else {
+            getTestCaseMessageMap(testCaseSet, session).put(testCaseMessage.getTestCaseNumber(), testCaseMessage);
+          }
         }
         out.println("    </form>");
         out.println("  <div class=\"help\">");
@@ -686,14 +709,28 @@ public class CreateTestCaseServlet extends ClientServlet
   }
 
   public static File getOrCreateTestCaseDir(TestCaseMessage testCaseMessage, Authenticate.User user) {
-    File testCaseDir = user.getSendData().getTestCaseDir(true);
-    if (!testCaseMessage.getTestCaseSet().equals("")) {
-      testCaseDir = new File(testCaseDir, testCaseMessage.getTestCaseSet());
-      if (!testCaseDir.exists()) {
-        testCaseDir.mkdir();
+    if (testCaseMessage.isGlobal()) {
+      File globalDir = new File(user.getSendData().getRootDir().getParentFile(), "_global");
+      if (!globalDir.exists()) {
+        globalDir.mkdir();
       }
+      if (!testCaseMessage.getTestCaseSet().equals("")) {
+        globalDir = new File(globalDir, testCaseMessage.getTestCaseSet());
+        if (!globalDir.exists()) {
+          globalDir.mkdir();
+        }
+      }
+      return globalDir;
+    } else {
+      File testCaseDir = user.getSendData().getTestCaseDir(true);
+      if (!testCaseMessage.getTestCaseSet().equals("")) {
+        testCaseDir = new File(testCaseDir, testCaseMessage.getTestCaseSet());
+        if (!testCaseDir.exists()) {
+          testCaseDir.mkdir();
+        }
+      }
+      return testCaseDir;
     }
-    return testCaseDir;
   }
 
   public static File getTestDataFile(Authenticate.User user) {
@@ -717,15 +754,33 @@ public class CreateTestCaseServlet extends ClientServlet
     if (user != null && user.hasSendData()) {
       File testCaseDir = user.getSendData().getTestCaseDir(false);
       if (testCaseDir != null) {
-        readTestCases(session, testCaseDir, null);
-        File[] dirs = testCaseDir.listFiles(new FileFilter() {
-          public boolean accept(File arg0) {
-            return arg0.isDirectory() && !arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
+        readTestCases(session, testCaseDir, null, false);
+        {
+          File[] dirs = testCaseDir.listFiles(new FileFilter() {
+            public boolean accept(File arg0) {
+              return arg0.isDirectory() && !arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
+            }
+          });
+          if (dirs != null) {
+            for (File dir : dirs) {
+              readTestCases(session, dir, dir.getName(), false);
+            }
           }
-        });
-        if (dirs != null) {
-          for (File dir : dirs) {
-            readTestCases(session, dir, dir.getName());
+        }
+      }
+      {
+        File globalDir = new File(user.getSendData().getRootDir().getParentFile(), "_global");
+        if (globalDir.exists() && globalDir.isDirectory()) {
+          readTestCases(session, globalDir, null, true);
+          File[] dirs = globalDir.listFiles(new FileFilter() {
+            public boolean accept(File arg0) {
+              return arg0.isDirectory() && !arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
+            }
+          });
+          if (dirs != null) {
+            for (File dir : dirs) {
+              readTestCases(session, dir, dir.getName(), true);
+            }
           }
         }
       }
@@ -762,13 +817,16 @@ public class CreateTestCaseServlet extends ClientServlet
     return fileList;
   }
 
-  private static void readTestCases(HttpSession session, File testCaseDir, String testCaseSet)
+  private static void readTestCases(HttpSession session, File testCaseDir, String testCaseSet, boolean global)
       throws FileNotFoundException, IOException, ServletException {
     String[] filenames = testCaseDir.list(new FilenameFilter() {
       public boolean accept(File file, String arg1) {
         return arg1.startsWith("TC-") && arg1.endsWith(".txt");
       }
     });
+    if (global) {
+      testCaseSet = "Global: " + testCaseSet;
+    }
     if (filenames != null) {
       for (String filename : filenames) {
         BufferedReader in = new BufferedReader(new FileReader(new File(testCaseDir, filename)));
@@ -784,6 +842,7 @@ public class CreateTestCaseServlet extends ClientServlet
             session);
         for (TestCaseMessage testCaseMessage : testCaseMessageList) {
           if (!testCaseMessage.getTestCaseNumber().equals("")) {
+            testCaseMessage.setGlobal(global);
             CreateTestCaseServlet.getTestCaseMessageMap(testCaseSet, session).put(testCaseMessage.getTestCaseNumber(),
                 testCaseMessage);
           }

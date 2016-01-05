@@ -151,6 +151,15 @@ public class TestCaseMessage
   private String resultForecastStatus = "";
   private TestCaseMessage updateTestCaseMessage = null;
   private boolean doNotQueryFor = false;
+  private boolean global = false;
+
+  public boolean isGlobal() {
+    return global;
+  }
+
+  public void setGlobal(boolean global) {
+    this.global = global;
+  }
 
   public TestCaseMessage getUpdateTestCaseMessage() {
     return updateTestCaseMessage;
