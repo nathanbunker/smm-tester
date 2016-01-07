@@ -38,6 +38,15 @@ public class TestRunner
   private long endTime = 0;
   private boolean wasRun = false;
   private boolean validateResponse = false;
+  private String testSectionType = "";
+
+  public String getTestSectionType() {
+    return testSectionType;
+  }
+
+  public void setTestSectionType(String testSectionType) {
+    this.testSectionType = testSectionType;
+  }
 
   public boolean isValidateResponse() {
     return validateResponse;
@@ -126,9 +135,14 @@ public class TestRunner
     ackMessageText = null;
     testCaseMessage.setMessageTextSent(message);
 
+    if (connector instanceof RunAgainstConnector) {
+      RunAgainstConnector rac = (RunAgainstConnector) connector;
+      rac.setTestCaseCategory(testCaseMessage.getTestCaseCategoryId());
+      rac.setTestSectionType(testSectionType);
+    }
+
     startTime = System.currentTimeMillis();
     ackMessageText = connector.submitMessage(message, false);
-
     endTime = System.currentTimeMillis();
 
     if (connector instanceof RunAgainstConnector) {

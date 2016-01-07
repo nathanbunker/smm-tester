@@ -148,6 +148,7 @@ public class CAProfiling extends CertifyArea
         try {
           if (testCaseMessagePresent.hasIssue() && testCaseMessageAbsent.hasIssue()) {
             if (testCaseMessagePresent != tcmFull) {
+              testRunner.setTestSectionType(areaLabel);
               testCaseMessagePresent = testRunner.runTestIfNew(certifyRunner.connector, testCaseMessagePresent,
                   testCaseMessageMap);
               if (testRunner.isWasRun()) {

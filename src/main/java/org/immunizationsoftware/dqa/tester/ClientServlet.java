@@ -172,10 +172,10 @@ public class ClientServlet extends HttpServlet
   public Connector printServiceSelector(HttpServletRequest request, HttpSession session, PrintWriter out) {
     Connector connectorSelected = null;
     int id = 0;
-    if (request.getParameter("id") != null) {
+    if (request.getParameter("id") != null && !request.getParameter("id").equals("")) {
       id = Integer.parseInt(request.getParameter("id"));
     }
-    if (session.getAttribute("id") != null) {
+    if (session.getAttribute("id") != null ) {
       id = (Integer) session.getAttribute("id");
     }
     out.println("        <tr>");

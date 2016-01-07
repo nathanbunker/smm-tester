@@ -254,6 +254,7 @@ public abstract class CertifyArea implements RecordServletInterface
   public int runUpdate(boolean passIfAcksDifferentThanBase, int testPass, TestRunner testRunner,
       TestCaseMessage testCaseMessage) {
     try {
+      testRunner.setTestSectionType(areaLabel);
       testRunner.runTest(certifyRunner.connector, testCaseMessage);
       boolean pass = testCaseMessage.isPassedTest();
       testCaseMessage.setMajorChangesMade(!verifyNoMajorChangesMade(testCaseMessage));
@@ -567,15 +568,8 @@ public abstract class CertifyArea implements RecordServletInterface
   }
 
   public void addTestCasesFromSavedSet(String testCaseSet) {
-    System.out.println("--> testCaseSet = " + testCaseSet);
-    System.out.println("--> certifyRunner.testMessageMapMap.size() = " + certifyRunner.testMessageMapMap.size());
-    for (String key : certifyRunner.testMessageMapMap.keySet())
-    {
-      System.out.println("--> key '" + key + "' " + certifyRunner.getTestMessageMapMap().get(key).size());
-    }
     Map<String, TestCaseMessage> testCaseMessageMap = certifyRunner.testMessageMapMap.get(testCaseSet);
     if (testCaseMessageMap != null && testCaseMessageMap.size() > 0) {
-      System.out.println("--> testCaseMessageMap.size() = " + testCaseMessageMap.size());
       List<String> testNumList = new ArrayList<String>(testCaseMessageMap.keySet());
       Collections.sort(testNumList);
       int count = 0;

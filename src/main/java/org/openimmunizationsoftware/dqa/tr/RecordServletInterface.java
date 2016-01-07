@@ -43,6 +43,7 @@ public interface RecordServletInterface {
   public static final String PARAM_TC_CONNECTION_ACK_TYPE = "tc_connectionAckType";
   public static final String PARAM_TC_CONNECTION_CONFIG = "tc_connectionConfig";
   public static final String PARAM_TC_COMPLETE_TEST = "tc_copmleteTest";
+  public static final String PARAM_TC_MANUAL_TEST = "tc_manualTest";
   public static final String PARAM_TC_QUERY_TYPE = "tc_queryType";
   public static final String PARAM_TC_QUERY_ENABLED = "tc_queryEnabled";
   public static final String PARAM_TC_QUERY_PAUSE = "tc_queryPause";
@@ -151,6 +152,7 @@ public interface RecordServletInterface {
   public static final String PARAM_TM_RESULT_QUERY_TYPE = "tm_resultQueryType";
   public static final String PARAM_TM_RESULT_ACK_STORE_STATUS = "tm_resultStoreStatus";
   public static final String PARAM_TM_RESULT_FORECAST_STATUS = "tm_resultForecastStatus";
+  public static final String PARAM_TM_RESULT_MANUAL_TEST = "tm_resultManualTest";
   public static final String PARAM_TM_FORECAST_TEST_PANEL_CASE_ID = "tm_forecastTestPanelCaseId";
   public static final String PARAM_TM_FORECAST_TEST_PANEL_ID = "tm_forecastTestPanelId";
 
@@ -267,4 +269,24 @@ public interface RecordServletInterface {
   public static final String PARAM_E_SERIES_DOSE_COUNT = "e_seriesDoseCount";
   public static final String PARAM_E_SERIES_STATUS = "e_seriesStatus";
   public static final String PARAM_E_REASON_CODE = "e_reasonCode";
+  
+  
+  public static final String PARAM_TESTER_STATUS_UPDATE = "testerStatus_update";
+  public static final String PARAM_TESTER_STATUS_TESTER_NAME = "testerStatus_testerName";
+  public static final String PARAM_TESTER_STATUS_READY_STATUS = "testerStatus_readyStatus";
+  public static final String PARAM_TESTER_STATUS_TEST_CONNECTION_LABEL = "testerStatus_connectionLabel";
+  public static final String PARAM_TESTER_STATUS_TEST_STARTED_TIME = "testerStatus_testStartedTime";
+  public static final String PARAM_TESTER_STATUS_ETC_QUERY_DATE = "testerStatus_etcQueryDate";
+  public static final String PARAM_TESTER_STATUS_ETC_UPDATE_DATE = "testerStatus_etcUpdateDate";
+
+  public static final String PARAM_TESTER_STATUS_TESTER_STATUS_READY = "Ready";
+  public static final String PARAM_TESTER_STATUS_TESTER_STATUS_FINISHED = "Finished";
+  public static final String PARAM_TESTER_STATUS_TESTER_STATUS_ERROR = "Error";
+  public static final String PARAM_TESTER_STATUS_TESTER_STATUS_STOPPED = "Stopped";
+  public static final String PARAM_TESTER_STATUS_TESTER_STATUS_TESTING = "Testing";
+  
+  public static final String PARAM_TESTER_ACTION_STOP = "Stop";
+  public static final String PARAM_TESTER_ACTION_START = "Start";
+  
+  public static final String OPTION_AUTO_TEST_NAME_SELECT = "--autoTestNameSelect ";
 }

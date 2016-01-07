@@ -30,6 +30,7 @@ import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.ClientServlet;
 import org.immunizationsoftware.dqa.tester.CreateTestCaseServlet;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.connectors.Connector.TransferType;
 import org.immunizationsoftware.dqa.tester.connectors.RunAgainstConnector;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
@@ -58,9 +59,12 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
   public static final String REDACTION_NOTICE = "[IIS Tester: Message has been redacted. It may contain non-test patient information.]";
 
-  private static final String REPORT_URL = "http://ois-pt.org/dqacm/record";
-  // "http://localhost:8289/record";
-  // "http://ois-pt.org/dqacm/record";
+  private static final String DQACM_BASE = "http://ois-pt.org/dqacm/";
+  // "http://localhost:8289/";
+  // "http://ois-pt.org/dqacm/";
+
+  private static final String REPORT_URL = DQACM_BASE + "record";
+  private static final String MANUAL_URL = DQACM_BASE + "manual";
 
   private static final boolean SAVE_TEST_CASES_TO_DIR = false;
 
@@ -84,6 +88,24 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   protected boolean keepRunning = true;
   protected CAPerformance performance = null;
   protected Map<String, Map<String, TestCaseMessage>> testMessageMapMap;
+  protected Date updateEtc = null;
+  protected Date queryEtc = null;
+
+  public Date getUpdateEtc() {
+    return updateEtc;
+  }
+
+  public void setUpdateEtc(Date updateEtc) {
+    this.updateEtc = updateEtc;
+  }
+
+  public Date getQueryEtc() {
+    return queryEtc;
+  }
+
+  public void setQueryEtc(Date queryEtc) {
+    this.queryEtc = queryEtc;
+  }
 
   public Map<String, Map<String, TestCaseMessage>> getTestMessageMapMap() {
     return testMessageMapMap;
@@ -325,8 +347,11 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   private boolean redactListResponses = false;
   private boolean reportErrorsOnly = false;
   private boolean condenseErrors = false;
-
   protected String uniqueMRNBase = "";
+
+  public Date getTestStarted() {
+    return testStarted;
+  }
 
   public boolean isCondenseErrors() {
     return condenseErrors;
@@ -404,14 +429,18 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     statusMessageList = new ArrayList<String>();
 
-    willQuery = queryType != null && (queryType.equals(QUERY_TYPE_QBP_Z34) || queryType.equals(QUERY_TYPE_QBP_Z34_Z44) || queryType.equals(QUERY_TYPE_QBP_Z44)
-        || queryType.equals(QUERY_TYPE_VXQ));
+    willQuery = queryType != null && (queryType.equals(QUERY_TYPE_QBP_Z34) || queryType.equals(QUERY_TYPE_QBP_Z34_Z44)
+        || queryType.equals(QUERY_TYPE_QBP_Z44) || queryType.equals(QUERY_TYPE_VXQ));
     if (willQuery) {
       logStatus("Query will be run: " + queryType);
     } else {
       logStatus("Query was not enabled");
     }
-    
+
+    if (this.connector.getTransferType() == TransferType.MANUAL) {
+
+    }
+
     logStatus("IIS Tester Initialized");
   }
 
@@ -459,11 +488,11 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       }
       reportProgress(null, true, null);
 
-      if (runAgainstFolder != null) {
-        connector = new RunAgainstConnector(connector, runAgainstFolder);
-        logStatus("Running test against previously received responses in this forder: " + runAgainstFolder);
+      if (runAgainstTestStartTime != null) {
+        connector = new RunAgainstConnector(connector, runAgainstTestStartTime);
+        logStatus("Running test against previously received responses in this report: " + runAgainstTestStartTime);
         if (queryConnector != null) {
-          queryConnector = new RunAgainstConnector(queryConnector, runAgainstFolder);
+          queryConnector = new RunAgainstConnector(queryConnector, runAgainstTestStartTime);
         }
       } else {
         logStatus("Connecting directly to real-time interface");
@@ -480,6 +509,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         TestRunner testRunner = new TestRunner();
         testRunner.setValidateResponse(certifyAreas[SUITE_L_CONFORMANCE_2015].isRun());
         try {
+          testRunner.setTestSectionType(certifyAreas[currentSuite].getAreaLabel());
           testRunner.runTest(connector, testCaseMessageBase);
           boolean pass = testCaseMessageBase.isAccepted();
           if (pass) {
@@ -756,14 +786,14 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   protected ProfileUsage profileUsageComparisonInteroperability = null;
   protected ProfileUsage profileUsageComparisonConformance = null;
 
-  private File runAgainstFolder = null;
+  private String runAgainstTestStartTime = null;
 
-  public File getRunAgainstFolder() {
-    return runAgainstFolder;
+  public String getRunAgainstTestStartTime() {
+    return runAgainstTestStartTime;
   }
 
-  public void setRunAgainstFolder(File runAgainstFolder) {
-    this.runAgainstFolder = runAgainstFolder;
+  public void setRunAgainstTestStartTime(String runAgainstTestStartTime) {
+    this.runAgainstTestStartTime = runAgainstTestStartTime;
   }
 
   public void setProfileUsage(ProfileUsage profileUsage) {
@@ -973,7 +1003,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
               + certifyArea.getAreaScore()[0] + "% Yes</td>");
         } else {
           if (certifyArea instanceof CATotal) {
-            Date updateEtc = caTotal.estimatedUpdateCompletion();
+            updateEtc = caTotal.estimatedUpdateCompletion();
             SimpleDateFormat timeFormat = new SimpleDateFormat("H:mm");
             if (updateEtc != null) {
               out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">ETC "
@@ -1513,7 +1543,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       out.println("  </tr>");
     } else {
       if (caTotal.getAreaProgress()[0] < 100) {
-        Date updateEtc = caTotal.estimatedUpdateCompletion();
+        updateEtc = caTotal.estimatedUpdateCompletion();
         if (updateEtc != null) {
           out.println("  <tr>");
           out.println("    <th>Update ETC</th>");
@@ -1521,11 +1551,11 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           out.println("  </tr>");
         }
       } else if (caTotal.getAreaProgress()[1] < 100) {
-        Date updateEtc = caTotal.estimatedQueryCompletion();
-        if (updateEtc != null) {
+        queryEtc = caTotal.estimatedQueryCompletion();
+        if (queryEtc != null) {
           out.println("  <tr>");
           out.println("    <th>Query ETC</th>");
-          out.println("    <td>" + sdf.format(updateEtc) + "</td>");
+          out.println("    <td>" + sdf.format(queryEtc) + "</td>");
           out.println("  </tr>");
         }
       }
@@ -2008,6 +2038,135 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     return ((int) (ms / 100.0 + 0.5)) / 10.0 + "s";
   }
 
+  public static String reportStatus(String aartName, String status, String connectionLabel, Date testStarted,
+      Date etcUpdate, Date etcQuery) {
+
+    String line = "";
+    try {
+      HttpURLConnection urlConn;
+      InputStreamReader input = null;
+      StringBuilder r = new StringBuilder(MANUAL_URL);
+      r.append("?");
+      r.append(PARAM_TESTER_STATUS_UPDATE);
+      r.append("=");
+      r.append("Yes");
+      r.append("&");
+      r.append(PARAM_TESTER_STATUS_TESTER_NAME);
+      r.append("=");
+      r.append(URLEncoder.encode(aartName, "UTF-8"));
+      r.append("&");
+      r.append(PARAM_TESTER_STATUS_READY_STATUS);
+      r.append("=");
+      r.append(URLEncoder.encode(status, "UTF-8"));
+      if (connectionLabel != null) {
+        r.append("&");
+        r.append(PARAM_TESTER_STATUS_TEST_CONNECTION_LABEL);
+        r.append("=");
+        r.append(URLEncoder.encode(connectionLabel, "UTF-8"));
+      }
+      if (testStarted != null) {
+        r.append("&");
+        r.append(PARAM_TESTER_STATUS_TEST_STARTED_TIME);
+        r.append("=");
+        r.append(URLEncoder.encode(VALUE_DATE_FORMAT.format(testStarted), "UTF-8"));
+      }
+      if (etcUpdate != null) {
+        r.append("&");
+        r.append(PARAM_TESTER_STATUS_ETC_UPDATE_DATE);
+        r.append("=");
+        r.append(URLEncoder.encode(VALUE_DATE_FORMAT.format(etcUpdate), "UTF-8"));
+      }
+      if (etcQuery != null) {
+        r.append("&");
+        r.append(PARAM_TESTER_STATUS_ETC_QUERY_DATE);
+        r.append("=");
+        r.append(URLEncoder.encode(VALUE_DATE_FORMAT.format(etcQuery), "UTF-8"));
+      }
+
+      URL url = new URL(r.toString());
+      urlConn = (HttpURLConnection) url.openConnection();
+      urlConn.setRequestMethod("GET");
+
+      urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+      urlConn.setDoInput(true);
+      urlConn.setDoOutput(false);
+      urlConn.setUseCaches(false);
+
+      input = new InputStreamReader(urlConn.getInputStream());
+      BufferedReader in = new BufferedReader(input);
+      line = in.readLine();
+      if (line == null) {
+        line = "";
+      }
+      input.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return line;
+  }
+
+  public static List<String> getManualReportList(String connectionLabel) {
+    List<String> manualReportList = new ArrayList<String>();
+    try {
+      HttpURLConnection urlConn;
+      InputStreamReader input = null;
+      URL url = new URL(MANUAL_URL + "?query=reports&connectionLabel=" + URLEncoder.encode(connectionLabel, "UTF-8"));
+      urlConn = (HttpURLConnection) url.openConnection();
+      urlConn.setRequestMethod("GET");
+
+      urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+      urlConn.setDoInput(true);
+      urlConn.setDoOutput(false);
+      urlConn.setUseCaches(false);
+
+      input = new InputStreamReader(urlConn.getInputStream());
+      BufferedReader in = new BufferedReader(input);
+      String line;
+      while ((line = in.readLine()) != null) {
+        manualReportList.add(line);
+      }
+      input.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return manualReportList;
+  }
+
+  public static String getManualMessage(String connectionLabel, String testStartTime, String testSectionType,
+      String testCaseCategory, String query) {
+    try {
+
+      HttpURLConnection urlConn;
+      InputStreamReader input = null;
+      String urlString = MANUAL_URL + "?query=" + query + "&connectionLabel="
+          + URLEncoder.encode(connectionLabel, "UTF-8") + "&testStartTime=" + URLEncoder.encode(testStartTime, "UTF-8")
+          + "&testSectionType=" + URLEncoder.encode(testSectionType, "UTF-8") + "&testCaseCategory="
+          + URLEncoder.encode(testCaseCategory, "UTF-8");
+      URL url = new URL(urlString);
+      urlConn = (HttpURLConnection) url.openConnection();
+      urlConn.setRequestMethod("GET");
+
+      urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+      urlConn.setDoInput(true);
+      urlConn.setDoOutput(false);
+      urlConn.setUseCaches(false);
+
+      input = new InputStreamReader(urlConn.getInputStream());
+      BufferedReader in = new BufferedReader(input);
+      String line;
+      StringBuilder sb = new StringBuilder();
+      while ((line = in.readLine()) != null) {
+        sb.append(line);
+        sb.append("\r");
+      }
+      input.close();
+      return sb.toString();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return "";
+  }
+
   public static void reportParticipant(ParticipantResponse participantResponse) {
     if (REPORT_URL == null) {
       return;
@@ -2116,7 +2275,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       addField(sb, PARAM_TC_CONNECTION_URL, connector.getUrl());
       addField(sb, PARAM_TC_CONNECTION_ACK_TYPE, connector.getAckType().toString());
       addField(sb, PARAM_TC_CONNECTION_CONFIG, connector.getScript());
-      boolean latestTest = status.equals(STATUS_COMPLETED) && certifyAreas[SUITE_A_BASIC].getAreaProgress()[0] == 100
+      boolean manualTest = connector.isVerify() && runAgainstTestStartTime == null;
+      boolean completeTest = status.equals(STATUS_COMPLETED) && certifyAreas[SUITE_A_BASIC].getAreaProgress()[0] == 100
           && certifyAreas[SUITE_B_INTERMEDIATE].getAreaProgress()[0] == 100
           && certifyAreas[SUITE_D_EXCEPTIONAL].getAreaProgress()[0] == 100
           && certifyAreas[SUITE_I_PROFILING].getAreaProgress()[0] == 100
@@ -2124,7 +2284,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           && certifyAreas[SUITE_C_ADVANCED].getAreaProgress()[0] == 100
           && certifyAreas[SUITE_K_NOT_ACCEPTED].getAreaProgress()[0] == 100
           && certifyAreas[SUITE_J_ONC_2015].getAreaProgress()[0] == 100;
-      addField(sb, PARAM_TC_COMPLETE_TEST, latestTest);
+      addField(sb, PARAM_TC_COMPLETE_TEST, completeTest);
+      addField(sb, PARAM_TC_MANUAL_TEST, manualTest);
 
       addField(sb, PARAM_TC_QUERY_TYPE, queryType);
       addField(sb, PARAM_TC_QUERY_ENABLED, willQuery);
@@ -2217,6 +2378,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         addField(sb, PARAM_TM_RESULT_ACCEPTED_MESSAGE, testMessage.getActualResultAckMessage());
         addField(sb, PARAM_TM_RESULT_RESPONSE_TYPE, testMessage.getActualMessageResponseType());
         addField(sb, PARAM_TM_RESULT_ACK_TYPE, testMessage.getActualResultAckType());
+        addField(sb, PARAM_TM_RESULT_MANUAL_TEST, manualTest);
         if (testMessage.getValidationReport() == null) {
           addField(sb, PARAM_TM_RESULT_ACK_CONFORMANCE, VALUE_RESULT_ACK_CONFORMANCE_NOT_RUN);
         } else {
