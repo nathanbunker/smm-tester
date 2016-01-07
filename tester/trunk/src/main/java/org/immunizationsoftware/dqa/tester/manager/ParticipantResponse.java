@@ -1,11 +1,16 @@
 package org.immunizationsoftware.dqa.tester.manager;
 
-public class ParticipantResponse {
+import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
+
+public class ParticipantResponse
+{
   private String organizationName = "";
   private String folderName = "";
   private String map = "";
   private String platform = "";
   private String vendor = "";
+  private String queryType = "";
+  private boolean redactListResponses = false;
   private String internalComments = "";
   private String phaseIParticipation = "";
   private String phase1Status = "";
@@ -24,6 +29,22 @@ public class ParticipantResponse {
   private String accessPasscode = "";
   private int col = 0;
   private int row = 0;
+
+  public boolean isRedactListResponses() {
+    return redactListResponses;
+  }
+
+  public void setRedactListResponses(boolean redactListResponses) {
+    this.redactListResponses = redactListResponses;
+  }
+
+  public String getQueryType() {
+    return queryType;
+  }
+
+  public void setQueryType(String queryType) {
+    this.queryType = queryType;
+  }
 
   public int getCol() {
     return col;
@@ -63,6 +84,19 @@ public class ParticipantResponse {
 
   public void setQuerySupport(String querySupport) {
     this.querySupport = querySupport;
+    if (querySupport.equals("QBP")) {
+      this.queryType = CertifyRunner.QUERY_TYPE_QBP_Z34;
+    } else if (querySupport.equals("QBP Z34")) {
+      this.queryType = CertifyRunner.QUERY_TYPE_QBP_Z34;
+    } else if (querySupport.equals("QBP Z44")) {
+      this.queryType = CertifyRunner.QUERY_TYPE_QBP_Z44;
+    } else if (querySupport.equals("VXQ")) {
+      this.queryType = CertifyRunner.QUERY_TYPE_VXQ;
+    } else if (querySupport.equals("QBP Z43 Z44") || querySupport.equals("QBP Z43-Z44")) {
+      this.queryType = CertifyRunner.QUERY_TYPE_QBP_Z34_Z44;
+    } else {
+      this.queryType = CertifyRunner.QUERY_TYPE_NONE;
+    }
   }
 
   public String getNistStatus() {

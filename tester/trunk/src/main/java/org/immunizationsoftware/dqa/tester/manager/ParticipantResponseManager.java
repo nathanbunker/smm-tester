@@ -20,6 +20,7 @@ public class ParticipantResponseManager {
     int posMap = CvsReader.findPosition("Map", valueList);
     int posPlatform = CvsReader.findPosition("Platform", valueList);
     int posVendor = CvsReader.findPosition("Vendor", valueList);
+    int posRedactListResponses = CvsReader.findPosition("Redact List Responses", valueList);
     int posInternalComments = CvsReader.findPosition("Internal Comments", valueList);
     int posPhaseIParticipation = CvsReader.findPosition("Phase I Participation", valueList);
     int posPhase1Status = CvsReader.findPosition("Phase 1 Status", valueList);
@@ -62,6 +63,7 @@ public class ParticipantResponseManager {
       participantResponse.setQuerySupport(CvsReader.readValue(posQuerySupport, valueList));
       participantResponse.setNistStatus(CvsReader.readValue(posNistStatus, valueList));
       participantResponse.setAccessPasscode(CvsReader.readValue(posAccessPasscode, valueList));
+      participantResponse.setRedactListResponses(!CvsReader.readValue(posRedactListResponses, valueList).equalsIgnoreCase("No"));
       if (participantResponseMap != null) {
         String mapPos = participantResponse.getMap();
         if (!mapPos.equals("")) {

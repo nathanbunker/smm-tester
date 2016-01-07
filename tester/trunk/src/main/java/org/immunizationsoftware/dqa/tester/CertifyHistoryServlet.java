@@ -71,8 +71,7 @@ public class CertifyHistoryServlet extends ClientServlet
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
     String action = request.getParameter("action");
-    if (action != null && action.equals("Update AART"))
-    {
+    if (action != null && action.equals("Update AART")) {
       int maxCols = RecordServletInterface.MAP_COLS_MAX;
       int maxRows = RecordServletInterface.MAP_ROWS_MAX;
       ParticipantResponse[][] participantResponseMap = new ParticipantResponse[maxCols][maxRows];
@@ -200,14 +199,7 @@ public class CertifyHistoryServlet extends ClientServlet
       if (!view.equals(VIEW_ALL_REPORTS) && ManagerServlet.getIisParticipantResponsesAndAccountInfoFile() != null) {
         int maxCols = RecordServletInterface.MAP_COLS_MAX;
         int maxRows = RecordServletInterface.MAP_ROWS_MAX;
-        ParticipantResponse[][] participantResponseMap = (ParticipantResponse[][]) session
-            .getAttribute("participantResponseMap");
-        if (participantResponseMap == null) {
-          participantResponseMap = new ParticipantResponse[maxCols][maxRows];
-          List<ParticipantResponse> participantResponseList = ParticipantResponseManager
-              .readFile(participantResponseMap);
-          session.setAttribute("participantResponseMap", participantResponseMap);
-        }
+        ParticipantResponse[][] participantResponseMap = getParticipantResponseMap(session);
 
         if (view.equals(VIEW_DETAIL)) {
           int col = Integer.parseInt(request.getParameter("col"));
@@ -591,7 +583,6 @@ public class CertifyHistoryServlet extends ClientServlet
           out.println("<input type=\"hidden\" name=\"view\" value=\"" + view + "\"/>");
           out.println("</form>");
 
-          
           out.println("<p><a href=\"" + dashboardLink + "\">Dashboard Link</a></p>");
         }
       } else {
@@ -615,6 +606,18 @@ public class CertifyHistoryServlet extends ClientServlet
     } finally {
       out.close();
     }
+  }
+
+  public static ParticipantResponse[][] getParticipantResponseMap(HttpSession session) throws IOException {
+    ParticipantResponse[][] participantResponseMap = (ParticipantResponse[][]) session
+        .getAttribute("participantResponseMap");
+    if (participantResponseMap == null) {
+      participantResponseMap = new ParticipantResponse[RecordServletInterface.MAP_COLS_MAX][RecordServletInterface.MAP_ROWS_MAX];
+      List<ParticipantResponse> participantResponseList = ParticipantResponseManager
+          .readFile(participantResponseMap);
+      session.setAttribute("participantResponseMap", participantResponseMap);
+    }
+    return participantResponseMap;
   }
 
   public static void printViewMenu(PrintWriter out, String view, boolean isRunTestNow)

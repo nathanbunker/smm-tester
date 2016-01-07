@@ -43,7 +43,8 @@ public abstract class Connector
       String facilityid, String password, String keyStorePassword, String enableTimeStart, String enableTimeEnd,
       AckAnalyzer.AckType ackType, TransferType transferType, List<String> fields, String customTransformations,
       List<Connector> connectors, String purpose, int tchForecastTesterSoftwareId,
-      Set<String> queryResponseFieldsNotReturnedSet, Map<String, String> scenarioTransformationsMap, boolean disableServerCertificateCheck) throws Exception {
+      Set<String> queryResponseFieldsNotReturnedSet, Map<String, String> scenarioTransformationsMap,
+      boolean disableServerCertificateCheck) throws Exception {
     if (!label.equals("") && !type.equals("")) {
       Connector connector = null;
       if (type.equals(ConnectorFactory.TYPE_SOAP)) {
@@ -96,14 +97,14 @@ public abstract class Connector
       connector.setQueryResponseFieldsNotReturnedSet(queryResponseFieldsNotReturnedSet);
       connector.setScenarioTransformationsMap(scenarioTransformationsMap);
       connectors.add(connector);
-      
+
       return connector;
     }
     return null;
   }
 
   public static enum TransferType {
-    NEAR_REAL_TIME_LINK, RECIPROCAL_BATCH_UPDATE
+    NEAR_REAL_TIME_LINK, RECIPROCAL_BATCH_UPDATE, MANUAL
   };
 
   protected String label = "";
@@ -129,7 +130,7 @@ public abstract class Connector
   private Set<String> queryResponseFieldsNotReturnedSet = null;
   private Map<String, String> scenarioTransformationsMap = new HashMap<String, String>();
   private String segmentSeparator = "\r";
-  
+
   public Connector(Connector copy) {
     this.label = copy.label;
     this.type = copy.type;
@@ -155,7 +156,7 @@ public abstract class Connector
     this.scenarioTransformationsMap = copy.scenarioTransformationsMap;
     this.segmentSeparator = copy.segmentSeparator;
   }
-  
+
   public String getSegmentSeparator() {
     return segmentSeparator;
   }
@@ -363,6 +364,10 @@ public abstract class Connector
     return label;
   }
 
+  public boolean isVerify() {
+    return url.indexOf("VerifyServlet") > 0;
+  }
+
   public Connector(String label, String type) {
     this.label = label;
     this.type = type;
@@ -449,7 +454,7 @@ public abstract class Connector
       throw new RuntimeException("Exception while reading string", ioe);
     }
   }
-  
+
   protected abstract void makeScriptAdditions(StringBuilder sb);
 
   public static List<Connector> makeConnectors(String script) throws Exception {
@@ -481,7 +486,8 @@ public abstract class Connector
       if (line.startsWith("Connection")) {
         addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
             enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose,
-            tchForecastTesterSoftwareId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap, disableServerCertificateCheck);
+            tchForecastTesterSoftwareId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap,
+            disableServerCertificateCheck);
         label = "";
         purpose = "";
         type = "";
@@ -524,7 +530,8 @@ public abstract class Connector
         facilityid = readValue(line);
       } else if (line.startsWith("Disable Certificate Check:")) {
         String s = readValue(line);
-        disableServerCertificateCheck = s.equalsIgnoreCase("y") || s.equalsIgnoreCase("yes") || s.equalsIgnoreCase("true");
+        disableServerCertificateCheck = s.equalsIgnoreCase("y") || s.equalsIgnoreCase("yes")
+            || s.equalsIgnoreCase("true");
       } else if (line.startsWith("Key Store Password:")) {
         keyStorePassword = PasswordEncryptUtil.decrypt(readValue(line));
       } else if (line.startsWith("Cause Issues:")) {
@@ -546,7 +553,7 @@ public abstract class Connector
         int endPos = line.lastIndexOf(':');
         if (endPos == -1) {
           endPos = line.length();
-        } 
+        }
         lastList = line.substring("Scenario Transform for ".length(), endPos).trim();
       } else if (line.startsWith("TCH Forecast Tester Software Id:")) {
         try {
@@ -574,7 +581,8 @@ public abstract class Connector
     }
     addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
         enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose,
-        tchForecastTesterSoftwareId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap, disableServerCertificateCheck);
+        tchForecastTesterSoftwareId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap,
+        disableServerCertificateCheck);
     return connectors;
   }
 
@@ -682,7 +690,6 @@ public abstract class Connector
 
   }
 
-  
   protected static String replaceAmpersand(String s) {
     String s2 = "";
     int pos = s.indexOf("&");
