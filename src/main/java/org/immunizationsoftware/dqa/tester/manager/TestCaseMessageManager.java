@@ -79,6 +79,9 @@ public class TestCaseMessageManager {
           } else if (line.startsWith(TestCaseMessage.CAUSE_ISSUES)) {
             testCaseMessage.setCauseIssues(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
             lastList = "CI";
+          } else if (line.startsWith(TestCaseMessage.ADDITIONAL_TRANSFORMATIONS)) {
+            testCaseMessage.setAdditionalTransformations(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
+            lastList = "AT";
           } else if (line.startsWith("+") && line.length() > 1) {
             if (lastList.equals("CT")) {
               testCaseMessage.appendCustomTransformation(line.substring(1).trim());
@@ -86,6 +89,8 @@ public class TestCaseMessageManager {
               testCaseMessage.appendExcludeTransformation(line.substring(1).trim());
             } else if (lastList.equals("CI")) {
               testCaseMessage.appendCauseIssue(line.substring(1).trim());
+            } else if (lastList.equals("AT")) {
+              testCaseMessage.appendAdditionalTransformation(line.substring(1).trim());
             }
           } else if (line.startsWith("--") || line.startsWith("//")) {
             // ignore, this line is a comment
