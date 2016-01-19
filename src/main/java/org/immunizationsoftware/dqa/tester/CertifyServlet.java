@@ -478,7 +478,8 @@ public class CertifyServlet extends ClientServlet {
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input id=\"ChkQBPSupport\" type=\"checkbox\" name=\"runM\" value=\"true\"/> QBP Support");
+        out.println("            <input id=\"ChkQBPSupport\" type=\"checkbox\" name=\"runM\" value=\"true\"" + (!queryType.equals(CertifyRunner.QUERY_TYPE_NONE) ? " checked=\"true\"" : "")
+            + "/> QBP Support");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
@@ -497,13 +498,17 @@ public class CertifyServlet extends ClientServlet {
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input id=\"ChkDeduplicationEngaged\" type=\"checkbox\" name=\"runP\" value=\"true\"/> Deduplication Engaged");
+        out.println(
+            "            <input id=\"ChkDeduplicationEngaged\" type=\"checkbox\" name=\"runP\" value=\"true\"" + (!queryType.equals(CertifyRunner.QUERY_TYPE_NONE) ? " checked=\"true\"" : "")
+            + "/> Deduplication Engaged");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input id=\"ChkForecasterEngaged\" type=\"checkbox\" name=\"runQ\" value=\"true\"/> Forecaster Engaged");
+        out.println(
+            "            <input id=\"ChkForecasterEngaged\" type=\"checkbox\" name=\"runQ\" value=\"true\"" + (!queryType.equals(CertifyRunner.QUERY_TYPE_NONE) ? " checked=\"true\"" : "")
+            + "/> Forecaster Engaged");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
