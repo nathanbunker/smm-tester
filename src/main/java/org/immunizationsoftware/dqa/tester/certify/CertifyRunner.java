@@ -80,6 +80,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   public static final String STATUS_STARTED = "Started";
   public static final String STATUS_COMPLETED = "Completed";
   public static final String STATUS_STOPPED = "Stopped";
+  public static final String STATUS_PROBLEM = "Problem";
   public static final String STATUS_PAUSED = "Paused";
 
   protected String status = "";
@@ -114,8 +115,15 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   public void setTestMessageMapMap(Map<String, Map<String, TestCaseMessage>> testMessageMapMap) {
     this.testMessageMapMap = testMessageMapMap;
   }
+  
+  private long lastLogStatus = System.currentTimeMillis();
+
+  public long getLastLogStatus() {
+    return lastLogStatus;
+  }
 
   protected void logStatus(String status) {
+    lastLogStatus = System.currentTimeMillis();
     synchronized (statusMessageList) {
       statusMessageList.add(sdf.format(new Date()) + " " + certifyAreas[currentSuite].getAreaLabel() + ": " + status);
     }
@@ -645,11 +653,11 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     catch (Throwable t) {
       t.printStackTrace();
       exception = t;
-      status = STATUS_STOPPED;
+      status = STATUS_PROBLEM;
       reportProgress(null);
       logStatus("Exception ocurred: " + exception.getMessage());
     } finally {
-      if (status != STATUS_STOPPED) {
+      if (status != STATUS_STOPPED && status != STATUS_PROBLEM) {
         status = STATUS_COMPLETED;
         reportProgress(null);
       } else {
@@ -1992,6 +2000,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
   public String getStatus() {
     return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
   }
 
   public void stopRunning() {
