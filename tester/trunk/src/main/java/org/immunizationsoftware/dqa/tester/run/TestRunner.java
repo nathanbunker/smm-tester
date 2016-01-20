@@ -305,7 +305,7 @@ public class TestRunner
       } else if (profileId.equals("Z34")) {
         validationResource = ValidationResource.IZ_RSP_Z42;
       } else if (profileId.equals("Z23") || messageType.equals("ACK")) {
-        validationResource = ValidationResource.IZ_ACK_Z23;
+        validationResource = ValidationResource.IZ_ACK_FOR_AIRA;
       }
     }
     testCaseMessage.setValidationResource(validationResource);
