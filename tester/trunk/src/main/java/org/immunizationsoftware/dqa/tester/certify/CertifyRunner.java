@@ -83,7 +83,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   public static final String STATUS_PROBLEM = "Problem";
   public static final String STATUS_PAUSED = "Paused";
 
-  protected String status = "";
+  private String status = "";
   protected List<String> statusMessageList = null;
   protected Throwable exception = null;
   protected boolean keepRunning = true;
@@ -120,6 +120,12 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
   public long getLastLogStatus() {
     return lastLogStatus;
+  }
+  
+  public void switchStatus(String status, String logMessage)
+  {
+    this.status = status;
+    logStatus(logMessage);
   }
 
   protected void logStatus(String status) {
@@ -430,13 +436,13 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
     this.sendData = sendData;
 
-    status = STATUS_INITIALIZED;
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
     testCaseSet = CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX + " " + sdf.format(new Date());
 
     sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     statusMessageList = new ArrayList<String>();
 
+    switchStatus(STATUS_INITIALIZED, "Initializing CertifyRunner");
     willQuery = queryType != null && (queryType.equals(QUERY_TYPE_QBP_Z34) || queryType.equals(QUERY_TYPE_QBP_Z34_Z44)
         || queryType.equals(QUERY_TYPE_QBP_Z44) || queryType.equals(QUERY_TYPE_VXQ));
     if (willQuery) {
@@ -472,7 +478,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
   @Override
   public void run() {
-    status = STATUS_STARTED;
+    switchStatus(STATUS_STARTED, "Starting test process");  
     logStatus("Starting to run report");
     incrementingInt = new IncrementingInt();
     try {
@@ -572,6 +578,11 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           certifyAreas[i].sendUpdates();
           logStatus("Reporting Progress");
           reportProgress(null);
+          if (!keepRunning) {
+            switchStatus(STATUS_STOPPED, "Testing must stop, stopping testing");
+            reportProgress(null);
+            return;
+          }
         }
       }
       caTotal.getAreaScore()[0] = 100;
@@ -582,13 +593,18 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           certifyAreas[i].sendUpdates();
           logStatus("Reporting Progress");
           reportProgress(null);
+          if (!keepRunning) {
+            switchStatus(STATUS_STOPPED, "Testing must stop, stopping testing");
+            reportProgress(null);
+            return;
+          }
         }
       }
 
       if (willQuery) {
         if (pauseBeforeQuerying) {
           logStatus("Paused, waiting to start query process");
-          status = STATUS_PAUSED;
+          switchStatus(STATUS_PAUSED, "Process has been paused before continuing to query");
           reportProgress(null);
           int maxWait = 0;
           while (pauseBeforeQuerying && keepRunning && maxWait < (60 * 10)) {
@@ -602,11 +618,11 @@ public class CertifyRunner extends Thread implements RecordServletInterface
             maxWait++;
           }
           logStatus("Begin query process");
-          status = STATUS_STARTED;
+          switchStatus(STATUS_STARTED, "Query process has been restarted");
           reportProgress(null);
         }
         if (!keepRunning) {
-          status = STATUS_STOPPED;
+          switchStatus(STATUS_STOPPED, "Testing must stop, stopping testing");
           reportProgress(null);
           return;
         }
@@ -653,12 +669,12 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     catch (Throwable t) {
       t.printStackTrace();
       exception = t;
-      status = STATUS_PROBLEM;
+      switchStatus(STATUS_PROBLEM, "An exception ocurred, unable to continue");
       reportProgress(null);
       logStatus("Exception ocurred: " + exception.getMessage());
     } finally {
       if (status != STATUS_STOPPED && status != STATUS_PROBLEM) {
-        status = STATUS_COMPLETED;
+        switchStatus(STATUS_COMPLETED, "Testing completed normally");
         reportProgress(null);
       } else {
         logStatus("Process stopped by user");

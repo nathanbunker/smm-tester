@@ -34,6 +34,10 @@ public class VerifyTest {
       + "MSA|AA|NIST-IZ-AD-7.1_Send_V04_Z22\r"
       + "ERR||RXA^1^5^1^1|999^Application error^HL70357|E|5^Table value not found^HL70533|||Vaccine code not recognized - message rejected\r";
 
+  private static final String ACK_MESSAGE3 = "MSH|^~\\&|NISTIISAPP|NISTIISFAC|NISTEHRAPP|NISTEHRFAC|20150625121047.853-0500||ACK^V04^ACK|NIST-IZ-AD-7.2_Receive_ACK_Z23|P|2.5.1|||NE|NE|||||Z23^CDCPHINVS|NISTIISFAC^^^^^NIST-AA-IZ-1^XX^^^100-3322|NISTEHRFAC^^^^^NIST-AA-IZ-1^XX^^^100-6482\r"
+      + "MSA|AA\r"
+      + "ERR||RXA^1^5^1^1|999^Application error^HL70357|E|5^Table value not found^HL70533|||Vaccine code not recognized - message rejected\r";
+
   private static final String OID = "2.16.840.1.113883.3.72.2.2.99001";
   /*
    * 
@@ -80,17 +84,33 @@ public class VerifyTest {
       }
     }
 
-    validationReport = NISTValidator.validate(ACK_MESSAGE2, ValidationResource.IZ_ACK_FOR_AIRA);
-    assertEquals("Complete", validationReport.getHeaderReport().getValidationStatus());
-    boolean hasError = false;
-    for (Assertion assertion : validationReport.getAssertionList()) {
-      if (assertion.getResult().equalsIgnoreCase("ERROR")) {
-        hasError = true;
-        break;
+    {
+      validationReport = NISTValidator.validate(ACK_MESSAGE2, ValidationResource.IZ_ACK_FOR_AIRA);
+      assertEquals("Complete", validationReport.getHeaderReport().getValidationStatus());
+      boolean hasError = false;
+      for (Assertion assertion : validationReport.getAssertionList()) {
+        if (assertion.getResult().equalsIgnoreCase("ERROR")) {
+          hasError = true;
+          break;
+        }
+      }
+      if (!hasError) {
+        fail("No problem found in message.");
       }
     }
-    if (!hasError) {
-      fail("No problem found in message.");
+    {
+      validationReport = NISTValidator.validate(ACK_MESSAGE3, ValidationResource.IZ_ACK_FOR_AIRA);
+      assertEquals("Complete", validationReport.getHeaderReport().getValidationStatus());
+      boolean hasError = false;
+      for (Assertion assertion : validationReport.getAssertionList()) {
+        if (assertion.getResult().equalsIgnoreCase("ERROR")) {
+          hasError = true;
+          break;
+        }
+      }
+      if (!hasError) {
+        fail("No problem found in message.");
+      }
     }
 
   }

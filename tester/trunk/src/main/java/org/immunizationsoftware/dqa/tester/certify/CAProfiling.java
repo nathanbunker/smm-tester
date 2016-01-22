@@ -224,7 +224,7 @@ public class CAProfiling extends CertifyArea
           certifyRunner.reportProgress(testCaseMessageAbsent, false, profileLine);
         }
         if (!certifyRunner.keepRunning) {
-          certifyRunner.status = certifyRunner.STATUS_STOPPED;
+          certifyRunner.switchStatus(certifyRunner.STATUS_STOPPED, "Testing must stop, stopping testing");
           reportProgress(null);
           return;
         }
