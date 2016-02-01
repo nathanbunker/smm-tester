@@ -27,8 +27,17 @@ public class ParticipantResponse
   private String querySupport = "";
   private String nistStatus = "";
   private String accessPasscode = "";
+  private String publicIdCode = "";
   private int col = 0;
   private int row = 0;
+  
+  public String getPublicIdCode() {
+    return publicIdCode;
+  }
+
+  public void setPublicIdCode(String publicIdCode) {
+    this.publicIdCode = publicIdCode;
+  }
 
   public boolean isRedactListResponses() {
     return redactListResponses;

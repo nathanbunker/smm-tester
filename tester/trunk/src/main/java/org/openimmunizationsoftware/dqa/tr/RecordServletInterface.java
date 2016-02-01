@@ -224,6 +224,7 @@ public interface RecordServletInterface {
   public static final String PARAM_TPAR_QUERY_SUPPORT = "tpar_querySupport";
   public static final String PARAM_TPAR_NIST_STATUS = "tpar_nistStatus";
   public static final String PARAM_TPAR_ACCESS_PASSCODE = "tpar_accessPasscode";
+  public static final String PARAM_TPAR_PUBLIC_ID_CODE = "tpar_publicIdCode";
 
   public static final String[] PARAMS_TPAR = { PARAM_TPAR_ORGANIZATION_NAME, PARAM_TPAR_CONNECTION_LABEL, PARAM_TPAR_MAP_ROW, PARAM_TPAR_MAP_COL,
       PARAM_TPAR_PLATFORM_LABEL, PARAM_TPAR_VENDOR_LABEL, PARAM_TPAR_INTERNAL_COMMENTS, PARAM_TPAR_PHASE1_PARTICIPATION, PARAM_TPAR_PHASE1_STATUS,
