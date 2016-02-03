@@ -127,9 +127,14 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     this.status = status;
     logStatus(logMessage);
   }
+  
+  protected void indicateActive()
+  {
+    lastLogStatus = System.currentTimeMillis();
+  }
 
   protected void logStatus(String status) {
-    lastLogStatus = System.currentTimeMillis();
+    indicateActive();
     synchronized (statusMessageList) {
       statusMessageList.add(sdf.format(new Date()) + " " + certifyAreas[currentSuite].getAreaLabel() + ": " + status);
     }
@@ -579,7 +584,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           logStatus("Reporting Send Update Progress");
           reportProgress(null);
           if (!keepRunning) {
-            switchStatus(STATUS_STOPPED, "Testing must stop, stopping testing");
             reportProgress(null);
             return;
           }
@@ -594,7 +598,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           logStatus("Reporting Update Conformance/Performance Progress");
           reportProgress(null);
           if (!keepRunning) {
-            switchStatus(STATUS_STOPPED, "Testing must stop, stopping testing");
             reportProgress(null);
             return;
           }
@@ -622,7 +625,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           reportProgress(null);
         }
         if (!keepRunning) {
-          switchStatus(STATUS_STOPPED, "Testing must stop, stopping testing");
           reportProgress(null);
           return;
         }
@@ -636,6 +638,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
             logStatus("Reporting Prepare Queries Progress");
             reportProgress(null);
             caTotal.getAreaCount()[1] += certifyAreas[i].areaCount[1];
+            if (!keepRunning) {
+              reportProgress(null);
+              return;
+            }
           }
         }
         caTotal.startingQueries();
@@ -646,6 +652,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
             certifyAreas[i].sendQueries();
             logStatus("Reporting Send Queries Progress");
             reportProgress(null);
+            if (!keepRunning) {
+              reportProgress(null);
+              return;
+            }
           }
         }
         caTotal.getAreaScore()[1] = 100;
@@ -656,6 +666,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
             certifyAreas[i].sendQueries();
             logStatus("Reporting Query Conformance/Performance Progress");
             reportProgress(null);
+            if (!keepRunning) {
+              reportProgress(null);
+              return;
+            }
           }
         }
       }
@@ -2271,6 +2285,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   }
 
   protected void reportProgress(TestCaseMessage testMessage, boolean firstTime, ProfileLine profileLine) {
+    indicateActive();
     if (REPORT_URL == null) {
       return;
     }
