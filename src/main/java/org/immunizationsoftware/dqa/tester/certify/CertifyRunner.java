@@ -563,7 +563,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           logStatus("Preparing Updates");
           certifyAreas[i].prepareUpdates();
           certifyAreas[i].areaCount[0] = certifyAreas[i].updateList.size();
-          logStatus("Reporting Progress");
+          logStatus("Reporting Prepare Update Progress");
           reportProgress(null);
           if (certifyAreas[i].areaCount[0] > 0) {
             caTotal.getAreaCount()[0] += certifyAreas[i].areaCount[0];
@@ -576,7 +576,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           currentSuite = i;
           logStatus("Sending Updates");
           certifyAreas[i].sendUpdates();
-          logStatus("Reporting Progress");
+          logStatus("Reporting Send Update Progress");
           reportProgress(null);
           if (!keepRunning) {
             switchStatus(STATUS_STOPPED, "Testing must stop, stopping testing");
@@ -591,7 +591,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           currentSuite = i;
           logStatus("Running Conformance/Performance");
           certifyAreas[i].sendUpdates();
-          logStatus("Reporting Progress");
+          logStatus("Reporting Update Conformance/Performance Progress");
           reportProgress(null);
           if (!keepRunning) {
             switchStatus(STATUS_STOPPED, "Testing must stop, stopping testing");
@@ -633,7 +633,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
             logStatus("Preparing Query");
             certifyAreas[i].prepareQueries();
             certifyAreas[i].areaCount[1] = certifyAreas[i].queryList.size();
-            logStatus("Reporting Progress");
+            logStatus("Reporting Prepare Queries Progress");
             reportProgress(null);
             caTotal.getAreaCount()[1] += certifyAreas[i].areaCount[1];
           }
@@ -644,7 +644,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
             currentSuite = i;
             logStatus("Sending Queries");
             certifyAreas[i].sendQueries();
-            logStatus("Reporting Progress");
+            logStatus("Reporting Send Queries Progress");
             reportProgress(null);
           }
         }
@@ -654,7 +654,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
             currentSuite = i;
             logStatus("Running Conformance/Performance");
             certifyAreas[i].sendQueries();
-            logStatus("Reporting Progress");
+            logStatus("Reporting Query Conformance/Performance Progress");
             reportProgress(null);
           }
         }
@@ -2206,7 +2206,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       URL url = new URL(REPORT_URL);
 
       urlConn = (HttpURLConnection) url.openConnection();
-
+      urlConn.setConnectTimeout(120 * 1000);
       urlConn.setRequestMethod("POST");
 
       urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -2284,6 +2284,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       URL url = new URL(REPORT_URL);
 
       urlConn = (HttpURLConnection) url.openConnection();
+      urlConn.setConnectTimeout(120 * 1000);
 
       urlConn.setRequestMethod("POST");
 
@@ -2527,9 +2528,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       DataOutputStream printout;
       InputStreamReader input = null;
       URL url = new URL(REPORT_URL);
-
       urlConn = (HttpURLConnection) url.openConnection();
-
+      urlConn.setConnectTimeout(120 * 1000);
       urlConn.setRequestMethod("POST");
 
       urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
