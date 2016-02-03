@@ -43,7 +43,7 @@ public class CABasic extends CertifyArea
   public void sendUpdates() {
     runUpdates();
     if (areaScore[0] == 0) {
-      certifyRunner.logStatus("None of the basic messages passed. Stopping test process. ");
+      certifyRunner.switchStatus(CertifyRunner.STATUS_PROBLEM, "None of the basic messages passed. Stopping test process. ");
       certifyRunner.keepRunning = false;
     }
   }

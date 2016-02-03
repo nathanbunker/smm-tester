@@ -65,8 +65,8 @@ public class CAForecast extends CertifyArea
 
           testCaseMessage.setForecastTestPanel(testPanel);
           testCaseMessage.appendOriginalMessage(sb.toString());
-          testCaseMessage.setDescription(testPanel.getLabel() + ": " + forecastTestCase.getCategoryName() + ": "
-              + forecastTestCase.getDescription());
+          testCaseMessage.setDescription(testPanel.getLabel() + " - " + forecastTestCase.getCategoryName() + ": "
+              + forecastTestCase.getLabel());
           testCaseMessage.setQuickTransformations(
               new String[] { "2.5.1", (forecastTestCase.getPatientSex().equals("M") ? "BOY" : "GIRL"), "ADDRESS",
                   "PHONE", "MOTHER", "RACE", "ETHNICITY" });

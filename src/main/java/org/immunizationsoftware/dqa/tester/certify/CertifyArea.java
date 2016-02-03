@@ -236,7 +236,6 @@ public abstract class CertifyArea implements RecordServletInterface
       certifyRunner.saveTestCase(testCaseMessage);
       certifyRunner.reportProgress(testCaseMessage);
       if (!certifyRunner.keepRunning) {
-        certifyRunner.switchStatus(certifyRunner.STATUS_STOPPED, "Testing must stop, stopping testing");
         certifyRunner.reportProgress(null);
         return;
       }
@@ -349,7 +348,6 @@ public abstract class CertifyArea implements RecordServletInterface
       pass = sendQuery(queryTestCaseMessage, pass);
       incrementQueryProgress();
       if (!certifyRunner.keepRunning) {
-        certifyRunner.switchStatus(certifyRunner.STATUS_STOPPED, "Testing must stop, stopping testing");
         reportProgress(null);
         return;
       }
@@ -396,7 +394,7 @@ public abstract class CertifyArea implements RecordServletInterface
     } catch (Throwable t) {
       queryTestCaseMessage.setException(t);
     }
-
+    
     certifyRunner.saveTestCase(queryTestCaseMessage);
     reportProgress(queryTestCaseMessage);
     reportForecastProgress(queryTestCaseMessage);
