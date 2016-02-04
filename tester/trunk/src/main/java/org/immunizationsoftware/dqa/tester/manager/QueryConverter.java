@@ -184,7 +184,7 @@ public class QueryConverter
       }
       if (pidFields.size() == MAX_FIELDS_IN_SEGMENT) {
         sb.append("QPD|");
-        sb.append("Z34^Request Immunization History^HL70471|");
+        sb.append("Z34^Request Immunization History^CDCPHINVS|");
         sb.append(messageId + "|");
         sb.append(pidFields.get(3) + "|");
         sb.append(pidFields.get(5) + "|");
@@ -252,7 +252,7 @@ public class QueryConverter
       }
       if (pidFields.size() == MAX_FIELDS_IN_SEGMENT) {
         sb.append("QPD|");
-        sb.append("Z44^Request Evaluated Immunization History^HL70471|");
+        sb.append("Z44^Request Evaluated Immunization History^CDCPHINVS|");
         sb.append(messageId + "|");
         sb.append(pidFields.get(3) + "|");
         sb.append(pidFields.get(5) + "|");
