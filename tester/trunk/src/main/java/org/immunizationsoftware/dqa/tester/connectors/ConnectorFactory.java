@@ -18,6 +18,7 @@ public class ConnectorFactory
   public static final String TYPE_ENVISION_SOAP11 = "Envision SOAP11";
   public static final String TYPE_OR_SOAP = "OR ALERT SOAP";
   public static final String TYPE_CA_SOAP = "CA SOAP";
+  public static final String TYPE_SC_SOAP = "SC SOAP";
   public static final String TYPE_ND_SOAP = "ND SOAP";
 
   public static final String[][] TYPES = { { TYPE_SOAP, "SOAP" }, { TYPE_POST, "POST" }, { TYPE_AL_SOAP, "AL SOAP" },
@@ -53,6 +54,8 @@ public class ConnectorFactory
       connector = new MOConnector(label, url);
     } else if (type.equals(TYPE_CA_SOAP)) {
       connector = new CASoapConnector(label, url);
+    } else if (type.equals(TYPE_SC_SOAP)) {
+      connector = new SCSoapConnector(label, url);
     } else if (type.equals(TYPE_AL_SOAP)) {
       connector = new ALSoapConnector(label, url);
     } else if (type.equals(TYPE_CO_SOAP)) {
