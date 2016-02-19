@@ -2259,6 +2259,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       addField(sb, PARAM_TPAR_QUERY_SUPPORT, participantResponse.getQuerySupport());
       addField(sb, PARAM_TPAR_NIST_STATUS, participantResponse.getNistStatus());
       addField(sb, PARAM_TPAR_ACCESS_PASSCODE, participantResponse.getAccessPasscode());
+      addField(sb, PARAM_TPAR_PUBLIC_ID_CODE, participantResponse.getPublicIdCode());
 
       content = sb.toString();
       printout = new DataOutputStream(urlConn.getOutputStream());
