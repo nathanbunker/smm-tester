@@ -166,11 +166,13 @@ public class ORConnector extends HttpConnector
       }
       responseString = responseString.replaceAll("\\Q&amp;\\E", "&");
       if (debug) {
+        response = new StringBuilder(responseString);
         response.append("\r");
         response.append("DEBUG LOG: \r");
         response.append(debugLog);
+        responseString = response.toString();
       }
-      return response.toString();
+      return responseString;
     } catch (IOException e) {
       e.printStackTrace(System.out);
       if (urlConn != null) {
