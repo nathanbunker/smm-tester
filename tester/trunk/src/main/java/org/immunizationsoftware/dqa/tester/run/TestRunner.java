@@ -274,20 +274,24 @@ public class TestRunner
     wasRun = true;
     
     if (validateResponse) {
-      ascertainValidationResource(testCaseMessage, ackMessageText);
-      if (testCaseMessage.getValidationResource() != null) {
-        ValidationReport validationReport = NISTValidator.validate(ackMessageText,
-            testCaseMessage.getValidationResource());
-        testCaseMessage.setValidationReport(validationReport);
-        if (validationReport != null) {
-          testCaseMessage
-              .setValidationReportPass(validationReport.getHeaderReport().getValidationStatus().equals("Complete")
-                  && validationReport.getHeaderReport().getErrorCount() == 0);
-        }
-      }
+      validateResponseWithNIST(testCaseMessage, ackMessageText);
     }
 
     return passedTest;
+  }
+
+  public static void validateResponseWithNIST(TestCaseMessage testCaseMessage, String messageText) {
+    ascertainValidationResource(testCaseMessage, messageText);
+    if (testCaseMessage.getValidationResource() != null) {
+      ValidationReport validationReport = NISTValidator.validate(messageText,
+          testCaseMessage.getValidationResource());
+      testCaseMessage.setValidationReport(validationReport);
+      if (validationReport != null) {
+        testCaseMessage
+            .setValidationReportPass(validationReport.getHeaderReport().getValidationStatus().equals("Complete")
+                && validationReport.getHeaderReport().getErrorCount() == 0);
+      }
+    }
   }
 
   public static void ascertainValidationResource(TestCaseMessage testCaseMessage, String messageText) {
@@ -296,14 +300,20 @@ public class TestRunner
     if (hl7Reader.advanceToSegment("MSH")) {
       String messageType = hl7Reader.getValue(9);
       String profileId = hl7Reader.getValue(21);
-      if (profileId.equals("Z31")) {
+      if (profileId.equals("Z31") && messageType.equals("RSP")) {
         validationResource = ValidationResource.IZ_RSP_Z31;
-      } else if (profileId.equals("Z32")) {
+      } else if (profileId.equals("Z32") && messageType.equals("RSP")) {
         validationResource = ValidationResource.IZ_RSP_Z32;
-      } else if (profileId.equals("Z33")) {
+      } else if (profileId.equals("Z33") && messageType.equals("RSP")) {
         validationResource = ValidationResource.IZ_RSP_Z33;
-      } else if (profileId.equals("Z34")) {
-        validationResource = ValidationResource.IZ_RSP_Z42;
+      } else if (profileId.equals("Z34") && messageType.equals("QBP")) {
+        validationResource = ValidationResource.IZ_QBP_Z34;
+      } else if (profileId.equals("Z44") && messageType.equals("QBP")) {
+        validationResource = ValidationResource.IZ_QBP_Z44;
+      } else if (profileId.equals("Z22") && messageType.equals("VXU")) {
+        validationResource = ValidationResource.IZ_VXU_Z22;
+      } else if (profileId.equals("") && messageType.equals("VXU")) {
+        validationResource = ValidationResource.IZ_VXU;
       } else if (profileId.equals("Z23") || messageType.equals("ACK")) {
         validationResource = ValidationResource.IZ_ACK_FOR_AIRA;
       }
