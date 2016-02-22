@@ -187,6 +187,10 @@ public class DashboardServlet extends ClientServlet
         List<File> fileList = CreateTestCaseServlet.listIISTestReports(sendData);
         if (fileList.size() > 0) {
           out.println("      <br/>");
+          out.println("      <br/><div style=\"color: red; border-style: dotted; border-color: red; background-color: #ffffcc; width: 300px; padding: 10px;\">"
+              + "Please note that this dashboard is now being replaced by the <a href=\"http://ois-pt.org/dqacm/aart\">Aggregate Analysis "
+              + "Reporting Tool</a> which will be available for full use in April of 2016. This new tool replaces this "
+              + "dashboard. The reports shown below are now dated and do not reflect the most recent testing. </div>");
           out.println("      <br/>Reports Available");
           for (File file : fileList) {
             String link = "CertifyHistoryServlet/" + sendData.getConnector().getLabel() + "/" + file.getName()
