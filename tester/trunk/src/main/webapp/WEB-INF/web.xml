@@ -43,6 +43,7 @@
     </init-param>
     
      
+     -->
     <init-param>
       <param-name>keyStore</param-name>
       <param-value>C:\test\smm\ID IRIS\smm.jks</param-value>
@@ -51,7 +52,7 @@
       <param-name>keyStorePassword</param-name>
       <param-value>changeme</param-value>
     </init-param>
-     -->
+<!--
     <init-param>
       <param-name>keyStore</param-name>
       <param-value>C:\test\smm\OR ALERT\smm.jks</param-value>
@@ -60,7 +61,6 @@
       <param-name>keyStorePassword</param-name>
       <param-value>7CC4FEEA9FFDA588</param-value>
     </init-param>
-<!--
     <init-param>
       <param-name>keyStore</param-name>
       <param-value>C:\test\smm\HI HIR\hi2.jks</param-value>
@@ -100,6 +100,10 @@
       <param-value></param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet>
+    <servlet-name>CDCWSDLServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.mover.CDCWSDLServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>CreateTestCaseServlet</servlet-name>
@@ -338,8 +342,12 @@
     <url-pattern>/install/InstallServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-    <servlet-name>ManagerServlet</servlet-name>
+  <servlet-name>ManagerServlet</servlet-name>
     <url-pattern>/smm</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+  <servlet-name>CDCWSDLServlet</servlet-name>
+    <url-pattern>/wsdl/*</url-pattern>
   </servlet-mapping>
   <!-- There are three means to configure Wickets configuration mode and they are tested in the order given. 1) A system property: -Dwicket.configuration 
     2) servlet specific <init-param> 3) context specific <context-param> The value might be either "development" (reloading when templates change) or "deployment". 

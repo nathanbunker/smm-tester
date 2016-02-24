@@ -316,6 +316,7 @@ public class TestRunner
         validationResource = ValidationResource.IZ_VXU;
       } else if (profileId.equals("Z23") || messageType.equals("ACK")) {
         validationResource = ValidationResource.IZ_ACK_FOR_AIRA;
+        // validationResource = ValidationResource.IZ_ACK_Z23;
       }
     }
     testCaseMessage.setValidationResource(validationResource);

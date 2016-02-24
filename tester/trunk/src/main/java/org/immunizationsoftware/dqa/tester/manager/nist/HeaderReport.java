@@ -3,6 +3,7 @@ package org.immunizationsoftware.dqa.tester.manager.nist;
 public class HeaderReport
 {
   private String validationStatus = "";
+  private String validationStatusInfo = "";
   private String serviceName = "";
   private String serviceProvider = "";
   private String serviceVersion = "";
@@ -23,6 +24,14 @@ public class HeaderReport
   private int alertCount = 0;
   private int informCount = 0;
 
+  public String getValidationStatusInfo() {
+    return validationStatusInfo;
+  }
+  
+  public void setValidationStatusInfo(String validationStatusInfo) {
+    this.validationStatusInfo = validationStatusInfo;
+  }
+  
   public int getInformCount() {
     return informCount;
   }

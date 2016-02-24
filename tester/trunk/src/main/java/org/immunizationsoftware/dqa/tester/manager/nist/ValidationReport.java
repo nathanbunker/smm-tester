@@ -72,6 +72,8 @@ public class ValidationReport
       // }
     } else {
       // read as XML
+//      System.out.println("Processing this: ");
+//      System.out.println(xml);
       try {
 
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -93,6 +95,8 @@ public class ValidationReport
                     if (headerNode.getNodeType() == Node.ELEMENT_NODE) {
                       if (headerNode.getNodeName().indexOf("ValidationStatus") != -1) {
                         headerReport.setValidationStatus(headerNode.getTextContent());
+                      } else if (headerNode.getNodeName().indexOf("ValidationStatusInfo") != -1) {
+                        headerReport.setValidationStatusInfo(headerNode.getTextContent());
                       } else if (headerNode.getNodeName().indexOf("ServiceName") != -1) {
                         headerReport.setServiceName(headerNode.getTextContent());
                         // <mes:ServiceName>NIST HL7V2 Message

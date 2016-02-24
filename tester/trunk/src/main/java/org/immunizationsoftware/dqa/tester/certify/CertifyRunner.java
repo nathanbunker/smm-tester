@@ -115,21 +115,19 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   public void setTestMessageMapMap(Map<String, Map<String, TestCaseMessage>> testMessageMapMap) {
     this.testMessageMapMap = testMessageMapMap;
   }
-  
+
   private long lastLogStatus = System.currentTimeMillis();
 
   public long getLastLogStatus() {
     return lastLogStatus;
   }
-  
-  public void switchStatus(String status, String logMessage)
-  {
+
+  public void switchStatus(String status, String logMessage) {
     this.status = status;
     logStatus(logMessage);
   }
-  
-  protected void indicateActive()
-  {
+
+  protected void indicateActive() {
     lastLogStatus = System.currentTimeMillis();
   }
 
@@ -483,7 +481,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
   @Override
   public void run() {
-    switchStatus(STATUS_STARTED, "Starting test process");  
+    switchStatus(STATUS_STARTED, "Starting test process");
     logStatus("Starting to run report");
     incrementingInt = new IncrementingInt();
     try {
@@ -2424,7 +2422,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         addField(sb, PARAM_TM_RESULT_RESPONSE_TYPE, testMessage.getActualMessageResponseType());
         addField(sb, PARAM_TM_RESULT_ACK_TYPE, testMessage.getActualResultAckType());
         addField(sb, PARAM_TM_RESULT_MANUAL_TEST, manualTest);
-        if (testMessage.getValidationReport() == null) {
+        if (testMessage.getValidationReport() == null
+            || !testMessage.getValidationReport().getHeaderReport().getValidationStatus().equals("Complete")) {
           addField(sb, PARAM_TM_RESULT_ACK_CONFORMANCE, VALUE_RESULT_ACK_CONFORMANCE_NOT_RUN);
         } else {
           boolean errorFound = (testMessage.getValidationReport().getAssertionList().size() == 0);
@@ -2492,6 +2491,14 @@ public class CertifyRunner extends Thread implements RecordServletInterface
             descriptionSet = new HashSet<String>();
           }
           position = 0;
+          if (!testMessage.getValidationReport().getHeaderReport().getValidationStatus().equals("Complete"))
+          {
+            position++;
+            addField(sb, PARAM_A_ASSERTION_DESCRIPTION + position, testMessage.getValidationReport().getHeaderReport().getValidationStatusInfo());
+            addField(sb, PARAM_A_ASSERTION_RESULT + position, "error");
+            addField(sb, PARAM_A_ASSERTION_TYPE + position, testMessage.getValidationReport().getHeaderReport().getValidationStatus());
+            addField(sb, PARAM_A_LOCATION_PATH + position, "");
+          }
           for (Assertion assertion : testMessage.getValidationReport().getAssertionList()) {
             if (reportErrorsOnly && !assertion.getResult().equalsIgnoreCase("error")) {
               continue;

@@ -157,6 +157,7 @@ public class SubmitServlet extends ClientServlet
           request.setAttribute("validateRequestTestCaseMessage", validateRequestTestCaseMessage);
         }
         {
+          System.out.println("--> " + responseText);
           TestCaseMessage validateResponseTestCaseMessage = new TestCaseMessage();
           TestRunner.validateResponseWithNIST(validateResponseTestCaseMessage, responseText);
           request.setAttribute("validateResponseTestCaseMessage", validateResponseTestCaseMessage);

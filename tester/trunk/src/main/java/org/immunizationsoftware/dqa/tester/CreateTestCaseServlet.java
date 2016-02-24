@@ -64,7 +64,7 @@ public class CreateTestCaseServlet extends ClientServlet
       PrintWriter out = response.getWriter();
       List<TestCaseMessage> selectedTestCaseMessageList = (List<TestCaseMessage>) session
           .getAttribute("selectedTestCaseMessageList");
-      if (selectedTestCaseMessageList.isEmpty()) {
+      if (selectedTestCaseMessageList != null && selectedTestCaseMessageList.isEmpty()) {
         selectedTestCaseMessageList = null;
       }
       String action = request.getParameter("action");
@@ -73,7 +73,7 @@ public class CreateTestCaseServlet extends ClientServlet
         testCasePos = Integer.parseInt(request.getParameter("testCasePos"));
       }
       if (action != null && (action.equals("Prev") || action.equals("Next"))) {
-        if (!selectedTestCaseMessageList.isEmpty()) {
+        if (selectedTestCaseMessageList != null && !selectedTestCaseMessageList.isEmpty()) {
           if (action.equals("Prev")) {
             testCasePos--;
           }
