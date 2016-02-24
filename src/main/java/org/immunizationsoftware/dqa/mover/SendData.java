@@ -710,6 +710,15 @@ public class SendData extends Thread
     }
     ManagerServlet.registerLabel(this);
   }
+  
+  public Connector createTempConnector() throws Exception, FileNotFoundException, IOException {
+    List<Connector> connectors = Connector.makeConnectors(readScript());
+    if (connectors.size() == 0) {
+      throw new Exception("Script does not define connection");
+    }
+    Connector tempConnector = connectors.get(0);
+    return tempConnector;
+  }
 
   private boolean obtainLock() throws TransmissionException, IOException {
     lockFile = new File(rootDir, LOCK_FILE_NAME);

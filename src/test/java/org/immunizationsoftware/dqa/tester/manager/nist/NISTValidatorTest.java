@@ -60,6 +60,32 @@ public class NISTValidatorTest
       + "ERR||ORC^1^2^1|101^Required field missing^HL70357|E||||Vaccination placer order number is missing|\r";
 
   
+  private static final String MN1 = "FHS|^~\\&|MIIC|MIIC||ATEST|20160222164438.919||1738749.response\r"+
+"BHS|^~\\&|MIIC|MIIC||ATEST|20160222164438.920\r"+
+"MSH|^~\\&|MIIC|MIIC||ATEST|20160222164438.920||ACK|V85I1.1Y3|P|2.5.1\r"+
+"MSA|AE|V85I1.1Y3\r"+
+"ERR||PV1^1^20|102^Data type error^HL70357|E||||NO CLIENT FINANCIAL CLASS VALUES SPECIFIED. PV1 SEGMENT IGNORED.\r"+
+"ERR||RXA^1^0|100^Segment sequence error^HL70357|E||||MISSING_OBX_FOR_RXA\r"+
+"ERR||RXA^2^0|100^Segment sequence error^HL70357|E||||MISSING_OBX_FOR_RXA\r"+
+"ERR||OBX^2^3^0|204^Unknown key identifier^HL70357|E||||INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\r"+
+"ERR||OBX^3^3^0|204^Unknown key identifier^HL70357|E||||INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\r"+
+"ERR||OBX^4^3^0|204^Unknown key identifier^HL70357|E||||INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\r"+
+"BTS|1\r"+
+"FTS|1\r";
+
+  private static final String MN2 = "FHS|^~\\&|MIIC|MIIC||ATEST|20160222164438.919||1738749.response\r"+
+"BHS|^~\\&|MIIC|MIIC||ATEST|20160222164438.920\r"+
+"MSH|^~\\&|MIIC|MIIC||ATEST|20160222164438.920||ACK|V85I1.1Y3|P|2.5.1\r"+
+"MSA|AE|V85I1.1Y3\r"+
+"ERR||PV1^1^20|102^Data type error^HL70357|E||||NO CLIENT FINANCIAL CLASS VALUES SPECIFIED. PV1 SEGMENT IGNORED.\r"+
+"ERR||RXA^1^0|100^Segment sequence error^HL70357|E||||MISSING_OBX_FOR_RXA\r"+
+"ERR||RXA^2^0|100^Segment sequence error^HL70357|E||||MISSING_OBX_FOR_RXA\r"+
+"ERR||OBX^2^3^0|204^Unknown key identifier^HL70357|E||||INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\r"+
+"ERR||OBX^3^3^0|204^Unknown key identifier^HL70357|E||||INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\r"+
+"ERR||OBX^4^3^0|204^Unknown key identifier^HL70357|E||||INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\r"+
+"BTS|1\r"+
+"FTS|1\r";
+
   @Test
   public void test() {
     expectPass(TEST1, "Test 1");
@@ -74,6 +100,22 @@ public class NISTValidatorTest
     expectFail(TEST10, "Test 10");
   }
 
+  
+  @Test
+  public void testMN() {
+    TestCaseMessage testCaseMessage = new TestCaseMessage();
+    TestRunner.validateResponseWithNIST(testCaseMessage, MN1);
+    System.out.println("MN 1" + ": " + (testCaseMessage.isValidationReportPass() ? " Passed" : " Failed") + " Validation");
+    int errorCount = 0;
+    for (Assertion assertion : testCaseMessage.getValidationReport().getAssertionList()) {
+      if (assertion.getResult().equalsIgnoreCase("error")) {
+        System.out.println("  + " + assertion.getDescription() + " - " + assertion.getPath());
+        errorCount++;
+      }
+    }
+    assertTrue(!testCaseMessage.isValidationReportPass());
+    assertTrue(errorCount > 0);
+  }
   public void expectPass(String testMessage, String testName) {
     TestCaseMessage testCaseMessage = runTest(testMessage, testName);
     assertTrue(testCaseMessage.isValidationReportPass());
@@ -93,6 +135,7 @@ public class NISTValidatorTest
         System.out.println("  + " + assertion.getDescription() + " - " + assertion.getPath());
       }
     }
+    System.out.println("  + " + testCaseMessage.getValidationReport().getHeaderReport().getValidationStatus());
     return testCaseMessage;
   }
 }
