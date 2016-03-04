@@ -20,13 +20,14 @@ public class ConnectorFactory
   public static final String TYPE_CA_SOAP = "CA SOAP";
   public static final String TYPE_SC_SOAP = "SC SOAP";
   public static final String TYPE_ND_SOAP = "ND SOAP";
+  public static final String TYPE_WI_SOAP = "WI SOAP";
 
   public static final String[][] TYPES = { { TYPE_SOAP, "SOAP" }, { TYPE_POST, "POST" }, { TYPE_AL_SOAP, "AL SOAP" },
       { TYPE_CA_SOAP, "CA SOAP" }, { TYPE_CO_SOAP, "CO SOAP" }, { TYPE_KS_SOAP, "KS SOAP" },
       { TYPE_MA_SOAP, "MA SOAP" }, { TYPE_MO_SOAP, "MO SOAP" }, { TYPE_ND_SOAP, "ND SOAP" },
       { TYPE_NJ_SOAP, "NJ SOAP" }, { TYPE_NM_SOAP, "NM SOAP" }, { TYPE_ENVISION_SOAP, "Envision SOAP" },
       { TYPE_ENVISION_SOAP, "Envision SOAP 1.1" }, { TYPE_HI_SOAP, "HI SOAP (same standard as SOAP)" },
-      { TYPE_IL_WS, "IL WS" } };
+      { TYPE_IL_WS, "IL WS" }, {TYPE_WI_SOAP, "WS SOAP"} };
 
   public static Connector getConnector(String type, String label, String url) throws Exception {
     Connector connector = null;
@@ -46,6 +47,8 @@ public class ConnectorFactory
       connector = new EnvisionConnector(label, url, true);
     } else if (type.equals(TYPE_OR_SOAP)) {
       connector = new ORConnector(label, url);
+    } else if (type.equals(TYPE_WI_SOAP)) {
+      connector = new WIConnector(label, url);
     } else if (type.equals(TYPE_IL_WS)) {
       connector = new ILConnector(label, url);
     } else if (type.equals(TYPE_MA_SOAP)) {

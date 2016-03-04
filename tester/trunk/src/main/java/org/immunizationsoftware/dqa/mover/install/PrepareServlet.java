@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.immunizationsoftware.dqa.mover.install.templates.ConnectionTemplateFactory;
+
 public class PrepareServlet extends ClientServlet
 {
   protected static final String FOLDER_NAME = "folderName";
@@ -62,7 +64,7 @@ public class PrepareServlet extends ClientServlet
       out.println("      <td>&nbsp;</td>");
       out.println("      <td>Choose a template for configuration:");
       out.println("        <select name=\"" + TEMPLATE_NAME + "\">");
-      for (String option : ConfigureServlet.TEMPLATES) {
+      for (String option : ConnectionTemplateFactory.getConnectionTemplateNames()) {
         out.println("<option value=\"" + option + "\">" + option + "</option>");
       }
       out.println("        </select>");

@@ -133,7 +133,6 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
   public void updateSupportCenter(List<StatusLog> statusLogList, List<StatusFile> statusFileList) {
 
     if (supportCenterUrl != null) {
-
       try {
         exception = null;
         HttpURLConnection urlConn;
