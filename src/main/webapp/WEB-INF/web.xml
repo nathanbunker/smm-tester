@@ -11,6 +11,7 @@
       <param-name>scan.start.folders</param-name>
       <param-value>/home/oisptorg/ois-pt.org/data/tester;C:/test/smm;</param-value>
       <!--  
+      <param-value>C:/test/smm/UT USIIS/dev</param-value>
       <param-value>C:\data\Dropbox (AIRA)\Shared AIRA Files\Technical Assistance\IIS\</param-value>
        -->
     </init-param>
@@ -22,6 +23,16 @@
       <param-name>folderScanEnabled</param-name>
       <param-value>false</param-value>
     </init-param>
+
+      <init-param>
+      <param-name>keyStore</param-name>
+      <param-value>C:\test\smm\WI WIR\smm.jks</param-value>
+    </init-param>
+    <init-param>
+      <param-name>keyStorePassword</param-name>
+      <param-value>changeit</param-value>
+    </init-param>
+
 
 <!-- 
       <init-param>
@@ -42,8 +53,9 @@
       <param-value>k51j27maa</param-value>
     </init-param>
     
-     
      -->
+     
+<!--
     <init-param>
       <param-name>keyStore</param-name>
       <param-value>C:\test\smm\ID IRIS\smm.jks</param-value>
@@ -52,7 +64,6 @@
       <param-name>keyStorePassword</param-name>
       <param-value>changeme</param-value>
     </init-param>
-<!--
     <init-param>
       <param-name>keyStore</param-name>
       <param-value>C:\test\smm\OR ALERT\smm.jks</param-value>

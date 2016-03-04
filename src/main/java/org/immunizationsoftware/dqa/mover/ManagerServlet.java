@@ -60,6 +60,8 @@ public class ManagerServlet extends ClientServlet
   private static Set<ProfileUsage> requirementTestProfileFileSet = new HashSet<ProfileUsage>();
   private static boolean scanDirectories = true;
 
+  private static final boolean ENABLE_SUPPORT_CENTER = false;
+
   public static boolean isScanDirectories() {
     return scanDirectories;
   }
@@ -292,8 +294,13 @@ public class ManagerServlet extends ClientServlet
         folderScanner.start();
       }
     }
-    supportCenterUrl = getInitParameter("support_center.url");
-    supportCenterCode = getInitParameter("support_center.code");
+    if (ENABLE_SUPPORT_CENTER) {
+      supportCenterUrl = getInitParameter("support_center.url");
+      supportCenterCode = getInitParameter("support_center.code");
+    } else {
+      supportCenterUrl = null;
+      supportCenterCode = null;
+    }
 
     String softwareDirString = getInitParameter("software.dir");
     if (softwareDirString != null && softwareDirString.length() > 0) {

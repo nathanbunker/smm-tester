@@ -38,7 +38,10 @@ public class DownloadServlet extends ClientServlet
   private static final String FIELD_ADMIN_USERNAME = "adminUsername";
   private static final String FIELD_ADMIN_PASSWORD = "adminPassword";
 
-  private static final String[][] SUPPORT_CENTER_CODE = { { "general", "General" }, { "IHS", "Indian Health Service" } };
+  public static final boolean ENABLE_SUPPORT_CENTER = false;
+
+  private static final String[][] SUPPORT_CENTER_CODE = { { "general", "General" },
+      { "IHS", "Indian Health Service" } };
   private static final String[][] SUPPORT_CENTER_LOCATION = { { "http://ois-dqa.net/dqa/remote", "OIS" },
       { "none", "none" } };
 
@@ -52,9 +55,8 @@ public class DownloadServlet extends ClientServlet
       folderName = "";
     }
 
-    
     SoftwareType softwareType = getSoftwareType(req);
-    
+
     String tomcatHome = req.getParameter("tomcatHome");
     if (tomcatHome != null) {
       session.setAttribute("tomcatHome", tomcatHome);
@@ -78,6 +80,11 @@ public class DownloadServlet extends ClientServlet
       if (adminPassword == null) {
         adminPassword = "";
       }
+      if (!ENABLE_SUPPORT_CENTER)
+      {
+        scLocation = "none";
+        scCode = "";
+      }
       if (softwareType == SoftwareType.TESTER) {
         if (version == null || version.equals("")) {
           message = "Software Version is required";
@@ -87,10 +94,14 @@ public class DownloadServlet extends ClientServlet
           message = "Software Version is required";
         } else if (dataDir == null || dataDir.equals("")) {
           message = "SMM Root Folder is required";
-        } else if (scLocation == null || scLocation.equals("")) {
-          message = "Support Center is required";
-        } else if (scCode == null || scCode.equals("")) {
-          message = "Support Center Code is required";
+        } else {
+          if (ENABLE_SUPPORT_CENTER) {
+            if (scLocation == null || scLocation.equals("")) {
+              message = "Support Center is required";
+            } else if (scCode == null || scCode.equals("")) {
+              message = "Support Center Code is required";
+            }
+          }
         }
       }
       if (message == null) {
@@ -122,8 +133,10 @@ public class DownloadServlet extends ClientServlet
                 final String paramNameTagStart = "<param-name>";
                 final String paramValueTagStart = "<param-value>";
                 final String paramVAlueTagEnd = "</param-value>";
-                final String[] p = { "scan.start.folder", "support_center.code", "support_center.url", "software.dir",
-                    "admin.username", "admin.password" };
+                final String[] p = ENABLE_SUPPORT_CENTER
+                    ? new String[] { "scan.start.folder", "support_center.code", "support_center.url", "software.dir",
+                        "admin.username", "admin.password" }
+                    : new String[] { "scan.start.folder", "software.dir", "admin.username", "admin.password" };
                 @SuppressWarnings("resource")
                 BufferedReader br = new BufferedReader(new InputStreamReader(zis));
                 PrintWriter out = new PrintWriter(newFile);
@@ -175,8 +188,8 @@ public class DownloadServlet extends ClientServlet
 
           String warFilename = softwareType == SoftwareType.TESTER ? "tester.war" : "smm.war";
           resp.setContentType("application/x-zip");
-          resp.setHeader("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(warFilename, "UTF-8")
-              + "\"");
+          resp.setHeader("Content-Disposition",
+              "attachment; filename=\"" + URLEncoder.encode(warFilename, "UTF-8") + "\"");
 
           OutputStream out = resp.getOutputStream();
           ZipOutputStream zos = new ZipOutputStream(out);
@@ -261,7 +274,8 @@ public class DownloadServlet extends ClientServlet
         out.println("    <th class=\"boxed\">Root Data Folder</th>");
         out.println("    <td class=\"boxed\"><input type=\"text\" name=\"" + FIELD_DATA_DIR + "\" size=\"40\" value=\""
             + folderName + "\"></td>");
-        out.println("    <td class=\"boxed\">A local data folder that has been created to hold data, sent messages, and test results.</td>");
+        out.println(
+            "    <td class=\"boxed\">A local data folder that has been created to hold data, sent messages, and test results.</td>");
         out.println("  </tr>");
         out.println("  <tr class=\"boxed\">");
         out.println("    <th class=\"boxed\">Username</th>");
@@ -279,11 +293,13 @@ public class DownloadServlet extends ClientServlet
         out.println("    <th class=\"boxed\">&nbsp;</th>");
         out.println("    <td class=\"boxed\"><input type=\"submit\" name=\"action\" value=\"Download\"></td>");
         if (tomcatHome == null) {
-          out.println("    <td class=\"boxed\">Download and save as <code>tester.war</code> in the <code>webapps</code> folder"
-              + "<br/> located in your Tomcat installation directory.</td>");
+          out.println(
+              "    <td class=\"boxed\">Download and save as <code>tester.war</code> in the <code>webapps</code> folder"
+                  + "<br/> located in your Tomcat installation directory.</td>");
         } else {
-          out.println("    <td class=\"boxed\">Download and save as <code>tester.war</code> in the <code>webapps</code> folder"
-              + "<br/> located in your Tomcat installation directory, <code>" + tomcatHome + "</code>.</td>");
+          out.println(
+              "    <td class=\"boxed\">Download and save as <code>tester.war</code> in the <code>webapps</code> folder"
+                  + "<br/> located in your Tomcat installation directory, <code>" + tomcatHome + "</code>.</td>");
         }
         out.println("  </tr>");
         out.println("</table>");
@@ -314,39 +330,45 @@ public class DownloadServlet extends ClientServlet
             + folderName + "\"></td>");
         out.println("    <td class=\"boxed\">The root folder for the SMM data and configuration.</td>");
         out.println("  </tr>");
-        out.println("  <tr class=\"boxed\">");
-        out.println("    <th class=\"boxed\">Support Center</th>");
-        out.println("    <td class=\"boxed\">");
-        out.println("      <select name=\"" + FIELD_SC_LOCATION + "\">");
-        out.println("        <option value=\"\">select</option>");
-        for (String[] option : SUPPORT_CENTER_LOCATION) {
-          out.println("        <option value=\"" + option[0] + "\">" + option[1] + "</option>");
+        if (ENABLE_SUPPORT_CENTER) {
+          out.println("  <tr class=\"boxed\">");
+          out.println("    <th class=\"boxed\">Support Center</th>");
+          out.println("    <td class=\"boxed\">");
+          out.println("      <select name=\"" + FIELD_SC_LOCATION + "\">");
+          out.println("        <option value=\"\">select</option>");
+          for (String[] option : SUPPORT_CENTER_LOCATION) {
+            out.println("        <option value=\"" + option[0] + "\">" + option[1] + "</option>");
+          }
+          out.println("      </select>");
+          out.println("    </td>");
+          out.println(
+              "    <td class=\"boxed\">Organization responsible for remotely logging and support this SMM. The organization selected will receive regular updates on the current status of the SMM.</td>");
+          out.println("  </tr>");
+
+          out.println("  <tr class=\"boxed\">");
+          out.println("    <th class=\"boxed\">Support Center Code</th>");
+          out.println("    <td class=\"boxed\">");
+          out.println("      <select name=\"" + FIELD_SC_CODE + "\">");
+          out.println("        <option value=\"\">select</option>");
+          for (String[] option : SUPPORT_CENTER_CODE) {
+            out.println("        <option value=\"" + option[0] + "\">" + option[1] + "</option>");
+          }
+          out.println("      </select>");
+          out.println("    </td>");
+          out.println("    <td class=\"boxed\">The code assigned by the support center to prioritize assistance.</td>");
+          out.println("  </tr>");
         }
-        out.println("      </select>");
-        out.println("    </td>");
-        out.println("    <td class=\"boxed\">Organization responsible for remotely logging and support this SMM. The organization selected will receive regular updates on the current status of the SMM.</td>");
-        out.println("  </tr>");
-        out.println("  <tr class=\"boxed\">");
-        out.println("    <th class=\"boxed\">Support Center Code</th>");
-        out.println("    <td class=\"boxed\">");
-        out.println("      <select name=\"" + FIELD_SC_CODE + "\">");
-        out.println("        <option value=\"\">select</option>");
-        for (String[] option : SUPPORT_CENTER_CODE) {
-          out.println("        <option value=\"" + option[0] + "\">" + option[1] + "</option>");
-        }
-        out.println("      </select>");
-        out.println("    </td>");
-        out.println("    <td class=\"boxed\">The code assigned by the support center to prioritize assistance.</td>");
-        out.println("  </tr>");
         out.println("  <tr class=\"boxed\">");
         out.println("    <th class=\"boxed\">&nbsp;</th>");
         out.println("    <td class=\"boxed\"><input type=\"submit\" name=\"action\" value=\"Download\"></td>");
         if (tomcatHome == null) {
-          out.println("    <td class=\"boxed\">Download and save as <code>smm.war</code> in the <code>webapps</code> folder"
-              + "<br/> located in your Tomcat installation directory.</td>");
+          out.println(
+              "    <td class=\"boxed\">Download and save as <code>smm.war</code> in the <code>webapps</code> folder"
+                  + "<br/> located in your Tomcat installation directory.</td>");
         } else {
-          out.println("    <td class=\"boxed\">Download and save as <code>smm.war</code> in the <code>webapps</code> folder"
-              + "<br/> located in your Tomcat installation directory, <code>" + tomcatHome + "</code>.</td>");
+          out.println(
+              "    <td class=\"boxed\">Download and save as <code>smm.war</code> in the <code>webapps</code> folder"
+                  + "<br/> located in your Tomcat installation directory, <code>" + tomcatHome + "</code>.</td>");
         }
         out.println("  </tr>");
         out.println("</table>");

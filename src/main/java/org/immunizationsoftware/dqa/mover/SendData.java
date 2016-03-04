@@ -16,7 +16,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
@@ -278,6 +280,7 @@ public class SendData extends Thread
   private FileOut backupFileOut = null;
 
   private Connector connector = null;
+  private List<Connector> connectorListForRxaFilter = null;
   private StatusLogger statusLogger = null;
   private StatusReporter statusReporter = null;
   private Throwable statusReporterException = null;
@@ -330,6 +333,10 @@ public class SendData extends Thread
     errorCount++;
   }
 
+  public List<Connector> getConnectorListForRxaFilter() {
+    return connectorListForRxaFilter;
+  }
+
   private int retryCount = 0;
   private static final long SEC = 1000;
   private static final long MIN = 60 * SEC;
@@ -338,6 +345,7 @@ public class SendData extends Thread
   private static final long[] retryWait = { 30 * SEC, 1 * MIN, 2 * MIN, 4 * MIN, 8 * MIN, 16 * MIN, 30 * MIN, HOUR,
       2 * HOUR, 4 * HOUR, 8 * HOUR, 12 * HOUR, DAY };
   private Transformer transformer = null;
+  private Map<Connector, Transformer> transformerMapForRxaFilter = null;
 
   private int randomId = 0;
 
@@ -396,6 +404,17 @@ public class SendData extends Thread
       transformer = new Transformer();
       statusLogger.logInfo("Custom transformations are defined, setting up transformer");
     }
+    if (connectorListForRxaFilter != null) {
+      statusLogger.logInfo("Will be splitting data in messages and filtering RXA segments by the value in RXA-11.4");
+      transformerMapForRxaFilter = new HashMap<Connector, Transformer>();
+      for (Connector c : connectorListForRxaFilter) {
+        if (!c.getCustomTransformations().equals("")) {
+          transformerMapForRxaFilter.put(c, new Transformer());
+          statusLogger.logInfo("Custom transformations are defined for " + c.getLabel() + ", setting up transformer");
+        }
+      }
+    }
+
   }
 
   private void deleteWorkingDir() {
@@ -466,9 +485,14 @@ public class SendData extends Thread
           try {
             StringBuilder sb = new StringBuilder();
             String line = null;
+            String firstLine = null;
             BufferedReader in = new BufferedReader(new FileReader(workFile));
             connector.setCurrentControlId("" + System.currentTimeMillis() + attemptCount);
             while ((line = in.readLine()) != null) {
+                if (firstLine == null && connectorListForRxaFilter != null) {
+                  firstLine = line;
+                  continue;
+                }
               if (line.startsWith(HL7.MSH)) {
                 connector.setCurrentControlId(HL7.readField(line, 10));
               }
@@ -477,11 +501,16 @@ public class SendData extends Thread
             }
             in.close();
             String messageText = sb.toString();
+            if (connectorListForRxaFilter != null) {
+              for (Connector c : connectorListForRxaFilter) {
+                if (c.getRxaFilterFacilityId().equals(firstLine)) {
+                  send(messageText, c);
+                }
+              }
+            } else {
+              send(messageText, connector);
+            }
 
-            incAttemptCount();
-            String responseText = connector.submitMessage(messageText, false);
-            verifyOkayToKeepRunning();
-            saveAndHandleResponse(messageText, responseText);
           } finally {
             closeSendingMethodInputs();
           }
@@ -507,6 +536,13 @@ public class SendData extends Thread
       }
       deleteRequestFile(lastRequestFilename, "");
     }
+  }
+
+  public void send(String messageText, Connector c) throws Exception, IOException {
+    incAttemptCount();
+    String responseText = c.submitMessage(messageText, false);
+    verifyOkayToKeepRunning();
+    saveAndHandleResponse(messageText, responseText);
   }
 
   private void deleteRequestFile(String lastOriginalFilename, String originalFilename) {
@@ -695,10 +731,16 @@ public class SendData extends Thread
       throw new Exception("Script does not define connection");
     }
     connector = connectors.get(0);
+    if (connector.isRxaFilter()) {
+      connectorListForRxaFilter = new ArrayList<Connector>();
+      connectorListForRxaFilter.add(connector);
+    }
     for (int i = 1; i < connectors.size(); i++) {
       Connector c = connectors.get(i);
       if (!c.getPurpose().equals("") && !connector.getOtherConnectorMap().containsKey(c.getPurpose())) {
         connector.getOtherConnectorMap().put(c.getPurpose(), c);
+      } else if (connectorListForRxaFilter != null && c.isRxaFilter()) {
+        connectorListForRxaFilter.add(c);
       }
     }
     connector.setThrowExceptions(true);
@@ -710,7 +752,7 @@ public class SendData extends Thread
     }
     ManagerServlet.registerLabel(this);
   }
-  
+
   public Connector createTempConnector() throws Exception, FileNotFoundException, IOException {
     List<Connector> connectors = Connector.makeConnectors(readScript());
     if (connectors.size() == 0) {
@@ -797,20 +839,39 @@ public class SendData extends Thread
     updateFileOut = new FileOut(new File(updateDir, filename), true);
   }
 
-  private void moveMessageToWorking(StringBuilder message, String messageType) throws Exception, FileNotFoundException,
-      TransmissionException {
+  private void moveMessageToWorking(StringBuilder message, String messageType)
+      throws Exception, FileNotFoundException, TransmissionException {
     if (messageType != null && !messageType.startsWith(HL7.ACK) && message.length() > 0) {
-      messageNumber++;
       String messageText = message.toString();
-      messageText = transform(messageText);
-      if (!workDir.exists()) {
-        workDir.mkdir();
+      if (connectorListForRxaFilter == null) {
+        messageNumber++;
+        messageText = transform(messageText);
+        if (!workDir.exists()) {
+          workDir.mkdir();
+        }
+        File workFile = new File(workDir, filename + "-m" + getMessageNumberString());
+        PrintWriter out = new PrintWriter(workFile);
+        out.print(messageText);
+        out.close();
+      } else {
+        RxaFilter rxaFilter = new RxaFilter();
+        Map<Connector, String> connectorMap = rxaFilter.filter(messageText, connectorListForRxaFilter);
+        for (Connector c : connectorListForRxaFilter) {
+          messageText = connectorMap.get(c);
+          if (messageText != null) {
+            messageNumber++;
+            messageText = transform(messageText, c);
+            if (!workDir.exists()) {
+              workDir.mkdir();
+            }
+            File workFile = new File(workDir, filename + "-m" + getMessageNumberString());
+            PrintWriter out = new PrintWriter(workFile);
+            out.print(c.getRxaFilterFacilityId() + "\r");
+            out.print(messageText);
+            out.close();
+          }
+        }
       }
-      File workFile = new File(workDir, filename + "-m" + getMessageNumberString());
-      PrintWriter out = new PrintWriter(workFile);
-      out.print(messageText);
-      out.close();
-
     }
   }
 
@@ -818,6 +879,17 @@ public class SendData extends Thread
     if (transformer != null) {
       connector.setCurrentFilename(requestFile.getName());
       messageText = transformer.transform(connector, messageText);
+    }
+    return messageText;
+  }
+
+  private String transform(String messageText, Connector c) {
+    if (transformerMapForRxaFilter != null) {
+      Transformer t = transformerMapForRxaFilter.get(c);
+      if (t != null) {
+        c.setCurrentFilename(requestFile.getName());
+        messageText = t.transform(c, messageText);
+      }
     }
     return messageText;
   }
@@ -895,8 +967,7 @@ public class SendData extends Thread
 
   public File getTestCaseDir(boolean makeDirIfNotExist) {
     File testDir = getTestDir(makeDirIfNotExist);
-    if (testDir == null)
-    {
+    if (testDir == null) {
       return null;
     }
     File testCaseDir = new File(testDir, TEST_CASES_FOLDER);
@@ -954,8 +1025,8 @@ public class SendData extends Thread
           }
           connector.setKeyStore(keyStore);
         } catch (Exception e) {
-          System.out.println("Unable to read key store " + keyStoreFile.getAbsolutePath() + " with password "
-              + keyStorePassword);
+          System.out.println(
+              "Unable to read key store " + keyStoreFile.getAbsolutePath() + " with password " + keyStorePassword);
           e.printStackTrace();
           if (statusLogger != null) {
             statusLogger.logError("Unable to load key store " + keyStoreFile.getAbsolutePath() + " with password '"
@@ -1125,8 +1196,8 @@ public class SendData extends Thread
       } else {
         okay = false;
         statusLogger.logFile(inFile.getName(), ScanStatus.PROBLEM, 0);
-        statusLogger.logWarn("File does not appear to contain HL7 (Must start with FHS or MSH segment): "
-            + inFile.getName());
+        statusLogger
+            .logWarn("File does not appear to contain HL7 (Must start with FHS or MSH segment): " + inFile.getName());
       }
     } finally {
       in.close();
