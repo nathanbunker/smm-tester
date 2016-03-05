@@ -440,7 +440,12 @@ public class Transformer
     if (!connector.getCustomTransformations().equals("")) {
       transforms += connector.getCustomTransformations() + "\n";
     }
-    return transform(messageText, transforms, PatientType.NONE, connector);
+    TransformRequest transformRequest = new TransformRequest(messageText);
+    transformRequest.setConnector(connector);
+    transformRequest.setPatientType(PatientType.NONE);
+    transformRequest.setTransformText(transforms);
+    transform(transformRequest);
+    return transformRequest.getResultText();
   }
 
   public static String transform(Connector connector, TestCaseMessage testCaseMessage) {
@@ -514,9 +519,12 @@ public class Transformer
       transforms += additionalTransformations;
     }
 
-    return
-
-    transform(messageText, transforms, PatientType.NONE, connector);
+    TransformRequest transformRequest = new TransformRequest(messageText);
+    transformRequest.setConnector(connector);
+    transformRequest.setPatientType(PatientType.NONE);
+    transformRequest.setTransformText(transforms);
+    transform(transformRequest);
+    return transformRequest.getResultText();
   }
 
   public String transform(Connector connector, String messageText, String customTransformations,
@@ -543,7 +551,12 @@ public class Transformer
       transforms += additionalTransformations;
     }
 
-    return transform(messageText, transforms, PatientType.NONE, connector);
+    TransformRequest transformRequest = new TransformRequest(messageText);
+    transformRequest.setConnector(connector);
+    transformRequest.setPatientType(PatientType.NONE);
+    transformRequest.setTransformText(transforms);
+    transform(transformRequest);
+    return transformRequest.getResultText();
   }
 
   public static String readField(String message, String reference) {
@@ -569,13 +582,25 @@ public class Transformer
     testCaseMessage.setCauseIssueTransforms(causeIssueTransforms);
     String transforms = quickTransforms + "\n" + testCaseMessage.getCustomTransformations() + "\n"
         + causeIssueTransforms + testCaseMessage.getAdditionalTransformations();
-    String result = transform(testCaseMessage.getPreparedMessage(), transforms, testCaseMessage.getPatientType(), null);
+    TransformRequest transformRequest = new TransformRequest(testCaseMessage.getPreparedMessage());
+    transformRequest.setConnector(null);
+    transformRequest.setPatientType(testCaseMessage.getPatientType());
+    transformRequest.setTransformText(transforms);
+    transformRequest.setSegmentSeparator(testCaseMessage.getLineEnding());
+    transform(transformRequest);
+    String result = transformRequest.getResultText();
     testCaseMessage.setMessageText(result);
     testCaseMessage.setQuickTransformationsConverted(quickTransforms);
   }
 
   public String transformAddition(TestCaseMessage testCaseMessage, String additionTransformations) {
-    return transform(testCaseMessage.getMessageText(), additionTransformations, testCaseMessage.getPatientType(), null);
+    TransformRequest transformRequest = new TransformRequest(testCaseMessage.getMessageText());
+    transformRequest.setConnector(null);
+    transformRequest.setPatientType(testCaseMessage.getPatientType());
+    transformRequest.setTransformText(additionTransformations);
+    transformRequest.setSegmentSeparator(testCaseMessage.getLineEnding());
+    transform(transformRequest);
+    return transformRequest.getResultText();
   }
 
   public String convertQuickTransforms(TestCaseMessage testCaseMessage, String actualTestCase) {
@@ -975,17 +1000,15 @@ public class Transformer
     return quickTransforms;
   }
 
-  protected String transform(String baseText, String transformText, PatientType patientType, Connector connector) {
+  public void transform(TransformRequest transformRequest) {
     try {
-      TransformRequest transformRequest = new TransformRequest(baseText);
-      transformRequest.setConnector(connector);
-      transformRequest.setPatientType(patientType);
-      if (patientType != PatientType.NONE) {
-        Patient patient = setupPatient(patientType);
+      
+      if (transformRequest.getPatientType() != PatientType.NONE) {
+        Patient patient = setupPatient(transformRequest.getPatientType());
         transformRequest.setPatient(patient);
       }
 
-      BufferedReader inTransform = new BufferedReader(new StringReader(transformText));
+      BufferedReader inTransform = new BufferedReader(new StringReader(transformRequest.getTransformText()));
       String transformCommand;
       while ((transformCommand = inTransform.readLine()) != null) {
         transformCommand = transformCommand.trim();
@@ -1020,15 +1043,12 @@ public class Transformer
           }
         }
       }
-
-      return transformRequest.getResultText();
     } catch (Exception e) {
       StringWriter stringWriter = new StringWriter();
       PrintWriter out = new PrintWriter(stringWriter);
       e.printStackTrace(out);
-      return "Unable to transform: " + e.getMessage() + "\n" + stringWriter.toString();
+      transformRequest.setResultText("Unable to transform: " + e.getMessage() + "\n" + stringWriter.toString());
     }
-
   }
 
   public boolean checkForAgeSkip(TransformRequest transformRequest) throws IOException {
@@ -1190,9 +1210,9 @@ public class Transformer
           }
         }
         if (noLastSlash) {
-          resultText += finalLine + "\r";
+          resultText += finalLine + transformRequest.getSegmentSeparator();
         } else {
-          resultText += finalLine + "|\r";
+          resultText += finalLine + "|" + transformRequest.getSegmentSeparator();
         }
 
         if (headerStart != null) {
