@@ -35,11 +35,11 @@ public class RemoveVaccinationGroupsProcedure implements ProcedureInterface
                   finalMessage += vaccinationGroup;
                 }
               }
-              vaccinationGroup = lineResult + "\r";
+              vaccinationGroup = lineResult + transformRequest.getSegmentSeparator();
             } else if (!vaccinationGroup.equals("")) {
-              vaccinationGroup += lineResult + "\r";
+              vaccinationGroup += lineResult + transformRequest.getSegmentSeparator();
             } else {
-              finalMessage += lineResult + "\r";
+              finalMessage += lineResult + transformRequest.getSegmentSeparator();
             }
           }
           if (!vaccinationGroup.equals("")) {

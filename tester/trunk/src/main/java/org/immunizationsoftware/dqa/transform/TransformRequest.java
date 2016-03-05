@@ -11,6 +11,7 @@ public class TransformRequest
 {
   private PatientType patientType = null;
   private Connector connector = null;
+  private String transformText = null;
   private String resultText = null;
   private Patient patient = null;
   private String yesterday = null;
@@ -21,6 +22,14 @@ public class TransformRequest
   private String nowNoTimezone = null;
   private String line = null;
   private String segmentSeparator = "\r";
+
+  public String getTransformText() {
+    return transformText;
+  }
+
+  public void setTransformText(String transformText) {
+    this.transformText = transformText;
+  }
 
   public String getLongTimeFromNow() {
     return longTimeFromNow;

@@ -152,6 +152,15 @@ public class TestCaseMessage
   private TestCaseMessage updateTestCaseMessage = null;
   private boolean doNotQueryFor = false;
   private boolean global = false;
+  private String lineEnding = "\r";
+
+  public String getLineEnding() {
+    return lineEnding;
+  }
+
+  public void setLineEnding(String lineEnding) {
+    this.lineEnding = lineEnding;
+  }
 
   public boolean isGlobal() {
     return global;

@@ -11,6 +11,7 @@
       <param-name>scan.start.folders</param-name>
       <param-value>/home/oisptorg/ois-pt.org/data/tester;C:/test/smm;</param-value>
       <!--  
+      <param-value>/home/oisptorg/ois-pt.org/data/tester;C:/test/smm;</param-value>
       <param-value>C:/test/smm/UT USIIS/dev</param-value>
       <param-value>C:\data\Dropbox (AIRA)\Shared AIRA Files\Technical Assistance\IIS\</param-value>
        -->
@@ -24,6 +25,7 @@
       <param-value>false</param-value>
     </init-param>
 
+<!-- 
       <init-param>
       <param-name>keyStore</param-name>
       <param-value>C:\test\smm\WI WIR\smm.jks</param-value>
@@ -34,7 +36,6 @@
     </init-param>
 
 
-<!-- 
       <init-param>
       <param-name>keyStore</param-name>
       <param-value>C:\test\smm\IA IRIS\12908.jks</param-value>

@@ -38,7 +38,6 @@ public class CAForecast extends CertifyArea
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
     String eighteen = sdf.format(calendar.getTime());
 
-    int count = 0;
     certifyRunner.forecastTesterManager = new ForecastTesterManager(TCH_FORECAST_TESTER_URL);
     logStatus("Will connect to " + TCH_FORECAST_TESTER_URL + " to retrieve test cases");
     try {
@@ -48,7 +47,6 @@ public class CAForecast extends CertifyArea
             .getForecastTestCaseList(testPanel);
         logStatus("Found " + forecastTestCaseList.size() + " test case(s)");
         for (ForecastTestCase forecastTestCase : forecastTestCaseList) {
-          count++;
           TestCaseMessage testCaseMessage = new TestCaseMessage();
           testCaseMessage.setForecastTestCase(forecastTestCase);
           StringBuilder sb = new StringBuilder();
@@ -99,7 +97,7 @@ public class CAForecast extends CertifyArea
               }
             }
           }
-          register(count, 1, testCaseMessage);
+          register(forecastTestCase.getTestCaseId(), testPanel.getId(), testCaseMessage);
         }
       }
     } catch (Exception e) {

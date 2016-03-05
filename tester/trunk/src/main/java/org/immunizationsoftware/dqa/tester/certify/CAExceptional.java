@@ -67,20 +67,36 @@ public class CAExceptional extends CertifyArea
         count);
     count = createToleranceCheck("RXA-300 is empty with bars all the way out", "RXA-300=1\nRXA-300=", count);
     count = createToleranceCheck("RXA-300 set to a value of 1", "RXA-300=1", count);
-
     {
       count++;
       TestCaseMessage testCaseMessage1 = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage1.setDescription(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " Same message to be sent again");
       register(count, 1, testCaseMessage1);
-
+      
       count++;
       TestCaseMessage testCaseMessage2 = new TestCaseMessage();
       testCaseMessage2.setDescription(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " Same message as before");
       testCaseMessage2.setMessageText(testCaseMessage1.getMessageText());
       register(count, 1, testCaseMessage2);
     }
-
+    {
+      count++;
+      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+      testCaseMessage.setDescription(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " Message separated by CR+LF");
+      testCaseMessage.setLineEnding("\r\n");
+      register(count, 1, testCaseMessage);
+    }
+    count = createToleranceCheck("PID-13 Phone number is missing area code", "PID-13.6=", count);
+    count = createToleranceCheck("PID-13 Phone number is a valid international phone number", "PID-13.5=44\nPID-13.6=1304\nPID-13.6=827585", count);
+    count = createToleranceCheck("PID-5.2 Patient last name is only one character", "PID-5.1=[TRUNC 1]", count);
+    count = createToleranceCheck("PID-5.2 Patient first name is only one character", "PID-5.2=[TRUNC 1]", count);
+    count = createToleranceCheck("PID-5.2 Patient first name is BOYD", "PID-5.2=BOYD", count);
+    count = createToleranceCheck("PID-5.1 Patient last name is TESTA", "PID-5.1=Testa", count);
+    count = createToleranceCheck("PID-5.1 Patient last name is NONE", "PID-5.1=None", count);
+    count = createToleranceCheck("PID-5.1 Patient last name has dash", "PID-5.1=Thomas-Smith", count);
+    count = createToleranceCheck("PID-5.1 Patient last name has period", "PID-5.1=St. Thomas", count);
+    count = createToleranceCheck("PID-5.1 Patient last name has apostrophe", "PID-5.1=O'Reilly", count);
+    count = createToleranceCheck("PID-11 Patient address is valid international address", "PID-11.1=93 Wyandotte St E\nPID-11.3=Windsor\nPID-11.4=ON\nPID-11.5=N9A 3H1\nPID-11.6=CAN", count);
     count = 200;
     {
       count++;
