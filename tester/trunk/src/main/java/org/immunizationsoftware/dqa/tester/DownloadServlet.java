@@ -54,7 +54,7 @@ public class DownloadServlet extends HttpServlet {
                 String testScript = request.getParameter("testScript");
                 List<TestCaseMessage> testCaseMessageList;
                 if (testScript != null) {
-                    testCaseMessageList = TestCaseServlet.parseAndAddTestCases(testScript, session);
+                    testCaseMessageList = TestCaseServlet.parseAndAddTestCases(testScript);
                 } else {
                     testCaseMessageList = (List<TestCaseMessage>) session.getAttribute("selectedTestCaseMessageList");
                 }

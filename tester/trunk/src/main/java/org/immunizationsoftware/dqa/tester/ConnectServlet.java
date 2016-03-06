@@ -268,7 +268,7 @@ public class ConnectServlet extends ClientServlet
   {
     List<TestCaseMessage> testCaseMessageList = new ArrayList<TestCaseMessage>();
     Set<String> testCaseNumberSelectedSet = TestCaseServlet.setTestCaseNumberSelectedSet(request, session);
-    Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(null, session);
+    Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(null, CreateTestCaseServlet.getTestCaseMessageMapMap(session));
     for (String testCaseNumber : testCaseNumberSelectedSet)
     {
       TestCaseMessage tcm = testCaseMessageMap.get(testCaseNumber);

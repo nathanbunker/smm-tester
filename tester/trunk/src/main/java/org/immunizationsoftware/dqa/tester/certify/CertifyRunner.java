@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -1001,6 +1002,37 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     out.println("</table>");
     out.println("<br/>");
 
+  }
+
+  public void printTextUpdate(PrintStream out) {
+    {
+      out.print("Updates ");
+      int progress = caTotal.getAreaProgress()[0];
+      for (int i = 0; i < 100; i = i + 3) {
+        System.out.print(i < progress ? "#" : "-");
+      }
+      System.out.print(" " + progress + "% of " + caTotal.getAreaCount()[0] + " test cases");
+      updateEtc = caTotal.estimatedUpdateCompletion();
+      SimpleDateFormat timeFormat = new SimpleDateFormat("H:mm");
+      if (updateEtc != null) {
+        out.print(" - ETC " + timeFormat.format(updateEtc));
+      }
+      out.println();
+    }
+    if (willQuery) {
+      out.print("Queries ");
+      int progress = caTotal.getAreaProgress()[1];
+      for (int i = 0; i < 100; i = i + 3) {
+        System.out.print(i < progress ? "#" : "-");
+      }
+      System.out.print(" " + progress + "% of " + caTotal.getAreaCount()[1] + " test cases");
+      queryEtc = caTotal.estimatedQueryCompletion();
+      SimpleDateFormat timeFormat = new SimpleDateFormat("H:mm");
+      if (queryEtc != null) {
+        out.print(" - ETC " + timeFormat.format(queryEtc));
+      }
+      out.println();
+    }
   }
 
   public void printRow(PrintWriter out, CertifyArea certifyArea) {
@@ -2491,12 +2523,13 @@ public class CertifyRunner extends Thread implements RecordServletInterface
             descriptionSet = new HashSet<String>();
           }
           position = 0;
-          if (!testMessage.getValidationReport().getHeaderReport().getValidationStatus().equals("Complete"))
-          {
+          if (!testMessage.getValidationReport().getHeaderReport().getValidationStatus().equals("Complete")) {
             position++;
-            addField(sb, PARAM_A_ASSERTION_DESCRIPTION + position, testMessage.getValidationReport().getHeaderReport().getValidationStatusInfo());
+            addField(sb, PARAM_A_ASSERTION_DESCRIPTION + position,
+                testMessage.getValidationReport().getHeaderReport().getValidationStatusInfo());
             addField(sb, PARAM_A_ASSERTION_RESULT + position, "error");
-            addField(sb, PARAM_A_ASSERTION_TYPE + position, testMessage.getValidationReport().getHeaderReport().getValidationStatus());
+            addField(sb, PARAM_A_ASSERTION_TYPE + position,
+                testMessage.getValidationReport().getHeaderReport().getValidationStatus());
             addField(sb, PARAM_A_LOCATION_PATH + position, "");
           }
           for (Assertion assertion : testMessage.getValidationReport().getAssertionList()) {

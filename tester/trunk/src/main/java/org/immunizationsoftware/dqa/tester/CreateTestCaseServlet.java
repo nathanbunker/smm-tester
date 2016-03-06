@@ -95,9 +95,9 @@ public class CreateTestCaseServlet extends ClientServlet
         testCaseSet = request.getParameter("testCaseSet");
         if (testCaseNumber != null && testCaseNumber.length() > 0) {
           if (request.getParameter("global") != null) {
-            testCaseMessage = getTestCaseMessageMap("Global: " + testCaseSet, session).get(testCaseNumber);
+            testCaseMessage = getTestCaseMessageMap("Global: " + testCaseSet, getTestCaseMessageMapMap(session)).get(testCaseNumber);
           } else {
-            testCaseMessage = getTestCaseMessageMap(testCaseSet, session).get(testCaseNumber);
+            testCaseMessage = getTestCaseMessageMap(testCaseSet, getTestCaseMessageMapMap(session)).get(testCaseNumber);
           }
         } else {
           testCaseMessage = (TestCaseMessage) session.getAttribute("testCaseMessage");
@@ -229,9 +229,9 @@ public class CreateTestCaseServlet extends ClientServlet
 
         if (testCaseMessage.getTestCaseNumber().length() > 0) {
           if (testCaseMessage.isGlobal()) {
-            getTestCaseMessageMap("Gobal: " + testCaseSet, session).put(testCaseNumber, testCaseMessage);
+            getTestCaseMessageMap("Gobal: " + testCaseSet, getTestCaseMessageMapMap(session)).put(testCaseNumber, testCaseMessage);
           } else {
-            getTestCaseMessageMap(testCaseSet, session).put(testCaseNumber, testCaseMessage);
+            getTestCaseMessageMap(testCaseSet, getTestCaseMessageMapMap(session)).put(testCaseNumber, testCaseMessage);
           }
         }
         Transformer transformer = new Transformer();
@@ -438,10 +438,10 @@ public class CreateTestCaseServlet extends ClientServlet
         session.setAttribute("testCaseMessage", testCaseMessage);
         if (!testCaseMessage.getTestCaseNumber().equals("")) {
           if (testCaseMessage.isGlobal()) {
-            getTestCaseMessageMap("Gobal: " + testCaseSet, session).put(testCaseMessage.getTestCaseNumber(),
+            getTestCaseMessageMap("Gobal: " + testCaseSet, getTestCaseMessageMapMap(session)).put(testCaseMessage.getTestCaseNumber(),
                 testCaseMessage);
           } else {
-            getTestCaseMessageMap(testCaseSet, session).put(testCaseMessage.getTestCaseNumber(), testCaseMessage);
+            getTestCaseMessageMap(testCaseSet, getTestCaseMessageMapMap(session)).put(testCaseMessage.getTestCaseNumber(), testCaseMessage);
           }
         }
         out.println("    </form>");
@@ -627,11 +627,10 @@ public class CreateTestCaseServlet extends ClientServlet
 
   }
 
-  protected static Map<String, TestCaseMessage> getTestCaseMessageMap(String testCaseSet, HttpSession session) {
+  protected static Map<String, TestCaseMessage> getTestCaseMessageMap(String testCaseSet, Map<String, Map<String, TestCaseMessage>> testMessageMapMap) {
     if (testCaseSet == null) {
       testCaseSet = "";
     }
-    Map<String, Map<String, TestCaseMessage>> testMessageMapMap = getTestCaseMessageMapMap(session);
     Map<String, TestCaseMessage> testMessageMap = testMessageMapMap.get(testCaseSet);
     if (testMessageMap == null) {
       testMessageMap = new HashMap<String, TestCaseMessage>();
@@ -754,7 +753,7 @@ public class CreateTestCaseServlet extends ClientServlet
     if (user != null && user.hasSendData()) {
       File testCaseDir = user.getSendData().getTestCaseDir(false);
       if (testCaseDir != null) {
-        readTestCases(session, testCaseDir, null, false);
+        readTestCases(getTestCaseMessageMapMap(session), testCaseDir, null, false);
         {
           File[] dirs = testCaseDir.listFiles(new FileFilter() {
             public boolean accept(File arg0) {
@@ -763,7 +762,7 @@ public class CreateTestCaseServlet extends ClientServlet
           });
           if (dirs != null) {
             for (File dir : dirs) {
-              readTestCases(session, dir, dir.getName(), false);
+              readTestCases(getTestCaseMessageMapMap(session), dir, dir.getName(), false);
             }
           }
         }
@@ -771,7 +770,7 @@ public class CreateTestCaseServlet extends ClientServlet
       {
         File globalDir = new File(user.getSendData().getRootDir().getParentFile(), "_global");
         if (globalDir.exists() && globalDir.isDirectory()) {
-          readTestCases(session, globalDir, null, true);
+          readTestCases(getTestCaseMessageMapMap(session), globalDir, null, true);
           File[] dirs = globalDir.listFiles(new FileFilter() {
             public boolean accept(File arg0) {
               return arg0.isDirectory() && !arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
@@ -779,7 +778,7 @@ public class CreateTestCaseServlet extends ClientServlet
           });
           if (dirs != null) {
             for (File dir : dirs) {
-              readTestCases(session, dir, dir.getName(), true);
+              readTestCases(getTestCaseMessageMapMap(session), dir, dir.getName(), true);
             }
           }
         }
@@ -817,7 +816,7 @@ public class CreateTestCaseServlet extends ClientServlet
     return fileList;
   }
 
-  private static void readTestCases(HttpSession session, File testCaseDir, String testCaseSet, boolean global)
+  public static void readTestCases(Map<String, Map<String, TestCaseMessage>> testMessageMapMap, File testCaseDir, String testCaseSet, boolean global)
       throws FileNotFoundException, IOException, ServletException {
     String[] filenames = testCaseDir.list(new FilenameFilter() {
       public boolean accept(File file, String arg1) {
@@ -838,12 +837,11 @@ public class CreateTestCaseServlet extends ClientServlet
         }
         in.close();
 
-        List<TestCaseMessage> testCaseMessageList = TestCaseServlet.parseAndAddTestCases(testScript.toString(),
-            session);
+        List<TestCaseMessage> testCaseMessageList = TestCaseServlet.parseAndAddTestCases(testScript.toString());
         for (TestCaseMessage testCaseMessage : testCaseMessageList) {
           if (!testCaseMessage.getTestCaseNumber().equals("")) {
             testCaseMessage.setGlobal(global);
-            CreateTestCaseServlet.getTestCaseMessageMap(testCaseSet, session).put(testCaseMessage.getTestCaseNumber(),
+            CreateTestCaseServlet.getTestCaseMessageMap(testCaseSet, testMessageMapMap).put(testCaseMessage.getTestCaseNumber(),
                 testCaseMessage);
           }
         }

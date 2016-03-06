@@ -82,9 +82,9 @@ public class TestCaseServlet extends ClientServlet
         Set<String> testCaseNumberSelectedSet = setTestCaseNumberSelectedSet(request, session);
 
         String testCase = request.getParameter("source");
-        List<TestCaseMessage> testCaseMessageList = parseAndAddTestCases(testCase, session);
+        List<TestCaseMessage> testCaseMessageList = parseAndAddTestCases(testCase);
 
-        Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(null, session);
+        Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(null, CreateTestCaseServlet.getTestCaseMessageMapMap(session));
         for (String testCaseNumber : testCaseNumberSelectedSet) {
           TestCaseMessage tcm = testCaseMessageMap.get(testCaseNumber);
           if (tcm != null) {
@@ -197,7 +197,7 @@ public class TestCaseServlet extends ClientServlet
             }
             out.println("</div>");
             if (!testCaseMessage.getTestCaseNumber().equals("")) {
-              CreateTestCaseServlet.getTestCaseMessageMap(testCaseMessage.getTestCaseSet(), session).put(testCaseMessage.getTestCaseNumber(),
+              CreateTestCaseServlet.getTestCaseMessageMap(testCaseMessage.getTestCaseSet(), CreateTestCaseServlet.getTestCaseMessageMapMap(session)).put(testCaseMessage.getTestCaseNumber(),
                   testCaseMessage);
             }
           } catch (Exception e) {
@@ -276,7 +276,7 @@ public class TestCaseServlet extends ClientServlet
     return testCaseNumberSelectedSet;
   }
 
-  protected static List<TestCaseMessage> parseAndAddTestCases(String testCase, HttpSession session)
+  protected static List<TestCaseMessage> parseAndAddTestCases(String testCase)
       throws ServletException {
     List<TestCaseMessage> testCaseMessageList = null;
     if (testCase == null) {

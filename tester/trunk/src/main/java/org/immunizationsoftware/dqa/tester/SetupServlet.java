@@ -92,7 +92,7 @@ public class SetupServlet extends ClientServlet
         printHtmlHead(out, MENU_HEADER_SETUP, request);
        
         Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(testSetSelected,
-            session);
+            CreateTestCaseServlet.getTestCaseMessageMapMap(session));
         List<String> testCaseNumberList = new ArrayList<String>(testCaseMessageMap.keySet());
         List<String> testCaseSetList = new ArrayList<String>(
             CreateTestCaseServlet.getTestCaseMessageMapMap(session).keySet());
@@ -205,7 +205,7 @@ public class SetupServlet extends ClientServlet
       HttpSession session) {
     List<TestCaseMessage> testCaseMessageList = new ArrayList<TestCaseMessage>();
     Set<String> testCaseNumberSelectedSet = TestCaseServlet.setTestCaseNumberSelectedSet(request, session);
-    Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(testCaseSet, session);
+    Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(testCaseSet, CreateTestCaseServlet.getTestCaseMessageMapMap(session));
     for (String testCaseNumber : testCaseNumberSelectedSet) {
       TestCaseMessage tcm = testCaseMessageMap.get(testCaseNumber);
       if (testCaseNumberSelectedSet.contains(tcm.getTestCaseNumber())) {
@@ -218,10 +218,10 @@ public class SetupServlet extends ClientServlet
   protected void loadTestCases(HttpServletRequest request, HttpSession session) {
     String testScript = request.getParameter("testScript");
     try {
-      List<TestCaseMessage> testCaseMessageList = TestCaseServlet.parseAndAddTestCases(testScript, session);
+      List<TestCaseMessage> testCaseMessageList = TestCaseServlet.parseAndAddTestCases(testScript);
       for (TestCaseMessage testCaseMessage : testCaseMessageList) {
         if (!testCaseMessage.getTestCaseNumber().equals("")) {
-          CreateTestCaseServlet.getTestCaseMessageMap(testCaseMessage.getTestCaseSet(), session)
+          CreateTestCaseServlet.getTestCaseMessageMap(testCaseMessage.getTestCaseSet(), CreateTestCaseServlet.getTestCaseMessageMapMap(session))
               .put(testCaseMessage.getTestCaseNumber(), testCaseMessage);
         }
       }
