@@ -115,7 +115,7 @@ public class LoginServlet extends ClientServlet
       } else if (action.equals("Logout"))
       {
 
-        Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(null, session);
+        Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(null, CreateTestCaseServlet.getTestCaseMessageMapMap(session));
         oldTestCaseMessageList = new ArrayList<TestCaseMessage>(testCaseMessageMap.values());
         TestCaseServlet.sortTestCaseMessageList(oldTestCaseMessageList);
         session.invalidate();

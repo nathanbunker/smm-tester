@@ -54,9 +54,7 @@
       <param-value>k51j27maa</param-value>
     </init-param>
     
-     -->
      
-<!--
     <init-param>
       <param-name>keyStore</param-name>
       <param-value>C:\test\smm\ID IRIS\smm.jks</param-value>
@@ -65,6 +63,7 @@
       <param-name>keyStorePassword</param-name>
       <param-value>changeme</param-value>
     </init-param>
+     -->
     <init-param>
       <param-name>keyStore</param-name>
       <param-value>C:\test\smm\OR ALERT\smm.jks</param-value>
@@ -73,6 +72,7 @@
       <param-name>keyStorePassword</param-name>
       <param-value>7CC4FEEA9FFDA588</param-value>
     </init-param>
+<!--
     <init-param>
       <param-name>keyStore</param-name>
       <param-value>C:\test\smm\HI HIR\hi2.jks</param-value>

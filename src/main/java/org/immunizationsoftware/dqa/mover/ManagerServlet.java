@@ -35,6 +35,17 @@ import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 public class ManagerServlet extends ClientServlet
 {
 
+  public static final String INIT_PARAM_KEY_STORE_PASSWORD = "keyStorePassword";
+  public static final String INIT_PARAM_SUN_SECURITY_SSL_ALLOW_UNSAFE_RENEGOTIATION = "sun.security.ssl.allowUnsafeRenegotiation";
+  public static final String INIT_PARAM_KEY_STORE = "keyStore";
+  public static final String INIT_PARAM_ADMIN_PASSWORD = "admin.password";
+  public static final String INIT_PARAM_ADMIN_USERNAME = "admin.username";
+  public static final String INIT_PARAM_SOFTWARE_DIR = "software.dir";
+  public static final String INIT_PARAM_SUPPORT_CENTER_CODE = "support_center.code";
+  public static final String INIT_PARAM_SUPPORT_CENTER_URL = "support_center.url";
+  public static final String INIT_PARAM_FOLDER_SCAN_ENABLED = "folderScanEnabled";
+  public static final String INIT_PARAM_SCAN_START_FOLDERS = "scan.start.folders";
+  
   public static final String STANDARD_DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
   public static final String STANDARD_TIME_FORMAT = "HH:mm:ss";
 
@@ -232,7 +243,7 @@ public class ManagerServlet extends ClientServlet
 
       stableSystemId = doHash(stableSystemId);
     }
-    String scanStartFolders = getInitParameter("scan.start.folders");
+    String scanStartFolders = getInitParameter(INIT_PARAM_SCAN_START_FOLDERS);
     System.out.println("SMM Initializing Manager Servlet");
     String checkIntervalInSeconds = getInitParameter("checkIntervalInSeconds");
     if (checkIntervalInSeconds != null) {
@@ -242,7 +253,7 @@ public class ManagerServlet extends ClientServlet
       }
       System.out.println("Check interval has been set to " + checkInterval + " seconds");
     }
-    String folderScanEnabled = getInitParameter("folderScanEnabled");
+    String folderScanEnabled = getInitParameter(INIT_PARAM_FOLDER_SCAN_ENABLED);
     if (folderScanEnabled != null) {
       scanDirectories = !folderScanEnabled.equalsIgnoreCase("false");
       System.out.println("Folder scan has been " + (scanDirectories ? "enabled" : "disabled") + ".");
@@ -295,28 +306,28 @@ public class ManagerServlet extends ClientServlet
       }
     }
     if (ENABLE_SUPPORT_CENTER) {
-      supportCenterUrl = getInitParameter("support_center.url");
-      supportCenterCode = getInitParameter("support_center.code");
+      supportCenterUrl = getInitParameter(INIT_PARAM_SUPPORT_CENTER_URL);
+      supportCenterCode = getInitParameter(INIT_PARAM_SUPPORT_CENTER_CODE);
     } else {
       supportCenterUrl = null;
       supportCenterCode = null;
     }
 
-    String softwareDirString = getInitParameter("software.dir");
+    String softwareDirString = getInitParameter(INIT_PARAM_SOFTWARE_DIR);
     if (softwareDirString != null && softwareDirString.length() > 0) {
       softwareDir = new File(softwareDirString);
     }
 
-    String adminUsername = getInitParameter("admin.username");
-    String adminPassword = getInitParameter("admin.password");
+    String adminUsername = getInitParameter(INIT_PARAM_ADMIN_USERNAME);
+    String adminPassword = getInitParameter(INIT_PARAM_ADMIN_PASSWORD);
 
     if (adminUsername != null && !adminUsername.equals("") && adminPassword != null && !adminPassword.equals("")) {
       Authenticate.setupAdminUser(adminUsername, adminPassword);
     }
 
-    String keyStore = getInitParameter("keyStore");
+    String keyStore = getInitParameter(INIT_PARAM_KEY_STORE);
     if (keyStore != null && keyStore.length() > 0) {
-      String keyStorePassword = getInitParameter("keyStorePassword");
+      String keyStorePassword = getInitParameter(INIT_PARAM_KEY_STORE_PASSWORD);
       File file = new File(keyStore);
       if (file.exists() && file.isFile()) {
         try {
@@ -332,9 +343,9 @@ public class ManagerServlet extends ClientServlet
       }
     }
 
-    String allowUnsafeRenegotiation = getInitParameter("sun.security.ssl.allowUnsafeRenegotiation");
+    String allowUnsafeRenegotiation = getInitParameter(INIT_PARAM_SUN_SECURITY_SSL_ALLOW_UNSAFE_RENEGOTIATION);
     if (allowUnsafeRenegotiation != null) {
-      System.setProperty("sun.security.ssl.allowUnsafeRenegotiation", "true");
+      System.setProperty(INIT_PARAM_SUN_SECURITY_SSL_ALLOW_UNSAFE_RENEGOTIATION, "true");
       System.out.println("Setting option to allow unsafe renegotiation ");
     }
 

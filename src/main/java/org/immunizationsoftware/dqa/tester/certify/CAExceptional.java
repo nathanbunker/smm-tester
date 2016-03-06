@@ -97,6 +97,10 @@ public class CAExceptional extends CertifyArea
     count = createToleranceCheck("PID-5.1 Patient last name has period", "PID-5.1=St. Thomas", count);
     count = createToleranceCheck("PID-5.1 Patient last name has apostrophe", "PID-5.1=O'Reilly", count);
     count = createToleranceCheck("PID-11 Patient address is valid international address", "PID-11.1=93 Wyandotte St E\nPID-11.3=Windsor\nPID-11.4=ON\nPID-11.5=N9A 3H1\nPID-11.6=CAN", count);
+    count = createToleranceCheck("PID-5.1 Patient last name is NEW", "PID-5.1=New", count);
+    count = createToleranceCheck("PID-5.1 Patient last name is TEST", "PID-5.1=Test", count);
+    count = createToleranceCheck("PID-5.1 Patient last name is BAD", "PID-5.1=Bad", count);
+    
     count = 200;
     {
       count++;
