@@ -1005,8 +1005,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   }
 
   public void printTextUpdate(PrintStream out) {
-    {
-      out.print("Updates ");
+    if (caTotal.getAreaProgress()[0] < 100) {
+      out.print("Sending Updates ");
       int progress = caTotal.getAreaProgress()[0];
       for (int i = 0; i < 100; i = i + 3) {
         System.out.print(i < progress ? "#" : "-");
@@ -1018,20 +1018,25 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         out.print(" - ETC " + timeFormat.format(updateEtc));
       }
       out.println();
-    }
-    if (willQuery) {
-      out.print("Queries ");
-      int progress = caTotal.getAreaProgress()[1];
-      for (int i = 0; i < 100; i = i + 3) {
-        System.out.print(i < progress ? "#" : "-");
+    } else if (willQuery) {
+      if (caTotal.getAreaProgress()[1] < 100) {
+        out.print("Sending Queries ");
+        int progress = caTotal.getAreaProgress()[1];
+        for (int i = 0; i < 100; i = i + 3) {
+          System.out.print(i < progress ? "#" : "-");
+        }
+        System.out.print(" " + progress + "% of " + caTotal.getAreaCount()[1] + " test cases");
+        queryEtc = caTotal.estimatedQueryCompletion();
+        SimpleDateFormat timeFormat = new SimpleDateFormat("H:mm");
+        if (queryEtc != null) {
+          out.print(" - ETC " + timeFormat.format(queryEtc));
+        }
+        out.println();
+      } else {
+        out.println("Finished sending updates and queries");
       }
-      System.out.print(" " + progress + "% of " + caTotal.getAreaCount()[1] + " test cases");
-      queryEtc = caTotal.estimatedQueryCompletion();
-      SimpleDateFormat timeFormat = new SimpleDateFormat("H:mm");
-      if (queryEtc != null) {
-        out.print(" - ETC " + timeFormat.format(queryEtc));
-      }
-      out.println();
+    } else {
+      out.println("Finished sending updates, queries will not be sent");
     }
   }
 

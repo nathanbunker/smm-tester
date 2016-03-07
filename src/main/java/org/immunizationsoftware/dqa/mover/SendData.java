@@ -747,9 +747,9 @@ public class SendData extends Thread
     if (statusLogger != null) {
       statusLogger.logDebug("Looking for data to send to: " + connector.getLabel());
     }
-    if (!readKeyStore()) {
-      throw new Exception("Unable to read key store");
-    }
+//    if (!readKeyStore()) {
+//      throw new Exception("Unable to read key store");
+//    }
     ManagerServlet.registerLabel(this);
   }
 

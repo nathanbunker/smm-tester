@@ -540,6 +540,7 @@ public class CertifyClient
       sendData = ManagerServlet.getSendDatayByLabel(folderName);
       if (sendData != null && sendData.getConnector() != null) {
         connector = sendData.getConnector();
+        setupKeystore();
         if (connector == null) {
           System.err.println("Connection is not setup properly, can't find connection");
         }
@@ -564,6 +565,19 @@ public class CertifyClient
           profileUsageId = i;
           break;
         }
+      }
+    }
+  }
+
+  protected static void setupKeystore() throws IOException {
+    if (connector.getKeyStorePassword() != null && !connector.getKeyStorePassword().equals("")) {
+      File keyStoreFile = new File(sendData.getRootDir(), SendData.KEYSTORE_FILE_NAME);
+      if (keyStoreFile.exists()) {
+        System.setProperty("javax.net.ssl.keyStore", keyStoreFile.getCanonicalPath());
+        System.setProperty("javax.net.ssl.keyStorePassword", connector.getKeyStorePassword());
+        System.out.println("Set keystore to be: " + keyStoreFile.getCanonicalPath());
+      } else {
+        System.err.println("Unable to find key store file here: " + keyStoreFile.getCanonicalPath());
       }
     }
   }
