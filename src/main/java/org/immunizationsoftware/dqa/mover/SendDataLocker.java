@@ -41,15 +41,15 @@ public class SendDataLocker
 
   public void renewLock() throws IOException
   {
-    SimpleDateFormat sdf = new SimpleDateFormat(ManagerServlet.STANDARD_DATE_FORMAT);
+    SimpleDateFormat sdf = new SimpleDateFormat(ConnectionManager.STANDARD_DATE_FORMAT);
     PrintWriter out = new PrintWriter(lockFile);
     out.println("Simple Message Mover (SMM) currently working in this directory");
     out.println("");
-    out.println("SMM started:  " + sdf.format(ManagerServlet.getStartDate()));
+    out.println("SMM started:  " + sdf.format(ConnectionManager.getStartDate()));
     out.println("Lock set:     " + sdf.format(new Date()));
-    out.println("Random id:    " + ManagerServlet.getRandomId());
-    out.println("Local IP:     " + ManagerServlet.getLocalHostIp());
-    out.println("Local MAC:    " + ManagerServlet.getLocalHostMac());
+    out.println("Random id:    " + ConnectionManager.getRandomId());
+    out.println("Local IP:     " + ConnectionManager.getLocalHostIp());
+    out.println("Local MAC:    " + ConnectionManager.getLocalHostMac());
     out.close();
   }
 

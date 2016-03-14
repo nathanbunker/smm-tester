@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.immunizationsoftware.dqa.mover.ManagerServlet;
+import org.immunizationsoftware.dqa.mover.ConnectionManager;
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
@@ -118,7 +118,7 @@ public class CertifyHistoryServlet extends ClientServlet
         String report = paths[2];
         String fileName = paths[3];
 
-        SendData sendData = ManagerServlet.getSendDatayByLabel(iis);
+        SendData sendData = ConnectionManager.getSendDatayByLabel(iis);
         if (sendData != null && sendData.getConnector() != null) {
           if (sendData.getConnector().getLabel().equals(iis)) {
             File dir = new File(sendData.getRootDir(), report);
@@ -196,7 +196,7 @@ public class CertifyHistoryServlet extends ClientServlet
 
       printViewMenu(out, view, false);
 
-      if (!view.equals(VIEW_ALL_REPORTS) && ManagerServlet.getIisParticipantResponsesAndAccountInfoFile() != null) {
+      if (!view.equals(VIEW_ALL_REPORTS) && ConnectionManager.getIisParticipantResponsesAndAccountInfoFile() != null) {
         int maxCols = RecordServletInterface.MAP_COLS_MAX;
         int maxRows = RecordServletInterface.MAP_ROWS_MAX;
         ParticipantResponse[][] participantResponseMap = getParticipantResponseMap(session);
@@ -417,7 +417,7 @@ public class CertifyHistoryServlet extends ClientServlet
                 if (view.equals(VIEW_AUTOMATED_TESTING)) {
                   String folderName = participantResponse.getFolderName();
                   if (!folderName.equals("")) {
-                    SendData sendData = ManagerServlet.getSendDatayByLabel(folderName);
+                    SendData sendData = ConnectionManager.getSendDatayByLabel(folderName);
                     if (sendData != null && sendData.getConnector() != null) {
                       String[] testNames = sendData.getTestReportNames();
                       String latestTestName = "";
@@ -586,7 +586,7 @@ public class CertifyHistoryServlet extends ClientServlet
           out.println("<p><a href=\"" + dashboardLink + "\">Dashboard Link</a></p>");
         }
       } else {
-        for (SendData sendData : ManagerServlet.getSendDataList()) {
+        for (SendData sendData : ConnectionManager.getSendDataList()) {
           if (sendData.getConnector() != null) {
             List<File> fileList = CreateTestCaseServlet.listIISTestReports(sendData);
             if (fileList.size() > 0) {
@@ -640,7 +640,7 @@ public class CertifyHistoryServlet extends ClientServlet
           + URLEncoder.encode(VIEW[i], "UTF-8") + "\">");
       out.print(VIEW[i]);
       out.println("</a>");
-      if (ManagerServlet.getIisParticipantResponsesAndAccountInfoFile() == null) {
+      if (ConnectionManager.getIisParticipantResponsesAndAccountInfoFile() == null) {
         break;
       }
 

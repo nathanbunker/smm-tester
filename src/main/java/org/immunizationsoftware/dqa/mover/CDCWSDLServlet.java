@@ -65,7 +65,7 @@ public class CDCWSDLServlet extends ClientServlet
 
         @Override
         public String getEchoBackMessage(String message) {
-          SendData sendData = ManagerServlet.getSendDatayByLabel(label);
+          SendData sendData = ConnectionManager.getSendDatayByLabel(label);
           if (sendData == null || sendData.getConnector() == null) {
             return "Unrecognized end-point, or is not ready to receive messages. Echoing: " + message + "";
           } else {
@@ -76,7 +76,7 @@ public class CDCWSDLServlet extends ClientServlet
 
         @Override
         public void authorize(SubmitSingleMessage ssm) {
-          SendData sendData = ManagerServlet.getSendDatayByLabel(label);
+          SendData sendData = ConnectionManager.getSendDatayByLabel(label);
           if (sendData == null || sendData.getConnector() == null) {
             ssm.setAccessDenied("End-point is not recognized.");
           } else {

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.immunizationsoftware.dqa.mover.ManagerServlet;
+import org.immunizationsoftware.dqa.mover.ConnectionManager;
 import org.immunizationsoftware.dqa.tester.manager.CvsReader;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 
@@ -42,10 +42,10 @@ public class ProfileManager
   }
 
   public ProfileManager() throws IOException {
-    readProfileFields(ManagerServlet.getRequirementTestFieldsFile());
-    profileUsageList = ProfileManager.readProfileUsage(ManagerServlet.getRequirementTestProfileFileSet(),
+    readProfileFields(ConnectionManager.getRequirementTestFieldsFile());
+    profileUsageList = ProfileManager.readProfileUsage(ConnectionManager.getRequirementTestProfileFileSet(),
         profileFieldList);
-    ProfileManager.readTransforms(ManagerServlet.getRequirementTestTransformsFile(), profileFieldList);
+    ProfileManager.readTransforms(ConnectionManager.getRequirementTestTransformsFile(), profileFieldList);
   }
 
   public List<ProfileLine> createProfileLines(ProfileUsage profileUsage, boolean includeDataType) {
@@ -117,7 +117,7 @@ public class ProfileManager
   }
 
   public void writeTransforms() throws FileNotFoundException, IOException {
-    writeTransforms(ManagerServlet.getRequirementTestTransformsFile(), profileFieldList);
+    writeTransforms(ConnectionManager.getRequirementTestTransformsFile(), profileFieldList);
   }
 
   public static void writeTransforms(File profileTransformFile, List<ProfileField> profileFieldList)

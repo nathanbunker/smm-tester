@@ -79,8 +79,8 @@ public class SendData extends Thread
 
   public String getStableSystemId() {
     if (stableSystemId == null) {
-      String baseValue = ManagerServlet.doHash(rootDir.getAbsolutePath());
-      stableSystemId = ManagerServlet.getStableSystemId() + ":" + baseValue;
+      String baseValue = ConnectionManager.doHash(rootDir.getAbsolutePath());
+      stableSystemId = ConnectionManager.getStableSystemId() + ":" + baseValue;
     }
     return stableSystemId;
   }
@@ -119,7 +119,7 @@ public class SendData extends Thread
         if (configFile.exists() && configFile.isFile() && configFile.canRead()) {
           try {
             setupConnector();
-            if (ManagerServlet.isScanDirectories()) {
+            if (ConnectionManager.isScanDirectories()) {
               if (obtainLock() && okayToRun) {
                 createWorkingDirs();
                 createTransformer();
@@ -452,7 +452,7 @@ public class SendData extends Thread
   private void waitAwhile() {
     synchronized (this) {
       try {
-        this.wait(ManagerServlet.getCheckInterval() * 1000);
+        this.wait(ConnectionManager.getCheckInterval() * 1000);
       } catch (InterruptedException ie) {
         // continue
       }
@@ -750,7 +750,7 @@ public class SendData extends Thread
 //    if (!readKeyStore()) {
 //      throw new Exception("Unable to read key store");
 //    }
-    ManagerServlet.registerLabel(this);
+    ConnectionManager.registerLabel(this);
   }
 
   public Connector createTempConnector() throws Exception, FileNotFoundException, IOException {
@@ -788,7 +788,7 @@ public class SendData extends Thread
       }
       long waitTime = retryWait[retryCount - 1];
       Date waitUntil = new Date(System.currentTimeMillis() + waitTime);
-      SimpleDateFormat sdf = new SimpleDateFormat(ManagerServlet.STANDARD_DATE_FORMAT);
+      SimpleDateFormat sdf = new SimpleDateFormat(ConnectionManager.STANDARD_DATE_FORMAT);
       if (statusLogger != null) {
         statusLogger.logInfo("Problem sending data, will try again: " + sdf.format(waitUntil));
       }

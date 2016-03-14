@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.SoftwareVersion;
+import org.immunizationsoftware.dqa.mover.ConnectionManager;
 import org.immunizationsoftware.dqa.mover.ManagerServlet;
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
@@ -38,7 +39,7 @@ public class ClientServlet extends HttpServlet
   protected static ProfileManager profileManager = null;
   
   protected void initProfileManager(boolean forceRefresh) throws IOException {
-    if ((forceRefresh || profileManager == null) && ManagerServlet.getRequirementTestFieldsFile() != null
+    if ((forceRefresh || profileManager == null) && ConnectionManager.getRequirementTestFieldsFile() != null
         ) {
       profileManager = new ProfileManager();
     }
@@ -211,7 +212,7 @@ public class ClientServlet extends HttpServlet
     session.setAttribute("participantResponse", participantResponse);
     String folderName = participantResponse.getFolderName();
     if (!folderName.equals("")) {
-      SendData sendData = ManagerServlet.getSendDatayByLabel(folderName);
+      SendData sendData = ConnectionManager.getSendDatayByLabel(folderName);
       if (sendData != null && sendData.getConnector() != null) {
         ConnectServlet.addNewConnection(session, user, "", sendData.getInternalId(), true);
       }

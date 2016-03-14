@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.immunizationsoftware.dqa.mover.ManagerServlet;
+import org.immunizationsoftware.dqa.mover.ConnectionManager;
 
 public class DownloadServlet extends ClientServlet
 {
@@ -147,7 +147,7 @@ public class DownloadServlet extends ClientServlet
       }
       if (message == null)
       {
-        File rootDir = ManagerServlet.getSoftwareDir();
+        File rootDir = ConnectionManager.getSoftwareDir();
         File versionWar = new File(rootDir, "dqa-" + version + ".war");
         File expandDir = null;
         while (expandDir == null)
@@ -296,9 +296,9 @@ public class DownloadServlet extends ClientServlet
     PrintWriter out = new PrintWriter(resp.getOutputStream());
     List<String> versionList = new ArrayList<String>();
     File[] warFiles = null;
-    if (ManagerServlet.getSoftwareDir() != null)
+    if (ConnectionManager.getSoftwareDir() != null)
     {
-      File file = ManagerServlet.getSoftwareDir();
+      File file = ConnectionManager.getSoftwareDir();
       if (file.exists() && file.isDirectory())
       {
         warFiles = file.listFiles(new FileFilter() {

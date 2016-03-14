@@ -39,9 +39,9 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
 
   public StatusReporter(SendData sendData) throws MalformedURLException {
     this.sendData = sendData;
-    if (ManagerServlet.getSupportCenterUrl() != null && !ManagerServlet.getSupportCenterUrl().equals("none")
-        && !ManagerServlet.getSupportCenterUrl().equals("")) {
-      supportCenterUrl = new URL(ManagerServlet.getSupportCenterUrl());
+    if (ConnectionManager.getSupportCenterUrl() != null && !ConnectionManager.getSupportCenterUrl().equals("none")
+        && !ConnectionManager.getSupportCenterUrl().equals("")) {
+      supportCenterUrl = new URL(ConnectionManager.getSupportCenterUrl());
     }
   }
 
@@ -138,7 +138,7 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
         HttpURLConnection urlConn;
         DataOutputStream printout;
         InputStreamReader input = null;
-        URL url = new URL(ManagerServlet.getSupportCenterUrl());
+        URL url = new URL(ConnectionManager.getSupportCenterUrl());
         urlConn = (HttpURLConnection) url.openConnection();
         urlConn.setRequestMethod("POST");
 
@@ -149,7 +149,7 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
         StringBuilder content = new StringBuilder();
 
         append(CONNECTION_CODE, sendData.getStableSystemId(), content);
-        append(SUPPORT_CENTER_CODE, ManagerServlet.getSupportCenterCode(), content);
+        append(SUPPORT_CENTER_CODE, ConnectionManager.getSupportCenterCode(), content);
         if (sendData.getConnector() == null) {
           append(CONNECTION_LABEL, "None", content);
           append(LOCATION_TO, "", content);
