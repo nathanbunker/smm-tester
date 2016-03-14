@@ -7,7 +7,7 @@ package org.immunizationsoftware.dqa.tester;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.immunizationsoftware.dqa.mover.ManagerServlet;
+import org.immunizationsoftware.dqa.mover.ConnectionManager;
 import org.immunizationsoftware.dqa.mover.SendData;
 
 /**
@@ -143,7 +143,7 @@ public class Authenticate {
         SendData sendData = null;
         if (passwordInt > 0)
         {
-          sendData = ManagerServlet.authenticateSendData(username, passwordInt);
+          sendData = ConnectionManager.authenticateSendData(username, passwordInt);
           addUser(username, password, sendData);
           
           if (sendData != null)

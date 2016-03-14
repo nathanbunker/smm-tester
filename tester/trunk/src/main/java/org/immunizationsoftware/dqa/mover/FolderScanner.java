@@ -11,7 +11,7 @@ public class FolderScanner extends Thread
   private String scanningStatus = "";
   private boolean scanning = false;
   private boolean keepRunning = true;
-  private ManagerServlet managerServlet = null;
+  private ConnectionManager managerServlet = null;
 
   public List<File> getFoldersToScan() {
     return foldersToScan;
@@ -25,7 +25,7 @@ public class FolderScanner extends Thread
     return scanning;
   }
 
-  public FolderScanner(List<File> foldersToScan, ManagerServlet managerServlet) {
+  public FolderScanner(List<File> foldersToScan, ConnectionManager managerServlet) {
     this.foldersToScan = foldersToScan;
     this.managerServlet = managerServlet;
   }
@@ -72,7 +72,7 @@ public class FolderScanner extends Thread
         }
       }
     }
-    if (ManagerServlet.isRegisteredFolder(folder)) {
+    if (ConnectionManager.isRegisteredFolder(folder)) {
       // already found, don't look here again
       return;
     }
@@ -87,7 +87,7 @@ public class FolderScanner extends Thread
     if (configFile.exists() && configFile.isFile() && configFile.canRead()) {
       // This is a data directory!
       log("Found SMM configuration file in this folder: " + folder.getAbsolutePath());
-      ManagerServlet.registerFolder(folder);
+      ConnectionManager.registerFolder(folder);
     } else {
       // not a data directory, but perhaps children are
       File[] subFolders = folder.listFiles(new FileFilter() {

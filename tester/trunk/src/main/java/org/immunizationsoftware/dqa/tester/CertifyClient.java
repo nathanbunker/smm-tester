@@ -31,6 +31,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import org.immunizationsoftware.dqa.mover.ConnectionManager;
 import org.immunizationsoftware.dqa.mover.ManagerServlet;
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
@@ -83,8 +84,6 @@ public class CertifyClient
   private static boolean reportErrorsOnly = true;
   private static boolean condenseErrors = true;
   private static List<ForecastTestPanel> forecastTestPanelList = new ArrayList<ForecastTestPanel>();
-  private static ManagerServletConfig servletConfig = null;
-  private static ManagerServlet managerServlet = null;
   private static String runAgainst = null;
   private static CertifyRunner certifyRunner = null;
 
@@ -125,158 +124,7 @@ public class CertifyClient
     runQ = !queryType.equals(CertifyRunner.QUERY_TYPE_NONE);
   }
 
-  private static class ManagerServletContext implements ServletContext
-  {
-
-    public ServletContext getContext(String uripath) {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public int getMajorVersion() {
-      // TODO Auto-generated method stub
-      return 0;
-    }
-
-    public int getMinorVersion() {
-      // TODO Auto-generated method stub
-      return 0;
-    }
-
-    public String getMimeType(String file) {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public URL getResource(String path) throws MalformedURLException {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public InputStream getResourceAsStream(String path) {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public RequestDispatcher getRequestDispatcher(String path) {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public RequestDispatcher getNamedDispatcher(String name) {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public Servlet getServlet(String name) throws ServletException {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public Enumeration getServlets() {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public Enumeration getServletNames() {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public void log(String msg) {
-      System.out.println(msg);
-    }
-
-    public void log(Exception exception, String msg) {
-      // TODO Auto-generated method stub
-
-    }
-
-    public void log(String message, Throwable throwable) {
-      // TODO Auto-generated method stub
-
-    }
-
-    public String getRealPath(String path) {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public String getServerInfo() {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public String getInitParameter(String name) {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public Enumeration getInitParameterNames() {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public Object getAttribute(String name) {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public Enumeration getAttributeNames() {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public Set getResourcePaths(String arg0) {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public String getServletContextName() {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public void setAttribute(String name, Object object) {
-      // TODO Auto-generated method stub
-
-    }
-
-    public void removeAttribute(String name) {
-      // TODO Auto-generated method stub
-
-    }
-
-  }
-
-  private static class ManagerServletConfig implements ServletConfig
-  {
-
-    private Map<String, String> parameterMap = new HashMap<String, String>();
-    private ServletContext servletContext = new ManagerServletContext();
-
-    public ServletContext getServletContext() {
-      return servletContext;
-    }
-
-    public void setInitParameter(String key, String name) {
-      parameterMap.put(key, name);
-    }
-
-    public String getInitParameter(String name) {
-      return parameterMap.get(name);
-    }
-
-    public Enumeration getInitParameterNames() {
-      return null;
-    }
-
-    public String getServletName() {
-      return "Tester";
-    }
-
-  }
-
+  
   public static void main(String[] args) throws Exception {
     if (args.length < 1) {
       System.err.println("Usage: java org.immunizationsoftware.dqa.tester.CeritfyClient config.txt");
@@ -309,12 +157,7 @@ public class CertifyClient
       System.err.println("AART name is not defined in configuration file ");
       return;
     }
-    if (servletConfig.getInitParameter(ManagerServlet.INIT_PARAM_SCAN_START_FOLDERS) == null) {
-      System.err.println("Scan Folder is not defined in configuration file");
-      return;
-    }
-
-    if (ManagerServlet.getRequirementTestFieldsFile() == null) {
+    if (ConnectionManager.getRequirementTestFieldsFile() == null) {
       System.out.println("  + Requirements test fields file is missing, unable to initialize");
       return;
     }
@@ -501,7 +344,7 @@ public class CertifyClient
   }
 
   public static void initManagerServlet(String[] args) throws FileNotFoundException, IOException, ServletException {
-    servletConfig = new ManagerServletConfig();
+    ConnectionManager connectionManager = new ConnectionManager();
     BufferedReader in = new BufferedReader(new FileReader(args[0]));
     String line;
     while ((line = in.readLine()) != null) {
@@ -513,23 +356,19 @@ public class CertifyClient
           if (key.equals("AART Name")) {
             aartName = value;
           } else if (key.equals("Key Store")) {
-            servletConfig.setInitParameter(ManagerServlet.INIT_PARAM_KEY_STORE, value);
+            connectionManager.setKeyStore(value);
           } else if (key.equals("Key Store Password")) {
-            servletConfig.setInitParameter(ManagerServlet.INIT_PARAM_KEY_STORE_PASSWORD, value);
+            connectionManager.setKeyStorePassword(value);
           } else if (key.equals("Sun Security Allow Unsafe Renegotiation: ")) {
-            servletConfig.setInitParameter(ManagerServlet.INIT_PARAM_SUN_SECURITY_SSL_ALLOW_UNSAFE_RENEGOTIATION,
-                value);
+            connectionManager.setSunSecuritySslAllowUnsafeRenegotiation(value.equalsIgnoreCase("true"));
           } else if (key.equals("Scan Folder")) {
-            servletConfig.setInitParameter(ManagerServlet.INIT_PARAM_SCAN_START_FOLDERS, value);
+            connectionManager.setScanStartFolders(value);
           }
         }
       }
     }
     in.close();
-    servletConfig.setInitParameter(ManagerServlet.INIT_PARAM_SUN_SECURITY_SSL_ALLOW_UNSAFE_RENEGOTIATION, "true");
-    servletConfig.setInitParameter(ManagerServlet.INIT_PARAM_FOLDER_SCAN_ENABLED, "false");
-    ManagerServlet managerServlet = new ManagerServlet();
-    managerServlet.init(servletConfig);
+    connectionManager.init();
   }
 
   private static void switchParticipantResponse() throws IOException {
@@ -537,7 +376,7 @@ public class CertifyClient
     if (folderName.equals("")) {
       System.err.println("Sender does not have a folder name it is connected to");
     } else {
-      sendData = ManagerServlet.getSendDatayByLabel(folderName);
+      sendData = ConnectionManager.getSendDatayByLabel(folderName);
       if (sendData != null && sendData.getConnector() != null) {
         connector = sendData.getConnector();
         setupKeystore();

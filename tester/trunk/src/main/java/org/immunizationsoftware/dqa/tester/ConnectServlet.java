@@ -4,27 +4,20 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.immunizationsoftware.dqa.mover.ManagerServlet;
+import org.immunizationsoftware.dqa.mover.ConnectionManager;
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.connectors.ConnectorFactory;
-import org.immunizationsoftware.dqa.tester.connectors.HISoapConnector;
-import org.immunizationsoftware.dqa.tester.connectors.HttpConnector;
-import org.immunizationsoftware.dqa.tester.connectors.NMSoapConnector;
-import org.immunizationsoftware.dqa.tester.connectors.SoapConnector;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 
 /**
@@ -98,7 +91,7 @@ public class ConnectServlet extends ClientServlet
           boolean selected = !user.hasSendData();
           out.println("              <option value=\"0\"" + (selected ? " selected=\"true\"" : "")
               + ">-- none selected --</option>");
-          for (SendData sendData : ManagerServlet.getSendDataList()) {
+          for (SendData sendData : ConnectionManager.getSendDataList()) {
             if (sendData.getConnector() != null) {
               selected = user.hasSendData() && user.getSendData().getInternalId() == sendData.getInternalId();
               out.println("              <option value=\"" + sendData.getInternalId() + "\""
@@ -228,7 +221,7 @@ public class ConnectServlet extends ClientServlet
     if (internalId == 0) {
       user.setSendData(null);
     } else {
-      SendData sendData = ManagerServlet.getSendData(internalId);
+      SendData sendData = ConnectionManager.getSendData(internalId);
       user.setSendData(sendData);
       if (removeOtherConnections) {
         getConnectors(session).clear();

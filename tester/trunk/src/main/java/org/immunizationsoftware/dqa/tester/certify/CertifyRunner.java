@@ -539,6 +539,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           }
         } catch (Throwable t) {
           logStatus("Exception running base test case message: " + t.getMessage());
+          exception = t;
           t.printStackTrace();
           goodToGo = false;
         }
@@ -546,6 +547,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       }
       if (!goodToGo) {
         logStatus("Test is being cancelled, basic message was not accepted");
+        switchStatus(STATUS_PROBLEM, "Test is being cancelled, basic message was not accepted");
+        reportProgress(null);
         return;
       }
 
@@ -602,6 +605,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           }
         }
       }
+      caTotal.getAreaProgress()[0] = 100;
 
       if (willQuery) {
         if (pauseBeforeQuerying) {

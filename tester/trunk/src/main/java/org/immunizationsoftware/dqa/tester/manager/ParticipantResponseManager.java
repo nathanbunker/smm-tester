@@ -6,12 +6,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.immunizationsoftware.dqa.mover.ManagerServlet;
+import org.immunizationsoftware.dqa.mover.ConnectionManager;
 
 public class ParticipantResponseManager {
   public static List<ParticipantResponse> readFile(ParticipantResponse[][] participantResponseMap) throws IOException {
     List<ParticipantResponse> participantResponseList = new ArrayList<ParticipantResponse>();
-    BufferedReader in = new BufferedReader(new FileReader(ManagerServlet.getIisParticipantResponsesAndAccountInfoFile()));
+    BufferedReader in = new BufferedReader(new FileReader(ConnectionManager.getIisParticipantResponsesAndAccountInfoFile()));
     String line = in.readLine();
     List<String> valueList = CvsReader.readValuesFromCsv(line);
 

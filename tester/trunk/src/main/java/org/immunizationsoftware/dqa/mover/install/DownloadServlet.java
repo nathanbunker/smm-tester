@@ -1,6 +1,5 @@
 package org.immunizationsoftware.dqa.mover.install;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -24,8 +23,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.axis2.dataretrieval.OutputForm;
 import org.immunizationsoftware.dqa.SoftwareVersion;
+import org.immunizationsoftware.dqa.mover.ConnectionManager;
 import org.immunizationsoftware.dqa.mover.ManagerServlet;
 
 public class DownloadServlet extends ClientServlet
@@ -105,7 +104,7 @@ public class DownloadServlet extends ClientServlet
         }
       }
       if (message == null) {
-        File rootDir = ManagerServlet.getSoftwareDir();
+        File rootDir = ConnectionManager.getSoftwareDir();
         File versionWar = new File(rootDir, "tester-" + version + ".war");
         File expandDir = null;
         while (expandDir == null) {
@@ -228,8 +227,8 @@ public class DownloadServlet extends ClientServlet
     PrintWriter out = new PrintWriter(resp.getOutputStream());
     List<String> versionList = new ArrayList<String>();
     File[] warFiles = null;
-    if (ManagerServlet.getSoftwareDir() != null) {
-      File file = ManagerServlet.getSoftwareDir();
+    if (ConnectionManager.getSoftwareDir() != null) {
+      File file = ConnectionManager.getSoftwareDir();
       if (file.exists() && file.isDirectory()) {
         warFiles = file.listFiles(new FileFilter() {
           public boolean accept(File file) {

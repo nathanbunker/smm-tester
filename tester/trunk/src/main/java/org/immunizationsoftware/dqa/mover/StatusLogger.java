@@ -26,8 +26,8 @@ public class StatusLogger
   private File statusLoggerFile;
   private ScanStatus scanStatus = null;
   private PrintWriter out;
-  private SimpleDateFormat sdf = new SimpleDateFormat(ManagerServlet.STANDARD_DATE_FORMAT);
-  private SimpleDateFormat sdfTime = new SimpleDateFormat(ManagerServlet.STANDARD_TIME_FORMAT);
+  private SimpleDateFormat sdf = new SimpleDateFormat(ConnectionManager.STANDARD_DATE_FORMAT);
+  private SimpleDateFormat sdfTime = new SimpleDateFormat(ConnectionManager.STANDARD_TIME_FORMAT);
   private boolean somethingInterestingHappened = false;
   private int logLevel = LOG_LEVEL_DEBUG;
   

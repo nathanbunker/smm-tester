@@ -7,7 +7,7 @@ public class ShutdownInterceptor extends Thread
   @Override
   public void run()
   {
-    for (SendData sendData : ManagerServlet.getSendDataSet())
+    for (SendData sendData : ConnectionManager.getSendDataSet())
     {
       sendData.shutdown();
     }

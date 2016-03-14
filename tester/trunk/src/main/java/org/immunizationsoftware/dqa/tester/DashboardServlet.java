@@ -20,7 +20,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.immunizationsoftware.dqa.mover.ManagerServlet;
+import org.immunizationsoftware.dqa.mover.ConnectionManager;
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
 import org.immunizationsoftware.dqa.tester.manager.ParticipantResponseManager;
@@ -182,7 +182,7 @@ public class DashboardServlet extends ClientServlet
     out.println("      </table>");
     String folderName = participantResponse.getFolderName();
     if (!folderName.equals("")) {
-      SendData sendData = ManagerServlet.getSendDatayByLabel(folderName);
+      SendData sendData = ConnectionManager.getSendDatayByLabel(folderName);
       if (sendData != null && sendData.getConnector() != null) {
         List<File> fileList = CreateTestCaseServlet.listIISTestReports(sendData);
         if (fileList.size() > 0) {
