@@ -9,7 +9,6 @@ public class SubmitSingleMessage
   protected String password = "";
   protected String facilityID = "";
   protected String hl7Message = "";
-  protected String accessDenied = null;
   protected boolean debug = false;
   Map<String, Object> attributeMap = new HashMap<String, Object>();
   
@@ -21,11 +20,6 @@ public class SubmitSingleMessage
   public void setAttribute(String key, Object obj)
   {
     attributeMap.put(key,  obj);
-  }
-  
-  public boolean isAccessDenied()
-  {
-    return accessDenied != null;
   }
   
   public String getUsername()
@@ -59,14 +53,6 @@ public class SubmitSingleMessage
   public void setHl7Message(String hl7Message)
   {
     this.hl7Message = hl7Message;
-  }
-  public String getAccessDenied()
-  {
-    return accessDenied;
-  }
-  public void setAccessDenied(String accessDenied)
-  {
-    this.accessDenied = accessDenied;
   }
   public boolean isDebug()
   {

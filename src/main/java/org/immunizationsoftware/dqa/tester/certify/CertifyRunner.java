@@ -1010,7 +1010,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
   public void printTextUpdate(PrintStream out) {
     if (caTotal.getAreaProgress()[0] < 100) {
-      out.print("Sending Updates ");
+      out.print(connector.getLabel());
+      out.print(": Sending Updates ");
       int progress = caTotal.getAreaProgress()[0];
       for (int i = 0; i < 100; i = i + 3) {
         System.out.print(i < progress ? "#" : "-");
@@ -1024,7 +1025,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       out.println();
     } else if (willQuery) {
       if (caTotal.getAreaProgress()[1] < 100) {
-        out.print("Sending Queries ");
+        out.print(connector.getLabel());
+        out.print(": Sending Queries ");
         int progress = caTotal.getAreaProgress()[1];
         for (int i = 0; i < 100; i = i + 3) {
           System.out.print(i < progress ? "#" : "-");
