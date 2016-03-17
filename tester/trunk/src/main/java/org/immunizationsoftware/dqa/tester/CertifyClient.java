@@ -11,28 +11,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
 import org.immunizationsoftware.dqa.mover.ConnectionManager;
-import org.immunizationsoftware.dqa.mover.ManagerServlet;
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
@@ -343,7 +331,7 @@ public class CertifyClient
     }
   }
 
-  public static void initManagerServlet(String[] args) throws FileNotFoundException, IOException, ServletException {
+  public static void initManagerServlet(String[] args) throws FileNotFoundException, IOException {
     ConnectionManager connectionManager = new ConnectionManager();
     BufferedReader in = new BufferedReader(new FileReader(args[0]));
     String line;
@@ -421,7 +409,7 @@ public class CertifyClient
     }
   }
 
-  protected static void loadTestCases() throws ServletException, IOException {
+  protected static void loadTestCases() throws IOException {
     {
       File testCaseDir = sendData.getTestCaseDir(false);
       if (testCaseDir != null) {
