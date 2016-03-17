@@ -17,10 +17,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.immunizationsoftware.dqa.tester.ClientServlet;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.openimmunizationsoftware.dqa.transport.CDCWSDLServer;
+import org.openimmunizationsoftware.dqa.transport.Fault;
+import org.openimmunizationsoftware.dqa.transport.SecurityFault;
 import org.openimmunizationsoftware.dqa.transport.SubmitSingleMessage;
+import org.openimmunizationsoftware.dqa.transport.UnknownFault;
 
-public class CDCWSDLServlet extends ClientServlet
-{
+public class CDCWSDLServlet extends ClientServlet {
 
   private static final String SEND_DATA = "sendData";
 
@@ -48,7 +50,7 @@ public class CDCWSDLServlet extends ClientServlet
     try {
       CDCWSDLServer server = new CDCWSDLServer() {
         @Override
-        public void process(SubmitSingleMessage ssm, PrintWriter out) throws IOException {
+        public void process(SubmitSingleMessage ssm, PrintWriter out) throws Fault {
           SendData sendData = (SendData) ssm.getAttribute(SEND_DATA);
           Connector connector;
           try {
@@ -59,7 +61,7 @@ public class CDCWSDLServlet extends ClientServlet
             // connector.setOtherid("");
             out.println(connector.submitMessage(ssm.getHl7Message(), false));
           } catch (Exception e) {
-            throw new IOException("Unable to connect: " + e.getMessage());
+            throw new UnknownFault("Unable to relay to end point", e);
           }
         }
 
@@ -69,19 +71,17 @@ public class CDCWSDLServlet extends ClientServlet
           if (sendData == null || sendData.getConnector() == null) {
             return "Unrecognized end-point, or is not ready to receive messages. Echoing: " + message + "";
           } else {
-            return sendData.getConnector().getLabelDisplay() + " transfer is ready to receive messages. Echoing: "
-                + message + "";
+            return sendData.getConnector().getLabelDisplay() + " transfer is ready to receive messages. Echoing: " + message + "";
           }
         }
 
         @Override
-        public void authorize(SubmitSingleMessage ssm) {
+        public void authorize(SubmitSingleMessage ssm) throws SecurityFault {
           SendData sendData = ConnectionManager.getSendDatayByLabel(label);
           if (sendData == null || sendData.getConnector() == null) {
-            ssm.setAccessDenied("End-point is not recognized.");
-          } else {
-            ssm.setAttribute(SEND_DATA, sendData);
+            throw new SecurityFault("End-point is not recognized.");
           }
+          ssm.setAttribute(SEND_DATA, sendData);
         }
       };
       server.process(req, resp);
