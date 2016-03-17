@@ -84,7 +84,8 @@ public class TestCaseServlet extends ClientServlet
         String testCase = request.getParameter("source");
         List<TestCaseMessage> testCaseMessageList = parseAndAddTestCases(testCase);
 
-        Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(null, CreateTestCaseServlet.getTestCaseMessageMapMap(session));
+        Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(null,
+            CreateTestCaseServlet.getTestCaseMessageMapMap(session));
         for (String testCaseNumber : testCaseNumberSelectedSet) {
           TestCaseMessage tcm = testCaseMessageMap.get(testCaseNumber);
           if (tcm != null) {
@@ -197,8 +198,10 @@ public class TestCaseServlet extends ClientServlet
             }
             out.println("</div>");
             if (!testCaseMessage.getTestCaseNumber().equals("")) {
-              CreateTestCaseServlet.getTestCaseMessageMap(testCaseMessage.getTestCaseSet(), CreateTestCaseServlet.getTestCaseMessageMapMap(session)).put(testCaseMessage.getTestCaseNumber(),
-                  testCaseMessage);
+              CreateTestCaseServlet
+                  .getTestCaseMessageMap(testCaseMessage.getTestCaseSet(),
+                      CreateTestCaseServlet.getTestCaseMessageMapMap(session))
+                  .put(testCaseMessage.getTestCaseNumber(), testCaseMessage);
             }
           } catch (Exception e) {
             out.println("Unable to run test: " + e.getMessage());
@@ -210,7 +213,8 @@ public class TestCaseServlet extends ClientServlet
         if (testCaseMessageList.size() == 1) {
           session.setAttribute("testCaseMessage", testCaseMessageList.get(0));
         }
-        out.println("<h2>Test Result Summary <a href=\"javascript:toggleLayer('testResultSummary');\" title=\"Show/Hide\">+/-</a></h2>");
+        out.println(
+            "<h2>Test Result Summary <a href=\"javascript:toggleLayer('testResultSummary');\" title=\"Show/Hide\">+/-</a></h2>");
         out.println("<div id=\"testResultSummary\" style=\"display:none\">");
         out.println("<table border=\"1\" cellspacing=\"0\">");
         out.println("<tr>");
@@ -246,7 +250,8 @@ public class TestCaseServlet extends ClientServlet
         }
         out.println("</pre>");
         out.println("</div>");
-        out.println("<h2>Messages Only <a href=\"javascript:toggleLayer('messagesOnly');\" title=\"Show/Hide\">+/-</a></h2>");
+        out.println(
+            "<h2>Messages Only <a href=\"javascript:toggleLayer('messagesOnly');\" title=\"Show/Hide\">+/-</a></h2>");
         out.println("<div id=\"messagesOnly\" style=\"display:none\">");
         out.println("<pre>");
         for (TestCaseMessage testCaseMessage : testCaseMessageList) {
@@ -276,8 +281,7 @@ public class TestCaseServlet extends ClientServlet
     return testCaseNumberSelectedSet;
   }
 
-  protected static List<TestCaseMessage> parseAndAddTestCases(String testCase)
-      throws ServletException {
+  protected static List<TestCaseMessage> parseAndAddTestCases(String testCase) {
     List<TestCaseMessage> testCaseMessageList = null;
     if (testCase == null) {
       testCaseMessageList = new ArrayList<TestCaseMessage>();
@@ -285,7 +289,7 @@ public class TestCaseServlet extends ClientServlet
       try {
         testCaseMessageList = TestCaseMessageManager.createTestCaseMessageList(testCase);
       } catch (Exception e) {
-        throw new ServletException("Unable to read test case messages", e);
+        throw new IllegalArgumentException("Unable to read test case messages", e);
       }
     }
     return testCaseMessageList;
@@ -320,7 +324,8 @@ public class TestCaseServlet extends ClientServlet
   }
 
   // <editor-fold defaultstate="collapsed"
-  // desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+  // desc="HttpServlet methods. Click on the + sign on the left to edit the
+  // code.">
 
   /**
    * Handles the HTTP <code>GET</code> method.

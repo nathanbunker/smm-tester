@@ -817,7 +817,7 @@ public class CreateTestCaseServlet extends ClientServlet
   }
 
   public static void readTestCases(Map<String, Map<String, TestCaseMessage>> testMessageMapMap, File testCaseDir, String testCaseSet, boolean global)
-      throws FileNotFoundException, IOException, ServletException {
+      throws FileNotFoundException, IOException {
     String[] filenames = testCaseDir.list(new FilenameFilter() {
       public boolean accept(File file, String arg1) {
         return arg1.startsWith("TC-") && arg1.endsWith(".txt");
