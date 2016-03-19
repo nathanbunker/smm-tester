@@ -6,7 +6,6 @@ import java.io.StringReader;
 import java.util.LinkedList;
 
 import org.immunizationsoftware.dqa.transform.TransformRequest;
-import org.immunizationsoftware.dqa.transform.Transformer;
 
 public class AddFundingEligibilityToAllRxa implements ProcedureInterface
 {
@@ -26,7 +25,7 @@ public class AddFundingEligibilityToAllRxa implements ProcedureInterface
             needToAddOBX = false;
           }
         } else if (lineResult.startsWith("ORC|") || lineResult.startsWith("RXA|")) {
-          finalMessage += OBX_TO_ADD;
+          finalMessage += OBX_TO_ADD + transformRequest.getSegmentSeparator();
           needToAddOBX = false;
         }
       } else {

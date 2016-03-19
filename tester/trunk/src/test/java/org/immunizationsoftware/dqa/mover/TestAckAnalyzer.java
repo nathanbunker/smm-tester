@@ -65,15 +65,11 @@ public class TestAckAnalyzer
   private static final String NV_ACK_POS = "MSH|^~\\&|IZ Registry^1.3.6.1.4.1.26279.1.1.20090930^L|NV0000^DBO^L|Test EHR Application|NV2201|20130124115205||ACK|20130124NV0000520548|P|2.3.1||||||||\r"
       + "MSA|AA|NIST-IZ-001.00|VXU processed.|||";
 
-  private static final String OR_ACK_POS = "MSH|^~\\&amp;|ALERT IIS3.2.0|ALERT IIS||AL9998|20130315||ACK|NIST-IZ-001.00|P|2.5.1\r"
-      + "MSA|AR|NIST-IZ-001.00|INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\r"
-      + "ERR||OBX^1^3^0|204^Unknown key identifier^HL70357\r"
-      + "MSA|AR|NIST-IZ-001.00|INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\r"
-      + "ERR||OBX^2^3^0|204^Unknown key identifier^HL70357\r"
-      + "MSA|AR|NIST-IZ-001.00|INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\r"
-      + "ERR||OBX^4^3^0|204^Unknown key identifier^HL70357\r"
-      + "MSA|AR|NIST-IZ-001.00|System Vaccine Lot information not available. The incoming immunization that this system retained may be identified by the following characteristics -> Vaccination Date: 08142012 CVX Code:140 Lot Number:Z0860BB.\r"
-      + "ERR|||^^HL70357\r";
+  private static final String OR_ACK_POS = "MSH|^~\\&|ALERT IIS4.0.0|ALERT IIS||AL9997|20160218||ACK^V04^ACK|47NR-A.01.01.1th|P|2.5.1||||||||||ALERT IIS|AL9997\r"+
+"MSA|AE|47NR-A.01.01.1th\r"+
+"ERR||MSH^1^15|101^Required field missing^HL70357|W|6^Required observation missing^HL70533|||Informational Error - REQUIRED FIELD MSH-15 MISSING.\r"+
+"ERR||MSH^1^16|101^Required field missing^HL70357|W|6^Required observation missing^HL70533|||Informational Error - REQUIRED FIELD MSH-16 MISSING.\r"+
+"ERR||ORC^1^12^1^13|0^Message accepted^HL70357|W|5^Table value not found^HL70533|||Informational error - No value was entered for ORC-12.13\r";
   
   private static final String TEST_01 = "MSH|^~\\&|MCIR|MCIR||[DEFAULT=>'TEST']|20150211070501-0700||ACK^V04^VXU_V04|20150211070501-0700.1|P|2.5.1|\r"
 +"SFT|OIS|1.09.00|DQA||\r"
@@ -141,7 +137,7 @@ public class TestAckAnalyzer
     ackAnalyzer = new AckAnalyzer(OR_ACK_POS, AckAnalyzer.AckType.ALERT, null);
     assertTrue(ackAnalyzer.isAckMessage());
     assertTrue(ackAnalyzer.isPositive());
-    assertEquals("AR", ackAnalyzer.getAckCode());
+    assertEquals("AE", ackAnalyzer.getAckCode());
     
     ackAnalyzer = new AckAnalyzer(TEST_01,  AckAnalyzer.AckType.DEFAULT);
     assertTrue(ackAnalyzer.isAckMessage());

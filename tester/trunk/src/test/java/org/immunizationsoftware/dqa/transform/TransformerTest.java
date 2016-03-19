@@ -414,7 +414,7 @@ public class TransformerTest extends TestCase
     assertEquals("10", Transformer.makeBase62Number(62));
     assertEquals("20", Transformer.makeBase62Number(62 * 2));
     assertEquals("2a", Transformer.makeBase62Number(62 * 2 + 10));
-    System.out.println("'6449390' = '" + Transformer.makeBase62Number(6449390) + "'");
+    //System.out.println("'6449390' = '" + Transformer.makeBase62Number(6449390) + "'");
   }
   
   private static final String TP_01_FINAL = "MSH|^~\\&||AIRA|GRITS|GRITS|20150817082226-0600||VXU^V04^VXU_V04|J94H2.1D6|P|2.5.1|\r"
