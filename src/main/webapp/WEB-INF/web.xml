@@ -60,6 +60,10 @@
     <servlet-class>org.immunizationsoftware.dqa.mover.CDCWSDLServlet</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>WSDLDemoServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.mover.WSDLDemoServlet</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>CreateTestCaseServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.tester.CreateTestCaseServlet</servlet-class>
   </servlet>
@@ -302,6 +306,10 @@
   <servlet-mapping>
   <servlet-name>CDCWSDLServlet</servlet-name>
     <url-pattern>/wsdl/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+  <servlet-name>WSDLDemoServlet</servlet-name>
+    <url-pattern>/wsdl-demo/*</url-pattern>
   </servlet-mapping>
   <!-- There are three means to configure Wickets configuration mode and they are tested in the order given. 1) A system property: -Dwicket.configuration 
     2) servlet specific <init-param> 3) context specific <context-param> The value might be either "development" (reloading when templates change) or "deployment". 

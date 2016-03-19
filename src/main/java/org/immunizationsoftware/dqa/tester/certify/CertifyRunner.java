@@ -677,32 +677,23 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         }
       }
 
-      testFinished = new Date();
-      reportProgress(null);
-
       printReportToFile();
-    }
-
-    catch (Throwable t) {
+      switchStatus(STATUS_COMPLETED, "Testing completed normally");
+    } catch (Throwable t) {
       t.printStackTrace();
       exception = t;
-      switchStatus(STATUS_PROBLEM, "An exception ocurred, unable to continue");
-      reportProgress(null);
+      switchStatus(STATUS_PROBLEM, "An exception ocurred in test process, unable to continue");
       logStatus("Exception ocurred: " + exception.getMessage());
     } finally {
-      if (status != STATUS_STOPPED && status != STATUS_PROBLEM) {
-        switchStatus(STATUS_COMPLETED, "Testing completed normally");
-        reportProgress(null);
-      } else {
-        logStatus("Process stopped by user");
-      }
+      testFinished = new Date();
+      logStatus("IIS Test Finished with status " + status);
+      reportProgress(null);
       for (PrintWriter exampleOut : exampleOutSet.values()) {
         exampleOut.close();
       }
       for (PrintWriter exampleAckOut : exampleAckOutSet.values()) {
         exampleAckOut.close();
       }
-      logStatus("IIS Test Finished");
     }
   }
 
