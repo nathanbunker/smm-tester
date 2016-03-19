@@ -2,18 +2,17 @@ package org.openimmunizationsoftware.dqa.transport;
 
 import java.io.PrintWriter;
 
-public class Processor {
+public class ProcessorBadXml extends Processor{
   
-  protected CDCWSDLServer server = null;
-  public Processor(CDCWSDLServer server)
+  public ProcessorBadXml(CDCWSDLServer server)
   {
-    this.server = server;
+    super(server);
   }
   
   public static void printExplanation(PrintWriter out, String processorName)
   {
-    out.println("<h3>Default</h3>");
-    out.println("<p>This default setting responds exactly as expected by NIST test cases. It is completely compliant. </p>");
+    out.println("<h3>Bad XML</h3>");
+    out.println("<p>This responds with badly formed XML, in each case the close body tag is omitted.   </p>");
   }
   
   public void doProcessMessage(PrintWriter out, SubmitSingleMessage ssm) throws Fault {
@@ -26,7 +25,7 @@ public class Processor {
     server.process(ssm, out);
     out.println("]]></return>");
     out.println("      </submitSingleMessageResponse>");
-    out.println("  </Body>");
+//    out.println("  </Body>");
     out.println("</Envelope>");
   }
 
@@ -37,7 +36,7 @@ public class Processor {
     out.println("    <connectivityTestResponse xmlns=\"urn:cdc:iisb:2011\">");
     out.println("      <return>" + server.getEchoBackMessage(echoBack) + "</return>   ");
     out.println("    </connectivityTestResponse>");
-    out.println("  </Body>");
+  //  out.println("  </Body>");
     out.println("</Envelope>");
   }
 
@@ -62,7 +61,7 @@ public class Processor {
     out.println("            </fault>");
     out.println("         </Detail>");
     out.println("      </Fault>");
-    out.println("   </Body>");
+    //out.println("   </Body>");
     out.println("</Envelope>");
   }
 
@@ -87,7 +86,7 @@ public class Processor {
     out.println("        </MessageTooLargeFault>");
     out.println("      </Detail>");
     out.println("    </Fault>");
-    out.println("  </Body>");
+   // out.println("  </Body>");
     out.println("</Envelope>");
   }
 
@@ -112,7 +111,7 @@ public class Processor {
     out.println("            </UnsupportedOperationFault>");
     out.println("         </Detail>");
     out.println("      </Fault>");
-    out.println("   </Body>");
+   // out.println("   </Body>");
     out.println("</Envelope>");
   }
 
@@ -137,7 +136,7 @@ public class Processor {
     out.println("            </SecurityFault>");
     out.println("         </Detail>");
     out.println("      </Fault>");
-    out.println("   </Body>");
+  //  out.println("   </Body>");
     out.println("</Envelope>");
   }
 

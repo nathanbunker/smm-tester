@@ -1,30 +1,35 @@
 package org.openimmunizationsoftware.dqa.transport;
 
 import java.io.PrintWriter;
+import java.io.StringWriter;
 
-public class Processor {
-  
-  protected CDCWSDLServer server = null;
-  public Processor(CDCWSDLServer server)
-  {
-    this.server = server;
+public class ProcessorIncorrectImplementation extends Processor
+{
+
+  public ProcessorIncorrectImplementation(CDCWSDLServer server) {
+    super(server);
   }
-  
-  public static void printExplanation(PrintWriter out, String processorName)
-  {
-    out.println("<h3>Default</h3>");
-    out.println("<p>This default setting responds exactly as expected by NIST test cases. It is completely compliant. </p>");
+
+  public static void printExplanation(PrintWriter out, String processorName) {
+    out.println("<h3>Incorrect Implementation</h3>");
+    out.println("<p>This responds with the correct XML but has not properly implemented the methods and the contents are not correct.  </p>");
+    out.println("<p><b>submitSingleMessage</b>: Returns a human readable message instead of an acknowledgement. </p>");
+    out.println("<p><b>connectivityTestResponse</b>: Sends back message but it does not contain original text sent in. </p>");
   }
-  
+
   public void doProcessMessage(PrintWriter out, SubmitSingleMessage ssm) throws Fault {
     out.println("<?xml version='1.0' encoding='UTF-8'?>");
     out.println("<Envelope xmlns=\"http://www.w3.org/2003/05/soap-envelope\">");
     out.println("  <Header />");
     out.println("   <Body>");
     out.println("      <submitSingleMessageResponse xmlns=\"urn:cdc:iisb:2011\">");
-    out.print("        <return><![CDATA[");
-    server.process(ssm, out);
-    out.println("]]></return>");
+    out.print("        <return>");
+    StringWriter sw = new StringWriter();
+    PrintWriter outIgnore = new PrintWriter(sw);
+    server.process(ssm, outIgnore);
+    outIgnore.close();
+    out.println("Thank you for submitting your message, we will process it shortly. Please check IIS for processing status.");
+    out.println("</return>");
     out.println("      </submitSingleMessageResponse>");
     out.println("  </Body>");
     out.println("</Envelope>");
@@ -35,7 +40,8 @@ public class Processor {
     out.println("<Envelope xmlns=\"http://www.w3.org/2003/05/soap-envelope\">");
     out.println("  <Body>");
     out.println("    <connectivityTestResponse xmlns=\"urn:cdc:iisb:2011\">");
-    out.println("      <return>" + server.getEchoBackMessage(echoBack) + "</return>   ");
+    server.getEchoBackMessage(echoBack);
+    out.println("      <return>Message received but it will not be echoed back</return>   ");
     out.println("    </connectivityTestResponse>");
     out.println("  </Body>");
     out.println("</Envelope>");
@@ -140,5 +146,4 @@ public class Processor {
     out.println("   </Body>");
     out.println("</Envelope>");
   }
-
 }
