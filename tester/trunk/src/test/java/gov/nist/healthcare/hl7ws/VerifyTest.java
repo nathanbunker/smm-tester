@@ -8,7 +8,6 @@ import org.immunizationsoftware.dqa.tester.manager.nist.NISTValidator;
 import org.immunizationsoftware.dqa.tester.manager.nist.ValidationReport;
 import org.immunizationsoftware.dqa.tester.manager.nist.ValidationResource;
 import org.junit.Test;
-import org.junit.internal.runners.statements.Fail;
 
 import gov.nist.healthcare.hl7ws.client.MessageValidationV2SoapClient;
 
