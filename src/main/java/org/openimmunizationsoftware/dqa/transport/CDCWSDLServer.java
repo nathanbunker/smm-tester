@@ -116,14 +116,16 @@ public abstract class CDCWSDLServer {
   }
 
   private boolean isConnectivityTest(String xmlMessage) {
-    if (xmlMessage.indexOf("<connectivityTest") > 0 || xmlMessage.indexOf(":connectivityTest") > 0) {
+    if (xmlMessage.indexOf("<connectivityTest ") > 0 || xmlMessage.indexOf(":connectivityTest ") > 0 || 
+    		xmlMessage.indexOf("<connectivityTest>") > 0 || xmlMessage.indexOf(":connectivityTest>") > 0) {
       return true;
     }
     return false;
   }
 
   private boolean isSubmitSingleMessage(String xmlMessage) {
-    if (xmlMessage.indexOf("<submitSingleMessage") > 0 || xmlMessage.indexOf(":submitSingleMessage") > 0) {
+    if (xmlMessage.indexOf("<submitSingleMessage ") > 0 || xmlMessage.indexOf(":submitSingleMessage ") > 0
+    		|| xmlMessage.indexOf("<submitSingleMessage>") > 0 || xmlMessage.indexOf(":submitSingleMessage>") > 0) {
       return true;
     }
     return false;
