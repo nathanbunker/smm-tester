@@ -37,7 +37,7 @@ public class WSDLDemoServlet extends ClientServlet
     if (wsdl != null) {
       resp.setContentType("text/xml");
       PrintWriter out = new PrintWriter(resp.getOutputStream());
-      CDCWSDLServer.printWSDL(out, "http://localhost:8282/wsdl-sut");
+      CDCWSDLServer.printWSDL(out, "http://localhost:8282/wsdl-demo");
       out.close();
     } else {
       resp.setContentType("text/html;charset=UTF-8");
