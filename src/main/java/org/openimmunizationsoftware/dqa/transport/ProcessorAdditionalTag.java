@@ -11,7 +11,7 @@ public class ProcessorAdditionalTag extends Processor
 
   public static void printExplanation(PrintWriter out, String processorName) {
     out.println("<h3>Additional Tag</h3>");
-    out.println("<p>This responds correctly except the response contains an additional tag that are is expected.  </p>");
+    out.println("<p>This responds correctly except the response contains an additional tag that is not expected.  </p>");
   }
 
   public void doProcessMessage(PrintWriter out, SubmitSingleMessage ssm) throws Fault {
