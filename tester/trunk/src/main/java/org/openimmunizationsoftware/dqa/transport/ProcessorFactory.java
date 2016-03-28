@@ -11,6 +11,7 @@ public class ProcessorFactory
   public static final String PROCESSOR_BASE_64 = "base64";
   public static final String PROCESSOR_INCORRECT_IMPLEMENTATION = "incorrectImplementation";
   public static final String PROCESSOR_URL_ENCODED = "urlEncoded";
+  public static final String PROCESSOR_ADDITIONAL_TAG = "additionalTag";
 
   public static Processor createProcessor(String processorName, CDCWSDLServer server) {
     if (processorName.equals(PROCESSOR_NO_WHITESPACE)) {
@@ -31,6 +32,9 @@ public class ProcessorFactory
     else if (processorName.equals(PROCESSOR_URL_ENCODED)) {
       return new ProcessorUrlEncoded(server);
     }
+    else if (processorName.equals(PROCESSOR_ADDITIONAL_TAG)) {
+      return new ProcessorAdditionalTag(server);
+    }
     return new Processor(server);
   }
 
@@ -45,6 +49,8 @@ public class ProcessorFactory
     addLink(out, PROCESSOR_BAD_XML);
     ProcessorIncorrectImplementation.printExplanation(out, PROCESSOR_INCORRECT_IMPLEMENTATION);
     addLink(out, PROCESSOR_INCORRECT_IMPLEMENTATION);
+    ProcessorAdditionalTag.printExplanation(out, PROCESSOR_ADDITIONAL_TAG);
+    addLink(out, PROCESSOR_ADDITIONAL_TAG);
     ProcessorBase64.printExplanation(out, PROCESSOR_BASE_64);
     addLink(out, PROCESSOR_BASE_64);
     ProcessorUrlEncoded.printExplanation(out, PROCESSOR_URL_ENCODED);

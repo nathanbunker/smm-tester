@@ -18,6 +18,7 @@ import org.immunizationsoftware.dqa.tester.ClientServlet;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.openimmunizationsoftware.dqa.transport.CDCWSDLServer;
 import org.openimmunizationsoftware.dqa.transport.Fault;
+import org.openimmunizationsoftware.dqa.transport.ProcessorFactory;
 import org.openimmunizationsoftware.dqa.transport.SecurityFault;
 import org.openimmunizationsoftware.dqa.transport.SubmitSingleMessage;
 import org.openimmunizationsoftware.dqa.transport.UnknownFault;
@@ -28,19 +29,32 @@ public class CDCWSDLServlet extends ClientServlet {
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    resp.setContentType("text/html");
-    PrintWriter out = new PrintWriter(resp.getOutputStream());
-    out.println("<html>");
-    out.println("  <head>");
-    out.println("    <title>SMM Incoming Interface</title>");
-    out.println("  </head>");
-    out.println("  <body>");
-    out.println("    <h1>CDC WSDL Endpoint</h1>");
-    out.println("    <hr>");
-    out.println("  </body>");
-    out.println("</html>");
-    out.close();
-    out = null;
+    String wsdl = req.getParameter("wsdl");
+    if (wsdl != null) {
+      resp.setContentType("text/xml");
+      PrintWriter out = new PrintWriter(resp.getOutputStream());
+      CDCWSDLServer.printWSDL(out, "http://localhost:8282/wsdl");
+      out.close();
+    } else {
+      resp.setContentType("text/html;charset=UTF-8");
+
+      PrintWriter out = resp.getWriter();
+      try {
+        printHtmlHead(out, MENU_HEADER_HOME, req);
+        out.println("<h1>SMM Realtime</h1>");
+        out.println("<p>");
+        out.println("This end point supports submission of real-time immunization messages in conforanmcne with the ");
+        out.println("<a href=\"http://www.cdc.gov/vaccines/programs/iis/technical-guidance/soap/wsdl.html\">CDC ");
+        out.println("WSDL</a>.");
+        out.println("</p>");
+        out.println("<h3>WSDL</h3>");
+        out.println("<p>Download or view WSDL here: ");
+        out.println("  <a href=\"wsdl-demo?wsdl=true\">http://ois-pt.org/tester/wsdl?wsdl=true</a></p>");
+        printHtmlFoot(out);
+      } finally {
+        out.close();
+      }
+    }
   }
 
   @Override
