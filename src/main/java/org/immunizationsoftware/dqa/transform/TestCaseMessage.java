@@ -29,6 +29,7 @@ public class TestCaseMessage
   public static final String TEST_CASE_SET = "Test Case Set:";
   public static final String TEST_CASE_NUMBER = "Test Case Number:";
   public static final String DESCRIPTION = "Description:";
+  public static final String FIELD_NAME = "Field Name:";
   public static final String EXPECTED_RESULT = "Expected Result:";
   public static final String ASSERT_RESULT = "Assert Result:";
   public static final String ORIGINAL_MESSAGE = "Original Message:";
@@ -107,6 +108,7 @@ public class TestCaseMessage
   private String messageText = "";
   private String messageTextSent = "";
   private String assertResult = "";
+  private String fieldName = "";
   private String originalMessage = "";
   private String originalMessageResponse = "";
   private String preparedMessage = null;
@@ -153,6 +155,14 @@ public class TestCaseMessage
   private boolean doNotQueryFor = false;
   private boolean global = false;
   private String lineEnding = "\r";
+
+  public String getFieldName() {
+    return fieldName;
+  }
+
+  public void setFieldName(String fieldName) {
+    this.fieldName = fieldName;
+  }
 
   public String getLineEnding() {
     return lineEnding;
@@ -485,6 +495,7 @@ public class TestCaseMessage
     this.testCaseSet = copy.testCaseSet;
     this.testCaseNumber = copy.testCaseNumber;
     this.description = copy.description;
+    this.fieldName = copy.fieldName;
     this.expectedResult = copy.expectedResult;
     this.messageText = copy.messageText;
     this.assertResult = copy.assertResult;

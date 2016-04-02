@@ -126,6 +126,7 @@ public interface RecordServletInterface {
   public static final String PARAM_TM_TEST_CASE_CATEGORY = "tm_testCaseCategory";
   public static final String PARAM_TM_TEST_CASE_DESCRIPTION = "tm_testCaseDescription";
   public static final String PARAM_TM_TEST_CASE_ASSERT_RESULT = "tm_testCaseAssertResult";
+  public static final String PARAM_TM_TEST_CASE_FIELD_NAME = "tm_testCaseFieldName";
   public static final String PARAM_TM_PREP_PATIENT_TYPE = "tm_prepPatientType";
   public static final String PARAM_TM_PREP_TRANSFORMS_QUICK = "tm_prepTransformsQuick";
   public static final String PARAM_TM_PREP_TRANSFORMS_CUSTOM = "tm_prepTransformsCustom";

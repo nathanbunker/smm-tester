@@ -43,6 +43,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Sex is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("PID-8");
       testCaseMessage.appendCustomTransformation("PID-8=" + certifyItem.getCode());
       register(count, masterCount, testCaseMessage);
     }
@@ -54,6 +55,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Race is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("PID-10");
       testCaseMessage.appendCustomTransformation("PID-10=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PID-10.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-10.3=" + certifyItem.getTable());
@@ -68,6 +70,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Race is " + certifyItem.getLabel() + " (Random value from CDC full set)");
+      testCaseMessage.setFieldName("PID-10");
       testCaseMessage.appendCustomTransformation("PID-10=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PID-10.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-10.3=" + certifyItem.getTable());
@@ -81,6 +84,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Ethnicity is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("PID-22");
       testCaseMessage.appendCustomTransformation("PID-22=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PID-22.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-22.3=" + certifyItem.getTable());
@@ -100,6 +104,7 @@ public class CAIntermediate extends CertifyArea
       }
 
       testCaseMessage.setDescription("Information Source is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("RXA-9");
       testCaseMessage.appendCustomTransformation("RXA-9=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-9.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-9.3=" + certifyItem.getTable());
@@ -114,6 +119,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("VFC Status is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("OBX-5");
       testCaseMessage.appendCustomTransformation("OBX-5=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("OBX-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("OBX-5.3=" + certifyItem.getTable());
@@ -128,6 +134,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_6_P_VARICELLA_HISTORY_CHILD);
       testCaseMessage.setDescription("History of Disease is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("OBX-5");
       testCaseMessage.appendCustomTransformation("OBX-5=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("OBX-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("OBX-5.3=" + certifyItem.getTable());
@@ -142,6 +149,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Registry Status is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("PD1-16");
       testCaseMessage.appendCustomTransformation("PD1-16=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PD1-17=[NOW]");
       register(count, masterCount, testCaseMessage);
@@ -155,6 +163,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_5_P_REFUSED_TODDLER);
       testCaseMessage.setDescription("Refusal Reason is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("RXA-18");
       testCaseMessage.appendCustomTransformation("RXA-18=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-18.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-18.3=" + certifyItem.getTable());
@@ -169,6 +178,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Relationship is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("NK1-3");
       testCaseMessage.appendCustomTransformation("NK1-3.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("NK1-3.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("NK1-3.3=" + certifyItem.getTable());
@@ -183,6 +193,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_TWO_MONTHS_OLD);
       testCaseMessage.setDescription("Historical vaccination is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("RXA-5");
       testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
@@ -197,6 +208,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_TWO_YEARS_OLD);
       testCaseMessage.setDescription("Historical vaccination is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("RXA-5");
       testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
@@ -211,6 +223,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_FOUR_YEARS_OLD);
       testCaseMessage.setDescription("Historical vaccination is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("RXA-5");
       testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
@@ -225,6 +238,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_3_R_HISTORICAL_TWELVE_YEARS_OLD);
       testCaseMessage.setDescription("Historical vaccination is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("RXA-5");
       testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXA-5.3=" + certifyItem.getTable());
@@ -262,6 +276,7 @@ public class CAIntermediate extends CertifyArea
               TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(adminChecks[i][2]);
               testCaseMessage.setDescription("Vaccination administered at " + adminChecks[i][0] + " of age is "
                   + certifyItem.getLabel() + " (" + productCi.getCode() + ")");
+              testCaseMessage.setFieldName("RXA-5");
               testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
               testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
               testCaseMessage.appendCustomTransformation("RXA-5.3=CVX");
@@ -278,6 +293,7 @@ public class CAIntermediate extends CertifyArea
                   TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(adminChecks[i][2]);
                   testCaseMessage.setDescription("Vaccination administered at " + adminChecks[i][0] + " of age is CPT "
                       + cptCi.getLabel() + " (" + productCi.getCode() + ")");
+                  testCaseMessage.setFieldName("RXA-5");
                   testCaseMessage.appendCustomTransformation("RXA-5.1=" + certifyItem.getCode());
                   testCaseMessage.appendCustomTransformation("RXA-5.2=" + certifyItem.getLabel());
                   testCaseMessage.appendCustomTransformation("RXA-5.3=CVX");
@@ -303,6 +319,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Body Route is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("RXR-1");
       testCaseMessage.appendCustomTransformation("RXR-1.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXR-1.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXR-1.3=" + certifyItem.getTable());
@@ -317,6 +334,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Body Site is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("RXR-2");
       testCaseMessage.appendCustomTransformation("RXR-2.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("RXR-2.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("RXR-2.3=" + certifyItem.getTable());
@@ -331,6 +349,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Additional Address Type is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("PID-11");
       testCaseMessage.appendCustomTransformation("PID-11.1#2=PID-11.1");
       testCaseMessage.appendCustomTransformation("PID-11.2#2=PID-11.2");
       testCaseMessage.appendCustomTransformation("PID-11.3#2=PID-11.3");
@@ -348,6 +367,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Additional Name Type is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("PID-5");
       testCaseMessage.appendCustomTransformation("PID-5.1#2=[FATHER]");
       testCaseMessage.appendCustomTransformation("PID-5.2#2=[LAST_DIFFERENT]");
       testCaseMessage.appendCustomTransformation("PID-5.7#2=" + certifyItem.getCode());
@@ -362,6 +382,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Phone Telcommunications Use Code is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("PID-13");
       if (certifyItem.getCode().equalsIgnoreCase("NET")) {
         testCaseMessage.appendCustomTransformation("PID-13.3#2=X.400");
         testCaseMessage.appendCustomTransformation("PID-13.4#2=[EMAIL]");
@@ -383,6 +404,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Phone Telcommunications Equipment Type is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("PID-13");
       if (certifyItem.getCode().equals("BP")) {
         testCaseMessage.appendCustomTransformation("PID-13.2#2=BPN");
         testCaseMessage.appendCustomTransformation("PID-13.3#2=" + certifyItem.getCode());
@@ -412,6 +434,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Person Id Type is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("PID-3");
       if (certifyItem.getCode().equals("MA")) {
         testCaseMessage.appendCustomTransformation("PID-3.1#2=[MEDICAID]");
       } else if (certifyItem.getCode().equals("SS")) {
@@ -432,6 +455,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Publicity Code is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("PID-11");
       testCaseMessage.appendCustomTransformation("PD1-11.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PD1-11.2=" + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PD1-11.3=" + certifyItem.getTable());
@@ -447,6 +471,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("County Code is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("PID-11");
       testCaseMessage.appendCustomTransformation("PID-11.4=" + certifyItem.getTable());
       testCaseMessage.appendCustomTransformation("PID-11.9=" + certifyItem.getCode());
       register(count, masterCount, testCaseMessage);
@@ -459,6 +484,7 @@ public class CAIntermediate extends CertifyArea
     for (Certify.CertifyItem certifyItem : certifyItems) {
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+      testCaseMessage.setFieldName("PID-15");
       testCaseMessage.setDescription("Primary Language is " + certifyItem.getLabel());
       testCaseMessage.appendCustomTransformation("PID-15.1=" + certifyItem.getCode());
       testCaseMessage.appendCustomTransformation("PID-15.2=" + certifyItem.getLabel());
@@ -484,6 +510,7 @@ public class CAIntermediate extends CertifyArea
         testCaseMessage = createTestCaseMessage(SCENARIO_5_P_REFUSED_TODDLER);
       }
       testCaseMessage.setDescription("Vaccination completion is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("RXA-20");
       testCaseMessage.appendCustomTransformation("RXA-20.1=" + completionStatus);
       register(count, masterCount, testCaseMessage);
     }
@@ -496,6 +523,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Vaccination Action Code is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("RXA-21");
       testCaseMessage.appendCustomTransformation("RXA-21=" + certifyItem.getCode());
       register(count, masterCount, testCaseMessage);
     }
@@ -508,6 +536,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Vaccination Action is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("RXA-21");
       testCaseMessage.appendCustomTransformation("RXA-21=" + certifyItem.getCode());
       register(count, masterCount, testCaseMessage);
     }
@@ -520,6 +549,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Vaccination Administering Provider's Degree is " + certifyItem.getLabel());
+      testCaseMessage.setFieldName("RXA-10");
       testCaseMessage.appendCustomTransformation("RXA-10.2=[LAST_DIFFERENT]");
       testCaseMessage.appendCustomTransformation("RXA-10.3=[FATHER]");
       testCaseMessage.appendCustomTransformation("RXA-10.21=" + certifyItem.getCode());
@@ -532,6 +562,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Multiple Birth is First of " + i);
+      testCaseMessage.setFieldName("PID-24");
       if (i == 1) {
         testCaseMessage.appendCustomTransformation("PID-24=N");
         testCaseMessage.appendCustomTransformation("PID-25=");
@@ -549,6 +580,7 @@ public class CAIntermediate extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
       testCaseMessage.setDescription("Multiple Birth is Last of " + i);
+      testCaseMessage.setFieldName("PID-24");
       testCaseMessage.appendCustomTransformation("PID-24=Y");
       testCaseMessage.appendCustomTransformation("PID-25=" + i);
       register(count, masterCount, testCaseMessage);
