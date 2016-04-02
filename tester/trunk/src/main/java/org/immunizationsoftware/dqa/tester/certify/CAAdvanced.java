@@ -40,6 +40,7 @@ public class CAAdvanced extends CertifyArea
           count++;
           TestCaseMessage testCaseMessage = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
           testCaseMessage.setDescription(issue.getName());
+          testCaseMessage.setFieldName(issue.getFieldName());
           testCaseMessage.addCauseIssues(issue.getName());
           registerIfHasIssue(count, priority, testCaseMessage).setAssertResult("Accept or Reject");
         }

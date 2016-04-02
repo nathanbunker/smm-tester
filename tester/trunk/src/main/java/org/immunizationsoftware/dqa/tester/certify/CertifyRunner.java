@@ -2433,6 +2433,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         addField(sb, PARAM_TM_TEST_CASE_CATEGORY, testMessage.getTestCaseCategoryId());
         addField(sb, PARAM_TM_TEST_CASE_DESCRIPTION, testMessage.getDescription());
         addField(sb, PARAM_TM_TEST_CASE_ASSERT_RESULT, testMessage.getAssertResult());
+        addField(sb, PARAM_TM_TEST_CASE_FIELD_NAME, testMessage.getFieldName());
         addField(sb, PARAM_TM_PREP_PATIENT_TYPE, testMessage.getPatientType().toString());
         addField(sb, PARAM_TM_PREP_TRANSFORMS_QUICK, testMessage.getQuickTransformations());
         addField(sb, PARAM_TM_PREP_TRANSFORMS_CUSTOM, testMessage.getCustomTransformations());

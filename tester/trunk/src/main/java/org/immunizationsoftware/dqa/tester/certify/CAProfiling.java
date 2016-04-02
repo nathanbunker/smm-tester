@@ -104,6 +104,7 @@ public class CAProfiling extends CertifyArea
       if (testCaseMessagePresent.hasIssue() && testCaseMessageAbsent.hasIssue()) {
         if (testCaseMessagePresent != tcmFull) {
           testCaseMessagePresent.setDescription("Field " + profileLine.getField().getFieldName() + " is present");
+          testCaseMessagePresent.setFieldName(profileLine.getField().getFieldName());
           register(count, 1, testCaseMessagePresent);
           if (profileLine.getMessageAcceptStatus() == MessageAcceptStatus.ONLY_IF_PRESENT) {
             testCaseMessagePresent.setAssertResult("Accept");
@@ -116,6 +117,7 @@ public class CAProfiling extends CertifyArea
         }
         if (testCaseMessageAbsent != tcmFull) {
           testCaseMessageAbsent.setDescription("Field " + profileLine.getField().getFieldName() + " is absent");
+          testCaseMessagePresent.setFieldName(profileLine.getField().getFieldName());
           register(count, 1, testCaseMessageAbsent);
           if (profileLine.getMessageAcceptStatus() == MessageAcceptStatus.ONLY_IF_PRESENT) {
             testCaseMessageAbsent.setAssertResult("Reject");

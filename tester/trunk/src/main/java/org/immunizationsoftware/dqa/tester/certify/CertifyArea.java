@@ -188,12 +188,13 @@ public abstract class CertifyArea implements RecordServletInterface
     return certifyRunner.certifyAreas[CertifyRunner.SUITE_L_CONFORMANCE_2015].isRun();
   }
 
-  public TestCaseMessage registerAdminChild(String description, String customTransformation, int count) {
+  public TestCaseMessage registerAdminChild(String description, String customTransformation, int count, String fieldName) {
     TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
     if (customTransformation != null) {
       testCaseMessage.appendCustomTransformation(customTransformation);
     }
     testCaseMessage.setDescription(description);
+    testCaseMessage.setFieldName(fieldName);
     return register(count, testCaseMessage);
   }
 
@@ -318,6 +319,7 @@ public abstract class CertifyArea implements RecordServletInterface
   public TestCaseMessage registerQuery(int count, int masterCount, TestCaseMessage testCaseMessage) {
     TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
     queryTestCaseMessage.setDescription("Query for " + testCaseMessage.getDescription());
+    queryTestCaseMessage.setFieldName(testCaseMessage.getFieldName());
     queryTestCaseMessage.setMessageText(certifyRunner.convertToQuery(testCaseMessage));
     return registerQuery(count, masterCount, testCaseMessage, queryTestCaseMessage);
   }
@@ -514,17 +516,18 @@ public abstract class CertifyArea implements RecordServletInterface
     }
   }
 
-  public void addQuerySupport(String description, String customTransformation, int count) {
+  public void addQuerySupport(String description, String customTransformation, int count, String fieldName) {
     TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
     if (customTransformation != null) {
       testCaseMessage.appendCustomTransformation(customTransformation);
     }
     testCaseMessage.setDescription(description);
+    testCaseMessage.setFieldName(fieldName);
     register(count, 1, testCaseMessage);
   }
 
   public void addTwins(int count) {
-    addQuerySupport("First Twin", "PID-24=Y\rPID-25=1", ++count);
+    addQuerySupport("First Twin", "PID-24=Y\rPID-25=1", ++count, "PID-24");
     {
       String middleNameOriginal = "";
       String middleInitial = "";
@@ -553,6 +556,7 @@ public abstract class CertifyArea implements RecordServletInterface
       TestCaseMessage testCaseMessage2 = new TestCaseMessage();
       testCaseMessage2.setOriginalMessage(testCaseMessage1.getMessageText());
       testCaseMessage2.setDescription("Second Twin");
+      testCaseMessage2.setFieldName("PID-24");
       String uniqueId = testCaseMessage2.getTestCaseNumber();
       testCaseMessage2.appendCustomTransformation(
           "MSH-10=" + uniqueId + "." + Transformer.makeBase62Number(System.currentTimeMillis() % 10000));

@@ -17,7 +17,7 @@ public class CAQbpSupport extends CertifyArea
   @Override
   public void prepareUpdates() {
     int count = 0;
-    addQuerySupport("Base Message", null, ++count);
+    addQuerySupport("Base Message", null, ++count, "");
     addTwins(count);
   }
 
@@ -84,6 +84,7 @@ public class CAQbpSupport extends CertifyArea
       boolean removeMultipleBirth) {
     TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
     queryTestCaseMessage.setDescription(description + " for " + testCaseMessage.getDescription());
+    queryTestCaseMessage.setFieldName(testCaseMessage.getFieldName());
     if (z44) {
       queryTestCaseMessage.setMessageText(QueryConverter.convertVXUtoQBPZ44(testCaseMessage.getMessageText()));
     } else {
