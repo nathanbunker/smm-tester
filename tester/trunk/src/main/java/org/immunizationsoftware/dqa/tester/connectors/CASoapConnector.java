@@ -27,6 +27,7 @@ public class CASoapConnector extends HttpConnector
 
   public CASoapConnector(String label, String url) {
     super(label, url, "CA SOAP");
+    super.setSetupGlobalKeyStore(false);
   }
 
   @Override
