@@ -36,6 +36,16 @@ public abstract class Connector
   public static final String PURPOSE_GENERAL = "General";
   public static final String PURPOSE_UPDATE = "Update";
   public static final String PURPOSE_QUERY = "Query";
+  
+  private boolean setupGlobalKeyStore = true;
+
+  public boolean isSetupGlobalKeyStore() {
+    return setupGlobalKeyStore;
+  }
+
+  public void setSetupGlobalKeyStore(boolean setupGlobalKeyStore) {
+    this.setupGlobalKeyStore = setupGlobalKeyStore;
+  }
 
   protected abstract void setupFields(List<String> fields);
 

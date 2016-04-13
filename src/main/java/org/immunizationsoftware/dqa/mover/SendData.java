@@ -981,7 +981,7 @@ public class SendData extends Thread
     return testCaseDir;
   }
 
-  private boolean readKeyStore() {
+  public boolean readKeyStore() {
     if (false) {
       File keyStoreFile = new File(rootDir, KEYSTORE_FILE_NAME_NEW);
       if (keyStoreFile.exists() && keyStoreFile.isFile()) {
