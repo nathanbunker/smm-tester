@@ -8,8 +8,7 @@ import java.util.Map;
 
 import org.immunizationsoftware.dqa.transform.Comparison;
 
-public class CompareManager
-{
+public class CompareManager {
 
   public static boolean acksAppearToBeTheSame(String ackMessageOriginal, String ackMessageCompare) {
     HL7Reader ack1Reader = new HL7Reader(ackMessageOriginal);
@@ -48,67 +47,63 @@ public class CompareManager
   public static boolean queryReturnedMostImportantData(String vxu, String rsp) {
     HL7Reader vxuReader = new HL7Reader(vxu);
     HL7Reader rspReader = new HL7Reader(rsp);
-    if (vxuReader.advanceToSegment("PID")) {
-      if (!rspReader.advanceToSegment("PID")) {
+    if (!vxuReader.advanceToSegment("PID") || !rspReader.advanceToSegment("PID")) {
+      return false;
+    }
+    {
+      String vxuLastName = vxuReader.getValue(5, 1);
+      String rspLastName = rspReader.getValue(5, 1);
+      if (!vxuLastName.equalsIgnoreCase(rspLastName)) {
         return false;
       }
-      {
-        String vxuLastName = vxuReader.getValue(5, 1);
-        String rspLastName = rspReader.getValue(5, 1);
-        if (!vxuLastName.equalsIgnoreCase(rspLastName)) {
-          return false;
-        }
+    }
+    {
+      String vxuFirstName = vxuReader.getValue(5, 2);
+      String rpsFirstName = rspReader.getValue(5, 2);
+      if (!vxuFirstName.equalsIgnoreCase(rpsFirstName)) {
+        return false;
       }
-      {
-        String vxuFirstName = vxuReader.getValue(5, 2);
-        String rpsFirstName = rspReader.getValue(5, 2);
-        if (!vxuFirstName.equalsIgnoreCase(rpsFirstName)) {
-          return false;
-        }
+    }
+    {
+      String vxuMiddleName = vxuReader.getValue(5, 2);
+      String rpsMiddleName = rspReader.getValue(5, 2);
+      if (!rpsMiddleName.equals("") && !vxuMiddleName.equals("") && !vxuMiddleName.equalsIgnoreCase(rpsMiddleName)) {
+        return false;
       }
-      {
-        String vxuMiddleName = vxuReader.getValue(5, 2);
-        String rpsMiddleName = rspReader.getValue(5, 2);
-        if (!rpsMiddleName.equals("") && !vxuMiddleName.equals("") && !vxuMiddleName.equalsIgnoreCase(rpsMiddleName)) {
-          return false;
-        }
+    }
+    {
+      String vxuDob = vxuReader.getValue(7);
+      String rspDob = rspReader.getValue(7);
+      if (!vxuDob.equalsIgnoreCase(rspDob)) {
+        return false;
       }
-      {
-        String vxuDob = vxuReader.getValue(7);
-        String rspDob = rspReader.getValue(7);
-        if (!vxuDob.equalsIgnoreCase(rspDob)) {
-          return false;
-        }
+    }
+    while (vxuReader.advanceToSegment("RXA")) {
+      String cvxCode = vxuReader.getValue(5);
+      String adminDate = trunc(vxuReader.getValue(3), 8);
+      if (cvxCode.equals("") || adminDate.equals("") || cvxCode.equals("999") || cvxCode.equals("998")) {
+        continue;
       }
-      while(vxuReader.advanceToSegment("RXA"))
-      {
-        String cvxCode = vxuReader.getValue(5);
-        String adminDate = trunc(vxuReader.getValue(3), 8);
-        if (cvxCode.equals("") || adminDate.equals("") || cvxCode.equals("999") || cvxCode.equals("998")) {
-          continue;
-        }
-        if (adminDate.length() > 8) {
-          adminDate = adminDate.substring(0, 8);
-        }
-        rspReader.resetPostion();
-        boolean found = false;
-        while (rspReader.advanceToSegment("RXA")) {
-          String rspCvxCode = rspReader.getValue(5);
-          String rspCvxCode2 = aliasMap.get(rspCvxCode);
-          if (rspCvxCode.equals(cvxCode) || (rspCvxCode2 != null && rspCvxCode2.equals(cvxCode))) {
-            if (cvxCode.equals("998")) {
-              found = true;
-              break;
-            } else if (trunc(rspReader.getValue(3), 8).equals(adminDate)) {
-              found = true;
-              break;
-            }
+      if (adminDate.length() > 8) {
+        adminDate = adminDate.substring(0, 8);
+      }
+      rspReader.resetPostion();
+      boolean found = false;
+      while (rspReader.advanceToSegment("RXA")) {
+        String rspCvxCode = rspReader.getValue(5);
+        String rspCvxCode2 = aliasMap.get(rspCvxCode);
+        if (rspCvxCode.equals(cvxCode) || (rspCvxCode2 != null && rspCvxCode2.equals(cvxCode))) {
+          if (cvxCode.equals("998")) {
+            found = true;
+            break;
+          } else if (trunc(rspReader.getValue(3), 8).equals(adminDate)) {
+            found = true;
+            break;
           }
         }
-        if (!found)
-        {
-          return false;
-        }
+      }
+      if (!found) {
+        return false;
       }
     }
     return true;
@@ -871,10 +866,9 @@ public class CompareManager
     }
     return s;
   }
-  
+
   private static Map<String, String> aliasMap = new HashMap<String, String>();
-  static
-  {
+  static {
     aliasMap.put("01", "1");
     aliasMap.put("02", "2");
     aliasMap.put("03", "3");

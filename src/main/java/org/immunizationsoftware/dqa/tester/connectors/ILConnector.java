@@ -8,7 +8,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -23,6 +22,7 @@ public class ILConnector extends HttpConnector
   protected ILConnector(String label, String url, String type) {
     super(label, url, type);
     this.url = url;
+    super.setSetupGlobalKeyStore(false);
   }
 
   public ILConnector(String label, String url) {

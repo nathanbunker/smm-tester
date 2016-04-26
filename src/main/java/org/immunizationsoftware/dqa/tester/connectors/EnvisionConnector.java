@@ -40,6 +40,7 @@ public class EnvisionConnector extends HttpConnector
   public EnvisionConnector(String label, String url, boolean useSoap11) throws Exception {
     super(label, url, ConnectorFactory.TYPE_ENVISION_SOAP11);
     this.useSoap11 = useSoap11;
+    super.setSetupGlobalKeyStore(false);
   }
 
   @Override
