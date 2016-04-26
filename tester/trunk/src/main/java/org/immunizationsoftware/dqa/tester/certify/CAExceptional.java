@@ -181,6 +181,10 @@ public class CAExceptional extends CertifyArea
       testCaseMessage.appendCustomTransformation("RXA-17.3=MVX");
       register(count, 1, testCaseMessage);
     }
+    
+    count = createToleranceCheck("NK1-35 Race is valued with code table HL70005", "NK1-35=[PID-10]\nNK1-35.2=[PID-10.2]\nNK1-35.3=HL70005", count, "NK1-35");
+    count = createToleranceCheck("NK1-35 Race is valued with code table CDCREC", "NK1-35=[PID-10]\nNK1-35.2=[PID-10.2]\nNK1-35.3=CDCREC", count, "NK1-35");
+    
     // TODO add examples of message construction issues that should be ignored
 
     try {

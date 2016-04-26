@@ -47,6 +47,7 @@ public class ORConnector extends HttpConnector
   protected ORConnector(String label, String url, String type) {
     super(label, url, type);
     this.url = url;
+    super.setSetupGlobalKeyStore(false);
   }
 
   public ORConnector(String label, String url) {

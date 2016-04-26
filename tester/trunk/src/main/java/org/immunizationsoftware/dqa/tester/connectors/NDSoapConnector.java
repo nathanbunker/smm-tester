@@ -27,6 +27,7 @@ public class NDSoapConnector extends HttpConnector
 
   public NDSoapConnector(String label, String url) {
     super(label, url, "ND SOAP");
+    super.setSetupGlobalKeyStore(false);
   }
 
   @Override
