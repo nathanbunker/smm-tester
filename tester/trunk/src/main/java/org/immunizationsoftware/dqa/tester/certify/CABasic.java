@@ -9,13 +9,7 @@ import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_6_
 import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_7_R_COMPLETE_RECORD;
 import static org.immunizationsoftware.dqa.transform.ScenarioManager.createTestCaseMessage;
 
-import java.util.List;
-
-import org.immunizationsoftware.dqa.tester.manager.CompareManager;
-import org.immunizationsoftware.dqa.tester.run.TestRunner;
-import org.immunizationsoftware.dqa.transform.Comparison;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
-import org.immunizationsoftware.dqa.transform.Transformer;
 
 public class CABasic extends CertifyArea
 {

@@ -569,7 +569,7 @@ public abstract class CertifyArea implements RecordServletInterface
     }
   }
 
-  public void addTestCasesFromSavedSet(String testCaseSet) {
+  public void addTestCasesFromSavedSet(String testCaseSet, int masterCount) {
     Map<String, TestCaseMessage> testCaseMessageMap = certifyRunner.testMessageMapMap.get(testCaseSet);
     if (testCaseMessageMap != null && testCaseMessageMap.size() > 0) {
       List<String> testNumList = new ArrayList<String>(testCaseMessageMap.keySet());
@@ -579,7 +579,7 @@ public abstract class CertifyArea implements RecordServletInterface
         count++;
         TestCaseMessage testCaseMessage = testCaseMessageMap.get(testNum);
         TestCaseMessage tcm = new TestCaseMessage(testCaseMessage);
-        register(count, tcm);
+        register(count, masterCount, tcm);
       }
     }
   }
