@@ -77,8 +77,10 @@ public class CAExceptional extends CertifyArea
       count++;
       TestCaseMessage testCaseMessage2 = new TestCaseMessage();
       testCaseMessage2.setDescription(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK + " Same message as before");
-      testCaseMessage1.setFieldName("");
+      testCaseMessage2.setFieldName("");
       testCaseMessage2.setMessageText(testCaseMessage1.getMessageText());
+      testCaseMessage2.setUpdateTestCaseMessage(testCaseMessage1);
+      testCaseMessage2.setOriginalMessage(testCaseMessage1.getMessageText());
       register(count, 1, testCaseMessage2);
     }
     {

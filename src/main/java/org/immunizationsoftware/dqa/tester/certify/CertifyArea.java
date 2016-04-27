@@ -557,11 +557,11 @@ public abstract class CertifyArea implements RecordServletInterface
       testCaseMessage2.setOriginalMessage(testCaseMessage1.getMessageText());
       testCaseMessage2.setDescription("Second Twin");
       testCaseMessage2.setFieldName("PID-24");
-      String uniqueId = testCaseMessage2.getTestCaseNumber();
+      String uniqueId = testCaseMessage1.getTestCaseNumber();
       testCaseMessage2.appendCustomTransformation(
           "MSH-10=" + uniqueId + "." + Transformer.makeBase62Number(System.currentTimeMillis() % 10000));
       testCaseMessage2.appendCustomTransformation(
-          "PID-3.1=" + (uniqueId.length() <= 15 ? uniqueId : uniqueId.substring(uniqueId.length() - 15)));
+          "PID-3.1=" + (uniqueId.length() <= 14 ? uniqueId + "B" : uniqueId.substring(uniqueId.length() - 14)+"B"));
       testCaseMessage2.appendCustomTransformation("PID-5.3=" + middleName);
       testCaseMessage2.appendCustomTransformation("PID-24=Y");
       testCaseMessage2.appendCustomTransformation("PID-25=2");
