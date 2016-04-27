@@ -248,7 +248,7 @@ public class IssueCreatorVaccination extends IssueCreator
     } else if (issue == Issue.VACCINATION_ADMINISTERED_UNIT_IS_MISSING) {
       if (is) {
         testCaseMessage.setHasIssue(true);
-        transforms += "RXA#2-6=0.5\n";
+        transforms += "RXA-6=0.5\n";
         transforms += "clear RXA-7\n";
       }
       if (not) {
@@ -366,29 +366,29 @@ public class IssueCreatorVaccination extends IssueCreator
     } else if (issue == Issue.VACCINATION_CONFIDENTIALITY_CODE_IS_UNRECOGNIZED) {
       if (is) {
         testCaseMessage.setHasIssue(true);
-        transforms += "ORC#2-28=Block\n";
-        transforms += "ORC#2-28.2=\n";
-        transforms += "ORC#2-28.3=HL70177\n";
+        transforms += "ORC-28=Block\n";
+        transforms += "ORC-28.2=\n";
+        transforms += "ORC-28.3=HL70177\n";
       }
     } else if (issue == Issue.VACCINATION_CONFIDENTIALITY_CODE_IS_MISSING) {
       if (is) {
         testCaseMessage.setHasIssue(true);
-        transforms += "ORC#2-28=\n";
-        transforms += "ORC#2-28.2=\n";
-        transforms += "ORC#2-28.3=HL70177\n";
+        transforms += "ORC-28=\n";
+        transforms += "ORC-28.2=\n";
+        transforms += "ORC-28.3=HL70177\n";
       }
       if (not) {
         testCaseMessage.setHasIssue(true);
-        transforms += "ORC#2-28=U\n";
-        transforms += "ORC#2-28.2=Usual\n";
-        transforms += "ORC#2-28.3=HL70177\n";
+        transforms += "ORC-28=U\n";
+        transforms += "ORC-28.2=Usual\n";
+        transforms += "ORC-28.3=HL70177\n";
       }
     } else if (issue == Issue.VACCINATION_CONFIDENTIALITY_CODE_IS_VALUED_AS_RESTRICTED) {
       if (is) {
         testCaseMessage.setHasIssue(true);
-        transforms += "ORC#2-28=R\n";
-        transforms += "ORC#2-28.2=\n";
-        transforms += "ORC#2-28.3=HL70177\n";
+        transforms += "ORC-28=R\n";
+        transforms += "ORC-28.2=\n";
+        transforms += "ORC-28.3=HL70177\n";
       }
     } else if (issue == Issue.VACCINATION_CPT_CODE_IS_DEPRECATED) {
       // TODO
