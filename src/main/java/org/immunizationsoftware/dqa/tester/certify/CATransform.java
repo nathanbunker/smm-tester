@@ -11,7 +11,7 @@ public class CATransform extends CertifyArea
 
   @Override
   public void prepareUpdates() {
-    addTestCasesFromSavedSet(TEST_CASE_SET_FOR_MODIFICATION_VERIFICATION);
+    addTestCasesFromSavedSet(TEST_CASE_SET_FOR_MODIFICATION_VERIFICATION, 1);
   }
 
   @Override
