@@ -5,6 +5,7 @@ public class ConnectorFactory
 
   public static final String TYPE_SOAP = "SOAP";
   public static final String TYPE_POST = "POST";
+  public static final String TYPE_RAW = "RAW";
   public static final String TYPE_AL_SOAP = "AL SOAP";
   public static final String TYPE_CO_SOAP = "CO SOAP";
   public static final String TYPE_KS_SOAP = "KS SOAP";
@@ -41,6 +42,8 @@ public class ConnectorFactory
       connector = new HISoapConnector(label, url);
     } else if (type.equals(TYPE_POST)) {
       connector = new HttpConnector(label, url);
+    } else if (type.equals(TYPE_RAW)) {
+      connector = new HttpRawConnector(label, url);
     } else if (type.equals(TYPE_ENVISION_SOAP)) {
       connector = new EnvisionConnector(label, url);
     } else if (type.equals(TYPE_ENVISION_SOAP11)) {
