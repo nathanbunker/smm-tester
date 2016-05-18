@@ -61,6 +61,8 @@ public abstract class Connector
         connector = new SoapConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_POST)) {
         connector = new HttpConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_RAW)) {
+        connector = new HttpRawConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_HI_SOAP)) {
         connector = new HISoapConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_ENVISION_SOAP)) {
