@@ -590,7 +590,7 @@ public class CertifyHistoryServlet extends ClientServlet
           if (sendData.getConnector() != null) {
             List<File> fileList = CreateTestCaseServlet.listIISTestReports(sendData);
             if (fileList.size() > 0) {
-              out.println("<h3>" + sendData.getConnector().getLabel() + "</h3>");
+              out.println("<h3>" + sendData.getConnector().getLabelDisplay() + "</h3>");
               out.println("<ul>");
               for (File file : fileList) {
                 String link = "CertifyHistoryServlet/" + sendData.getConnector().getLabel() + "/" + file.getName()

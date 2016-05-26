@@ -24,7 +24,8 @@ import org.immunizationsoftware.dqa.transform.TestCaseMessage;
  * 
  * @author nathan
  */
-public class ConnectServlet extends ClientServlet {
+public class ConnectServlet extends ClientServlet
+{
 
   /**
    * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -39,7 +40,8 @@ public class ConnectServlet extends ClientServlet {
    * @throws IOException
    *           if an I/O error occurs
    */
-  protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
@@ -87,12 +89,13 @@ public class ConnectServlet extends ClientServlet {
           out.println("    <td>");
           out.println("      <select name=\"sendDataInternalId\" >");
           boolean selected = !user.hasSendData();
-          out.println("              <option value=\"0\"" + (selected ? " selected=\"true\"" : "") + ">-- none selected --</option>");
+          out.println("              <option value=\"0\"" + (selected ? " selected=\"true\"" : "")
+              + ">-- none selected --</option>");
           for (SendData sendData : ConnectionManager.getSendDataList()) {
             if (sendData.getConnector() != null) {
               selected = user.hasSendData() && user.getSendData().getInternalId() == sendData.getInternalId();
-              out.println("              <option value=\"" + sendData.getInternalId() + "\"" + (selected ? " selected=\"true\"" : "") + ">"
-                  + sendData.getConnector().getLabel() + "</option>");
+              out.println("              <option value=\"" + sendData.getInternalId() + "\""
+                  + (selected ? " selected=\"true\"" : "") + ">" + sendData.getConnector().getLabel() + "</option>");
             }
           }
           out.println("      </select>");
@@ -108,8 +111,7 @@ public class ConnectServlet extends ClientServlet {
         out.println("<h2>Connections</h2>");
         out.println("<table class=\"boxed\">");
         out.println("  <tr class=\"boxed\">");
-        out.println("    <th class=\"boxed\">Label</th>");
-        out.println("    <th class=\"boxed\">Type</th>");
+        out.println("    <th class=\"boxed\">Label (Type)</th>");
         out.println("    <th class=\"boxed\">URL</th>");
         out.println("    <th class=\"boxed\">User Id</th>");
         out.println("    <th class=\"boxed\">Password</th>");
@@ -122,8 +124,7 @@ public class ConnectServlet extends ClientServlet {
           id++;
           out.println("<form action=\"ConnectServlet\" method=\"POST\">");
           out.println("  <tr class=\"boxed\">");
-          out.println("    <td class=\"boxed\">" + connector.getLabel() + "</td>");
-          out.println("    <td class=\"boxed\">" + connector.getType() + "</td>");
+          out.println("    <td class=\"boxed\">" + connector.getLabelDisplay() + "</td>");
           out.println("    <td class=\"boxed\">" + connector.getUrlShort() + "</td>");
           out.println("    <td class=\"boxed\">" + connector.getUserid() + "</td>");
           out.println("    <td class=\"boxed\">&nbsp;</td>");
@@ -156,20 +157,25 @@ public class ConnectServlet extends ClientServlet {
         }
         out.println("<form action=\"ConnectServlet\" method=\"POST\">");
         out.println("  <tr class=\"boxed\">");
-        out.println("    <td class=\"boxed\"><input type=\"text\" name=\"label\" size=\"12\" value=\"" + label + "\"></td>");
+        out.println(
+            "    <td class=\"boxed\"><input type=\"text\" name=\"label\" size=\"12\" value=\"" + label + "\"></td>");
         out.println("    <td class=\"boxed\">");
         out.println("      <select name=\"type\">");
         out.println("        <option value=\"\">select</option>");
         for (String[] option : ConnectorFactory.TYPES) {
-          out.println("        <option value=\"" + option[0] + "\"" + (type.equals(option[0]) ? " selected=\"true\"" : "") + ">" + option[1]
-              + "</option>");
+          out.println("        <option value=\"" + option[0] + "\""
+              + (type.equals(option[0]) ? " selected=\"true\"" : "") + ">" + option[1] + "</option>");
         }
         out.println("      </select>");
         out.println("    </td>");
-        out.println("    <td class=\"boxed\"><input type=\"text\" name=\"url\" size=\"20\" value=\"" + url + "\"></td>");
-        out.println("    <td class=\"boxed\"><input type=\"text\" name=\"userid\" size=\"7\" value=\"" + userid + "\"></td>");
-        out.println("    <td class=\"boxed\"><input type=\"text\" name=\"password\" size=\"7\" value=\"" + password + "\"></td>");
-        out.println("    <td class=\"boxed\"><input type=\"text\" name=\"facilityid\" size=\"7\" value=\"" + facilityid + "\"></td>");
+        out.println(
+            "    <td class=\"boxed\"><input type=\"text\" name=\"url\" size=\"20\" value=\"" + url + "\"></td>");
+        out.println(
+            "    <td class=\"boxed\"><input type=\"text\" name=\"userid\" size=\"7\" value=\"" + userid + "\"></td>");
+        out.println("    <td class=\"boxed\"><input type=\"text\" name=\"password\" size=\"7\" value=\"" + password
+            + "\"></td>");
+        out.println("    <td class=\"boxed\"><input type=\"text\" name=\"facilityid\" size=\"7\" value=\"" + facilityid
+            + "\"></td>");
         out.println("    <td class=\"boxed\"><input type=\"submit\" name=\"action\" value=\"Add\"></td>");
         out.println("  </tr>");
         out.println("  <input type=\"hidden\" name=\"id\" value=\"" + id + "\">");
@@ -187,7 +193,8 @@ public class ConnectServlet extends ClientServlet {
         out.println("  <tr>");
         out.println("    <td valign=\"top\">Script</td>");
         out.println("    <td>");
-        out.println("        <textarea name=\"connectorScript\" cols=\"60\" rows=\"7\" wrap=\"off\">" + connectorScript + "</textarea>");
+        out.println("        <textarea name=\"connectorScript\" cols=\"60\" rows=\"7\" wrap=\"off\">" + connectorScript
+            + "</textarea>");
         out.println("    </td>");
         out.println("  </tr>");
         out.println("  <tr>");
@@ -206,7 +213,8 @@ public class ConnectServlet extends ClientServlet {
     }
   }
 
-  public static String addNewConnection(HttpSession session, Authenticate.User user, String message, int internalId, boolean removeOtherConnections) {
+  public static String addNewConnection(HttpSession session, Authenticate.User user, String message, int internalId,
+      boolean removeOtherConnections) {
     CreateTestCaseServlet.getTestCaseMessageMapMap(session).clear();
     if (internalId == 0) {
       user.setSendData(null);
@@ -226,6 +234,11 @@ public class ConnectServlet extends ClientServlet {
       } else {
         sendData.readKeyStore();
       }
+      if (sendData.getConnector().getOtherConnectorMap().size() > 0) {
+        for (Connector connector : sendData.getConnector().getOtherConnectorMap().values()) {
+          ConnectServlet.addConnector(connector, session);
+        }
+      }
       try {
         CreateTestCaseServlet.loadTestCases(session);
       } catch (Exception e) {
@@ -237,7 +250,8 @@ public class ConnectServlet extends ClientServlet {
   }
 
   protected static void setupKeystore(SendData sendData) throws IOException {
-    if (sendData.getConnector().getKeyStorePassword() != null && !sendData.getConnector().getKeyStorePassword().equals("")) {
+    if (sendData.getConnector().getKeyStorePassword() != null
+        && !sendData.getConnector().getKeyStorePassword().equals("")) {
       File keyStoreFile = new File(sendData.getRootDir(), SendData.KEYSTORE_FILE_NAME);
       if (keyStoreFile.exists()) {
         System.setProperty("javax.net.ssl.keyStore", keyStoreFile.getCanonicalPath());
@@ -249,7 +263,8 @@ public class ConnectServlet extends ClientServlet {
     }
   }
 
-  protected static List<TestCaseMessage> getSelectedTestCaseMessageList(HttpServletRequest request, HttpSession session) {
+  protected static List<TestCaseMessage> getSelectedTestCaseMessageList(HttpServletRequest request,
+      HttpSession session) {
     List<TestCaseMessage> testCaseMessageList = new ArrayList<TestCaseMessage>();
     Set<String> testCaseNumberSelectedSet = TestCaseServlet.setTestCaseNumberSelectedSet(request, session);
     Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(null,
@@ -342,7 +357,9 @@ public class ConnectServlet extends ClientServlet {
     for (Connector newConnector : newConnectors) {
       for (Iterator<Connector> it = oldConnectors.iterator(); it.hasNext();) {
         Connector oldConnector = it.next();
-        if (oldConnector.getLabel().equals(newConnector.getLabel()) && oldConnector.getType().equals(newConnector.getType())) {
+        if (oldConnector.getLabel().equals(newConnector.getLabel())
+            && oldConnector.getType().equals(newConnector.getType())
+            && oldConnector.getPurpose().equals(newConnector.getPurpose())) {
           it.remove();
         }
       }
@@ -350,21 +367,23 @@ public class ConnectServlet extends ClientServlet {
     oldConnectors.addAll(newConnectors);
   }
 
-  protected static void addConnector(Connector newConnector, HttpSession session) {
+  protected static void addConnector(Connector nc, HttpSession session) {
     List<Connector> oldConnectors = getConnectors(session);
     for (Iterator<Connector> it = oldConnectors.iterator(); it.hasNext();) {
-      Connector oldConnector = it.next();
-      if (oldConnector.getLabel().equals(newConnector.getLabel()) && oldConnector.getType().equals(newConnector.getType())) {
+      Connector oc = it.next();
+      if (oc.getLabel().equals(nc.getLabel()) && oc.getType().equals(nc.getType())
+          && oc.getPurpose().equals(nc.getPurpose())) {
         it.remove();
       }
     }
-    oldConnectors.add(newConnector);
+    oldConnectors.add(nc);
     if (session.getAttribute("id") == null) {
       session.setAttribute("id", oldConnectors.size());
     }
   }
 
   public static List<Connector> getConnectors(HttpSession session) {
+    @SuppressWarnings("unchecked")
     List<Connector> connectors = (List<Connector>) session.getAttribute("connectors");
     if (connectors == null) {
       connectors = new ArrayList<Connector>();

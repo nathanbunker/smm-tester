@@ -276,7 +276,7 @@ public class SubmitServlet extends ClientServlet
           String requestText = (String) request.getAttribute("requestText");
           if (requestText != null) {
             out.println("<h3>Request Submitted</h3>");
-            out.println("<p>What was actually sent to " + connector.getLabel() + ": ");
+            out.println("<p>What was actually sent to " + connector.getLabelDisplay() + ": ");
             out.print("<pre>");
             out.print(requestText);
             out.println("</pre>");
@@ -298,7 +298,7 @@ public class SubmitServlet extends ClientServlet
             host = "[unknown]";
           }
           try {
-            out.println("<p>Status for " + connector.getLabel() + ": <br><font color=\"blue\">"
+            out.println("<p>Status for " + connector.getLabelDisplay() + ": <br><font color=\"blue\">"
                 + connector.connectivityTest("Sent from client '" + host + "'") + "</font></p>");
           } catch (Exception t) {
             out.println("<p>Unable to test against remote server: " + t.getMessage() + "</p>");
