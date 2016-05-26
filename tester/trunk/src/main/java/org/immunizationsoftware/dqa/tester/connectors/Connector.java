@@ -36,7 +36,7 @@ public abstract class Connector
   public static final String PURPOSE_GENERAL = "General";
   public static final String PURPOSE_UPDATE = "Update";
   public static final String PURPOSE_QUERY = "Query";
-  
+
   private boolean setupGlobalKeyStore = true;
 
   public boolean isSetupGlobalKeyStore() {
@@ -360,7 +360,10 @@ public abstract class Connector
   }
 
   public String getLabelDisplay() {
-    return label + " (" + type + ")";
+    if (purpose.equals("")) {
+      return label + " (" + type + ")";
+    }
+    return label + " - " + purpose + " (" + type + ")";
   }
 
   public void setUrl(String url) {
