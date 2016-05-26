@@ -9,6 +9,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -31,8 +32,7 @@ import javax.net.ssl.X509TrustManager;
  * 
  * @author nathan
  */
-public class HttpRawConnector extends Connector
-{
+public class HttpRawConnector extends Connector {
 
   protected HttpRawConnector(String label, String url, String type) {
     super(label, type);
@@ -43,7 +43,7 @@ public class HttpRawConnector extends Connector
     super(label, "RAW");
     this.url = url;
   }
-  
+
   @Override
   protected void setupFields(List<String> fields) {
   }
@@ -98,15 +98,28 @@ public class HttpRawConnector extends Connector
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       urlConn.setUseCaches(false);
-      String content;
-//      if (false) {
-//        urlConn.setRequestProperty(fieldNames[USERID], conn.getUserId());
-//        urlConn.setRequestProperty(fieldNames[PASSWORD], conn.getPassword());
-//        urlConn.setRequestProperty(fieldNames[FACILITYID], conn.getFacilityId());
-//      }
-      content = request;
+      StringBuilder content = new StringBuilder();
+      // if (false) {
+      // urlConn.setRequestProperty(fieldNames[USERID], conn.getUserId());
+      // urlConn.setRequestProperty(fieldNames[PASSWORD], conn.getPassword());
+      // urlConn.setRequestProperty(fieldNames[FACILITYID],
+      // conn.getFacilityId());
+      // }
+      {
+        StringReader stringReader = new StringReader(request);
+        BufferedReader bufReader = new BufferedReader(stringReader);
+        String line;
+        System.out.println("--> Sending this: ");
+        while ((line = bufReader.readLine()) != null) {
+          System.out.println("--> " + line);
+          content.append(line);
+          content.append('\r');
+        }
+        bufReader.close();
+      }
+
       printout = new DataOutputStream(urlConn.getOutputStream());
-      printout.writeBytes(content);
+      printout.writeBytes(content.toString());
       printout.flush();
       printout.close();
       input = new InputStreamReader(urlConn.getInputStream());
@@ -198,8 +211,7 @@ public class HttpRawConnector extends Connector
     return factory;
   }
 
-  public void doDebug(StringBuilder debugLog, KeyStore keyStore, X509TrustManager defaultTrustManager)
-      throws KeyStoreException {
+  public void doDebug(StringBuilder debugLog, KeyStore keyStore, X509TrustManager defaultTrustManager) throws KeyStoreException {
     debugLog.append("Trusted certificates: \r");
     for (X509Certificate cert : defaultTrustManager.getAcceptedIssuers()) {
       String certStr = "S:" + cert.getSubjectDN().getName() + " I:" + cert.getIssuerDN().getName();
@@ -222,7 +234,7 @@ public class HttpRawConnector extends Connector
   @Override
   protected void makeScriptAdditions(StringBuilder sb) {
     // TODO Auto-generated method stub
-    
+
   }
 
 }
