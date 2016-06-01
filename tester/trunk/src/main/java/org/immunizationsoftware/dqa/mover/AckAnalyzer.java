@@ -16,7 +16,7 @@ public class AckAnalyzer
   };
 
   public static enum AckType {
-    DEFAULT, NMSIIS, ALERT, WEBIZ, MIIC, IRIS_IA, VIIS, NJSIIS, IRIS_ID;
+    DEFAULT, NMSIIS, ALERT, WEBIZ, MIIC, IRIS_IA, VIIS, NJSIIS, IRIS_ID, NESIIS;
 
     private boolean inHL7Format = true;
     protected String description = null;
@@ -44,6 +44,8 @@ public class AckAnalyzer
 
     AckType.ALERT.description = "Follows the CDC/AIRA standard except if the message contains the phrase \"Record Rejected\" or \"RXA #[n] IGNORED\" "
         + "then this is an error even if it's not a E. ";
+    
+    AckType.ALERT.description = "If MSA-1 is AR then the message was rejected, otherwise it was accepted.";
   }
 
   public static HL7Reader getMessageReader(String ackMessageText, AckType ackType) {
@@ -316,6 +318,12 @@ public class AckAnalyzer
             positive = false;
           }
         } else {
+          positive = false;
+        }
+      } else if (ackType.equals(AckType.NESIIS)){
+        if (ackCode.equals("AA") || ackCode.equals("AE")) {
+          positive = true;
+        } else if (ackCode.equals("AR")) {
           positive = false;
         }
       } else {
