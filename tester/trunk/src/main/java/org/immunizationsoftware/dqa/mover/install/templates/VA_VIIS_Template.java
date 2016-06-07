@@ -46,7 +46,7 @@ public class VA_VIIS_Template extends ConnectionTemplate
     SoapConnector con = (SoapConnector) connector;
     con.addCustomTransformation("MSH-4=[OTHERID]");
     con.addCustomTransformation("MSH-16=AL");
-    con.setAckType(AckAnalyzer.AckType.MIIC);
+    con.setAckType(AckAnalyzer.AckType.HP_WIR_DEFAULT);
     con.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
   }
 

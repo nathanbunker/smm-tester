@@ -47,7 +47,7 @@ public class IA_IRIS_Template extends ConnectionTemplate
   @Override
   public void setupConnection(String templateName, Connector connector) {
     SoapConnector soapConnector = (SoapConnector) connector;
-    soapConnector.setAckType(AckAnalyzer.AckType.MIIC);
+    soapConnector.setAckType(AckAnalyzer.AckType.HP_WIR_DEFAULT);
     soapConnector.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
   }
 
