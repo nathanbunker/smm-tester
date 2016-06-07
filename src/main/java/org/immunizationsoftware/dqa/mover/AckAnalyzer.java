@@ -16,7 +16,7 @@ public class AckAnalyzer
   };
 
   public static enum AckType {
-    DEFAULT, NMSIIS, ALERT, WEBIZ, MIIC, IRIS_IA, VIIS, NJSIIS, IRIS_ID, NESIIS;
+    DEFAULT, NMSIIS, ALERT, WEBIZ, MIIC, IRIS_IA, VIIS, NJSIIS, IRIS_ID, NESIIS, HP_WIR_DEFAULT;
 
     private boolean inHL7Format = true;
     protected String description = null;
@@ -31,7 +31,6 @@ public class AckAnalyzer
   };
 
   static {
-    // AckType.NJSIIS.inHL7Format = false;
     AckType.NMSIIS.description = "The NMSIIS interface is first assumed to have a setup problem if any one of three conditions occurs: \n"
         + " + Message is shorter than 240 characters\n" + " + Message contains phrase |BAD MESSAGE|\n"
         + " + Message contains phrase FILE REJECTED\n\n" + "Transmission will stop if a setup problem is detected\n\n"
@@ -46,6 +45,9 @@ public class AckAnalyzer
         + "then this is an error even if it's not a E. ";
     
     AckType.ALERT.description = "If MSA-1 is AR then the message was rejected, otherwise it was accepted.";
+    
+    AckType.HP_WIR_DEFAULT.description = "If the phrase \"REJECTED\" or \"PID #1 IGNORED\" or \"RXA #[n] IGNORED\" "
+        + "is found in the response message then the message is considered to not be completely accepted. ";
   }
 
   public static HL7Reader getMessageReader(String ackMessageText, AckType ackType) {
@@ -239,6 +241,23 @@ public class AckAnalyzer
         }
         positive = !setupProblem && recordNotRejected;
       } else if (ackType.equals(AckType.MIIC)) {
+        int recordRejectedPos = ackUpperCase.indexOf("REJECTED");
+        int pidRejectedPos = ackUpperCase.indexOf("PID #1 IGNORED");
+        boolean arMSA = getFieldValue("MSA", 1).equals("AR");
+        positive = ackUpperCase.startsWith("MSH|^~\\&|") && recordRejectedPos == -1 && pidRejectedPos == -1 && !arMSA;
+        if (positive) {
+          int rxaRejectedPos = ackUpperCase.indexOf("RXA #");
+          if (rxaRejectedPos != -1) {
+            rxaRejectedPos = ackUpperCase.indexOf(" ", rxaRejectedPos + 5);
+            if (rxaRejectedPos != -1) {
+              positive = !ackUpperCase.substring(rxaRejectedPos + +1).startsWith("IGNORED");
+            }
+          }
+        }
+        if (!positive) {
+          log("The word rejected appeared in the message so the message was rejected");
+        }
+      } else if (ackType.equals(AckType.HP_WIR_DEFAULT)) {
         int recordRejectedPos = ackUpperCase.indexOf("REJECTED");
         int pidRejectedPos = ackUpperCase.indexOf("PID #1 IGNORED");
         boolean arMSA = getFieldValue("MSA", 1).equals("AR");
