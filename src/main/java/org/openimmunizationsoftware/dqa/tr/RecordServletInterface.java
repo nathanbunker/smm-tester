@@ -139,6 +139,7 @@ public interface RecordServletInterface {
   public static final String PARAM_TM_PREP_MESSAGE_ACCEPT_STATUS_DEBUG = "tm_prepMessageAcceptStatusDebug";
   public static final String PARAM_TM_PREP_SCENARIO_NAME = "tm_prepScenarioName";
   public static final String PARAM_TM_PREP_MESSAGE_DERIVED_FROM = "tm_prepMessageDerivedFrom";
+  public static final String PARAM_TM_PREP_DERIVED_FROM_TEST_CASE_CATEGORY = "tm_prepDerivedFromTestCategory";
   public static final String PARAM_TM_PREP_MESSAGE_ORIGINAL = "tm_prepMessageOriginal";
   public static final String PARAM_TM_PREP_MESSAGE_ORIGINAL_RESPONSE = "tm_prepMessageOriginalResponse";
   public static final String PARAM_TM_PREP_MESSAGE_ACTUAL = "tm_prepMessageActual";

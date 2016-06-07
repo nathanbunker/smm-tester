@@ -132,6 +132,7 @@ public class TestCaseMessage
   private String actualResponseMessage = "";
   private List<TestError> errorList = null;
   private String derivedFromVXUMessage = "";
+  private String derivedFromTestCaseCategoryId = "";
   private List<Comparison> comparisonList = null;
   private boolean passedTest = false;
   private boolean accepted = false;
@@ -490,6 +491,15 @@ public class TestCaseMessage
   public TestCaseMessage() {
     // default;
   }
+
+  public String getDerivedFromTestCaseCategoryId() {
+    return derivedFromTestCaseCategoryId;
+  }
+
+  public void setDerivedFromTestCaseCategoryId(String derivedFromTestCaseCategoryId) {
+    this.derivedFromTestCaseCategoryId = derivedFromTestCaseCategoryId;
+  }
+
 
   public TestCaseMessage(TestCaseMessage copy) {
     this.testCaseSet = copy.testCaseSet;
