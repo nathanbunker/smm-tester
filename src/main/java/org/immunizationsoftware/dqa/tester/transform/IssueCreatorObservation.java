@@ -34,6 +34,7 @@ public class IssueCreatorObservation extends IssueCreator
     } else if (issue == Issue.OBSERVATION_OBSERVATION_IDENTIFIER_CODE_IS_MISSING) {
       if (is) {
         testCaseMessage.setHasIssue(true);
+        transforms += "clear OBX-3\n";
       }
     } else if (issue == Issue.OBSERVATION_OBSERVATION_IDENTIFIER_CODE_IS_UNRECOGNIZED) {
       if (is) {
