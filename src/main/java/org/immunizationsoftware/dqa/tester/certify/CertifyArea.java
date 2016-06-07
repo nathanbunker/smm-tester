@@ -24,8 +24,7 @@ import org.immunizationsoftware.dqa.transform.Transformer;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
 import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
 
-public abstract class CertifyArea implements RecordServletInterface
-{
+public abstract class CertifyArea implements RecordServletInterface {
   protected List<TestCaseMessage> updateList = new ArrayList<TestCaseMessage>();
   protected List<TestCaseMessage> queryList = new ArrayList<TestCaseMessage>();
   protected boolean run = false;
@@ -42,8 +41,7 @@ public abstract class CertifyArea implements RecordServletInterface
     areaProgress[0] = makeScore(areaProgressCount[0], areaCount[0]);
     if (!isPerformanceConformance()) {
       certifyRunner.caTotal.areaProgressCount[0]++;
-      certifyRunner.caTotal.areaProgress[0] = makeScore(certifyRunner.caTotal.areaProgressCount[0],
-          certifyRunner.caTotal.areaCount[0]);
+      certifyRunner.caTotal.areaProgress[0] = makeScore(certifyRunner.caTotal.areaProgressCount[0], certifyRunner.caTotal.areaCount[0]);
     }
   }
 
@@ -52,8 +50,7 @@ public abstract class CertifyArea implements RecordServletInterface
     areaProgress[1] = makeScore(areaProgressCount[1], areaCount[1]);
     if (!isPerformanceConformance()) {
       certifyRunner.caTotal.areaProgressCount[1]++;
-      certifyRunner.caTotal.areaProgress[1] = makeScore(certifyRunner.caTotal.areaProgressCount[1],
-          certifyRunner.caTotal.areaCount[1]);
+      certifyRunner.caTotal.areaProgress[1] = makeScore(certifyRunner.caTotal.areaProgressCount[1], certifyRunner.caTotal.areaCount[1]);
     }
   }
 
@@ -200,8 +197,7 @@ public abstract class CertifyArea implements RecordServletInterface
 
   protected boolean verifyNoMajorChangesMade(TestCaseMessage testCaseMessage) {
     boolean noMajorChangesMade = true;
-    List<Comparison> comparisonList = CompareManager.compareMessages(testCaseMessage.getMessageText(),
-        testCaseMessage.getMessageTextSent());
+    List<Comparison> comparisonList = CompareManager.compareMessages(testCaseMessage.getMessageText(), testCaseMessage.getMessageTextSent());
     for (Comparison comparison : comparisonList) {
       if (comparison.isTested() && comparison.getPriorityLevel() <= Comparison.PRIORITY_LEVEL_OPTIONAL) {
         if (!comparison.isPass()) {
@@ -251,8 +247,7 @@ public abstract class CertifyArea implements RecordServletInterface
     return runUpdate(false, 0, testRunner, testCaseMessage);
   }
 
-  public int runUpdate(boolean passIfAcksDifferentThanBase, int testPass, TestRunner testRunner,
-      TestCaseMessage testCaseMessage) {
+  public int runUpdate(boolean passIfAcksDifferentThanBase, int testPass, TestRunner testRunner, TestCaseMessage testCaseMessage) {
     try {
       testRunner.setTestSectionType(areaLabel);
       testRunner.runTest(certifyRunner.connector, testCaseMessage);
@@ -260,14 +255,13 @@ public abstract class CertifyArea implements RecordServletInterface
       testCaseMessage.setMajorChangesMade(!verifyNoMajorChangesMade(testCaseMessage));
       certifyRunner.performance.addTotalUpdateTime(testRunner.getTotalRunTime(), testCaseMessage);
       if (passIfAcksDifferentThanBase) {
-        boolean same = CompareManager.acksAppearToBeTheSame(
-            certifyRunner.testCaseMessageBase.getActualResponseMessage(), testCaseMessage.getActualResponseMessage());
+        boolean same = CompareManager.acksAppearToBeTheSame(certifyRunner.testCaseMessageBase.getActualResponseMessage(),
+            testCaseMessage.getActualResponseMessage());
         if (!same) {
           testPass++;
         }
         testCaseMessage.setPassedTest(!same);
-        testCaseMessage
-            .setActualResultStatus(same ? TestRunner.ACTUAL_RESULT_STATUS_FAIL : TestRunner.ACTUAL_RESULT_STATUS_PASS);
+        testCaseMessage.setActualResultStatus(same ? TestRunner.ACTUAL_RESULT_STATUS_FAIL : TestRunner.ACTUAL_RESULT_STATUS_PASS);
       } else {
         if (pass) {
           testPass++;
@@ -298,15 +292,14 @@ public abstract class CertifyArea implements RecordServletInterface
   }
 
   public void setDerivedFrom(TestCaseMessage tcm, TestCaseMessage tcmQuery) {
-
+    tcmQuery.setDerivedFromTestCaseCategoryId(tcm.getTestCaseCategoryId());
     tcmQuery.setDerivedFromVXUMessage(tcm.getMessageText());
     tcmQuery.setOriginalMessageResponse(tcm.getActualResponseMessage());
     tcmQuery.setOriginalAccepted(tcm.isAccepted());
     TestCaseMessage tcmUpdates = tcm.getUpdateTestCaseMessage();
     while (tcmUpdates != null) {
       tcmQuery.setDerivedFromVXUMessage(tcmUpdates.getMessageText() + tcmQuery.getDerivedFromVXUMessage());
-      tcmQuery
-          .setOriginalMessageResponse(tcmUpdates.getActualResponseMessage() + tcmQuery.getOriginalMessageResponse());
+      tcmQuery.setOriginalMessageResponse(tcmUpdates.getActualResponseMessage() + tcmQuery.getOriginalMessageResponse());
       tcmQuery.setOriginalAccepted(tcmUpdates.isAccepted() && tcmQuery.isOriginalAccepted());
       tcmUpdates = tcmUpdates.getUpdateTestCaseMessage();
     }
@@ -324,11 +317,9 @@ public abstract class CertifyArea implements RecordServletInterface
     return registerQuery(count, masterCount, testCaseMessage, queryTestCaseMessage);
   }
 
-  public TestCaseMessage registerQuery(int count, int masterCount, TestCaseMessage testCaseMessage,
-      TestCaseMessage queryTestCaseMessage) {
+  public TestCaseMessage registerQuery(int count, int masterCount, TestCaseMessage testCaseMessage, TestCaseMessage queryTestCaseMessage) {
     queryTestCaseMessage.setTestCaseSet(certifyRunner.testCaseSet);
-    queryTestCaseMessage
-        .setTestCaseCategoryId(areaLetter + "Q." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+    queryTestCaseMessage.setTestCaseCategoryId(areaLetter + "Q." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
     queryTestCaseMessage.setTestCaseNumber(certifyRunner.uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
     setDerivedFrom(testCaseMessage, queryTestCaseMessage);
     queryList.add(queryTestCaseMessage);
@@ -367,8 +358,7 @@ public abstract class CertifyArea implements RecordServletInterface
       queryTestCaseMessage.setHasRun(true);
       queryTestCaseMessage.setActualResponseMessage(rspMessage);
       certifyRunner.setQueryReturnedMostImportantData(queryTestCaseMessage);
-      List<Comparison> comparisonList = CompareManager.compareMessages(queryTestCaseMessage.getDerivedFromVXUMessage(),
-          rspMessage);
+      List<Comparison> comparisonList = CompareManager.compareMessages(queryTestCaseMessage.getDerivedFromVXUMessage(), rspMessage);
       queryTestCaseMessage.setComparisonList(comparisonList);
       testPass = setPassFailForQuery(queryTestCaseMessage, testPass);
       readForecastActual(queryTestCaseMessage);
@@ -378,17 +368,14 @@ public abstract class CertifyArea implements RecordServletInterface
         queryTestCaseMessage.setResultForecastStatus(RecordServletInterface.VALUE_RESULT_FORECAST_STATUS_NOT_INCLUDED);
       }
       recordForecastResults(queryTestCaseMessage);
-      if (shouldValidate()
-          && (!certifyRunner.isRedactListResponses() || rspMessage.indexOf(CertifyRunner.REDACTION_NOTICE) == -1)) {
+      if (shouldValidate() && (!certifyRunner.isRedactListResponses() || rspMessage.indexOf(CertifyRunner.REDACTION_NOTICE) == -1)) {
         TestRunner.ascertainValidationResource(queryTestCaseMessage, rspMessage);
         if (queryTestCaseMessage.getValidationResource() != null) {
-          ValidationReport validationReport = NISTValidator.validate(rspMessage,
-              queryTestCaseMessage.getValidationResource());
+          ValidationReport validationReport = NISTValidator.validate(rspMessage, queryTestCaseMessage.getValidationResource());
           queryTestCaseMessage.setValidationReport(validationReport);
           if (validationReport != null) {
-            queryTestCaseMessage
-                .setValidationReportPass(validationReport.getHeaderReport().getValidationStatus().equals("Complete")
-                    && validationReport.getHeaderReport().getErrorCount() == 0);
+            queryTestCaseMessage.setValidationReportPass(validationReport.getHeaderReport().getValidationStatus().equals("Complete")
+                && validationReport.getHeaderReport().getErrorCount() == 0);
           }
         }
       }
@@ -396,7 +383,7 @@ public abstract class CertifyArea implements RecordServletInterface
     } catch (Throwable t) {
       queryTestCaseMessage.setException(t);
     }
-    
+
     certifyRunner.saveTestCase(queryTestCaseMessage);
     reportProgress(queryTestCaseMessage);
     reportForecastProgress(queryTestCaseMessage);
@@ -413,11 +400,9 @@ public abstract class CertifyArea implements RecordServletInterface
         try {
           String results = certifyRunner.forecastTesterManager.reportForecastResults(queryTestCaseMessage,
               certifyRunner.connector.getTchForecastTesterSoftwareId());
-          if (queryTestCaseMessage.getTestCaseNumber() != null
-              && !queryTestCaseMessage.getTestCaseNumber().equals("")) {
+          if (queryTestCaseMessage.getTestCaseNumber() != null && !queryTestCaseMessage.getTestCaseNumber().equals("")) {
             if (certifyRunner.testDir != null) {
-              File testCaseFile = new File(certifyRunner.testDir,
-                  "TC-" + queryTestCaseMessage.getTestCaseNumber() + ".forecast-results.txt");
+              File testCaseFile = new File(certifyRunner.testDir, "TC-" + queryTestCaseMessage.getTestCaseNumber() + ".forecast-results.txt");
               try {
                 PrintWriter out = new PrintWriter(new FileWriter(testCaseFile));
                 out.print(results);
@@ -477,17 +462,13 @@ public abstract class CertifyArea implements RecordServletInterface
 
     if (queryTestCaseMessage.getAssertResult().equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH)) {
       passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH);
-    } else if (queryTestCaseMessage.getAssertResult()
-        .equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST)) {
+    } else if (queryTestCaseMessage.getAssertResult().equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST)) {
       passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST);
-    } else if (queryTestCaseMessage.getAssertResult()
-        .equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND)) {
+    } else if (queryTestCaseMessage.getAssertResult().equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND)) {
       passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND);
-    } else if (queryTestCaseMessage.getAssertResult()
-        .equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY)) {
+    } else if (queryTestCaseMessage.getAssertResult().equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY)) {
       passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY);
-    } else if (queryTestCaseMessage.getAssertResult()
-        .equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR)) {
+    } else if (queryTestCaseMessage.getAssertResult().equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR)) {
       passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR);
     }
 
@@ -527,42 +508,35 @@ public abstract class CertifyArea implements RecordServletInterface
   }
 
   public void addTwins(int count) {
-    addQuerySupport("First Twin", "PID-24=Y\rPID-25=1", ++count, "PID-24");
+    String middleName1 = certifyRunner.transformer.getValue("GIRL");
+    String middleName2 = middleName1;
     {
-      String middleNameOriginal = "";
-      String middleInitial = "";
-      String middleName = "";
-      String gender = "";
-      TestCaseMessage testCaseMessage1 = updateList.get(updateList.size() - 1);
-      HL7Reader vxuReader = new HL7Reader(testCaseMessage1.getMessageText());
-      vxuReader.advanceToSegment("PID");
-      middleNameOriginal = vxuReader.getValue(5, 3);
-      if (middleNameOriginal.length() > 0) {
-        middleInitial = middleNameOriginal.substring(0, 1);
-      } else {
-        middleInitial = "";
-      }
-      gender = vxuReader.getValue(8);
+      String middleInitial = middleName1.substring(0, 1);
       int tryCount = 0;
-      while (middleName.equals("") || !(middleInitial.equals("") || middleName.startsWith(middleInitial))) {
-        middleName = certifyRunner.transformer.getValue(gender.equals("M") ? "BOY" : "GIRL");
+      while (middleName2.equals(middleName1) || !middleName2.startsWith(middleInitial)) {
         tryCount++;
         if (tryCount > 1000) {
           // give up already! We'll go with what we have
           break;
         }
+        middleName2 = certifyRunner.transformer.getValue("GIRL");
       }
-
+    }
+    TestCaseMessage testCaseMessage1 = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+    testCaseMessage1.appendCustomTransformation("PID-24=Y\nPID-25=1\nPID-5.3=" + middleName1);
+    testCaseMessage1.setDescription("First Twin");
+    testCaseMessage1.setFieldName("PID-24");
+    register(++count, 1, testCaseMessage1);
+    {
       TestCaseMessage testCaseMessage2 = new TestCaseMessage();
       testCaseMessage2.setOriginalMessage(testCaseMessage1.getMessageText());
       testCaseMessage2.setDescription("Second Twin");
       testCaseMessage2.setFieldName("PID-24");
       String uniqueId = testCaseMessage1.getTestCaseNumber();
-      testCaseMessage2.appendCustomTransformation(
-          "MSH-10=" + uniqueId + "." + Transformer.makeBase62Number(System.currentTimeMillis() % 10000));
-      testCaseMessage2.appendCustomTransformation(
-          "PID-3.1=" + (uniqueId.length() <= 14 ? uniqueId + "B" : uniqueId.substring(uniqueId.length() - 14)+"B"));
-      testCaseMessage2.appendCustomTransformation("PID-5.3=" + middleName);
+      testCaseMessage2.appendCustomTransformation("MSH-10=" + uniqueId + "." + Transformer.makeBase62Number(System.currentTimeMillis() % 10000));
+      testCaseMessage2.appendCustomTransformation("PID-3.1=" + (uniqueId.length() <= 14 ? uniqueId : uniqueId.substring(uniqueId.length() - 14))
+          + "B");
+      testCaseMessage2.appendCustomTransformation("PID-5.3=" + middleName2);
       testCaseMessage2.appendCustomTransformation("PID-24=Y");
       testCaseMessage2.appendCustomTransformation("PID-25=2");
       register(count, 1, testCaseMessage2);

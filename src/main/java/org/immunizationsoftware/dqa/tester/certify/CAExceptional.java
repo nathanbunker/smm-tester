@@ -197,14 +197,27 @@ public class CAExceptional extends CertifyArea
       StringBuilder sb = new StringBuilder();
       String previousDescription = null;
       String description = null;
+      int masterCount = 0;
       while ((line = in.readLine()) != null) {
         line = line.trim();
         if (line.startsWith("--")) {
           description = line.substring(2).trim();
+          int posSpace = description.indexOf(" ");
+          int posColon = description.indexOf(":");
+          if (posSpace < 0 || posColon < 0 || posSpace < posColon)
+          {
+            count++;
+          }
+          else
+          {
+            masterCount = Integer.parseInt(description.substring(0, posColon).trim());
+            count = Integer.parseInt(description.substring(posColon + 1, posSpace).trim());
+            description = description.substring(posSpace).trim();
+          }
         } else if (line.length() > 3) {
           if (line.startsWith("MSH|^~\\&|")) {
             if (sb != null && sb.length() > 0) {
-              count = createCertfiedMessageTestCaseMessage(transformer, count, sb, previousDescription);
+              createCertfiedMessageTestCaseMessage(transformer, masterCount, count, sb, previousDescription);
             }
             sb = new StringBuilder();
             previousDescription = description;
@@ -217,7 +230,7 @@ public class CAExceptional extends CertifyArea
         }
       }
       if (sb != null && sb.length() > 0) {
-        count = createCertfiedMessageTestCaseMessage(transformer, count, sb, previousDescription);
+        createCertfiedMessageTestCaseMessage(transformer, masterCount, count, sb, previousDescription);
       }
 
     } catch (IOException ioe) {
@@ -235,18 +248,15 @@ public class CAExceptional extends CertifyArea
     return count;
   }
 
-  private int createCertfiedMessageTestCaseMessage(Transformer transformer, int count, StringBuilder sb,
+  private void createCertfiedMessageTestCaseMessage(Transformer transformer, int masterCount, int count, StringBuilder sb,
       String previousDescription) {
-    count++;
     String messageText = sb.toString();
     TestCaseMessage testCaseMessage = new TestCaseMessage();
     testCaseMessage.setOriginalMessage(messageText);
     changePatientIdentifyingInformation(messageText, testCaseMessage);
     testCaseMessage.setDescription(VALUE_EXCEPTIONAL_PREFIX_CERTIFIED_MESSAGE + " "
         + (previousDescription == null ? "Unidentified EHR" : previousDescription));
-    register(count, 2, testCaseMessage);
-    return count;
-
+    register(count, masterCount, testCaseMessage);
   }
 
   private void changePatientIdentifyingInformation(String messageText, TestCaseMessage testCaseMessage) {

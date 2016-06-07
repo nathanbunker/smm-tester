@@ -46,6 +46,8 @@ public class VerifyServlet extends ClientServlet {
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     String message = req.getParameter(FIELD_MESSAGEDATA);
+    System.out.println("== RECEIVED ====================== ");
+    System.out.println(message);
     resp.setContentType("text/plain;charset=UTF-8");
     PrintWriter out = resp.getWriter();
     try {

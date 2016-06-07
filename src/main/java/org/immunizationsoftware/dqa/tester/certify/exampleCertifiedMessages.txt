@@ -1,4 +1,4 @@
--- IHS Example 2013-07
+-- 2:1 IHS Example 2013-07
 MSH|^~\&|TEST EHR APPLICATION|X68||NIST TEST IZ REG|20130730091054|ASD123|VXU^V04^VXU_V04|IHS-336|P|2.5.1|||AL|AL|
 PID|1||232101000000^^^DEMO HOSP^MR~629516453^^^SSA^SS||BUCHSHORN^NKITA^^^^^L^^^^^|STROHM^PAMELA^STOWE^^^|20010829|F||1002-5^AMERICAN INDIAN OR ALASKA NATIVE^HL70005|500 KILLIAN ST ^^ANYCITY^NC^28719^USA^L||^PRN^PH^^^555^5555143|^PRN^PH^^^555^9992224||||||||2186-5^NOT HISPANIC OR LATINO^CDCREC||N
 PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|N|20071105|||A|20071105|20071105
@@ -8,7 +8,7 @@ ORC|RE||9999^CDC
 RXA|0|1|20110215|20110215|998^No vaccine administered^CVX|999||||||||||||||NA
 OBX|1|CE|59784-9^Disease with presumed immunity ^LN|1|38907003^Varicella infection^SCT||||||F
 
--- IHS Example 2014-07
+-- 2:2 IHS Example 2014-07
 MSH|^~\&|RPMS|2011 DEMO HOSPITAL|||20140721165517||VXU^V04^VXU_V04|IHS-3908655|P|2.5.1|||AL|AL|
 PID|1||232101263762^^^2011 DEMO HOSPITAL^MR||SNOW^MADELYNN^AINSLEY^^^^L^^^^^|LAM^^^^^|20070706|F||2131-1^OTHER RACE^HL70005|32 PRESCOTT STREET AVE^^WARWICK^MA^02452^USA^L||^PRN^PH^^^657^5558563|||||||||^UNKNOWN^CDCREC||N
 PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|||||A|20140715|20140715
@@ -22,7 +22,7 @@ OBX|2|CE|30956-7^vaccine type^LN|2|88^INFLUENZA, NOS^CVX||||||F
 OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20120702||||||F
 OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20110601||||||F
 
--- Epic example
+-- 2:3 Epic example
 MSH|^~\&|EHR|1138440005|SIIS|SIIS|20131114124736||VXU^V04^VXU_V04|1384454856951.1992|P|2.5.1|
 PID|||101722765^^^EHR^PI||MEGAN^SUSIE||20070408|F||2131-1^Other Race^HL70005|21578 MAIN ST^^HOUSTON^TX^77009^USA^P|||||||||||||N|
 NK1|1|MEGAN^PAVILIONTWO|MTH^Mother^HL70063|
@@ -73,7 +73,7 @@ ORC|RE||V05X1.21^OIS|
 RXA|0|1|20130325|20130325|85^Hep A, NOS^CVX^90730^Hep A 2 dose - Ped/Adol^C4|999|||01^Historical information - source unspecified^NIP001|
 
 
--- IHS 2014-08-25 Test Message A
+-- 2:4 IHS 2014-08-25 Test Message A
 MSH|^~\&|RPMS|2011 DEMO HOSPITAL|||20140825151121||VXU^V04^VXU_V04|IHS-3908800|P|2.5.1|||AL|AL|
 PID|1||232101112014^^^2011 DEMO HOSPITAL^MR~123456789^^^SSA^SS~321456^^^MCD^MA||IMM^PATIENT^IMMA^^^^L^^^^^|DEMO^^^^^|20130814|F||2131-1^OTHER RACE^HL70005|123 RIVER LANE^^PONCA CITY^OK^74601^USA^L||^PRN^PH^^^580^3213214|||||||||^UNKNOWN^CDCREC||N
 PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|||||A|20140814|20140814
@@ -124,7 +124,7 @@ OBX|3|CE|30956-7^vaccine type^LN|2|85^HEP A, NOS^CVX||||||F
 OBX|4|TS|29768-9^Date vaccine information statement published^LN|2|17000000||||||F
 OBX|5|TS|29769-7^Date vaccine information statement presented^LN|2|20140814||||||F
 
--- IHS 2014-08-25 Test Message B
+-- 2:5 IHS 2014-08-25 Test Message B
 MSH|^~\&|RPMS|2011 DEMO HOSPITAL|||20140825151121||VXU^V04^VXU_V04|IHS-3908802|P|2.5.1|||AL|AL|
 PID|1||232101112016^^^2011 DEMO HOSPITAL^MR~234567890^^^SSA^SS||IMM^PATIENT^IMMB^^^^L^^^^^|WHITE^^^^^|20130810|M||2131-1^OTHER RACE^HL70005|1234 MEMORIAL DRIVE^^TULSA^^^USA^L||^PRN^PH^^^918^1112222|||||||||^UNKNOWN^CDCREC||N
 PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|||||I|20140814|20140814
@@ -171,7 +171,7 @@ OBX|3|CE|30956-7^vaccine type^LN|2|85^HEP A, NOS^CVX||||||F
 OBX|4|TS|29768-9^Date vaccine information statement published^LN|2|17000000||||||F
 OBX|5|TS|29769-7^Date vaccine information statement presented^LN|2|20140814||||||F
 
--- IHS 2014-08-25 Test Message C
+-- 2:6 IHS 2014-08-25 Test Message C
 MSH|^~\&|RPMS|2011 DEMO HOSPITAL|||20140825151121||VXU^V04^VXU_V04|IHS-3908804|P|2.5.1|||AL|AL|
 PID|1||232101112020^^^2011 DEMO HOSPITAL^MR~455445545^^^SSA^SS||IMM^PATIENT^IMMC^^^^L^^^^^|TREE^^^^^|20120715|F||2131-1^OTHER RACE^HL70005|333 MOUNTAIN ROAD^^CKEROKEE^NC^23456^USA^L||^PRN^PH^^^212^5556677|||||||||^UNKNOWN^CDCREC||N
 PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|||||I|20140814|20140814
@@ -216,6 +216,8 @@ OBX|1|CE|64994-7^funding eligibility for immunization^LN|1|V04^Am Indian/AK Nati
 OBX|3|CE|30956-7^vaccine type^LN|2|85^HEP A, NOS^CVX||||||F
 OBX|4|TS|29768-9^Date vaccine information statement published^LN|2|17000000||||||F
 OBX|5|TS|29769-7^Date vaccine information statement presented^LN|2|20140814||||||F
+
+-- 2:7 IHS 2014-08-25 Test Message C2
 MSH|^~\&|RPMS|2011 DEMO HOSPITAL|||20140825151121||VXU^V04^VXU_V04|IHS-3908806|P|2.5.1|||AL|AL|
 PID|1||232101112022^^^2011 DEMO HOSPITAL^MR~888776666^^^SSA^SS~99988877^^^MCD^MA||IMM^PATIENT^IMMD^^^^L^^^^^|RUNNINGCLOUD^^^^^|20120720|M||2131-1^OTHER RACE^HL70005|555 CLOUD AVENUE^^LAWTON^OK^65734^USA^L||^PRN^PH^^^580^2225555|||||||||^UNKNOWN^CDCREC||N
 PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|||||I|20140814|20140814
@@ -272,7 +274,7 @@ OBX|3|CE|30956-7^vaccine type^LN|2|109^PNEUMOCOCCAL, NOS^CVX||||||F
 OBX|4|TS|29768-9^Date vaccine information statement published^LN|2|17000000||||||F
 OBX|5|TS|29769-7^Date vaccine information statement presented^LN|2|20140814||||||F
 
--- IHS 2014-08-25 Test Message D
+-- 2:8 IHS 2014-08-25 Test Message D
 MSH|^~\&|RPMS|2011 DEMO HOSPITAL|||20140825151121||VXU^V04^VXU_V04|IHS-3908806|P|2.5.1|||AL|AL|
 PID|1||232101112022^^^2011 DEMO HOSPITAL^MR~888776666^^^SSA^SS~99988877^^^MCD^MA||IMM^PATIENT^IMMD^^^^L^^^^^|RUNNINGCLOUD^^^^^|20120720|M||2131-1^OTHER RACE^HL70005|555 CLOUD AVENUE^^LAWTON^OK^65734^USA^L||^PRN^PH^^^580^2225555|||||||||^UNKNOWN^CDCREC||N
 PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|||||I|20140814|20140814
@@ -329,7 +331,7 @@ OBX|3|CE|30956-7^vaccine type^LN|2|109^PNEUMOCOCCAL, NOS^CVX||||||F
 OBX|4|TS|29768-9^Date vaccine information statement published^LN|2|17000000||||||F
 OBX|5|TS|29769-7^Date vaccine information statement presented^LN|2|20140814||||||F
 
--- IHS 2014-08-25 Test Message E
+-- 2:9 IHS 2014-08-25 Test Message E
 MSH|^~\&|RPMS|2011 DEMO HOSPITAL|||20140825151121||VXU^V04^VXU_V04|IHS-3908808|P|2.5.1|||AL|AL|
 PID|1||232101112026^^^2011 DEMO HOSPITAL^MR~455223333^^^SSA^SS||IMM^PATIENT^IMME^^^^L^^^^^|BECENTI^^^^^|20070701|F||2131-1^OTHER RACE^HL70005|PO BOX 12^^SHIPROCK^AZ^33221^USA^L||^PRN^PH^^^505^2142233|||||||||^UNKNOWN^CDCREC||N
 PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|||||A|20140815|20140815
@@ -380,7 +382,7 @@ RXA|0|1|20110701|20110701|10^IPV^CVX|999|mL^MilliLiters^UCUM||01^HISTORICAL INFO
 ORC|RE|183980-232101^IHS|20080701-183980-232101112026^2011 DEMO HOSPITAL||IP|||||^RUSLAVAGE^MICHELLE^A^^^^^^L|||||||^^^2011 DEMO HOSPITAL
 RXA|0|1|20080701|20080701|83^HEP A, PED/ADOL, 2 DOSE^CVX|999|mL^MilliLiters^UCUM||01^HISTORICAL INFORMATION - SOURCE UNSPECIFIED^NIP001||^^^2011 DEMO HOSPITAL|||||||||CP|A|20080701
 
--- IHS 2014-08-25 Test Message F
+-- 2:10 IHS 2014-08-25 Test Message F
 MSH|^~\&|RPMS|2011 DEMO HOSPITAL|||20140825151121||VXU^V04^VXU_V04|IHS-3908810|P|2.5.1|||AL|AL|
 PID|1||232101112028^^^2011 DEMO HOSPITAL^MR~455112222^^^SSA^SS||IMM^PATIENT^IMMF^^^^L^^^^^|RIVER^^^^^|20070707|M||2131-1^OTHER RACE^HL70005|777 OCEAN DRIVE^^FT. LAUDERDALE^FL^44556^USA^L||^PRN^PH^^^615^9997777|||||||||^UNKNOWN^CDCREC||N
 PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|||||A|20140815|20140815
@@ -438,7 +440,7 @@ RXA|0|1|20090107|20090107|83^HEP A, PED/ADOL, 2 DOSE^CVX|999|mL^MilliLiters^UCUM
 ORC|RE|183997-232101^IHS|20110707-183997-232101112028^2011 DEMO HOSPITAL||IP|||||^RUSLAVAGE^MICHELLE^A^^^^^^L|||||||^^^2011 DEMO HOSPITAL
 RXA|0|1|20110707|20110707|10^IPV^CVX|999|mL^MilliLiters^UCUM||01^HISTORICAL INFORMATION - SOURCE UNSPECIFIED^NIP001||^^^2011 DEMO HOSPITAL|||||||||CP|A|20110707
 
--- IHS 2014-08-25 Test Message G
+-- 2:11 IHS 2014-08-25 Test Message G
 MSH|^~\&|RPMS|2011 DEMO HOSPITAL|||20140825151121||VXU^V04^VXU_V04|IHS-3908812|P|2.5.1|||AL|AL|
 PID|1||232101112032^^^2011 DEMO HOSPITAL^MR~788665555^^^SSA^SS~3333333^^^MCD^MA||IMM^PATIENT^IMMG^^^^L^^^^^|SMITH^^^^^|20000715|F||2131-1^OTHER RACE^HL70005|8400 HOMESTEAD^^ALBUQUERQUE^NM^32145^USA^L||^PRN^PH^^^505^1234567|||||||||^UNKNOWN^CDCREC||N
 PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|||||A|20140815|20140815
@@ -498,7 +500,7 @@ OBX|5|TS|29769-7^Date vaccine information statement presented^LN|2|20140815|||||
 ORC|RE|184016-232101^IHS|20020115-184016-232101112032^2011 DEMO HOSPITAL||IP|||||^RUSLAVAGE^MICHELLE^A^^^^^^L|||||||^^^2011 DEMO HOSPITAL
 RXA|0|1|20020115|20020115|20^DTAP^CVX|999|mL^MilliLiters^UCUM||01^HISTORICAL INFORMATION - SOURCE UNSPECIFIED^NIP001||^^^2011 DEMO HOSPITAL|||||||||CP|A|20020115
 
--- IHS 2014-08-25 Test Message H
+-- 2:12 IHS 2014-08-25 Test Message H
 MSH|^~\&|RPMS|2011 DEMO HOSPITAL|||20140825151121||VXU^V04^VXU_V04|IHS-3908814|P|2.5.1|||AL|AL|
 PID|1||232101112034^^^2011 DEMO HOSPITAL^MR~666775555^^^SSA^SS||IMM^PATIENT^IMMH^^^^L^^^^^|BRWON^^^^^|20000720|M||2131-1^OTHER RACE^HL70005|999 BLUEBIRD DRIVE^^ONEIDA^NY^66543^USA^L||^PRN^PH^^^315^7775555|||||||||^UNKNOWN^CDCREC||N
 PD1|||||||||||02^REMINDER/RECALL - ANY METHOD^HL70215|||||A|20140815|20140815
@@ -553,7 +555,7 @@ OBX|3|CE|30956-7^vaccine type^LN|2|108^MENINGOCOCCAL, NOS^CVX||||||F
 OBX|4|TS|29768-9^Date vaccine information statement published^LN|2|17000000||||||F
 OBX|5|TS|29769-7^Date vaccine information statement presented^LN|2|20140815||||||F
 
--- Cerner 2015-04-17 - VXU message for well child visit single vaccination (Administration Child)
+-- 2:13 Cerner 2015-04-17 - VXU message for well child visit single vaccination (Administration Child)
 MSH|^~\&|EHR Application|X68|PH Application|PH Facility|201504151105||VXU^V04^VXU_V04|12049|P|2.5.1|||AL|ER
 PID|1||145688^^^&2.16.840.1.114060&ISO^MR||SNOW^MADELYNN^AINSLEY^^^^L|LAM^MORGAN|20100706|F||2076-8^NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER^HL70005|32 Prescott Street Ave^^Warwick^MA^02452^USA^L||^PRN^PH^^^657^5558563~^||^ISO639|||||||2186-5^NOT HISPANIC OR LATINO^CDCREC||N||
 PD1|||||||||||02^Reminder/recall - any method^HL70215|||||A|20120701|20120701
@@ -566,7 +568,7 @@ OBX|2|CE|30956-7^vaccine type^LN|2|88^Influenza^CVX||||||F
 OBX|3|TS|29768-9^Data vaccine information published^LN|2|20120702||||||F
 OBX|4|TS|29769-7^Date vaccine statement presented^LN|2|20130829||||||F
 
--- Cerner 2015-04-17 - VXU message for single vaccination administered to an adult in the annual checkup (Administration Adult)
+-- 2:14 Cerner 2015-04-17 - VXU message for single vaccination administered to an adult in the annual checkup (Administration Adult)
 MSH|^~\&|EHR Application|X68|PH Application|PH Facility|201504151121||VXU^V04^VXU_V04|12053|P|2.5.1|||AL|ER
 PID|1||159844^^^&2.16.840.1.114060&ISO^MR~184-36-9200^^^CRT^SS||VALLY^NITIKA^^^^^L|^|19410813|F|||||^^~^NET^^NVALLY@FASTMAIL.COM||^ISO639|||||||||N||
 ORC|RE||159844-52-1^CRT|||||||BURDEN123^BURDEN^DONNA^A^^^^^CRT||057422^RADON^NICHOLAS^^^^^^CRT^L||||||||
@@ -578,7 +580,7 @@ OBX|3|TS|29768-9^Data vaccine information published^LN|2|20111025||||||F
 OBX|4|TS|29769-7^Date vaccine statement presented^LN|2|20130829||||||F
 
 
--- Cerner 2015-04-17 - VXU message for well child visit reporting historical vaccination (Historical Child)
+-- 2:15 Cerner 2015-04-17 - VXU message for well child visit reporting historical vaccination (Historical Child)
 MSH|^~\&|EHR Application|X68|PH Application|PH Facility|201504151123||VXU^V04^VXU_V04|12055|P|2.5.1|||AL|ER
 PID|1||159847^^^&2.16.840.1.114060&ISO^MR||MONTGOMERY^LEWIS^^^^^L|^|20010821|M|||||^^~^||^ISO639|||||||||N||
 ORC|RE||159847-118-1^CRT|||||||BURDEN123^BURDEN^DONNA^A^^^^^CRT||||||||||
@@ -588,7 +590,7 @@ OBX|2|TS|29768-9^Data vaccine information published^LN|2|20110503||||||F
 OBX|3|TS|29769-7^Date vaccine statement presented^LN|2|20130829||||||F
 
 
--- Cerner 2015-04-17 - VXU message for well child visit single vaccination where the guardian has indicated that the information shall not be protected (Consented Child)
+-- 2:16 Cerner 2015-04-17 - VXU message for well child visit single vaccination where the guardian has indicated that the information shall not be protected (Consented Child)
 MSH|^~\&|EHR Application|X68|PH Application|PH Facility|201504151125||VXU^V04^VXU_V04|12057|P|2.5.1|||AL|ER
 PID|1||159849^^^&2.16.840.1.114060&ISO^MR||NEWTON^LEA^^^^^L|^|20010905|F|||||^^~^||^ISO639|||||||||N||
 PD1||||||||||||N|20110214|||||
@@ -598,21 +600,21 @@ OBX|1|CE|30956-7^vaccine type^LN|2|139^Td/Tdap(use for Td)^CVX||||||F
 OBX|2|TS|29768-9^Data vaccine information published^LN|2|20120124||||||F
 OBX|3|TS|29769-7^Date vaccine statement presented^LN|2|20130829||||||F
 
--- Cerner 2015-04-17 - VXU message for well child visit where the child's mother refused administration of a vaccination (Refused Toddler)
+-- 2:17 Cerner 2015-04-17 - VXU message for well child visit where the child's mother refused administration of a vaccination (Refused Toddler)
 MSH|^~\&|EHR Application|X68|PH Application|PH Facility|201504151234||VXU^V04^VXU_V04|12059|P|2.5.1|||AL|ER
 PID|1||159852^^^&2.16.840.1.114060&ISO^MR||FLEMING^CHAD^^^^^L|^|20100830|M|||||^^~^||^ISO639|||||||||N||
 ORC|RE||9999^CDC^|||||||||||||||||
 RXA|0|1|20110815||03^MMR^CVX|999||||78321^LEMON^MIKE^A^^^^^CRT|^^^CRTC|||||||00^Parental decision^NIP002||RE|A||
 
 
--- Cerner 2015-04-17 - VXU message for well child visit where the child's parent reports that the child had had varicella previously
+-- 2:18 Cerner 2015-04-17 - VXU message for well child visit where the child's parent reports that the child had had varicella previously
 MSH|^~\&|EHR Application|X68|PH Application|PH Facility|201504151237||VXU^V04^VXU_V04|12061|P|2.5.1|||AL|ER
 PID|1||159853^^^&2.16.840.1.114060&ISO^MR||WOLFE^ARON^^^^^L|^|20010907|M|||||^^~^||^ISO639|||||||||N||
 ORC|RE||9999^CDC^|||||||||||||||||
 RXA|0|1|20110215||998^No vaccine administered^CVX|999||||78321^LEMON^MIKE^A^^^^^CRT|^^^CRTC|||||||||NA|A||
 OBX|1|CE|59784-9^Disease with presumed immunity^LN|1|38907003^Varicella (disorder)^SCT||||||F
 
--- Cerner 2015-04-17 - VXU message for a well child visit where a single, historical and combination vaccination will be reported (Complete Record)
+-- 2:19 Cerner 2015-04-17 - VXU message for a well child visit where a single, historical and combination vaccination will be reported (Complete Record)
 MSH|^~\&|EHR Application|X68|PH Application|PH Facility|201504151258||VXU^V04^VXU_V04|12065|P|2.5.1|||AL|ER
 PID|1||159857^^^&2.16.840.1.114060&ISO^MR||UMATILLA^SALIMA^KAILYN^^^^L|^|20100824|F|||||^^~^||^ISO639|||||||||N||
 ORC|RE||159857-140-1^CRT|||||||BURDEN123^BURDEN^DONNA^A^^^^^CRT||057422^RADON^NICHOLAS^^^^^^CRT^L||||||||
@@ -638,7 +640,7 @@ OBX|8|CE|30956-7^vaccine type^LN|4|17^Hib^CVX||||||F
 OBX|9|TS|29768-9^Data vaccine information published^LN|4|19981216||||||F
 OBX|10|TS|29769-7^Date vaccine statement presented^LN|4|20150415||||||F
 
--- CDC Adjuvant Example
+-- 2:20 CDC Adjuvant Example
 MSH|^~\&|||||20150930125518-0700||VXU^V04^VXU_V04|N24D401.2dZ|P|2.5.1|
 PID|1||N24D401^^^AIRA-TEST^MR||Manistee^Proctor^Hank^^^^L|Klamath^Hedwig|20021003|M|||361 Jungstroin Cir^^Perkins^MI^49872^USA^P||^PRN^PH^^^906^2798787|
 NK1|1|Klamath^Hedwig|MTH^Mother^HL70063|
