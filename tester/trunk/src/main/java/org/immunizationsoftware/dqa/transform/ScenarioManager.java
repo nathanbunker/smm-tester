@@ -420,36 +420,42 @@ public class ScenarioManager
       description = "ONC 2015 IZ-AD 1: Admin Child";
       originalMessage = MESSAGE_ONC_2015_1;
       quickTransformations = new String[] {};
+      customTransformations = "MSH-7=[NOW]\n";
       patientType = PatientType.BABY;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_2)) {
       description = "ONC 2015 IZ-AD 2: Admin Adult";
       originalMessage = MESSAGE_ONC_2015_2;
       quickTransformations = new String[] {};
+      customTransformations = "MSH-7=[NOW]\n";
       patientType = PatientType.ADULT;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_3)) {
       description = "ONC 2015 IZ-AD 3: Child No Consent";
       originalMessage = MESSAGE_ONC_2015_3;
       quickTransformations = new String[] {};
+      customTransformations = "MSH-7=[NOW]\n";
       patientType = PatientType.TWEEN;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_4)) {
       description = "ONC 2015 IZ-AD 4: Child Deleted";
       originalMessage = MESSAGE_ONC_2015_4;
       quickTransformations = new String[] {};
+      customTransformations = "MSH-7=[NOW]\n";
       patientType = PatientType.TWEEN;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_5)) {
       description = "ONC 2015 IZ-AD 5: Child Refusal";
       originalMessage = MESSAGE_ONC_2015_5;
       quickTransformations = new String[] {};
+      customTransformations = "MSH-7=[NOW]\n";
       patientType = PatientType.BABY;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_6)) {
       description = "ONC 2015 IZ-AD 6: Child Update";
       originalMessage = MESSAGE_ONC_2015_6;
       quickTransformations = new String[] {};
+      customTransformations = "MSH-7=[NOW]\n";
       patientType = PatientType.BABY;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_1_R)) {
@@ -457,6 +463,7 @@ public class ScenarioManager
       quickTransformations = new String[] { "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "MOTHER", "FATHER", "RACE",
           "ETHNICITY", "VAC1_CHANGE", "VAC2_CHANGE", "VAC3_CHANGE", "VAC4_CHANGE", "VAC5_CHANGE" };
       originalMessage = MESSAGE_ONC_2015_1;
+      customTransformations = "MSH-7=[NOW]\n";
       patientType = PatientType.BABY;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_2_R)) {
@@ -464,6 +471,7 @@ public class ScenarioManager
       quickTransformations = new String[] { "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY",
           "VAC1_CHANGE", "VAC2_CHANGE", "VAC3_CHANGE" };
       originalMessage = MESSAGE_ONC_2015_2;
+      customTransformations = "MSH-7=[NOW]\n";
       patientType = PatientType.ADULT;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_3_R)) {
@@ -471,6 +479,7 @@ public class ScenarioManager
       quickTransformations = new String[] { "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY",
           "VAC1_CHANGE" };
       originalMessage = MESSAGE_ONC_2015_3;
+      customTransformations = "MSH-7=[NOW]\n";
       patientType = PatientType.TWEEN;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_4_R)) {
@@ -478,6 +487,7 @@ public class ScenarioManager
       quickTransformations = new String[] { "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "RACE", "ETHNICITY",
           "VAC1_CHANGE" };
       originalMessage = MESSAGE_ONC_2015_4;
+      customTransformations = "MSH-7=[NOW]\n";
       patientType = PatientType.TWEEN;
       releaseVersion = "1.5";
     } else if (scenario.equals(SCENARIO_ONC_2015_IZ_AD_5_R)) {
@@ -485,6 +495,7 @@ public class ScenarioManager
       quickTransformations = new String[] { "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "FATHER", "RACE", "ETHNICITY",
           "VAC1_CHANGE", "VAC2_CHANGE", "VAC3_CHANGE", "VAC4_CHANGE" };
       originalMessage = MESSAGE_ONC_2015_5;
+      customTransformations = "MSH-7=[NOW]\n";
       quickTransformations = new String[] {};
       patientType = PatientType.BABY;
       releaseVersion = "1.5";
@@ -492,6 +503,7 @@ public class ScenarioManager
       description = "ONC 2015 IZ-AD 6: Child Update (replica)";
       quickTransformations = new String[] { "BOY_OR_GIRL", "DOB", "ADDRESS", "PHONE", "FATHER", "RACE", "ETHNICITY",
           "VAC1_CHANGE" };
+      customTransformations = "MSH-7=[NOW]\n";
       originalMessage = MESSAGE_ONC_2015_6;
       patientType = PatientType.BABY;
       releaseVersion = "1.5";
