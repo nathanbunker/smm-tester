@@ -627,8 +627,14 @@ public class IssueCreatorVaccination extends IssueCreator
     } else if (issue == Issue.VACCINATION_REFUSAL_REASON_IS_MISSING) {
       if (is) {
         testCaseMessage.setHasIssue(true);
+        transforms += "remove segment RXR\n";
+        transforms += "remove segment OBX#4\n";
+        transforms += "remove segment OBX#3\n";
+        transforms += "remove segment OBX#2\n";
+        transforms += "remove segment OBX#1\n";
         transforms += "RXA-20=RE\n";
         transforms += "clear RXA-18\n";
+        
 
       }
       if (not) {
