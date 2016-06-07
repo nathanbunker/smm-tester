@@ -55,8 +55,7 @@ import org.immunizationsoftware.dqa.transform.Transformer;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
 import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
 
-public class CertifyRunner extends Thread implements RecordServletInterface
-{
+public class CertifyRunner extends Thread implements RecordServletInterface {
 
   public static final String REDACTION_NOTICE = "[IIS Tester: Message has been redacted. It may contain non-test patient information.]";
 
@@ -227,8 +226,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         reportScore[REPORT_2_CODED] = score;
       }
 
-      if (certifyAreas[SUITE_I_PROFILING].getAreaProgress()[0] > 0
-          && ((CAProfiling) certifyAreas[SUITE_I_PROFILING]).getProfileLineList() != null) {
+      if (certifyAreas[SUITE_I_PROFILING].getAreaProgress()[0] > 0 && ((CAProfiling) certifyAreas[SUITE_I_PROFILING]).getProfileLineList() != null) {
         int countRun = 0;
         {
           int countPass = 0;
@@ -247,13 +245,11 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       }
       if (((CAProfiling) certifyAreas[SUITE_I_PROFILING]).getProfileLineList() != null) {
         for (ProfileLine profileLine : ((CAProfiling) certifyAreas[SUITE_I_PROFILING]).getProfileLineList()) {
-          if (profileUsageComparisonConformance != null
-              && profileUsageComparisonConformance.getProfileUsageValueMap() != null) {
-            ProfileUsageValue profileUsageValueConformance = profileUsageComparisonConformance.getProfileUsageValueMap()
-                .get(profileLine.getField());
+          if (profileUsageComparisonConformance != null && profileUsageComparisonConformance.getProfileUsageValueMap() != null) {
+            ProfileUsageValue profileUsageValueConformance = profileUsageComparisonConformance.getProfileUsageValueMap().get(profileLine.getField());
             if (profileUsageValueConformance != null) {
-              CompatibilityConformance compatibility = ProfileManager
-                  .getCompatibilityConformance(profileLine.getUsageDetected(), profileUsageValueConformance.getUsage());
+              CompatibilityConformance compatibility = ProfileManager.getCompatibilityConformance(profileLine.getUsageDetected(),
+                  profileUsageValueConformance.getUsage());
               List<ProfileLine> profileLineList = compatibilityMap.get(compatibility);
               if (profileLineList == null) {
                 profileLineList = new ArrayList<ProfileLine>();
@@ -447,8 +443,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     statusMessageList = new ArrayList<String>();
 
     switchStatus(STATUS_INITIALIZED, "Initializing CertifyRunner");
-    willQuery = queryType != null && (queryType.equals(QUERY_TYPE_QBP_Z34) || queryType.equals(QUERY_TYPE_QBP_Z34_Z44)
-        || queryType.equals(QUERY_TYPE_QBP_Z44) || queryType.equals(QUERY_TYPE_VXQ));
+    willQuery = queryType != null
+        && (queryType.equals(QUERY_TYPE_QBP_Z34) || queryType.equals(QUERY_TYPE_QBP_Z34_Z44) || queryType.equals(QUERY_TYPE_QBP_Z44) || queryType
+            .equals(QUERY_TYPE_VXQ));
     if (willQuery) {
       logStatus("Query will be run: " + queryType);
     } else {
@@ -704,8 +701,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           logStatus("Saving example");
           File exampleFile;
           if (testCaseMessage.getForecastTestPanel() != null) {
-            exampleFile = new File(testDir,
-                "Example Messages " + name + "" + testCaseMessage.getForecastTestPanel().getLabel() + ".hl7");
+            exampleFile = new File(testDir, "Example Messages " + name + "" + testCaseMessage.getForecastTestPanel().getLabel() + ".hl7");
           } else {
             exampleFile = new File(testDir, "Example Messages " + name + ".hl7");
           }
@@ -727,8 +723,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         logStatus("Saving example");
         File exampleFile;
         if (testCaseMessage.getForecastTestPanel() != null) {
-          exampleFile = new File(testDir,
-              "Example Messages " + name + "" + testCaseMessage.getForecastTestPanel().getLabel() + ".ack.hl7");
+          exampleFile = new File(testDir, "Example Messages " + name + "" + testCaseMessage.getForecastTestPanel().getLabel() + ".ack.hl7");
         } else {
           exampleFile = new File(testDir, "Example Messages " + name + ".ack.hl7");
         }
@@ -753,8 +748,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         String title = "IIS Testing Report Detail";
         ClientServlet.printHtmlHeadForFile(out, title);
         out.println("<h1>Detailed Run Log for " + connector.getLabel() + "</h1>");
-        out.println(
-            "<p>This detail run log gives complete details on what was tested. For a summary and condensed view see the IIS Testing Results. </p>");
+        out.println("<p>This detail run log gives complete details on what was tested. For a summary and condensed view see the IIS Testing Results. </p>");
         out.println("<ul>");
         out.println("  <li><a href=\"IIS Testing Report.html\">IIS Testing Results</a></li>");
         out.println("</ul>");
@@ -858,19 +852,15 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     if (CompareManager.queryReturnedMostImportantData(queryTestCaseMessage.getDerivedFromVXUMessage(),
         queryTestCaseMessage.getActualResponseMessage())) {
       if (queryTestCaseMessage.isOriginalAccepted()) {
-        queryTestCaseMessage
-            .setResultStoreStatus(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_RETURNED);
+        queryTestCaseMessage.setResultStoreStatus(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_RETURNED);
       } else {
-        queryTestCaseMessage
-            .setResultStoreStatus(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_NOT_ACCEPTED_RETURNED);
+        queryTestCaseMessage.setResultStoreStatus(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_NOT_ACCEPTED_RETURNED);
       }
     } else {
       if (queryTestCaseMessage.isOriginalAccepted()) {
-        queryTestCaseMessage
-            .setResultStoreStatus(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_NOT_RETURNED);
+        queryTestCaseMessage.setResultStoreStatus(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_NOT_RETURNED);
       } else {
-        queryTestCaseMessage
-            .setResultStoreStatus(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_NOT_ACCEPTED_NOT_RETURNED);
+        queryTestCaseMessage.setResultStoreStatus(RecordServletInterface.VALUE_RESULT_ACK_STORE_STATUS_NOT_ACCEPTED_NOT_RETURNED);
       }
     }
   }
@@ -921,8 +911,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     if (queryType.equals(QUERY_TYPE_VXQ)) {
       return QueryConverter.convertVXUtoVXQ(testCaseMessage.getMessageText());
     }
-    throw new IllegalArgumentException(
-        "Unable to convert query because query type '" + queryType + "' is not recognized");
+    throw new IllegalArgumentException("Unable to convert query because query type '" + queryType + "' is not recognized");
   }
 
   protected void saveTestCase(TestCaseMessage tcm) {
@@ -1055,29 +1044,26 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         if (certifyArea.getAreaCount()[0] <= 0) {
           out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">-</td>");
         } else {
-          out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">"
-              + certifyArea.getAreaProgressCount()[0] + "/" + certifyArea.getAreaCount()[0] + "</td>");
+          out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">" + certifyArea.getAreaProgressCount()[0] + "/"
+              + certifyArea.getAreaCount()[0] + "</td>");
         }
         if (certifyArea.getAreaProgress()[0] <= 0) {
           out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">-</td>");
         } else {
-          out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">"
-              + certifyArea.getAreaProgress()[0] + "%</td>");
+          out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">" + certifyArea.getAreaProgress()[0] + "%</td>");
         }
         if (certifyArea.getAreaScore()[0] >= 100) {
           out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">Yes</td>");
         } else if (certifyArea.getAreaScore()[0] == 0) {
           out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">No</td>");
         } else if (certifyArea.getAreaScore()[0] >= 0) {
-          out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">"
-              + certifyArea.getAreaScore()[0] + "% Yes</td>");
+          out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">" + certifyArea.getAreaScore()[0] + "% Yes</td>");
         } else {
           if (certifyArea instanceof CATotal) {
             updateEtc = caTotal.estimatedUpdateCompletion();
             SimpleDateFormat timeFormat = new SimpleDateFormat("H:mm");
             if (updateEtc != null) {
-              out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">ETC "
-                  + timeFormat.format(updateEtc) + "</td>");
+              out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">ETC " + timeFormat.format(updateEtc) + "</td>");
             } else {
               out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">-</td>");
             }
@@ -1100,29 +1086,26 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         if (certifyArea.getAreaCount()[1] <= 0) {
           out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">-</td>");
         } else {
-          out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">"
-              + certifyArea.getAreaProgressCount()[1] + "/" + certifyArea.getAreaCount()[1] + "</td>");
+          out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">" + certifyArea.getAreaProgressCount()[1] + "/"
+              + certifyArea.getAreaCount()[1] + "</td>");
         }
         if (certifyArea.getAreaProgress()[1] <= 0) {
           out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">-</td>");
         } else {
-          out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">"
-              + certifyArea.getAreaProgress()[1] + "%</td>");
+          out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">" + certifyArea.getAreaProgress()[1] + "%</td>");
         }
         if (certifyArea.getAreaScore()[1] >= 100) {
           out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">Yes</td>");
         } else if (certifyArea.getAreaScore()[1] == 0) {
           out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">No</td>");
         } else if (certifyArea.getAreaScore()[1] >= 0) {
-          out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">"
-              + certifyArea.getAreaScore()[1] + "% Yes</td>");
+          out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">" + certifyArea.getAreaScore()[1] + "% Yes</td>");
         } else {
           if (certifyArea instanceof CATotal) {
             Date queryEtc = caTotal.estimatedQueryCompletion();
             SimpleDateFormat timeFormat = new SimpleDateFormat("H:mm");
             if (queryEtc != null) {
-              out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">ETC "
-                  + timeFormat.format(queryEtc) + "</td>");
+              out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">ETC " + timeFormat.format(queryEtc) + "</td>");
             } else {
               out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">-</td>");
             }
@@ -1137,8 +1120,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
   public void printReport(PrintWriter out, boolean toFile) {
     if (testFinished == null) {
-      out.println(
-          "<p>Test in progress, unable to provide final report. <a href=\"IIS Testing Report Detail.html\">See supporting details for current progress. </a></p>");
+      out.println("<p>Test in progress, unable to provide final report. <a href=\"IIS Testing Report Detail.html\">See supporting details for current progress. </a></p>");
     } else {
       Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap = updateOverallScore();
 
@@ -1248,19 +1230,16 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       if (!connector.getCustomTransformations().equals("") || connector.getScenarioTransformationsMap().size() > 0) {
         out.println("<h3>Custom Modications</h3>");
         if (!connector.getCustomTransformations().equals("")) {
-          out.println(
-              "<p>This interface requires customized Transformations to modify each message before transmitting "
-                  + "them to the IIS. These transformations can range from setting the correct submitter facility in the "
-                  + "message header to modifying the structure of the HL7 message to meet local requirements. </p>");
+          out.println("<p>This interface requires customized Transformations to modify each message before transmitting "
+              + "them to the IIS. These transformations can range from setting the correct submitter facility in the "
+              + "message header to modifying the structure of the HL7 message to meet local requirements. </p>");
           {
             try {
-              BufferedReader customTransformsIn = new BufferedReader(
-                  new StringReader(connector.getCustomTransformations()));
+              BufferedReader customTransformsIn = new BufferedReader(new StringReader(connector.getCustomTransformations()));
               StringBuilder expectedTransforms = new StringBuilder();
               StringBuilder unexpectedTransforms = new StringBuilder();
               String line = "";
-              String[] expectedStarts = { "MSH-3=", "MSH-4=", "MSH-5=", "MSH-6=", "MSH-22=", "RXA-11.4=",
-                  "RXA-11.4*=" };
+              String[] expectedStarts = { "MSH-3=", "MSH-4=", "MSH-5=", "MSH-6=", "MSH-22=", "RXA-11.4=", "RXA-11.4*=" };
               while ((line = customTransformsIn.readLine()) != null) {
                 if (line.length() > 0) {
                   boolean foundExpectedStart = false;
@@ -1281,8 +1260,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
               }
               if (expectedTransforms.length() > 0) {
                 out.println("<h4>Expected Modifications</h4>");
-                out.println(
-                    "<p>Changes to certain fields such as MSH-4 and RXA-11.4 are expected as IIS may request specific values in these fields.  </p>");
+                out.println("<p>Changes to certain fields such as MSH-4 and RXA-11.4 are expected as IIS may request specific values in these fields.  </p>");
                 out.println("  <pre>" + expectedTransforms + "</pre>");
               }
               if (expectedTransforms.length() > 0) {
@@ -1308,10 +1286,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
       if (connector.getAckType().getDescription() != null) {
         out.println("<h4>Custom Logic for Reading Acknowledgment</h4>");
-        out.println(
-            "<p>Special logic was developed to determine whether test messages were accepted or not because this"
-                + "IIS returns a non-standard acknowledgement message. An effort was made to properly understand these messages, "
-                + "but the logic below should be carefully reviewed as it forms the basis for this testing report. </p>");
+        out.println("<p>Special logic was developed to determine whether test messages were accepted or not because this"
+            + "IIS returns a non-standard acknowledgement message. An effort was made to properly understand these messages, "
+            + "but the logic below should be carefully reviewed as it forms the basis for this testing report. </p>");
         out.println("<pre>" + connector.getAckType().getDescription() + "</pre>");
       }
 
@@ -1358,8 +1335,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       out.println("<div id=\"tolerance\"/>");
       out.println("<h2>Tolerance</h2>");
       if (reportScore[REPORT_5_TOLERANCE] == 1.0) {
-        out.println(
-            "<p>All tolerance messages were accepted. IIS is tolerant of unusual and unexpected message formats or values.</p>");
+        out.println("<p>All tolerance messages were accepted. IIS is tolerant of unusual and unexpected message formats or values.</p>");
       } else {
         out.println("<table border=\"1\" cellspacing=\"0\">");
         out.println("  <tr>");
@@ -1367,8 +1343,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         out.println("    <th>Results</th>");
         out.println("  </tr>");
         for (TestCaseMessage testCaseMessage : certifyAreas[SUITE_D_EXCEPTIONAL].getUpdateList()) {
-          if (testCaseMessage.getDescription().startsWith(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK)
-              && testCaseMessage.isHasRun() && !testCaseMessage.isPassedTest()) {
+          if (testCaseMessage.getDescription().startsWith(VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK) && testCaseMessage.isHasRun()
+              && !testCaseMessage.isPassedTest()) {
             printTestCaseMessageDetailsUpdate(out, toFile, testCaseMessage);
           }
         }
@@ -1390,8 +1366,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         out.println("    <th>Results</th>");
         out.println("  </tr>");
         for (TestCaseMessage testCaseMessage : certifyAreas[SUITE_D_EXCEPTIONAL].getUpdateList()) {
-          if (testCaseMessage.getDescription().startsWith(VALUE_EXCEPTIONAL_PREFIX_CERTIFIED_MESSAGE)
-              && testCaseMessage.isHasRun() && !testCaseMessage.isPassedTest()) {
+          if (testCaseMessage.getDescription().startsWith(VALUE_EXCEPTIONAL_PREFIX_CERTIFIED_MESSAGE) && testCaseMessage.isHasRun()
+              && !testCaseMessage.isPassedTest()) {
             printTestCaseMessageDetailsUpdate(out, toFile, testCaseMessage);
           }
         }
@@ -1409,8 +1385,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           out.println("    <p>Response time was as fast enough: " + printSeconds(performance.getUpdateAverage())
               + " average processing time per test message. </p>");
         } else {
-          out.println("    <p>Response time was as slower than anticipated: "
-              + printSeconds(performance.getUpdateAverage()) + " average processing time per test message. </p>");
+          out.println("    <p>Response time was as slower than anticipated: " + printSeconds(performance.getUpdateAverage())
+              + " average processing time per test message. </p>");
         }
       }
       if (performance != null && performance.getTotalUpdateCount() > 0) {
@@ -1465,8 +1441,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           out.println("<p>Not all response messages (ACKs) conformed to expectations.</p>");
         }
       }
-      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL
-          + "#acknowledgmentConformance\" class=\"boxLinks\">Description</a></p>");
+      out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#acknowledgmentConformance\" class=\"boxLinks\">Description</a></p>");
 
       if (certifyAreas[SUITE_I_PROFILING].getAreaProgress()[0] > 0) {
         out.println("<div id=\"localRequirements\"/>");
@@ -1474,8 +1449,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
         out.println("<h3>Base Message</h3>");
         out.println("<p>Base Message was accepted.  "
-            + makeTestCaseMessageDetailsLink(((CAProfiling) certifyAreas[SUITE_I_PROFILING]).getTcmFull(), toFile)
-            + "</p>");
+            + makeTestCaseMessageDetailsLink(((CAProfiling) certifyAreas[SUITE_I_PROFILING]).getTcmFull(), toFile) + "</p>");
         if (reportScore[REPORT_3_LOCAL] == 1.0) {
           out.println("<h3>Unexpected Responses</h3>");
           out.println("<p>All local requirements tested were confirmed.</p>");
@@ -1498,8 +1472,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           out.println("</table>");
         }
         out.println("<p>");
-        out.println(
-            "  <a href=\"" + REPORT_EXPLANATION_URL + "#localRequirements\" class=\"boxLinks\">Description</a>");
+        out.println("  <a href=\"" + REPORT_EXPLANATION_URL + "#localRequirements\" class=\"boxLinks\">Description</a>");
         out.println("  <a href=\"IIS Testing Report Detail.html#areaILevel1\" class=\"boxLinks\">More Details</a>");
         out.println("</p>");
 
@@ -1508,24 +1481,19 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           out.println("<h2>National Compatibility</h2>");
           printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONFLICT,
               "Local Standard has Major Conflict with National Standards");
-          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONFLICT,
-              "Local Standard Conflicts with National Standards");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONFLICT, "Local Standard Conflicts with National Standards");
           printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.MAJOR_CONSTRAINT,
               "Local Standard Defines Hard Constraint on National Standard");
           printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.CONSTRAINT,
               "Local Standard Defines Constraint on National Standard");
-          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.ALLOWANCE,
-              "Local Standard Loosens National Constraints");
-          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.UNABLE_TO_DETERMINE,
-              "Local Standard is Not Determined");
-          out.println("<p><a href=\"" + REPORT_EXPLANATION_URL
-              + "#nationalCompatibility\" class=\"boxLinks\">Description</a></p>");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.ALLOWANCE, "Local Standard Loosens National Constraints");
+          printConformanceCompatibility(out, compatibilityMap, CompatibilityConformance.UNABLE_TO_DETERMINE, "Local Standard is Not Determined");
+          out.println("<p><a href=\"" + REPORT_EXPLANATION_URL + "#nationalCompatibility\" class=\"boxLinks\">Description</a></p>");
         }
       }
 
       out.println("<p><a href=\"IIS Testing Report Detail.html#areaHLevel1\">More Details</a></p>");
-      out.println(
-          "<div style=\"position: fixed; bottom: 0; right: 0; background-color: red; color: white; font-size: 180%; font-weight: bold; padding-left: 5px; padding-right 5px; \">DRAFT REPORT &#8212; DO NOT DISTRIBUTE</div>");
+      out.println("<div style=\"position: fixed; bottom: 0; right: 0; background-color: red; color: white; font-size: 180%; font-weight: bold; padding-left: 5px; padding-right 5px; \">DRAFT REPORT &#8212; DO NOT DISTRIBUTE</div>");
 
     }
   }
@@ -1544,8 +1512,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     if (score >= 0.6) {
       out.println("    <td>&nbsp;</td>");
       out.println("    <td>");
-      out.println("<div style=\"width: " + ((int) (score * 200)) + "px; text-align: center;\" class=\"pass\">" + message
-          + "</div>");
+      out.println("<div style=\"width: " + ((int) (score * 200)) + "px; text-align: center;\" class=\"pass\">" + message + "</div>");
       out.println("    </td>");
     } else {
       out.println("    <td>");
@@ -1556,8 +1523,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     }
   }
 
-  public void printConformanceCompatibility(PrintWriter out,
-      Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap, CompatibilityConformance c, String heading) {
+  public void printConformanceCompatibility(PrintWriter out, Map<CompatibilityConformance, List<ProfileLine>> compatibilityMap,
+      CompatibilityConformance c, String heading) {
     if (compatibilityMap.get(c) != null) {
       out.println("<h3>" + heading + "</h3>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
@@ -1569,8 +1536,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       out.println("    <th>Detected Usage</th>");
       out.println("  </tr>");
       for (ProfileLine profileLine : compatibilityMap.get(c)) {
-        ProfileUsageValue profileUsageValueConformance = profileUsageComparisonConformance.getProfileUsageValueMap()
-            .get(profileLine.getField());
+        ProfileUsageValue profileUsageValueConformance = profileUsageComparisonConformance.getProfileUsageValueMap().get(profileLine.getField());
         if (profileUsageValueConformance != null) {
           out.println("  <tr>");
           out.println("    <td>" + profileLine.getField().getFieldName() + "</td>");
@@ -1711,9 +1677,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     }
 
     if (queryConnector != connector) {
-      out.println(
-          "<p>The connection information for performing queries is different than for the updates. This is to either accomodate "
-              + "different standards for message format or to allow for different credentials and URL. </p>");
+      out.println("<p>The connection information for performing queries is different than for the updates. This is to either accomodate "
+          + "different standards for message format or to allow for different credentials and URL. </p>");
       out.println("<table border=\"1\" cellspacing=\"0\">");
       out.println("  <tr>");
       out.println("    <th>Query Connection</th>");
@@ -1772,15 +1737,14 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     }
   }
 
-  public void printTestCaseMessageDetailsQueryOptional(PrintWriter out, boolean toFile,
-      TestCaseMessage testCaseMessage) {
+  public void printTestCaseMessageDetailsQueryOptional(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage) {
     String classText = "nottested";
     boolean passedAllOptional = false;
     if (testCaseMessage.isHasRun() && testCaseMessage.getComparisonList() != null) {
       passedAllOptional = true;
       for (Comparison comparison : testCaseMessage.getComparisonList()) {
-        if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL
-            && !comparison.isPass() && !fieldNotSupported(comparison)) {
+        if (comparison.isTested() && comparison.getPriorityLevel() == Comparison.PRIORITY_LEVEL_OPTIONAL && !comparison.isPass()
+            && !fieldNotSupported(comparison)) {
           passedAllOptional = false;
           break;
         }
@@ -1817,8 +1781,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     out.println("  </tr>");
   }
 
-  public void printTestCaseMessageDetailsQueryRequired(PrintWriter out, boolean toFile,
-      TestCaseMessage testCaseMessage) {
+  public void printTestCaseMessageDetailsQueryRequired(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage) {
     String classText = "nottested";
     if (testCaseMessage.isHasRun()) {
       classText = testCaseMessage.isPassedTest() ? "pass" : "fail";
@@ -1853,8 +1816,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     out.println("    <td class=\"" + classText + "\"><em>" + testCaseMessage.getDescription() + "</em></td>");
     if (testCaseMessage.isHasRun()) {
       if (testCaseMessage.isMajorChangesMade()) {
-        out.println("    <td class=\"fail\">Not all core data could be submitted. "
-            + makeCompareDetailsLink(testCaseMessage, toFile, true));
+        out.println("    <td class=\"fail\">Not all core data could be submitted. " + makeCompareDetailsLink(testCaseMessage, toFile, true));
         out.println("<br/>");
         if (testCaseMessage.isAccepted()) {
           out.println("Message was accepted.");
@@ -1863,11 +1825,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
         }
         out.println(makeTestCaseMessageDetailsLink(testCaseMessage, toFile));
       } else if (testCaseMessage.isAccepted()) {
-        out.println("    <td class=\"" + classText + "\">Message accepted. "
-            + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+        out.println("    <td class=\"" + classText + "\">Message accepted. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
       } else {
-        out.println("    <td class=\"" + classText + "\">Message was NOT accepted. "
-            + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+        out.println("    <td class=\"" + classText + "\">Message was NOT accepted. " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile)
+            + "</td>");
       }
     } else {
       out.println("    <td class=\"" + classText + "\">not run yet</td>");
@@ -1875,8 +1836,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     out.println("  </tr>");
   }
 
-  public String printTestCaseMessageDetailsUpdate(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage,
-      String previousFieldName) {
+  public String printTestCaseMessageDetailsUpdate(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage, String previousFieldName) {
     String classText = "nottested";
     if (testCaseMessage.isHasRun()) {
       classText = testCaseMessage.isAccepted() ? "pass" : "fail";
@@ -1946,11 +1906,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   }
 
   public void printProfileLineComparisonConformance(PrintWriter out, boolean toFile, ProfileLine profileLine) {
-    ProfileUsageValue profileUsageValue = profileUsageComparisonConformance.getProfileUsageValueMap()
-        .get(profileLine.getField());
+    ProfileUsageValue profileUsageValue = profileUsageComparisonConformance.getProfileUsageValueMap().get(profileLine.getField());
     if (profileUsageValue != null) {
-      CompatibilityConformance compatibilityConformance = ProfileManager
-          .getCompatibilityConformance(profileLine.getUsageDetected(), profileUsageValue.getUsage());
+      CompatibilityConformance compatibilityConformance = ProfileManager.getCompatibilityConformance(profileLine.getUsageDetected(),
+          profileUsageValue.getUsage());
       String usageClass = "";
       switch (compatibilityConformance) {
       case COMPATIBLE:
@@ -1981,11 +1940,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface
   }
 
   public void printProfileLineComparisonInteroperability(PrintWriter out, boolean toFile, ProfileLine profileLine) {
-    ProfileUsageValue profileUsageValue = profileUsageComparisonInteroperability.getProfileUsageValueMap()
-        .get(profileLine.getField());
+    ProfileUsageValue profileUsageValue = profileUsageComparisonInteroperability.getProfileUsageValueMap().get(profileLine.getField());
     if (profileUsageValue != null) {
-      CompatibilityInteroperability compatibilityInteroperability = ProfileManager
-          .getCompatibilityInteroperability(profileLine.getProfileUsageValue(), profileUsageValue);
+      CompatibilityInteroperability compatibilityInteroperability = ProfileManager.getCompatibilityInteroperability(
+          profileLine.getProfileUsageValue(), profileUsageValue);
       String usageClass = "";
       switch (compatibilityInteroperability) {
       case COMPATIBLE:
@@ -2014,8 +1972,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
   // profileUsageComparisonInteroperability
 
-  public void printTestMessageCell(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage,
-      boolean highlightUnexpected) {
+  public void printTestMessageCell(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage, boolean highlightUnexpected) {
     String classText = "nottested";
     boolean testPassed = false;
     if (testCaseMessage == null || !testCaseMessage.hasIssue()) {
@@ -2035,8 +1992,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface
             out.println("    <td class=\"" + classText + "\">Accepted Base Message</td>");
           } else {
             if (testCaseMessage.isAccepted()) {
-              out.println("    <td class=\"" + classText + "\">Accepted as was Expected "
-                  + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
+              out.println("    <td class=\"" + classText + "\">Accepted as was Expected " + makeTestCaseMessageDetailsLink(testCaseMessage, toFile)
+                  + "</td>");
             } else {
               out.println("    <td class=\"" + classText + "\">Not Accepted as was Expected "
                   + makeTestCaseMessageDetailsLink(testCaseMessage, toFile) + "</td>");
@@ -2076,19 +2033,17 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     if (toFile) {
       return "<font size=\"-1\"><a href=\"TC-" + testCaseMessage.getTestCaseNumber() + ".html\">details</a></font>";
     } else {
-      return "<font size=\"-1\"><a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum="
-          + testCaseMessage.getTestCaseId() + "\">details</a></font>";
+      return "<font size=\"-1\"><a href=\"TestCaseMessageViewerServlet?certifyServletBasicNum=" + testCaseMessage.getTestCaseId()
+          + "\">details</a></font>";
     }
   }
 
   private String makeCompareDetailsLink(TestCaseMessage testCaseMessage, boolean toFile, boolean substantialChanges) {
     if (toFile) {
       if (substantialChanges) {
-        return "<font size=\"-1\"><a href=\"TC-" + testCaseMessage.getTestCaseNumber()
-            + ".html#changesMade\">(details)</a></font>";
+        return "<font size=\"-1\"><a href=\"TC-" + testCaseMessage.getTestCaseNumber() + ".html#changesMade\">(details)</a></font>";
       } else {
-        return "<font size=\"-1\"><a href=\"TC-" + testCaseMessage.getTestCaseNumber()
-            + ".html#compareDetails\">(details)</a></font>";
+        return "<font size=\"-1\"><a href=\"TC-" + testCaseMessage.getTestCaseNumber() + ".html#compareDetails\">(details)</a></font>";
       }
     } else {
       if (substantialChanges) {
@@ -2112,8 +2067,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     return ((int) (ms / 100.0 + 0.5)) / 10.0 + "s";
   }
 
-  public static String reportStatus(String aartName, String status, String connectionLabel, Date testStarted,
-      Date etcUpdate, Date etcQuery) {
+  public static String reportStatus(String aartName, String status, String connectionLabel, Date testStarted, Date etcUpdate, Date etcQuery) {
 
     String line = "";
     try {
@@ -2206,15 +2160,13 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     return manualReportList;
   }
 
-  public static String getManualMessage(String connectionLabel, String testStartTime, String testSectionType,
-      String testCaseCategory, String query) {
+  public static String getManualMessage(String connectionLabel, String testStartTime, String testSectionType, String testCaseCategory, String query) {
     try {
 
       HttpURLConnection urlConn;
       InputStreamReader input = null;
-      String urlString = MANUAL_URL + "?query=" + query + "&connectionLabel="
-          + URLEncoder.encode(connectionLabel, "UTF-8") + "&testStartTime=" + URLEncoder.encode(testStartTime, "UTF-8")
-          + "&testSectionType=" + URLEncoder.encode(testSectionType, "UTF-8") + "&testCaseCategory="
+      String urlString = MANUAL_URL + "?query=" + query + "&connectionLabel=" + URLEncoder.encode(connectionLabel, "UTF-8") + "&testStartTime="
+          + URLEncoder.encode(testStartTime, "UTF-8") + "&testSectionType=" + URLEncoder.encode(testSectionType, "UTF-8") + "&testCaseCategory="
           + URLEncoder.encode(testCaseCategory, "UTF-8");
       URL url = new URL(urlString);
       urlConn = (HttpURLConnection) url.openConnection();
@@ -2265,8 +2217,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       sb.append("action=Submit");
       addField(sb, PARAM_TPAR_ORGANIZATION_NAME, participantResponse.getOrganizationName());
       addField(sb, PARAM_TPAR_CONNECTION_LABEL, participantResponse.getFolderName());
-      if (participantResponse.getRow() == 0 && participantResponse.getCol() == 0
-          && !participantResponse.getMap().equals("1,1")) {
+      if (participantResponse.getRow() == 0 && participantResponse.getCol() == 0 && !participantResponse.getMap().equals("1,1")) {
         addField(sb, PARAM_TPAR_MAP_ROW, 0);
         addField(sb, PARAM_TPAR_MAP_COL, 0);
       } else {
@@ -2354,12 +2305,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       addField(sb, PARAM_TC_CONNECTION_CONFIG, connector.getScript());
       boolean manualTest = connector.isVerify() && runAgainstTestStartTime == null;
       boolean completeTest = status.equals(STATUS_COMPLETED) && certifyAreas[SUITE_A_BASIC].getAreaProgress()[0] == 100
-          && certifyAreas[SUITE_B_INTERMEDIATE].getAreaProgress()[0] == 100
-          && certifyAreas[SUITE_D_EXCEPTIONAL].getAreaProgress()[0] == 100
-          && certifyAreas[SUITE_I_PROFILING].getAreaProgress()[0] == 100
-          && certifyAreas[SUITE_L_CONFORMANCE_2015].getAreaProgress()[0] == 100
-          && certifyAreas[SUITE_C_ADVANCED].getAreaProgress()[0] == 100
-          && certifyAreas[SUITE_K_NOT_ACCEPTED].getAreaProgress()[0] == 100
+          && certifyAreas[SUITE_B_INTERMEDIATE].getAreaProgress()[0] == 100 && certifyAreas[SUITE_D_EXCEPTIONAL].getAreaProgress()[0] == 100
+          && certifyAreas[SUITE_I_PROFILING].getAreaProgress()[0] == 100 && certifyAreas[SUITE_L_CONFORMANCE_2015].getAreaProgress()[0] == 100
+          && certifyAreas[SUITE_C_ADVANCED].getAreaProgress()[0] == 100 && certifyAreas[SUITE_K_NOT_ACCEPTED].getAreaProgress()[0] == 100
           && certifyAreas[SUITE_J_ONC_2015].getAreaProgress()[0] == 100;
       addField(sb, PARAM_TC_COMPLETE_TEST, completeTest);
       addField(sb, PARAM_TC_MANUAL_TEST, manualTest);
@@ -2402,14 +2350,12 @@ public class CertifyRunner extends Thread implements RecordServletInterface
       addField(sb, PARAM_TC_SCORE_ACK, (int) (reportScore[REPORT_8_ACK] * 100));
       addField(sb, PARAM_TC_PER_QUERY_TOTAL, performance.getTotalQueryTime());
       addField(sb, PARAM_TC_PER_QUERY_COUNT, performance.getTotalQueryCount());
-      addField(sb, PARAM_TC_PER_QUERY_MIN,
-          performance.getMinQueryTime() == Long.MAX_VALUE ? 0 : performance.getMinQueryTime());
+      addField(sb, PARAM_TC_PER_QUERY_MIN, performance.getMinQueryTime() == Long.MAX_VALUE ? 0 : performance.getMinQueryTime());
       addField(sb, PARAM_TC_PER_QUERY_MAX, performance.getMaxQueryTime());
       addField(sb, PARAM_TC_PER_QUERY_STD, performance.getQuerySDev());
       addField(sb, PARAM_TC_PER_UPDATE_TOTAL, performance.getTotalUpdateTime());
       addField(sb, PARAM_TC_PER_UPDATE_COUNT, performance.getTotalUpdateCount());
-      addField(sb, PARAM_TC_PER_UPDATE_MIN,
-          performance.getMinUpdateTime() == Long.MAX_VALUE ? 0 : performance.getMinUpdateTime());
+      addField(sb, PARAM_TC_PER_UPDATE_MIN, performance.getMinUpdateTime() == Long.MAX_VALUE ? 0 : performance.getMinUpdateTime());
       addField(sb, PARAM_TC_PER_UPDATE_MAX, performance.getMaxUpdateTime());
       addField(sb, PARAM_TC_PER_UPDATE_STD, performance.getUpdateSDev());
       if (firstTime) {
@@ -2496,11 +2442,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface
 
         List<Comparison> comparisonList;
         if (testMessage.getTestType().equals(VALUE_TEST_TYPE_QUERY)) {
-          comparisonList = CompareManager.compareMessages(testMessage.getDerivedFromVXUMessage(),
-              testMessage.getActualResponseMessage());
+          comparisonList = CompareManager.compareMessages(testMessage.getDerivedFromVXUMessage(), testMessage.getActualResponseMessage());
         } else {
-          comparisonList = CompareManager.compareMessages(testMessage.getMessageText(),
-              testMessage.getMessageTextSent());
+          comparisonList = CompareManager.compareMessages(testMessage.getMessageText(), testMessage.getMessageTextSent());
         }
         int position = 0;
         for (Comparison comparison : comparisonList) {
@@ -2528,11 +2472,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface
           position = 0;
           if (!testMessage.getValidationReport().getHeaderReport().getValidationStatus().equals("Complete")) {
             position++;
-            addField(sb, PARAM_A_ASSERTION_DESCRIPTION + position,
-                testMessage.getValidationReport().getHeaderReport().getValidationStatusInfo());
+            addField(sb, PARAM_A_ASSERTION_DESCRIPTION + position, testMessage.getValidationReport().getHeaderReport().getValidationStatusInfo());
             addField(sb, PARAM_A_ASSERTION_RESULT + position, "error");
-            addField(sb, PARAM_A_ASSERTION_TYPE + position,
-                testMessage.getValidationReport().getHeaderReport().getValidationStatus());
+            addField(sb, PARAM_A_ASSERTION_TYPE + position, testMessage.getValidationReport().getHeaderReport().getValidationStatus());
             addField(sb, PARAM_A_LOCATION_PATH + position, "");
           }
           for (Assertion assertion : testMessage.getValidationReport().getAssertionList()) {
@@ -2696,8 +2638,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface
     }
   }
 
-  private static void addField(StringBuilder sb, String field, List<String> values)
-      throws UnsupportedEncodingException {
+  private static void addField(StringBuilder sb, String field, List<String> values) throws UnsupportedEncodingException {
     sb.append("&");
     sb.append(field);
     sb.append("=");
