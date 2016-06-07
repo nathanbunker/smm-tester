@@ -738,8 +738,8 @@ public class IssueCreatorPatient extends IssueCreator
     } else if (issue == Issue.PATIENT_PROTECTION_INDICATOR_IS_VALUED_AS_YES) {
       if (is) {
         testCaseMessage.setHasIssue(true);
-        testCaseMessage.prepareMessageAddSegment("PD1", "PID");
         transforms += "PD1-12=Y\n";
+        transforms += "PD1-13=[DOB]";
       }
     } else if (issue == Issue.PATIENT_PUBLICITY_CODE_IS_UNRECOGNIZED) {
       if (is) {
