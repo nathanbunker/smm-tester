@@ -38,7 +38,7 @@ public class NE_SIIS_Template extends ConnectionTemplate
   public void setupConnection(String templateName, Connector connector) {
     SoapConnector soapConnector = (SoapConnector) connector;
     soapConnector.setCustomTransformations("MSH-4=[OTHERID]\n" + "remove repeat PID-3.5 valued MA\n");
-    soapConnector.setAckType(AckAnalyzer.AckType.MIIC);
+    soapConnector.setAckType(AckAnalyzer.AckType.NESIIS);
     soapConnector.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
   }
 

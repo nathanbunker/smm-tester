@@ -45,7 +45,7 @@ public class MD_IMMUNET_Template extends ConnectionTemplate
   public void setupConnection(String templateName, Connector connector) {
     EnvisionConnector con = (EnvisionConnector) connector;
     con.addCustomTransformation("MSH-4.2=[FACILITYID]");
-    con.setAckType(AckAnalyzer.AckType.MIIC);
+    con.setAckType(AckAnalyzer.AckType.HP_WIR_DEFAULT);
     con.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
   }
 

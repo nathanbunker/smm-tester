@@ -50,7 +50,7 @@ public class SC_SCI_Template extends ConnectionTemplate
     con.addCustomTransformation("MSH-4=[OTHERID]");
     con.addCustomTransformation("MSH-5=SCI");
     con.addCustomTransformation("MSH-6=SCI");
-    con.setAckType(AckAnalyzer.AckType.MIIC);
+    con.setAckType(AckAnalyzer.AckType.HP_WIR_DEFAULT);
     con.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
 
   }
