@@ -23,8 +23,7 @@ import javax.net.ssl.SSLSocketFactory;
  * 
  * @author nathan
  */
-public class WIConnector extends HttpConnector
-{
+public class WIConnector extends HttpConnector {
 
   protected WIConnector(String label, String url, String type) {
     super(label, url, type);
@@ -93,16 +92,14 @@ public class WIConnector extends HttpConnector
 
       ((HttpURLConnection) urlConn).setRequestMethod("POST");
 
-      urlConn.setRequestProperty("Content-Type",
-          "application/soap+xml;charset=UTF-8;action=\"urn:cdc:iisb:2011:submitSingleMessage\"");
+      urlConn.setRequestProperty("Content-Type", "application/soap+xml;charset=UTF-8;action=\"urn:cdc:iisb:2011:submitSingleMessage\"");
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       urlConn.setUseCaches(false);
       String content;
 
       StringBuilder sb = new StringBuilder();
-      sb.append(
-          "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:urn=\"urn:cdc:iisb:2011\">");
+      sb.append("<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:urn=\"urn:cdc:iisb:2011\">");
       sb.append("  <soap:Header/>");
       sb.append("  <soap:Body>");
       sb.append("   <urn:submitSingleMessage>");
@@ -142,13 +139,17 @@ public class WIConnector extends HttpConnector
     } catch (IOException e) {
       e.printStackTrace(System.out);
       if (urlConn != null) {
-        InputStreamReader input = new InputStreamReader(((HttpURLConnection) urlConn).getErrorStream());
-        BufferedReader in = new BufferedReader(input);
-        String line;
-        while ((line = in.readLine()) != null) {
-          System.out.println(line);
+        try {
+          InputStreamReader input = new InputStreamReader(((HttpURLConnection) urlConn).getErrorStream());
+          BufferedReader in = new BufferedReader(input);
+          String line;
+          while ((line = in.readLine()) != null) {
+            System.out.println(line);
+          }
+          input.close();
+        } catch (Exception ei) {
+          ei.printStackTrace(System.err);
         }
-        input.close();
       }
       if (debug) {
         StringWriter stringWriter = new StringWriter();
@@ -182,16 +183,14 @@ public class WIConnector extends HttpConnector
 
       ((HttpURLConnection) urlConn).setRequestMethod("POST");
 
-      urlConn.setRequestProperty("Content-Type",
-          "application/soap+xml;charset=UTF-8;action=\"urn:cdc:iisb:2011:connectivityTest\"");
+      urlConn.setRequestProperty("Content-Type", "application/soap+xml;charset=UTF-8;action=\"urn:cdc:iisb:2011:connectivityTest\"");
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       urlConn.setUseCaches(false);
       String content;
 
       StringBuilder sb = new StringBuilder();
-      sb.append(
-          "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:urn=\"urn:cdc:iisb:2011\">");
+      sb.append("<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:urn=\"urn:cdc:iisb:2011\">");
       sb.append("  <soap:Header/>");
       sb.append("    <soap:Body>");
       sb.append("      <urn:connectivityTest>");
@@ -217,16 +216,20 @@ public class WIConnector extends HttpConnector
       String responseString = getResponse(response);
       return responseString;
     } catch (IOException e) {
-      e.printStackTrace(System.out);
+      e.printStackTrace(System.err);
       if (urlConn != null) {
-        InputStreamReader input = new InputStreamReader(((HttpURLConnection) urlConn).getErrorStream());
-        StringBuilder response = new StringBuilder();
-        BufferedReader in = new BufferedReader(input);
-        String line;
-        while ((line = in.readLine()) != null) {
-          System.out.println(line);
+        try {
+          InputStreamReader input = new InputStreamReader(((HttpURLConnection) urlConn).getErrorStream());
+          StringBuilder response = new StringBuilder();
+          BufferedReader in = new BufferedReader(input);
+          String line;
+          while ((line = in.readLine()) != null) {
+            System.out.println(line);
+          }
+          input.close();
+        } catch (Exception ei) {
+          ei.printStackTrace(System.err);
         }
-        input.close();
       }
     }
     return "";
