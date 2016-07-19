@@ -128,9 +128,21 @@ public class QueryRunner extends CertifyRunner {
       if (!queryTestCaseMessage.getActualResponseMessage().equals("")) {
         ForecastTesterManager.readForecastActual(queryTestCaseMessage);
         List<ForecastActual> forecastActualList = queryTestCaseMessage.getForecastActualList();
+        if (forecastActualList.size() == 0)
+        {
+          logStatusMessage("    PROBLEM: No forecast results returned");
+        }
+        else
+        {
+          logStatusMessage("    GOOD     Forecast results returned");
+        }
         for (ForecastActual forecastActual : forecastActualList) {
           System.out.println("  + " + forecastActual.getSeriesName() + " due " + forecastActual.getDueDate());
         }
+      }
+      else
+      {
+        logStatusMessage("    PROBLEM: No message returned");
       }
     }
     in.close();
