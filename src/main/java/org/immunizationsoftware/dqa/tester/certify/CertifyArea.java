@@ -280,7 +280,7 @@ public abstract class CertifyArea implements RecordServletInterface {
   public abstract void sendQueries();
 
   protected void logStatus(String status) {
-    certifyRunner.logStatus(status);
+    certifyRunner.logStatusMessage(status);
   }
 
   protected void reportProgress(TestCaseMessage testMessage) {

@@ -100,6 +100,10 @@
     <servlet-class>org.immunizationsoftware.dqa.tester.CertifyServlet</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>QueryServlet</servlet-name>
+    <servlet-class>org.immunizationsoftware.dqa.tester.QueryServlet</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>CertifyHistoryServlet</servlet-name>
     <servlet-class>org.immunizationsoftware.dqa.tester.CertifyHistoryServlet</servlet-class>
   </servlet>
@@ -202,6 +206,10 @@
   <servlet-mapping>
     <servlet-name>CertifyServlet</servlet-name>
     <url-pattern>/CertifyServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>QueryServlet</servlet-name>
+    <url-pattern>/QueryServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>GenerateDataServlet</servlet-name>

@@ -24,8 +24,7 @@ import java.util.Random;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.transform.Transformer;
 
-public class SendData extends Thread
-{
+public class SendData extends Thread {
 
   public enum ScanStatus {
     STARTING, LOOKING, PREPARING, SENDING, WAITING, PROBLEM, SENT, STOPPED, DISABLED, SETUP_PROBLEM;
@@ -53,6 +52,7 @@ public class SendData extends Thread
   public static final String TEST_FOLDER = "test";
   public static final String GENERATED_FOLDER = "generated";
   public static final String TEST_CASES_FOLDER = "cases";
+  public static final String QUERY_FOLDER = "query";
 
   private static final long LOCK_TIMEOUT = 2 * 60 * 60 * 1000; // two hours
   private static final long FILE_CHANGE_TIMEOUT = 0;
@@ -198,8 +198,8 @@ public class SendData extends Thread
       if (now.after(startTime) && now.before(endTime)) {
         return true;
       } else {
-        statusLogger.logInfo("Logger is currently configured to be disabled between " + connector.getEnableTimeStart()
-            + " and " + connector.getEnableTimeEnd());
+        statusLogger.logInfo("Logger is currently configured to be disabled between " + connector.getEnableTimeStart() + " and "
+            + connector.getEnableTimeEnd());
         return false;
       }
     } else {
@@ -279,6 +279,8 @@ public class SendData extends Thread
   private File backupDir = null;
   private FileOut backupFileOut = null;
 
+  private File queryDir = null;
+
   private Connector connector = null;
   private List<Connector> connectorListForRxaFilter = null;
   private StatusLogger statusLogger = null;
@@ -342,8 +344,8 @@ public class SendData extends Thread
   private static final long MIN = 60 * SEC;
   private static final long HOUR = 60 * MIN;
   private static final long DAY = 24 * HOUR;
-  private static final long[] retryWait = { 30 * SEC, 1 * MIN, 2 * MIN, 4 * MIN, 8 * MIN, 16 * MIN, 30 * MIN, HOUR,
-      2 * HOUR, 4 * HOUR, 8 * HOUR, 12 * HOUR, DAY };
+  private static final long[] retryWait = { 30 * SEC, 1 * MIN, 2 * MIN, 4 * MIN, 8 * MIN, 16 * MIN, 30 * MIN, HOUR, 2 * HOUR, 4 * HOUR, 8 * HOUR,
+      12 * HOUR, DAY };
   private Transformer transformer = null;
   private Map<Connector, Transformer> transformerMapForRxaFilter = null;
 
@@ -489,10 +491,10 @@ public class SendData extends Thread
             BufferedReader in = new BufferedReader(new FileReader(workFile));
             connector.setCurrentControlId("" + System.currentTimeMillis() + attemptCount);
             while ((line = in.readLine()) != null) {
-                if (firstLine == null && connectorListForRxaFilter != null) {
-                  firstLine = line;
-                  continue;
-                }
+              if (firstLine == null && connectorListForRxaFilter != null) {
+                firstLine = line;
+                continue;
+              }
               if (line.startsWith(HL7.MSH)) {
                 connector.setCurrentControlId(HL7.readField(line, 10));
               }
@@ -596,8 +598,7 @@ public class SendData extends Thread
       responseMessage.append(line);
       responseMessage.append("\r");
     }
-    if (ackMessage == null
-        && (responseMessageType.startsWith(HL7.ACK) || responseMessageType.equalsIgnoreCase(HL7.ACK))) {
+    if (ackMessage == null && (responseMessageType.startsWith(HL7.ACK) || responseMessageType.equalsIgnoreCase(HL7.ACK))) {
       ackMessage = responseMessage.toString();
     }
     handleResponse(responseMessage, responseMessageType);
@@ -695,8 +696,7 @@ public class SendData extends Thread
           moveMessageToWorking(message, messageType);
           message.setLength(0);
           messageType = HL7.readField(line, 9);
-        } else if (line.startsWith(HL7.FHS) || line.startsWith(HL7.BHS) || line.startsWith(HL7.BTS)
-            || line.startsWith(HL7.FTS)) {
+        } else if (line.startsWith(HL7.FHS) || line.startsWith(HL7.BHS) || line.startsWith(HL7.BTS) || line.startsWith(HL7.FTS)) {
           continue;
         }
         message.append(line);
@@ -839,8 +839,7 @@ public class SendData extends Thread
     updateFileOut = new FileOut(new File(updateDir, filename), true);
   }
 
-  private void moveMessageToWorking(StringBuilder message, String messageType)
-      throws Exception, FileNotFoundException, TransmissionException {
+  private void moveMessageToWorking(StringBuilder message, String messageType) throws Exception, FileNotFoundException, TransmissionException {
     if (messageType != null && !messageType.startsWith(HL7.ACK) && message.length() > 0) {
       String messageText = message.toString();
       if (connectorListForRxaFilter == null) {
@@ -913,6 +912,12 @@ public class SendData extends Thread
       }
     }
     return "";
+  }
+
+  public void setupQueryDir() {
+    if (queryDir == null) {
+      queryDir = new File(rootDir, QUERY_FOLDER);
+    }
   }
 
   private void createWorkingDirs() {
@@ -1025,12 +1030,10 @@ public class SendData extends Thread
           }
           connector.setKeyStore(keyStore);
         } catch (Exception e) {
-          System.out.println(
-              "Unable to read key store " + keyStoreFile.getAbsolutePath() + " with password " + keyStorePassword);
+          System.out.println("Unable to read key store " + keyStoreFile.getAbsolutePath() + " with password " + keyStorePassword);
           e.printStackTrace();
           if (statusLogger != null) {
-            statusLogger.logError("Unable to load key store " + keyStoreFile.getAbsolutePath() + " with password '"
-                + keyStorePassword + "'", e);
+            statusLogger.logError("Unable to load key store " + keyStoreFile.getAbsolutePath() + " with password '" + keyStorePassword + "'", e);
           }
           return false;
         }
@@ -1047,8 +1050,7 @@ public class SendData extends Thread
     File responseFile = new File(responseDir, filename);
     File updateFile = new File(updateDir, filename);
     int count = 1;
-    while (sentFile.exists() || responseFile.exists() || updateFile.exists()
-        || (newRequestFile != null && newRequestFile.exists())) {
+    while (sentFile.exists() || responseFile.exists() || updateFile.exists() || (newRequestFile != null && newRequestFile.exists())) {
       count++;
       newFilename = filenameStart + "(" + count + ")." + filenameEnd;
       newRequestFile = new File(requestDir, newFilename);
@@ -1196,8 +1198,7 @@ public class SendData extends Thread
       } else {
         okay = false;
         statusLogger.logFile(inFile.getName(), ScanStatus.PROBLEM, 0);
-        statusLogger
-            .logWarn("File does not appear to contain HL7 (Must start with FHS or MSH segment): " + inFile.getName());
+        statusLogger.logWarn("File does not appear to contain HL7 (Must start with FHS or MSH segment): " + inFile.getName());
       }
     } finally {
       in.close();
@@ -1301,4 +1302,9 @@ public class SendData extends Thread
     System.arraycopy(testNamesNew, 0, testNames, testNamesArchive.length, testNamesNew.length);
     return testNames;
   }
+
+  public File getQueryDir() {
+    return queryDir;
+  }
+
 }

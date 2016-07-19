@@ -205,7 +205,7 @@ public class CertifyServlet extends ClientServlet
     try {
       printHtmlHead(out, MENU_HEADER_TEST, request);
 
-      CertifyHistoryServlet.printViewMenu(out, "", true);
+      CertifyHistoryServlet.printViewMenu(out, "", this);
 
       if (problem != null) {
         out.println("<p>" + problem + "</p>");
