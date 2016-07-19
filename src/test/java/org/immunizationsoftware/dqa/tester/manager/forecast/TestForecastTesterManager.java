@@ -209,9 +209,94 @@ public class TestForecastTesterManager
 "OBX|48|TS|30981-5^Earliest date to give^LN|8|20160622||||||F\r" + 
 "OBX|49|CE|30982-3^Reason applied by forecast logic to project this vaccine^LN|8|ACIP schedule||||||F\r";
 
+  private static final String MCIR_RSP = 
+	    "MSH|^~\\&|MCIR|MDCH|MDCH Data Hub Test|1255-60-20|20160719142617.275-0400||RSP^K11^RSP_K11|20160719142617.223|D|2.5.1|||||||||Z32^CDCPHINVS\r"
+      + "MSA|AA|1384888846175.5|Confirmation: -1468952777192\r"
+      + "QAK|1384888846175.5|OK\r"
+      + "QPD|Z34^Request Immunization History^HL70471|1384888846175.5|VXU 01^^^OIS-TEST^MR^90HG9257^00000000^00000000^^PI|Lundgren^Sigmund^^^^^L|Lundgren^Devore|20120419|M|318 Silseth St^^Britton^MI^49229^USA^P\r"
+      + "PID|1|36410259754^^^MIA|36410259754^^^MIA~qbb-I.01.14377^^^MIA||Lundgren^Sigmund^P||20120419|M|||318 Silseth St ^^Britton^Michigan^49229^USA||||||||||||||||||||||20160413\r"
+      + "NK1|1|Lundgren^Devore^P|^GRD|318 Silseth St ^^Britton^Michigan^49229^USA\r"
+      + "ORC|RE||77587105\r"
+      + "RXA|0|1|20130415|20130415|21^Varicella (Varivax)^CVX|0.5|ML||00^New Immunization||||||N3783E0||MSD^Merck^MVX|||CP\r"
+      + "OBX|1|CE|30956-7^Vaccine Type^LN|1|21^Varicella (Varivax)^CVX||||||F\r"
+      + "OBX|2|CE|38890-0^Component Vaccine Type^LN|1|21^Varicella (Varivax)^CVX||||||F|||20160719\r"
+      + "OBX|3|CE|59779-9^Vaccine Schedule Used^LN|1|CDCPHINVS||||||F|||20160719\r"
+      + "OBX|4|CE|30973-2^Dose Number in Series^LN|1|1||||||F|||20160719\r"
+      + "OBX|5|CE|59781-5^Dose Validity^LN|1|Y||||||F|||20160719\r"
+      + "ORC|RE||77587106\r"
+      + "RXA|0|1|20131118|20131118|21^Varicella (Varivax)^CVX|0|ML||01^Historical Information||||||||UNK^Unknown^MVX|||CP\r"
+      + "OBX|6|CE|30956-7^Vaccine Type^LN|2|21^Varicella (Varivax)^CVX||||||F\r"
+      + "OBX|7|CE|38890-0^Component Vaccine Type^LN|2|21^Varicella (Varivax)^CVX||||||F|||20160719\r"
+      + "OBX|8|CE|59779-9^Vaccine Schedule Used^LN|2|CDCPHINVS||||||F|||20160719\r"
+      + "OBX|9|CE|30973-2^Dose Number in Series^LN|2|2||||||F|||20160719\r"
+      + "OBX|10|CE|59781-5^Dose Validity^LN|2|Y||||||F|||20160719\r"
+      + "ORC|RE||77587107\r"
+      + "RXA|0|1|20160413|20160413|03^MMR^CVX|0.5|ML||00^New Immunization||||||V7634SH||MSD^Merck^MVX|||CP\r"
+      + "OBX|11|CE|30956-7^Vaccine Type^LN|3|03^MMR^CVX||||||F\r"
+      + "OBX|12|CE|38890-0^Component Vaccine Type^LN|3|03^MMR^CVX||||||F|||20160719\r"
+      + "OBX|13|CE|59779-9^Vaccine Schedule Used^LN|3|CDCPHINVS||||||F|||20160719\r"
+      + "OBX|14|CE|30973-2^Dose Number in Series^LN|3|1||||||F|||20160719\r"
+      + "OBX|15|CE|59781-5^Dose Validity^LN|3|Y||||||F|||20160719\r"
+      + "ORC|RE||9999\r"
+      + "RXA|0|1|20160414|20160414|998^No Vaccine Administered^CVX|999||||||||||||||NA\r"
+      + "OBX|16|CE|30979-9^Vaccine Due Next^LN|4|20^DTaP (pediatric)^CVX||||||F|||20160414\r"
+      + "OBX|17|CE|59779-9^Vaccine Schedule Used^LN|4|CDCPHINVS||||||F|||20160414\r"
+      + "OBX|18|TS|30980-7^Date Vaccine Due^LN|4|20120619||||||F|||20160414\r"
+      + "OBX|19|TS|30981-5^Earliest Date to Give^LN|4|20120531||||||F|||20160414\r"
+      + "OBX|20|CE|59783-1^Status in immunization series^LN|4|4^Overdue^eval_result_id||||||F|||20160414\r"
+      + "ORC|RE||9999\r"
+      + "RXA|0|1|20160719|20160719|998^No Vaccine Administered^CVX|999||||||||||||||NA\r"
+      + "OBX|21|CE|30979-9^Vaccine Due Next^LN|5|10^IPV (polio)^CVX||||||F|||20160719\r"
+      + "OBX|22|CE|59779-9^Vaccine Schedule Used^LN|5|CDCPHINVS||||||F|||20160719\r"
+      + "OBX|23|TS|30980-7^Date Vaccine Due^LN|5|20120619||||||F|||20160719\r"
+      + "OBX|24|TS|30981-5^Earliest Date to Give^LN|5|20120531||||||F|||20160719\r"
+      + "OBX|25|CE|59783-1^Status in immunization series^LN|5|4^Overdue^eval_result_id||||||F|||20160719\r"
+      + "ORC|RE||9999\r"
+      + "RXA|0|1|20160516|20160516|998^No Vaccine Administered^CVX|999||||||||||||||NA\r"
+      + "OBX|26|CE|30979-9^Vaccine Due Next^LN|6|03^MMR^CVX||||||F|||20160516\r"
+      + "OBX|27|CE|59779-9^Vaccine Schedule Used^LN|6|CDCPHINVS||||||F|||20160516\r"
+      + "OBX|28|TS|30980-7^Date Vaccine Due^LN|6|20160613||||||F|||20160516\r"
+      + "OBX|29|TS|30981-5^Earliest Date to Give^LN|6|20160511||||||F|||20160516\r"
+      + "OBX|30|NM|30973-2^Vaccine Due Next Dose Number^LN|6|2||||||F|||20160516\r"
+      + "OBX|31|NM|59782-3^Number of Doses in Primary Series^LN|6|0||||||F|||20160516\r"
+      + "OBX|32|CE|59783-1^Status in immunization series^LN|6|3^Incomplete^eval_result_id||||||F|||20160516\r"
+      + "ORC|RE||9999\r"
+      + "RXA|0|1|20160414|20160414|998^No Vaccine Administered^CVX|999||||||||||||||NA\r"
+      + "OBX|33|CE|30979-9^Vaccine Due Next^LN|7|17^Hib (historical)^CVX||||||F|||20160414\r"
+      + "OBX|34|CE|59779-9^Vaccine Schedule Used^LN|7|CDCPHINVS||||||F|||20160414\r"
+      + "OBX|35|TS|30980-7^Date Vaccine Due^LN|7|20120619||||||F|||20160414\r"
+      + "OBX|36|TS|30981-5^Earliest Date to Give^LN|7|20120531||||||F|||20160414\r"
+      + "OBX|37|CE|59783-1^Status in immunization series^LN|7|4^Overdue^eval_result_id||||||F|||20160414\r"
+      + "ORC|RE||9999\r"
+      + "RXA|0|1|20160719|20160719|998^No Vaccine Administered^CVX|999||||||||||||||NA\r"
+      + "OBX|38|CE|30979-9^Vaccine Due Next^LN|8|21^Varicella (Varivax)^CVX||||||F|||20160719\r"
+      + "OBX|39|CE|59779-9^Vaccine Schedule Used^LN|8|CDCPHINVS||||||F|||20160719\r"
+      + "OBX|40|CE|59783-1^Status in immunization series^LN|8|1^Complete^eval_result_id||||||F|||20160719\r"
+      + "ORC|RE||9999\r"
+      + "RXA|0|1|20160414|20160414|998^No Vaccine Administered^CVX|999||||||||||||||NA\r"
+      + "OBX|41|CE|30979-9^Vaccine Due Next^LN|9|133^PCV13 (Prevnar13)^CVX||||||F|||20160414\r"
+      + "OBX|42|CE|59779-9^Vaccine Schedule Used^LN|9|CDCPHINVS||||||F|||20160414\r"
+      + "OBX|43|TS|30980-7^Date Vaccine Due^LN|9|20120619||||||F|||20160414\r"
+      + "OBX|44|TS|30981-5^Earliest Date to Give^LN|9|20120531||||||F|||20160414\r"
+      + "OBX|45|CE|59783-1^Status in immunization series^LN|9|4^Overdue^eval_result_id||||||F|||20160414\r"
+      + "ORC|RE||9999\r"
+      + "RXA|0|1|20160719|20160719|998^No Vaccine Administered^CVX|999||||||||||||||NA\r"
+      + "OBX|46|CE|30979-9^Vaccine Due Next^LN|10|85^Hep A (historical)^CVX||||||F|||20160719\r"
+      + "OBX|47|CE|59779-9^Vaccine Schedule Used^LN|10|CDCPHINVS||||||F|||20160719\r"
+      + "OBX|48|TS|30980-7^Date Vaccine Due^LN|10|20130419||||||F|||20160719\r"
+      + "OBX|49|TS|30981-5^Earliest Date to Give^LN|10|20130419||||||F|||20160719\r"
+      + "OBX|50|CE|59783-1^Status in immunization series^LN|10|4^Overdue^eval_result_id||||||F|||20160719\r"
+      + "ORC|RE||9999\r"
+      + "RXA|0|1|20160719|20160719|998^No Vaccine Administered^CVX|999||||||||||||||NA\r"
+      + "OBX|51|CE|30979-9^Vaccine Due Next^LN|11|88^Influenza (Historical)^CVX||||||F|||20160719\r"
+      + "OBX|52|CE|59779-9^Vaccine Schedule Used^LN|11|CDCPHINVS||||||F|||20160719\r"
+      + "OBX|53|TS|30980-7^Date Vaccine Due^LN|11|20160801||||||F|||20160719\r"
+      + "OBX|54|TS|30981-5^Earliest Date to Give^LN|11|20160701||||||F|||20160719\r"
+      + "OBX|55|CE|59783-1^Status in immunization series^LN|11|3^Incomplete^eval_result_id||||||F|||20160719\r";
+
   @Test
-  public void test() {
-    {
+  public void testRSP_MESSAGE() {
+     
       TestCaseMessage tcm = new TestCaseMessage();
       tcm.setActualResponseMessage(RSP_MESSAGE);
       ForecastTesterManager.readForecastActual(tcm);
@@ -222,7 +307,8 @@ public class TestForecastTesterManager
       assertEquals("133", forecastActualList.get(13).getVaccineCvx());
       assertEquals("20740101", forecastActualList.get(13).getDueDate());
     }
-    {
+  @Test
+  public void testSTC1() {
       TestCaseMessage tcm = new TestCaseMessage();
       tcm.setActualResponseMessage(STC1);
       ForecastTesterManager.readForecastActual(tcm);
@@ -231,7 +317,8 @@ public class TestForecastTesterManager
       assertEquals("45", forecastActualList.get(0).getVaccineCvx());
       assertEquals("20111229", forecastActualList.get(0).getDueDate());
     }
-    {
+  @Test
+  public void testOR_ALERT1() {
       TestCaseMessage tcm = new TestCaseMessage();
       tcm.setActualResponseMessage(OR_ALERT1);
       ForecastTesterManager.readForecastActual(tcm);
@@ -239,7 +326,20 @@ public class TestForecastTesterManager
       assertEquals(9, forecastActualList.size());
       assertEquals("107", forecastActualList.get(0).getVaccineCvx());
       assertEquals("20151119", forecastActualList.get(0).getDueDate());
-    }
+  }
+  
+  @Test
+  public void testMCIR_RSP() {
+	  TestCaseMessage tcm = new TestCaseMessage();
+      tcm.setActualResponseMessage(MCIR_RSP);
+      ForecastTesterManager.readForecastActual(tcm);
+      List<ForecastActual> forecastActualList = tcm.getForecastActualList();
+      assertEquals(8, forecastActualList.size());
+      assertEquals("20", forecastActualList.get(0).getVaccineCvx());
+      assertEquals("20120619", forecastActualList.get(0).getDueDate());
+      
+      assertEquals("88", forecastActualList.get(7).getVaccineCvx());
+      assertEquals("20160801", forecastActualList.get(7).getDueDate());
   }
 
 }
