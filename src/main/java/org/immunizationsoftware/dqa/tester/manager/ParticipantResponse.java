@@ -28,8 +28,17 @@ public class ParticipantResponse
   private String nistStatus = "";
   private String accessPasscode = "";
   private String publicIdCode = "";
+  private String tchForecastSoftwareId = "";
   private int col = 0;
   private int row = 0;
+  
+  public String getTchForecastSoftwareId() {
+    return tchForecastSoftwareId;
+  }
+  
+  public void setTchForecastSoftwareId(String tchForecastSoftwareId) {
+    this.tchForecastSoftwareId = tchForecastSoftwareId;
+  }
   
   public String getPublicIdCode() {
     return publicIdCode;

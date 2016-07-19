@@ -76,8 +76,7 @@ public class CertifyServlet extends ClientServlet
           int id = Integer.parseInt(request.getParameter("id"));
           String queryType = request.getParameter("queryType");
 
-          certifyRunner = new CertifyRunner(connectors.get(id - 1), user.getSendData(), queryType);
-          certifyRunner.setParticipantResponse((ParticipantResponse) session.getAttribute("participantResponse"));
+          certifyRunner = new CertifyRunner(connectors.get(id - 1), user.getSendData(), queryType, (ParticipantResponse) session.getAttribute("participantResponse"));
           certifyRunner.setRun(true, CertifyRunner.SUITE_A_BASIC);
           certifyRunner.setRun(request.getParameter("runA") != null, CertifyRunner.SUITE_A_BASIC);
           certifyRunner.setRun(request.getParameter("runB") != null, CertifyRunner.SUITE_B_INTERMEDIATE);
