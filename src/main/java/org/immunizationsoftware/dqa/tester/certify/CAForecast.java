@@ -22,10 +22,10 @@ public class CAForecast extends CertifyArea
     super(areaLetter, areaLabel, certifyRunner);
   }
   
-  public static final boolean TEST_AGAINST_PRODUCTION = false;
-  private static final String TCH_FORECAST_TESTER_URL = "http://localhost:8181/ExternalTestServlet";
-  // public static final boolean TEST_AGAINST_PRODUCTION = false;
-  // private static final String TCH_FORECAST_TESTER_URL = "http://tchforecasttester.org/ft/ExternalTestServlet";
+//  public static final boolean TEST_AGAINST_PRODUCTION = false;
+//  private static final String TCH_FORECAST_TESTER_URL = "http://localhost:8181/ExternalTestServlet";
+   public static final boolean TEST_AGAINST_PRODUCTION = true;
+   private static final String TCH_FORECAST_TESTER_URL = "http://tchforecasttester.org/ft/ExternalTestServlet";
 
   @Override
   public void prepareUpdates() {
