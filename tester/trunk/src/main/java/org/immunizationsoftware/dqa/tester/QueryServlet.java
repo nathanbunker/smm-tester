@@ -49,9 +49,10 @@ public class QueryServlet extends ClientServlet {
         int id = Integer.parseInt(request.getParameter("id"));
         queryRunner = new QueryRunner(connectors.get(id - 1), user.getSendData(), queryType, participantResponse);
         queryRunner.start();
+        session.setAttribute("queryRunner", queryRunner);
       } else if (action.equals("Stop") && queryRunner != null)
       {
-        queryRunner.stop();
+        queryRunner.stopRunning();
       }
     }
 
