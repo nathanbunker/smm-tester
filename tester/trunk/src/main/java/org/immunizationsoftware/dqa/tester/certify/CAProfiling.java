@@ -69,7 +69,7 @@ public class CAProfiling extends CertifyArea
     tcmFull.setHasIssue(true);
     register(0, tcmFull).setTestType(VALUE_TEST_TYPE_PREP);
 
-    certifyRunner.logStatus("Running full test record to see it will be accepted");
+    certifyRunner.logStatusMessage("Running full test record to see it will be accepted");
     runUpdate(tcmFull);
 
     if (tcmFull.isAccepted()) {

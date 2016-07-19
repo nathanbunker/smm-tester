@@ -92,6 +92,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   protected Date updateEtc = null;
   protected Date queryEtc = null;
 
+  public List<String> getStatusMessageList() {
+    return statusMessageList;
+  }
+
   public Date getUpdateEtc() {
     return updateEtc;
   }
@@ -124,14 +128,14 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
   public void switchStatus(String status, String logMessage) {
     this.status = status;
-    logStatus(logMessage);
+    logStatusMessage(logMessage);
   }
 
   protected void indicateActive() {
     lastLogStatus = System.currentTimeMillis();
   }
 
-  protected void logStatus(String status) {
+  protected void logStatusMessage(String status) {
     indicateActive();
     synchronized (statusMessageList) {
       statusMessageList.add(sdf.format(new Date()) + " " + certifyAreas[currentSuite].getAreaLabel() + ": " + status);
@@ -447,21 +451,20 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
         && (queryType.equals(QUERY_TYPE_QBP_Z34) || queryType.equals(QUERY_TYPE_QBP_Z34_Z44) || queryType.equals(QUERY_TYPE_QBP_Z44) || queryType
             .equals(QUERY_TYPE_VXQ));
     if (willQuery) {
-      logStatus("Query will be run: " + queryType);
+      logStatusMessage("Query will be run: " + queryType);
     } else {
-      logStatus("Query was not enabled");
+      logStatusMessage("Query was not enabled");
     }
 
     if (this.connector.getTransferType() == TransferType.MANUAL) {
 
     }
-    
+
     if (connector.getTchForecastTesterSoftwareId() == 0 && participantResponse.getTchForecastSoftwareId().length() > 0) {
       connector.setTchForecastTesterSoftwareId(Integer.parseInt(participantResponse.getTchForecastSoftwareId()));
     }
 
-
-    logStatus("IIS Tester Initialized");
+    logStatusMessage("IIS Tester Initialized");
   }
 
   private static int uniqueMRNBaseInc = 0;
@@ -485,7 +488,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   @Override
   public void run() {
     switchStatus(STATUS_STARTED, "Starting test process");
-    logStatus("Starting to run report");
+    logStatusMessage("Starting to run report");
     incrementingInt = new IncrementingInt();
     try {
 
@@ -502,7 +505,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
       boolean goodToGo = true;
 
-      logStatus("Reporting progress");
+      logStatusMessage("Reporting progress");
       if (participantResponse != null) {
         reportParticipant(participantResponse);
       }
@@ -510,14 +513,14 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
       if (runAgainstTestStartTime != null) {
         connector = new RunAgainstConnector(connector, runAgainstTestStartTime);
-        logStatus("Running test against previously received responses in this report: " + runAgainstTestStartTime);
+        logStatusMessage("Running test against previously received responses in this report: " + runAgainstTestStartTime);
         if (queryConnector != null) {
           queryConnector = new RunAgainstConnector(queryConnector, runAgainstTestStartTime);
         }
       } else {
-        logStatus("Connecting directly to real-time interface");
+        logStatusMessage("Connecting directly to real-time interface");
 
-        logStatus("Verify connection works by sending a message that is expected to pass");
+        logStatusMessage("Verify connection works by sending a message that is expected to pass");
         testCaseMessageBase = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
         testCaseMessageBase.setTestCaseSet(testCaseSet);
         testCaseMessageBase.setTestCaseCategoryId("BASE");
@@ -533,14 +536,14 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
           testRunner.runTest(connector, testCaseMessageBase);
           boolean pass = testCaseMessageBase.isAccepted();
           if (pass) {
-            logStatus("Base message was accepted, test should be good to run");
+            logStatusMessage("Base message was accepted, test should be good to run");
             goodToGo = true;
           } else {
-            logStatus("Base message was NOT accepted, tests may not be able to run properly");
+            logStatusMessage("Base message was NOT accepted, tests may not be able to run properly");
             goodToGo = false;
           }
         } catch (Throwable t) {
-          logStatus("Exception running base test case message: " + t.getMessage());
+          logStatusMessage("Exception running base test case message: " + t.getMessage());
           exception = t;
           t.printStackTrace();
           goodToGo = false;
@@ -548,7 +551,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
         reportProgress(testCaseMessageBase);
       }
       if (!goodToGo) {
-        logStatus("Test is being cancelled, basic message was not accepted");
+        logStatusMessage("Test is being cancelled, basic message was not accepted");
         switchStatus(STATUS_PROBLEM, "Test is being cancelled, basic message was not accepted");
         reportProgress(null);
         return;
@@ -569,10 +572,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       for (int i = 0; i < certifyAreas.length; i++) {
         if (certifyAreas[i].isRun() && !certifyAreas[i].isPerformanceConformance()) {
           currentSuite = i;
-          logStatus("Preparing Updates");
+          logStatusMessage("Preparing Updates");
           certifyAreas[i].prepareUpdates();
           certifyAreas[i].areaCount[0] = certifyAreas[i].updateList.size();
-          logStatus("Reporting Prepare Update Progress");
+          logStatusMessage("Reporting Prepare Update Progress");
           reportProgress(null);
           if (certifyAreas[i].areaCount[0] > 0) {
             caTotal.getAreaCount()[0] += certifyAreas[i].areaCount[0];
@@ -583,9 +586,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       for (int i = 0; i < certifyAreas.length; i++) {
         if (certifyAreas[i].isRun() && !certifyAreas[i].isPerformanceConformance()) {
           currentSuite = i;
-          logStatus("Sending Updates");
+          logStatusMessage("Sending Updates");
           certifyAreas[i].sendUpdates();
-          logStatus("Reporting Send Update Progress");
+          logStatusMessage("Reporting Send Update Progress");
           reportProgress(null);
           if (!keepRunning) {
             reportProgress(null);
@@ -597,9 +600,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       for (int i = 0; i < certifyAreas.length; i++) {
         if (certifyAreas[i].isRun() && certifyAreas[i].isPerformanceConformance()) {
           currentSuite = i;
-          logStatus("Running Conformance/Performance");
+          logStatusMessage("Running Conformance/Performance");
           certifyAreas[i].sendUpdates();
-          logStatus("Reporting Update Conformance/Performance Progress");
+          logStatusMessage("Reporting Update Conformance/Performance Progress");
           reportProgress(null);
           if (!keepRunning) {
             reportProgress(null);
@@ -611,7 +614,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
       if (willQuery) {
         if (pauseBeforeQuerying) {
-          logStatus("Paused, waiting to start query process");
+          logStatusMessage("Paused, waiting to start query process");
           switchStatus(STATUS_PAUSED, "Process has been paused before continuing to query");
           reportProgress(null);
           int maxWait = 0;
@@ -625,7 +628,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
             }
             maxWait++;
           }
-          logStatus("Begin query process");
+          logStatusMessage("Begin query process");
           switchStatus(STATUS_STARTED, "Query process has been restarted");
           reportProgress(null);
         }
@@ -637,10 +640,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
         for (int i = 0; i < certifyAreas.length; i++) {
           if (certifyAreas[i].isRun() && !certifyAreas[i].isPerformanceConformance()) {
             currentSuite = i;
-            logStatus("Preparing Query");
+            logStatusMessage("Preparing Query");
             certifyAreas[i].prepareQueries();
             certifyAreas[i].areaCount[1] = certifyAreas[i].queryList.size();
-            logStatus("Reporting Prepare Queries Progress");
+            logStatusMessage("Reporting Prepare Queries Progress");
             reportProgress(null);
             caTotal.getAreaCount()[1] += certifyAreas[i].areaCount[1];
             if (!keepRunning) {
@@ -653,9 +656,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
         for (int i = 0; i < certifyAreas.length; i++) {
           if (certifyAreas[i].isRun() && !certifyAreas[i].isPerformanceConformance()) {
             currentSuite = i;
-            logStatus("Sending Queries");
+            logStatusMessage("Sending Queries");
             certifyAreas[i].sendQueries();
-            logStatus("Reporting Send Queries Progress");
+            logStatusMessage("Reporting Send Queries Progress");
             reportProgress(null);
             if (!keepRunning) {
               reportProgress(null);
@@ -667,9 +670,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
         for (int i = 0; i < certifyAreas.length; i++) {
           if (certifyAreas[i].isRun() && certifyAreas[i].isPerformanceConformance()) {
             currentSuite = i;
-            logStatus("Running Conformance/Performance");
+            logStatusMessage("Running Conformance/Performance");
             certifyAreas[i].sendQueries();
-            logStatus("Reporting Query Conformance/Performance Progress");
+            logStatusMessage("Reporting Query Conformance/Performance Progress");
             reportProgress(null);
             if (!keepRunning) {
               reportProgress(null);
@@ -685,10 +688,10 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       t.printStackTrace();
       exception = t;
       switchStatus(STATUS_PROBLEM, "An exception ocurred in test process, unable to continue");
-      logStatus("Exception ocurred: " + exception.getMessage());
+      logStatusMessage("Exception ocurred: " + exception.getMessage());
     } finally {
       testFinished = new Date();
-      logStatus("IIS Test Finished with status " + status);
+      logStatusMessage("IIS Test Finished with status " + status);
       reportProgress(null);
       for (PrintWriter exampleOut : exampleOutSet.values()) {
         exampleOut.close();
@@ -703,7 +706,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     if (testCaseMessage != null) {
       if (SAVE_TEST_CASES_TO_DIR) {
         if (testDir != null) {
-          logStatus("Saving example");
+          logStatusMessage("Saving example");
           File exampleFile;
           if (testCaseMessage.getForecastTestPanel() != null) {
             exampleFile = new File(testDir, "Example Messages " + name + "" + testCaseMessage.getForecastTestPanel().getLabel() + ".hl7");
@@ -714,7 +717,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
             return new PrintWriter(exampleFile);
           } catch (IOException ioe) {
             ioe.printStackTrace();
-            logStatus("Unable to write examples out: " + ioe);
+            logStatusMessage("Unable to write examples out: " + ioe);
           }
         }
       }
@@ -725,7 +728,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   public PrintWriter setupAckFile(String name, TestCaseMessage testCaseMessage) {
     if (testCaseMessage != null && sendData != null) {
       if (testDir != null) {
-        logStatus("Saving example");
+        logStatusMessage("Saving example");
         File exampleFile;
         if (testCaseMessage.getForecastTestPanel() != null) {
           exampleFile = new File(testDir, "Example Messages " + name + "" + testCaseMessage.getForecastTestPanel().getLabel() + ".ack.hl7");
@@ -736,7 +739,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
           return new PrintWriter(exampleFile);
         } catch (IOException ioe) {
           ioe.printStackTrace();
-          logStatus("Unable to write examples out: " + ioe);
+          logStatusMessage("Unable to write examples out: " + ioe);
         }
       }
     }
@@ -746,7 +749,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   public void printReportToFile() {
 
     if (testDir != null) {
-      logStatus("Writing out final report");
+      logStatusMessage("Writing out final report");
       File detailReportFile = new File(testDir, "IIS Testing Report Detail.html");
       try {
         PrintWriter out = new PrintWriter(new FileWriter(detailReportFile));
