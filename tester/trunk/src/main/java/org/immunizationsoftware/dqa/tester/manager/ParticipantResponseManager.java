@@ -38,6 +38,7 @@ public class ParticipantResponseManager {
     int posNistStatus = CvsReader.findPosition("NIST Status", valueList);
     int posAccessPasscode = CvsReader.findPosition("Access Passcode", valueList);
     int posPublicIdCode = CvsReader.findPosition("Public Id Code", valueList);
+    int posTchForecastSoftwareId = CvsReader.findPosition("TCH Forecast Software Id", valueList);
 
     while ((line = in.readLine()) != null) {
       valueList = CvsReader.readValuesFromCsv(line);
@@ -65,6 +66,7 @@ public class ParticipantResponseManager {
       participantResponse.setNistStatus(CvsReader.readValue(posNistStatus, valueList));
       participantResponse.setAccessPasscode(CvsReader.readValue(posAccessPasscode, valueList));
       participantResponse.setPublicIdCode(CvsReader.readValue(posPublicIdCode, valueList));
+      participantResponse.setTchForecastSoftwareId(CvsReader.readValue(posTchForecastSoftwareId, valueList));
       participantResponse.setRedactListResponses(!CvsReader.readValue(posRedactListResponses, valueList).equalsIgnoreCase("No"));
       if (participantResponseMap != null) {
         String mapPos = participantResponse.getMap();

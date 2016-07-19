@@ -426,7 +426,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
   Connector queryConnector;
 
-  public CertifyRunner(Connector connector, SendData sendData, String queryType) {
+  public CertifyRunner(Connector connector, SendData sendData, String queryType, ParticipantResponse participantResponse) {
     this.connector = connector;
     this.queryConnector = connector.getOtherConnectorMap().get(Connector.PURPOSE_QUERY);
     if (this.queryConnector == null) {
@@ -455,6 +455,11 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     if (this.connector.getTransferType() == TransferType.MANUAL) {
 
     }
+    
+    if (connector.getTchForecastTesterSoftwareId() == 0 && participantResponse.getTchForecastSoftwareId().length() > 0) {
+      connector.setTchForecastTesterSoftwareId(Integer.parseInt(participantResponse.getTchForecastSoftwareId()));
+    }
+
 
     logStatus("IIS Tester Initialized");
   }

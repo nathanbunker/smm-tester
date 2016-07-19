@@ -34,7 +34,9 @@ public enum ForecastTestPanel {
   ENVISION_RABIES(33, "Envision Rabies"),
   ENVISION_TYPHOID(30, "Envision Typhoid"),
   ENVISION_YELLOW_FEVER(34, "Envision Yellow Fever"),
-  ENVISION_ZOSTER(31, "Envision Zoster")
+  ENVISION_ZOSTER(31, "Envision Zoster"),
+  
+  LOCAL_DEV_TESTING(54, "Development"),
   ;
   
   private int id = 0;
