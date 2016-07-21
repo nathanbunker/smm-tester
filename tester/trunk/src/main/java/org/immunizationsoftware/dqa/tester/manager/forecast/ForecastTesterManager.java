@@ -166,7 +166,7 @@ public class ForecastTesterManager
   private static final String POST_DUE_DATE = "dueDate";
   private static final String POST_VALID_DATE = "validDate";
   private static final String POST_DOSE_NUMBER = "doseNumber";
-  private static final String POST_LOG = "log";
+  private static final String POST_LOG_TEXT = "logText";
   // private static final String POST_SCHEDULE_NAME = "scheduleName";
   private static final String POST_FORECAST_CVX = "forecastCvx";
   private static final String POST_SOFTWARE_ID = "softwareId";
@@ -175,55 +175,57 @@ public class ForecastTesterManager
   public String reportForecastResults(TestCaseMessage queryTestCaseMessage, int softwareId) throws IOException {
     StringBuilder submittedResults = new StringBuilder();
 
-    for (ForecastActual forecastActual : queryTestCaseMessage.getForecastActualList()) {
-
-      DataOutputStream printout;
-      URL url = new URL(forecastTesterUrl);
-      HttpURLConnection urlConn;
-      urlConn = (HttpURLConnection) url.openConnection();
-      urlConn.setRequestMethod("POST");
-      urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-      urlConn.setDoInput(true);
-      urlConn.setDoOutput(true);
-      urlConn.setUseCaches(false);
-
-      StringBuilder sb = new StringBuilder();
-      sb.append(POST_TEST_CASE_ID + "=" + queryTestCaseMessage.getForecastTestCase().getTestCaseId());
-      sb.append("&");
-      sb.append(POST_SOFTWARE_ID + "=" + softwareId);
-      sb.append("&");
-      sb.append(POST_FORECAST_CVX + "=" + forecastActual.getVaccineCvx());
-      sb.append("&");
-      sb.append(POST_LOG + "=");
-      BufferedReader buffReader = new BufferedReader(
-          new StringReader(queryTestCaseMessage.getActualMessageResponseType()));
-      String line;
-      while ((line = buffReader.readLine()) != null) {
-        sb.append(URLEncoder.encode(line + "\n", "UTF-8"));
-      }
-      sb.append("&");
-      sb.append(POST_DOSE_NUMBER + "=" + forecastActual.getDoseNumber());
-      sb.append("&");
-      sb.append(POST_VALID_DATE + "=" + forecastActual.getValidDate());
-      sb.append("&");
-      sb.append(POST_DUE_DATE + "=" + forecastActual.getDueDate());
-      sb.append("&");
-      sb.append(POST_OVERDUE_DATE + "=" + forecastActual.getOverdueDate());
-      sb.append("&");
-      sb.append(POST_FINISHED_DATE + "=" + forecastActual.getFinishedDate());
-
-      printout = new DataOutputStream(urlConn.getOutputStream());
-      printout.writeBytes(sb.toString());
-      printout.flush();
-      printout.close();
-      InputStreamReader input = null;
-      input = new InputStreamReader(urlConn.getInputStream());
-      BufferedReader in = new BufferedReader(input);
-      submittedResults.append(sb + "\n");
-      if ((line = in.readLine()) != null) {
-        submittedResults.append(" + " + line + "\n");
-      }
+    DataOutputStream printout;
+    URL url = new URL(forecastTesterUrl);
+    HttpURLConnection urlConn;
+    urlConn = (HttpURLConnection) url.openConnection();
+    urlConn.setRequestMethod("POST");
+    urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+    urlConn.setDoInput(true);
+    urlConn.setDoOutput(true);
+    urlConn.setUseCaches(false);
+    
+    StringBuilder sb = new StringBuilder();
+    sb.append(POST_TEST_CASE_ID + "=" + queryTestCaseMessage.getForecastTestCase().getTestCaseId());
+    sb.append("&");
+    sb.append(POST_SOFTWARE_ID + "=" + softwareId);
+    sb.append("&");
+    sb.append(POST_LOG_TEXT + "=");
+    BufferedReader buffReader = new BufferedReader(
+        new StringReader(queryTestCaseMessage.getActualResponseMessage()));
+    String line;
+    while ((line = buffReader.readLine()) != null) {
+      sb.append(URLEncoder.encode(line + "\n", "UTF-8"));
     }
+
+    int pos = 1;
+    for (ForecastActual forecastActual : queryTestCaseMessage.getForecastActualList()) {
+      sb.append("&");
+      sb.append(POST_FORECAST_CVX + pos + "=" + forecastActual.getVaccineCvx());
+      sb.append("&");
+      sb.append(POST_DOSE_NUMBER + pos + "=" + forecastActual.getDoseNumber());
+      sb.append("&");
+      sb.append(POST_VALID_DATE + pos + "=" + forecastActual.getValidDate());
+      sb.append("&");
+      sb.append(POST_DUE_DATE + pos + "=" + forecastActual.getDueDate());
+      sb.append("&");
+      sb.append(POST_OVERDUE_DATE + pos + "=" + forecastActual.getOverdueDate());
+      sb.append("&");
+      sb.append(POST_FINISHED_DATE + pos + "=" + forecastActual.getFinishedDate());
+      pos++;
+    }
+    printout = new DataOutputStream(urlConn.getOutputStream());
+    printout.writeBytes(sb.toString());
+    printout.flush();
+    printout.close();
+    InputStreamReader input = null;
+    input = new InputStreamReader(urlConn.getInputStream());
+    BufferedReader in = new BufferedReader(input);
+    submittedResults.append(sb + "\n");
+    if ((line = in.readLine()) != null) {
+      submittedResults.append(" + " + line + "\n");
+    }
+    System.out.println("--> submitted results: " + submittedResults.toString());
     return submittedResults.toString();
   }
 

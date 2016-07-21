@@ -395,7 +395,7 @@ public abstract class CertifyArea implements RecordServletInterface {
   }
 
   public void recordForecastResults(TestCaseMessage queryTestCaseMessage) {
-    if (queryTestCaseMessage.getForecastTestCase() != null) {
+    if (queryTestCaseMessage.getForecastTestCase() != null && queryTestCaseMessage.getForecastActualList().size() > 0) {
       if (certifyRunner.connector.getTchForecastTesterSoftwareId() > 0) {
         try {
           String results = certifyRunner.forecastTesterManager.reportForecastResults(queryTestCaseMessage,
