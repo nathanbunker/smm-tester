@@ -20,6 +20,25 @@ import org.immunizationsoftware.dqa.transform.Transformer;
 
 public class QueryRunner extends CertifyRunner {
 
+  private int taskGroupId = 0;
+  private String testPanelLabel = "";
+  
+  public int getTaskGroupId() {
+    return taskGroupId;
+  }
+
+  public void setTaskGroupId(int taskGroupId) {
+    this.taskGroupId = taskGroupId;
+  }
+
+  public String getTestPanelLabel() {
+    return testPanelLabel;
+  }
+
+  public void setTestPanelLabel(String testPanelLabel) {
+    this.testPanelLabel = testPanelLabel;
+  }
+
   public QueryRunner(Connector connector, SendData sendData, String queryType, ParticipantResponse participantResponse) {
     super(connector, sendData, queryType, participantResponse);
     sendData.setupQueryDir();

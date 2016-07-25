@@ -11,7 +11,8 @@ public class TestForecastTesterManager
 {
 
   private static final String RSP_MESSAGE = "MSH|^~\\&|IZ Registry|DE0000||NB9999|20131121115910||RSP^K11^RSP_K11|20131121DE0000415796|P|2.5.1|||||||||Z32^CDCPHINVS\r"
-      + "MSA|AA|1385060241123.8\r" + "QAK|1385060241123.8|OK|Z34^Request Immunization History^HL70471\r"
+      + "MSA|AA|1385060241123.8\r" 
+      + "QAK|1385060241123.8|OK|Z34^Request Immunization History^HL70471\r"
       + "QPD|Z34^Request Immunization History^HL70471|1385060241123.8|645740-F1.1^^^^MR|Humboldt^Hari^M^^^^L|Luce^Malkah^^^^^M|20090101|M|368 Jessen Ave^^Brownstown^MI^48164^USA^P|^PRN^PH^^^734^4078350\r"
       + "PID|1||496239^^^^SR~645740-F1.1^^^^MR||HUMBOLDT^HARI^M^^^^L~^^^^^^A|Luce^^^^^^M|20090101|M||1002-5^American Indian or Alaskan Native^HL70005|368 JESSEN AVE^^BROWNSTOWN^MI^48164^USA^P||^PRN^PH^^^734^4078350|||||||||2186-5^Not Hispanic or Latino^HL70189||N|||||||||20131121\r"
       + "PD1|||||||||||||000000|||A|20131121\r" + "NK1|1|KALKASKA^MALKAH^^^^^L|MTH^Mother^HL70063\r" + "PV1|1|R\r"
