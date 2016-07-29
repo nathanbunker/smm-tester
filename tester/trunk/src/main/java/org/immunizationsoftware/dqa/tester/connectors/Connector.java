@@ -52,7 +52,7 @@ public abstract class Connector
   protected static Connector addConnector(String label, String type, String url, String userid, String otherid,
       String facilityid, String password, String keyStorePassword, String enableTimeStart, String enableTimeEnd,
       AckAnalyzer.AckType ackType, TransferType transferType, List<String> fields, String customTransformations,
-      List<Connector> connectors, String purpose, int tchForecastTesterSoftwareId, String rxaFilterFacilityId,
+      List<Connector> connectors, String purpose, int tchForecastTesterSoftwareId, int tchForecastTesterTaskGroupId, String rxaFilterFacilityId,
       Set<String> queryResponseFieldsNotReturnedSet, Map<String, String> scenarioTransformationsMap,
       boolean disableServerCertificateCheck) throws Exception {
     if (!label.equals("") && !type.equals("")) {
@@ -110,6 +110,7 @@ public abstract class Connector
       connector.setEnableTimeStart(enableTimeStart);
       connector.setEnableTimeEnd(enableTimeEnd);
       connector.setTchForecastTesterSoftwareId(tchForecastTesterSoftwareId);
+      connector.setTchForecastTesterTaskGroupId(tchForecastTesterTaskGroupId);
       connector.setQueryResponseFieldsNotReturnedSet(queryResponseFieldsNotReturnedSet);
       connector.setScenarioTransformationsMap(scenarioTransformationsMap);
       connector.setRxaFilterFacilityId(rxaFilterFacilityId);
@@ -221,6 +222,15 @@ public abstract class Connector
   }
 
   private int tchForecastTesterSoftwareId = 0;
+  private int tchForecastTesterTaskGroupId = 0;
+
+  public int getTchForecastTesterTaskGroupId() {
+    return tchForecastTesterTaskGroupId;
+  }
+
+  public void setTchForecastTesterTaskGroupId(int tchForecastTesterTaskGroupId) {
+    this.tchForecastTesterTaskGroupId = tchForecastTesterTaskGroupId;
+  }
 
   public int getTchForecastTesterSoftwareId() {
     return tchForecastTesterSoftwareId;
@@ -517,6 +527,7 @@ public abstract class Connector
     Set<String> queryResponseFieldsNotReturnedSet = null;
     Map<String, String> scenarioTransformationsMap = new HashMap<String, String>();
     int tchForecastTesterSoftwareId = 0;
+    int tchForecastTesterTaskGroupId = 0;
     String rxaFilterFacilityId = "";
     TransferType transferType = TransferType.NEAR_REAL_TIME_LINK;
     AckAnalyzer.AckType ackType = AckAnalyzer.AckType.DEFAULT;
@@ -529,7 +540,7 @@ public abstract class Connector
       if (line.startsWith("Connection")) {
         addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
             enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose,
-            tchForecastTesterSoftwareId, rxaFilterFacilityId, queryResponseFieldsNotReturnedSet,
+            tchForecastTesterSoftwareId, tchForecastTesterTaskGroupId, rxaFilterFacilityId, queryResponseFieldsNotReturnedSet,
             scenarioTransformationsMap, disableServerCertificateCheck);
         label = "";
         purpose = "";
@@ -546,6 +557,7 @@ public abstract class Connector
         customTransformations = "";
         keyStorePassword = "";
         tchForecastTesterSoftwareId = 0;
+        tchForecastTesterTaskGroupId = 0;
         rxaFilterFacilityId = "";
         fields = new ArrayList<String>();
       } else if (line.startsWith("Label:")) {
@@ -605,6 +617,12 @@ public abstract class Connector
         } catch (NumberFormatException nfe) {
           // ignore, can't read
         }
+      } else if (line.startsWith("TCH Forecast Tester Task Group Id:")) {
+        try {
+          tchForecastTesterTaskGroupId = Integer.parseInt(readValue(line));
+        } catch (NumberFormatException nfe) {
+          // ignore, can't read
+        }
       } else if (line.startsWith("RXA Filter Facility Id:")) {
         rxaFilterFacilityId = readValue(line);
       } else if (line.startsWith("+")) {
@@ -627,7 +645,7 @@ public abstract class Connector
     }
     addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
         enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose,
-        tchForecastTesterSoftwareId, rxaFilterFacilityId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap,
+        tchForecastTesterSoftwareId,tchForecastTesterTaskGroupId, rxaFilterFacilityId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap,
         disableServerCertificateCheck);
     return connectors;
   }

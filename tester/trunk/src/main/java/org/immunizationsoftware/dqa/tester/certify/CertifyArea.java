@@ -395,11 +395,10 @@ public abstract class CertifyArea implements RecordServletInterface {
   }
 
   public void recordForecastResults(TestCaseMessage queryTestCaseMessage) {
-    if (queryTestCaseMessage.getForecastTestCase() != null && queryTestCaseMessage.getForecastActualList().size() > 0) {
+    if (queryTestCaseMessage.getForecastTestCase() != null && queryTestCaseMessage.getForecastActualList().size() > 0 && CAForecast.REPORT_RESULTS) {
       if (certifyRunner.connector.getTchForecastTesterSoftwareId() > 0) {
         try {
-          String results = certifyRunner.forecastTesterManager.reportForecastResults(queryTestCaseMessage,
-              certifyRunner.connector.getTchForecastTesterSoftwareId());
+          String results = certifyRunner.forecastTesterManager.reportForecastResults(queryTestCaseMessage, certifyRunner.connector);
           if (queryTestCaseMessage.getTestCaseNumber() != null && !queryTestCaseMessage.getTestCaseNumber().equals("")) {
             if (certifyRunner.testDir != null) {
               File testCaseFile = new File(certifyRunner.testDir, "TC-" + queryTestCaseMessage.getTestCaseNumber() + ".forecast-results.txt");
@@ -534,8 +533,8 @@ public abstract class CertifyArea implements RecordServletInterface {
       testCaseMessage2.setFieldName("PID-24");
       String uniqueId = testCaseMessage1.getTestCaseNumber();
       testCaseMessage2.appendCustomTransformation("MSH-10=" + uniqueId + "." + Transformer.makeBase62Number(System.currentTimeMillis() % 10000));
-      testCaseMessage2.appendCustomTransformation("PID-3.1=" + (uniqueId.length() <= 14 ? uniqueId : uniqueId.substring(uniqueId.length() - 14))
-          + "B");
+      testCaseMessage2
+          .appendCustomTransformation("PID-3.1=" + (uniqueId.length() <= 14 ? uniqueId : uniqueId.substring(uniqueId.length() - 14)) + "B");
       testCaseMessage2.appendCustomTransformation("PID-5.3=" + middleName2);
       testCaseMessage2.appendCustomTransformation("PID-24=Y");
       testCaseMessage2.appendCustomTransformation("PID-25=2");

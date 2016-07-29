@@ -2,13 +2,16 @@ package org.immunizationsoftware.dqa.tester;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
@@ -40,6 +43,16 @@ public class QueryServlet extends ClientServlet {
       queryType = participantResponse.getQueryType();
     }
 
+    Set<String> filenamesSelectedSet = new HashSet<String>();
+    String[] filenamesSelected = request.getParameterValues(QueryRunner.FILE_NAME);
+    if (filenamesSelected != null) {
+      for (String filenameSelected : filenamesSelected) {
+        filenamesSelectedSet.add(filenameSelected);
+      }
+    }
+    String userName = request.getParameter(QueryRunner.USER_NAME);
+    String password = request.getParameter(QueryRunner.PASSWORD);
+
     QueryRunner queryRunner = (QueryRunner) session.getAttribute("queryRunner");
 
     String action = request.getParameter("action");
@@ -47,11 +60,10 @@ public class QueryServlet extends ClientServlet {
       if (action.equals("Start") && isReadyToStart(queryRunner)) {
         List<Connector> connectors = ConnectServlet.getConnectors(session);
         int id = Integer.parseInt(request.getParameter("id"));
-        queryRunner = new QueryRunner(connectors.get(id - 1), user.getSendData(), queryType, participantResponse);
+        queryRunner = new QueryRunner(connectors.get(id - 1), user.getSendData(), queryType, participantResponse, filenamesSelectedSet, userName, password);
         queryRunner.start();
         session.setAttribute("queryRunner", queryRunner);
-      } else if (action.equals("Stop") && queryRunner != null)
-      {
+      } else if (action.equals("Stop") && queryRunner != null) {
         queryRunner.stopRunning();
       }
     }
@@ -80,12 +92,38 @@ public class QueryServlet extends ClientServlet {
       out.println("          </td>");
       out.println("        </tr>");
       out.println("    <tr>");
+      out.println("      <td>Files</td>");
+      out.println("      <td>");
+      {
+        SendData sendData = user.getSendData();
+        sendData.setupQueryDir();
+        if (sendData.getQueryDir().exists()) {
+          String[] filenames = QueryRunner.getListOfFiles(sendData);
+          for (String filename : filenames) {
+            out.println("      <input type=\"checkbox\" name=\"" + QueryRunner.FILE_NAME + "\" value=\"" + filename + "\""
+                + (filenamesSelectedSet.size() == 0 || filenamesSelectedSet.contains(filename) ? " checked=\"true\"" : "") + "/>" + filename);
+          }
+        }
+        out.println("      </td>");
+        out.println("    </tr>");
+      }
+      out.println("    <tr>");
+      out.println("      <td>TCH User Name</td>");
+      out.println(
+          "      <td><input type=\"text\" name=\"" + QueryRunner.USER_NAME + "\" value=\"" + (userName == null ? "" : userName) + "\"/></td>");
+      out.println("    </tr>");
+
+      out.println("    <tr>");
+      out.println("      <td>TCH Password</td>");
+      out.println(
+          "      <td><input type=\"password\" name=\"" + QueryRunner.PASSWORD + "\" value=\"" + (password == null ? "" : password) + "\"/></td>");
+      out.println("    </tr>");
+
+      out.println("    <tr>");
       out.println("      <td align=\"right\">");
       if (isReadyToStart(queryRunner)) {
         out.println("        <input type=\"submit\" name=\"action\" value=\"Start\"/>");
-      }
-      else
-      {
+      } else {
         out.println(queryRunner.getStatus());
         out.println("        <input type=\"submit\" name=\"action\" value=\"Stop\"/>");
       }
