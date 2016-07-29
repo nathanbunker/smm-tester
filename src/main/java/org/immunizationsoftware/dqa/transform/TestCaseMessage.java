@@ -156,6 +156,60 @@ public class TestCaseMessage
   private boolean doNotQueryFor = false;
   private boolean global = false;
   private String lineEnding = "\r";
+  private String tchForecastTesterUserName = null;
+  private String tchForecastTesterPassword = null;
+  private String tchForecastTesterTestPanelLabel = null;
+  private String tchForecastTesterTestCaseNumber = null;
+  private String patientDob = null;
+  private String patientSex = null;
+
+  public String getTchForecastTesterPassword() {
+    return tchForecastTesterPassword;
+  }
+  
+  public void setTchForecastTesterPassword(String tchForecastTesterPassword) {
+    this.tchForecastTesterPassword = tchForecastTesterPassword;
+  }
+  
+  public String getPatientDob() {
+    return patientDob;
+  }
+
+  public void setPatientDob(String patientDob) {
+    this.patientDob = patientDob;
+  }
+
+  public String getPatientSex() {
+    return patientSex;
+  }
+
+  public void setPatientSex(String patientSex) {
+    this.patientSex = patientSex;
+  }
+
+  public String getTchForecastTesterUserName() {
+    return tchForecastTesterUserName;
+  }
+
+  public void setTchForecastTesterUserName(String tchForecastTesterUserName) {
+    this.tchForecastTesterUserName = tchForecastTesterUserName;
+  }
+
+  public String getTchForecastTesterTestPanelLabel() {
+    return tchForecastTesterTestPanelLabel;
+  }
+
+  public void setTchForecastTesterTestPanelLabel(String tchForecastTesterTestPanelLabel) {
+    this.tchForecastTesterTestPanelLabel = tchForecastTesterTestPanelLabel;
+  }
+
+  public String getTchForecastTesterTestCaseNumber() {
+    return tchForecastTesterTestCaseNumber;
+  }
+
+  public void setTchForecastTesterTestCaseNumber(String tchForecastTesterTestCaseNumber) {
+    this.tchForecastTesterTestCaseNumber = tchForecastTesterTestCaseNumber;
+  }
 
   public String getFieldName() {
     return fieldName;

@@ -5,24 +5,44 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
-import org.immunizationsoftware.dqa.mover.ConnectionManager;
 import org.immunizationsoftware.dqa.mover.SendData;
+import org.immunizationsoftware.dqa.tester.certify.CAForecast;
 import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.manager.CvsReader;
 import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
+import org.immunizationsoftware.dqa.tester.manager.forecast.EvaluationActual;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastActual;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTesterManager;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 import org.immunizationsoftware.dqa.transform.Transformer;
+import org.immunizationsoftware.dqa.transform.forecast.ForecastTestCase;
 
 public class QueryRunner extends CertifyRunner {
 
+  public static final String FILE_NAME = "fileName";
+  public static final String USER_NAME = "userName";
+  public static final String PASSWORD = "password";
+
   private int taskGroupId = 0;
   private String testPanelLabel = "";
-  
+  private Set<String> filenamesSelectedSet = null;
+  private String userName = "";
+  private String password = "";
+
+  public String getPassword() {
+    return password;
+  }
+
+  public String getUserName() {
+    return userName;
+  }
+
   public int getTaskGroupId() {
     return taskGroupId;
   }
@@ -39,13 +59,18 @@ public class QueryRunner extends CertifyRunner {
     this.testPanelLabel = testPanelLabel;
   }
 
-  public QueryRunner(Connector connector, SendData sendData, String queryType, ParticipantResponse participantResponse) {
+  public QueryRunner(Connector connector, SendData sendData, String queryType, ParticipantResponse participantResponse,
+      Set<String> filenamesSelectedSet, String userName, String password) {
     super(connector, sendData, queryType, participantResponse);
+    this.filenamesSelectedSet = filenamesSelectedSet;
+    this.userName = userName;
+    this.password = password;
     sendData.setupQueryDir();
     if (!sendData.getQueryDir().exists()) {
       switchStatus(STATUS_PROBLEM, "Query directory does not exist: " + sendData.getQueryDir().getName());
       return;
     }
+    forecastTesterManager = new ForecastTesterManager(CAForecast.TCH_FORECAST_TESTER_URL);
     switchStatus(STATUS_INITIALIZED, "Setup and ready to go");
   }
 
@@ -53,27 +78,34 @@ public class QueryRunner extends CertifyRunner {
   public void run() {
     if (getStatus().equals(STATUS_INITIALIZED)) {
       switchStatus(STATUS_STARTED, "Starting");
-      String[] filenames = sendData.getQueryDir().list(new FilenameFilter() {
-        public boolean accept(File dir, String name) {
-          return name.endsWith(".csv");
-        }
-      });
+      String[] filenames = getListOfFiles(sendData);
       for (String filename : filenames) {
-        File file = new File(sendData.getQueryDir(), filename);
-        try {
-          readAndQuery(file);
-          if (!keepRunning) {
-            switchStatus(STATUS_STOPPED, "Stopped by user");
+        if (filenamesSelectedSet.contains(filename)) {
+          File file = new File(sendData.getQueryDir(), filename);
+          try {
+            readAndQuery(file);
+            if (!keepRunning) {
+              switchStatus(STATUS_STOPPED, "Stopped by user");
+              return;
+            }
+          } catch (IOException ioe) {
+            ioe.printStackTrace();
+            switchStatus(STATUS_PROBLEM, "Unable to read file " + file.getName() + ": " + ioe.getMessage());
             return;
           }
-        } catch (IOException ioe) {
-          ioe.printStackTrace();
-          switchStatus(STATUS_PROBLEM, "Unable to read file " + file.getName() + ": " + ioe.getMessage());
-          return;
         }
       }
       switchStatus(STATUS_COMPLETED, "Queries completed");
     }
+  }
+
+  public static String[] getListOfFiles(SendData sendData) {
+    String[] filenames = sendData.getQueryDir().list(new FilenameFilter() {
+      public boolean accept(File dir, String name) {
+        return name.endsWith(".csv");
+      }
+    });
+    return filenames;
   }
 
   private static final int POS_ID = 0;
@@ -93,10 +125,17 @@ public class QueryRunner extends CertifyRunner {
     List<String> valueList = CvsReader.readValuesFromCsv(line);
     // ignore this first one, it's the header
 
+    int lineNumber = 0;
     while ((line = in.readLine()) != null && keepRunning) {
       line = line.trim();
+      lineNumber++;
       if (line.length() < 1) {
         continue;
+      }
+      String tchForecastTesterTestCaseNumber;
+      {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        tchForecastTesterTestCaseNumber = sdf.format(new Date(queryFile.lastModified())) + "-" + lineNumber;
       }
       valueList = CvsReader.readValuesFromCsv(line);
       String id = CvsReader.readValue(POS_ID, valueList);
@@ -107,8 +146,7 @@ public class QueryRunner extends CertifyRunner {
       String middleName = CvsReader.readValue(POS_MIDDLE_NAME, valueList);
       String dob = CvsReader.readValue(POS_DOB, valueList);
       String sex = CvsReader.readValue(POS_SEX, valueList);
-      if (id.equals(""))
-      {
+      if (id.equals("")) {
         continue;
       }
 
@@ -147,20 +185,26 @@ public class QueryRunner extends CertifyRunner {
       if (!queryTestCaseMessage.getActualResponseMessage().equals("")) {
         ForecastTesterManager.readForecastActual(queryTestCaseMessage);
         List<ForecastActual> forecastActualList = queryTestCaseMessage.getForecastActualList();
-        if (forecastActualList.size() == 0)
-        {
+        if (forecastActualList.size() == 0) {
           logStatusMessage("    PROBLEM: No forecast results returned");
-        }
-        else
-        {
+        } else {
           logStatusMessage("    GOOD     Forecast results returned");
+          queryTestCaseMessage.setTchForecastTesterTestCaseNumber(tchForecastTesterTestCaseNumber);
+          queryTestCaseMessage.setTchForecastTesterTestPanelLabel(queryFile.getName().substring(0, queryFile.getName().length() - 4));
+          queryTestCaseMessage.setTchForecastTesterUserName(userName);
+          queryTestCaseMessage.setTchForecastTesterPassword(password);
+          if (CAForecast.REPORT_RESULTS) {
+            String result = forecastTesterManager.reportForecastResults(queryTestCaseMessage, connector);
+            logStatusMessage("             Reported to TCH: " + result);
+          }
+        }
+        for (EvaluationActual evaluationActual : queryTestCaseMessage.getEvaluationActualList()) {
+          System.out.println("  + " + evaluationActual.getVaccineCvx() + " given " + evaluationActual.getVaccineDate());
         }
         for (ForecastActual forecastActual : forecastActualList) {
           System.out.println("  + " + forecastActual.getSeriesName() + " due " + forecastActual.getDueDate());
         }
-      }
-      else
-      {
+      } else {
         logStatusMessage("    PROBLEM: No message returned");
       }
     }

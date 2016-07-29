@@ -4,19 +4,14 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSocketFactory;
-
-import org.immunizationsoftware.dqa.tester.connectors.HttpConnector.AuthenticationMethod;
+import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastExpected;
@@ -24,8 +19,7 @@ import org.immunizationsoftware.dqa.transform.forecast.ForecastTestCase;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestEvent;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
 
-public class ForecastTesterManager
-{
+public class ForecastTesterManager {
 
   private static final String TPC_TEST_PANEL_CASE_ID = "testPanelCase.testPanelCaseId";
   private static final String TPC_CATEGORY_NAME = "testPanelCase.categoryName";
@@ -161,20 +155,56 @@ public class ForecastTesterManager
     return forecastTestCaseList;
   }
 
+  private static final String POST_TASK_GROUP_ID = "taskGroupId"; // configured
+                                                                  // in
+                                                                  // ssm.config.txt
+                                                                  // under TCH
+                                                                  // Forecast
+                                                                  // Tester Task
+                                                                  // Group Id
+  private static final String POST_TEST_PANEL_LABEL = "testPanelLabel"; // file
+                                                                        // name
+
+  private static final String POST_SOFTWARE_ID = "softwareId"; // configured in
+                                                               // smm.config.txt
+                                                               // under TCH
+                                                               // Forecast
+                                                               // Tester
+                                                               // Software Id
+  private static final String POST_TEST_CASE_ID = "testCaseId";
+  private static final String POST_LOG_TEXT = "logText";
+
+  private static final String POST_PATIENT_SEX = "patientSex";
+  private static final String POST_PATIENT_DOB = "patientDob";
+  private static final String POST_TEST_CASE_NUMBER = "testCaseNumber"; // date
+                                                                        // of
+                                                                        // last
+                                                                        // file
+                                                                        // change
+                                                                        // +
+                                                                        // line
+                                                                        // number
+                                                                        // in
+                                                                        // file
+  private static final String POST_USER_NAME = "userName";
+  private static final String POST_PASSWORD = "password";
+
+  private static final String POST_VACCINATION_DATE = "vaccinationDate";
+  private static final String POST_VACCINATION_CVX = "vaccinationCvx";
+
   private static final String POST_FINISHED_DATE = "finishedDate";
   private static final String POST_OVERDUE_DATE = "overdueDate";
   private static final String POST_DUE_DATE = "dueDate";
   private static final String POST_VALID_DATE = "validDate";
   private static final String POST_DOSE_NUMBER = "doseNumber";
-  private static final String POST_LOG_TEXT = "logText";
-  // private static final String POST_SCHEDULE_NAME = "scheduleName";
+  private static final String POST_SCHEDULE_NAME = "scheduleName";
   private static final String POST_FORECAST_CVX = "forecastCvx";
-  private static final String POST_SOFTWARE_ID = "softwareId";
-  private static final String POST_TEST_CASE_ID = "testCaseId";
 
-  public String reportForecastResults(TestCaseMessage queryTestCaseMessage, int softwareId) throws IOException {
+  public String reportForecastResults(TestCaseMessage queryTestCaseMessage, Connector connector) throws IOException {
     StringBuilder submittedResults = new StringBuilder();
 
+    int softwareId = connector.getTchForecastTesterSoftwareId();
+    int taskGroupId = connector.getTchForecastTesterTaskGroupId();
     DataOutputStream printout;
     URL url = new URL(forecastTesterUrl);
     HttpURLConnection urlConn;
@@ -184,35 +214,74 @@ public class ForecastTesterManager
     urlConn.setDoInput(true);
     urlConn.setDoOutput(true);
     urlConn.setUseCaches(false);
-    
+
     StringBuilder sb = new StringBuilder();
-    sb.append(POST_TEST_CASE_ID + "=" + queryTestCaseMessage.getForecastTestCase().getTestCaseId());
-    sb.append("&");
+    if (queryTestCaseMessage.getForecastTestCase() != null) {
+      sb.append(POST_TEST_CASE_ID + "=" + queryTestCaseMessage.getForecastTestCase().getTestCaseId());
+      sb.append("&");
+    }
     sb.append(POST_SOFTWARE_ID + "=" + softwareId);
     sb.append("&");
+    sb.append(POST_TASK_GROUP_ID + "=" + taskGroupId);
+    if (queryTestCaseMessage.getTchForecastTesterUserName() != null) {
+      sb.append("&");
+      sb.append(POST_USER_NAME + "=" + queryTestCaseMessage.getTchForecastTesterUserName());
+    }
+    if (queryTestCaseMessage.getTchForecastTesterPassword() != null) {
+      sb.append("&");
+      sb.append(POST_PASSWORD + "=" + queryTestCaseMessage.getTchForecastTesterPassword());
+    }
+    if (queryTestCaseMessage.getTchForecastTesterTestCaseNumber() != null) {
+      sb.append("&");
+      sb.append(POST_TEST_CASE_NUMBER + "=" + queryTestCaseMessage.getTchForecastTesterTestCaseNumber());
+    }
+    if (queryTestCaseMessage.getTchForecastTesterTestPanelLabel() != null) {
+      sb.append("&");
+      sb.append(POST_TEST_PANEL_LABEL + "=" + queryTestCaseMessage.getTchForecastTesterTestPanelLabel());
+    }
+    if (queryTestCaseMessage.getPatientDob() != null) {
+      sb.append("&");
+      sb.append(POST_PATIENT_DOB + "=" + queryTestCaseMessage.getPatientDob());
+    }
+    if (queryTestCaseMessage.getPatientSex() != null) {
+      sb.append("&");
+      sb.append(POST_PATIENT_SEX + "=" + queryTestCaseMessage.getPatientSex());
+    }
+    sb.append("&");
     sb.append(POST_LOG_TEXT + "=");
-    BufferedReader buffReader = new BufferedReader(
-        new StringReader(queryTestCaseMessage.getActualResponseMessage()));
+    BufferedReader buffReader = new BufferedReader(new StringReader(queryTestCaseMessage.getActualResponseMessage()));
     String line;
     while ((line = buffReader.readLine()) != null) {
       sb.append(URLEncoder.encode(line + "\n", "UTF-8"));
     }
 
-    int pos = 1;
-    for (ForecastActual forecastActual : queryTestCaseMessage.getForecastActualList()) {
-      sb.append("&");
-      sb.append(POST_FORECAST_CVX + pos + "=" + forecastActual.getVaccineCvx());
-      sb.append("&");
-      sb.append(POST_DOSE_NUMBER + pos + "=" + forecastActual.getDoseNumber());
-      sb.append("&");
-      sb.append(POST_VALID_DATE + pos + "=" + forecastActual.getValidDate());
-      sb.append("&");
-      sb.append(POST_DUE_DATE + pos + "=" + forecastActual.getDueDate());
-      sb.append("&");
-      sb.append(POST_OVERDUE_DATE + pos + "=" + forecastActual.getOverdueDate());
-      sb.append("&");
-      sb.append(POST_FINISHED_DATE + pos + "=" + forecastActual.getFinishedDate());
-      pos++;
+    {
+      int pos = 1;
+      for (EvaluationActual evaluationActual : queryTestCaseMessage.getEvaluationActualList()) {
+        sb.append("&");
+        sb.append(POST_VACCINATION_CVX + pos + "=" + evaluationActual.getVaccineCvx());
+        sb.append("&");
+        sb.append(POST_VACCINATION_DATE + pos + "=" + evaluationActual.getVaccineDate());
+      }
+    }
+
+    {
+      int pos = 1;
+      for (ForecastActual forecastActual : queryTestCaseMessage.getForecastActualList()) {
+        sb.append("&");
+        sb.append(POST_FORECAST_CVX + pos + "=" + forecastActual.getVaccineCvx());
+        sb.append("&");
+        sb.append(POST_DOSE_NUMBER + pos + "=" + forecastActual.getDoseNumber());
+        sb.append("&");
+        sb.append(POST_VALID_DATE + pos + "=" + forecastActual.getValidDate());
+        sb.append("&");
+        sb.append(POST_DUE_DATE + pos + "=" + forecastActual.getDueDate());
+        sb.append("&");
+        sb.append(POST_OVERDUE_DATE + pos + "=" + forecastActual.getOverdueDate());
+        sb.append("&");
+        sb.append(POST_FINISHED_DATE + pos + "=" + forecastActual.getFinishedDate());
+        pos++;
+      }
     }
     printout = new DataOutputStream(urlConn.getOutputStream());
     printout.writeBytes(sb.toString());
@@ -244,9 +313,11 @@ public class ForecastTesterManager
     String vaccineCvx = "";
     String vaccineDate = "";
     while (reader.advance()) {
-      if (reader.getSegmentName().equals("RXA")) {
-        addToList(forecastActualList, evaluationActualList, forecastActual, evaluationActual, addEvaluationToList,
-            addForecastToList);
+      if (reader.getSegmentName().equals("PID")) {
+        queryTestCaseMessage.setPatientDob(reader.getValue(7));
+        queryTestCaseMessage.setPatientSex(reader.getValue(8));
+      } else if (reader.getSegmentName().equals("RXA")) {
+        addToList(forecastActualList, evaluationActualList, forecastActual, evaluationActual, addEvaluationToList, addForecastToList);
         addEvaluationToList = false;
         addForecastToList = false;
         forecastActual = null;
@@ -267,8 +338,7 @@ public class ForecastTesterManager
         if (isForecast) {
           if (obs.equals("30956-7") || (obs.equals("30979-9") && obs2.equals("")) || obs.equals("38890-0")) {
             if (forecastActual != null) {
-              addToList(forecastActualList, evaluationActualList, forecastActual, evaluationActual, false,
-                  addForecastToList);
+              addToList(forecastActualList, evaluationActualList, forecastActual, evaluationActual, false, addForecastToList);
             }
             forecastActual = new ForecastActual();
             forecastActual.setVaccineCvx(obsValue);
@@ -324,14 +394,12 @@ public class ForecastTesterManager
         }
       }
     }
-    addToList(forecastActualList, evaluationActualList, forecastActual, evaluationActual, addEvaluationToList,
-        addForecastToList);
+    addToList(forecastActualList, evaluationActualList, forecastActual, evaluationActual, addEvaluationToList, addForecastToList);
 
   }
 
-  public static void addToList(List<ForecastActual> forecastActualList, List<EvaluationActual> evaluationActualList,
-      ForecastActual forecastActual, EvaluationActual evaluationActual, boolean addEvaluationToList,
-      boolean addForecastToList) {
+  public static void addToList(List<ForecastActual> forecastActualList, List<EvaluationActual> evaluationActualList, ForecastActual forecastActual,
+      EvaluationActual evaluationActual, boolean addEvaluationToList, boolean addForecastToList) {
     if (addEvaluationToList) {
       evaluationActualList.add(evaluationActual);
     }
