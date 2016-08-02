@@ -252,7 +252,9 @@ public class ForecastTesterManager {
     BufferedReader buffReader = new BufferedReader(new StringReader(queryTestCaseMessage.getActualResponseMessage()));
     String line;
     while ((line = buffReader.readLine()) != null) {
-      sb.append(URLEncoder.encode(line + "\n", "UTF-8"));
+      if (line.startsWith("OBX") || line.startsWith("RXA")) {
+    	  sb.append(URLEncoder.encode(line + "\n", "UTF-8"));
+      }
     }
 
     {
