@@ -24,6 +24,8 @@ public class CAForecast extends CertifyArea
   
 //  public static final boolean TEST_AGAINST_PRODUCTION = false;
 //  public static final String TCH_FORECAST_TESTER_URL = "http://localhost:8181/ExternalTestServlet";
+//  public static final boolean REPORT_RESULTS = true;
+
    public static final boolean TEST_AGAINST_PRODUCTION = true;
    public static final boolean REPORT_RESULTS = false;
    public static final String TCH_FORECAST_TESTER_URL = "http://tchforecasttester.org/ft/ExternalTestServlet";
