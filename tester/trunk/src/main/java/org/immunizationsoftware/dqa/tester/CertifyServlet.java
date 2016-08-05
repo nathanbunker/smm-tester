@@ -620,6 +620,7 @@ public class CertifyServlet extends ClientServlet
         out.println("                document.getElementById(\"ChkQBPSupport\").checked = toggle;");
         out.println("                document.getElementById(\"ChkDeduplicationEngaged\").checked = toggle;");
         out.println("                document.getElementById(\"ChkForecasterEngaged\").checked = toggle;");
+        out.println("                document.getElementById(\"ChkForecasting\").checked = toggle;");
         out.println("                return false;");
         out.println("              }");
         out.println("            </script>");
