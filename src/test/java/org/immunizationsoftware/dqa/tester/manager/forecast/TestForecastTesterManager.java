@@ -338,6 +338,8 @@ public class TestForecastTesterManager
       assertEquals(8, forecastActualList.size());
       assertEquals("20", forecastActualList.get(0).getVaccineCvx());
       assertEquals("20120619", forecastActualList.get(0).getDueDate());
+      assertEquals("03", forecastActualList.get(2).getVaccineCvx());
+      assertEquals("20160613", forecastActualList.get(2).getDueDate());
       
       assertEquals("88", forecastActualList.get(7).getVaccineCvx());
       assertEquals("20160801", forecastActualList.get(7).getDueDate());
