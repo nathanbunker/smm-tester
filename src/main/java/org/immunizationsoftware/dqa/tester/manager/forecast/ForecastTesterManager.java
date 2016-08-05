@@ -296,7 +296,6 @@ public class ForecastTesterManager {
     if ((line = in.readLine()) != null) {
       submittedResults.append(" + " + line + "\n");
     }
-    System.out.println("--> submitted results: " + submittedResults.toString());
     return submittedResults.toString();
   }
 
