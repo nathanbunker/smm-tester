@@ -2,7 +2,7 @@ package org.immunizationsoftware.dqa.transform.forecast;
 
 public enum ForecastTestPanel {
   
-  AIRA_INTEROP_TESTING(72, "AIRA Interop Testing", true),
+  AIRA_INTEROP_TESTING(72, "AIRA Interop Testing"),
   TCH_INITIAL(2, "TCH Initial"),
   CDSI_TEST_CASES_V2_1(71, "CDSI v2.1 Nov 2015", true),
   IHS_ROLLOUT_2013(18, "IHS Rollout"),

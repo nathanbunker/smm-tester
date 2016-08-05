@@ -54,7 +54,7 @@ public class CertifyClient {
   private static boolean runC = true;
   private static boolean runD = true;
   private static boolean runE = false;
-  private static boolean runF = false;
+  private static boolean runF = true;
   private static boolean runG = true;
   private static boolean runH = false;
   private static boolean runI = true;
