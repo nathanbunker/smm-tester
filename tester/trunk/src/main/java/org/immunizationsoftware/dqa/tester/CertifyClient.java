@@ -36,7 +36,8 @@ import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
  * 
  * @author nathan
  */
-public class CertifyClient {
+public class CertifyClient
+{
 
   private static ProfileManager profileManager = null;
   private static Map<String, Map<String, TestCaseMessage>> testMessageMapMap = new HashMap<String, Map<String, TestCaseMessage>>();
@@ -54,7 +55,7 @@ public class CertifyClient {
   private static boolean runC = true;
   private static boolean runD = true;
   private static boolean runE = false;
-  private static boolean runF = true;
+  private static boolean runF = false;
   private static boolean runG = true;
   private static boolean runH = false;
   private static boolean runI = true;
@@ -75,7 +76,7 @@ public class CertifyClient {
   private static CertifyRunner certifyRunner = null;
 
   static {
-    for (ForecastTestPanel forecastTestPanel : forecastTestPanelList) {
+    for (ForecastTestPanel forecastTestPanel : ForecastTestPanel.values()) {
       if (forecastTestPanel.isStandard()) {
         forecastTestPanelList.add(forecastTestPanel);
       }
@@ -92,7 +93,7 @@ public class CertifyClient {
     runC = true;
     runD = true;
     runE = false;
-    runF = false;
+    runF = !queryType.equals(CertifyRunner.QUERY_TYPE_NONE);
     runG = true;
     runH = false;
     runI = true;
@@ -160,7 +161,8 @@ public class CertifyClient {
       try {
 
         boolean canStart = certifyRunner == null || certifyRunner.getStatus().equals(CertifyRunner.STATUS_COMPLETED)
-            || certifyRunner.getStatus().equals(CertifyRunner.STATUS_STOPPED) || certifyRunner.getStatus().equals(CertifyRunner.STATUS_PROBLEM);
+            || certifyRunner.getStatus().equals(CertifyRunner.STATUS_STOPPED)
+            || certifyRunner.getStatus().equals(CertifyRunner.STATUS_PROBLEM);
 
         String aartAction = null;
         String autoTestNameSelect = null;
@@ -177,11 +179,12 @@ public class CertifyClient {
               System.out.println("  + Testing was stopped");
               testerStatus = RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_STOPPED;
             }
-            aartAction = CertifyRunner.reportStatus(aartName, testerStatus, certifyRunner.getConnector().getLabel(), certifyRunner.getTestStarted(),
-                certifyRunner.getUpdateEtc(), certifyRunner.getQueryEtc());
+            aartAction = CertifyRunner.reportStatus(aartName, testerStatus, certifyRunner.getConnector().getLabel(),
+                certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc(), certifyRunner.getQueryEtc());
             certifyRunner = null;
           }
-          aartAction = CertifyRunner.reportStatus(aartName, RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_READY, null, null, null, null);
+          aartAction = CertifyRunner.reportStatus(aartName,
+              RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_READY, null, null, null, null);
           if (aartAction.equals("")) {
             aartAction = null;
           } else {
@@ -189,7 +192,8 @@ public class CertifyClient {
               {
                 int pos = aartAction.indexOf(RecordServletInterface.OPTION_AUTO_TEST_NAME_SELECT);
                 if (pos > 0) {
-                  autoTestNameSelect = aartAction.substring(pos + RecordServletInterface.OPTION_AUTO_TEST_NAME_SELECT.length()).trim();
+                  autoTestNameSelect = aartAction
+                      .substring(pos + RecordServletInterface.OPTION_AUTO_TEST_NAME_SELECT.length()).trim();
                   aartAction = aartAction.substring(0, pos).trim();
                 }
               }
@@ -200,7 +204,8 @@ public class CertifyClient {
               inittParticipantResponseMap();
               for (int i = 0; i < participantResponseMap.length; i++) {
                 for (int j = 0; j < participantResponseMap[i].length; j++) {
-                  if (participantResponseMap[i][j] != null && participantResponseMap[i][j].getFolderName().equals(connectionLabel)) {
+                  if (participantResponseMap[i][j] != null
+                      && participantResponseMap[i][j].getFolderName().equals(connectionLabel)) {
                     participantResponse = participantResponseMap[i][j];
                     switchParticipantResponse();
                     i = participantResponseMap.length;
@@ -230,8 +235,9 @@ public class CertifyClient {
           }
         } else {
           certifyRunner.printTextUpdate(System.out);
-          aartAction = CertifyRunner.reportStatus(aartName, RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_TESTING, certifyRunner
-              .getConnector().getLabel(), certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc(), certifyRunner.getQueryEtc());
+          aartAction = CertifyRunner.reportStatus(aartName,
+              RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_TESTING, certifyRunner.getConnector().getLabel(),
+              certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc(), certifyRunner.getQueryEtc());
 
           if (aartAction.equals("")) {
             aartAction = null;
@@ -253,7 +259,8 @@ public class CertifyClient {
             if ((System.currentTimeMillis() - certifyRunner.getLastLogStatus()) > 15 * 60 * 1000) {
               SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
               String lastUpdate = sdf.format(new Date(certifyRunner.getLastLogStatus()));
-              certifyRunner.switchStatus(CertifyRunner.STATUS_PROBLEM, "Stopping process, no update logged since " + lastUpdate);
+              certifyRunner.switchStatus(CertifyRunner.STATUS_PROBLEM,
+                  "Stopping process, no update logged since " + lastUpdate);
               System.out.println("## PROBLEM: Process frozen since " + lastUpdate);
               certifyRunner.stopRunning();
             }
@@ -273,8 +280,6 @@ public class CertifyClient {
 
   public static void setupCertifyRunner() {
     certifyRunner = new CertifyRunner(connector, sendData, queryType, participantResponse);
-    certifyRunner.setRun(true, CertifyRunner.SUITE_A_BASIC);
-    certifyRunner.setRun(true, CertifyRunner.SUITE_A_BASIC);
     certifyRunner.setRun(runA, CertifyRunner.SUITE_A_BASIC);
     certifyRunner.setRun(runB, CertifyRunner.SUITE_B_INTERMEDIATE);
     certifyRunner.setRun(runC, CertifyRunner.SUITE_C_ADVANCED);
@@ -293,27 +298,91 @@ public class CertifyClient {
     certifyRunner.setRun(runP, CertifyRunner.SUITE_P_DEDUPLICATION_ENGAGED);
     certifyRunner.setRun(runQ, CertifyRunner.SUITE_Q_FORECASTER_ENGAGED);
     certifyRunner.setPauseBeforeQuerying(pauseBeforeQuerying);
+    if (certifyRunner.isPauseBeforeQuerying()) {
+      System.out.println("     - Pause before querying");
+    }
     certifyRunner.setRedactListResponses(redactListResponses);
+    if (certifyRunner.isRedactListResponses()) {
+      System.out.println("     - Redact List Responses");
+    }
     certifyRunner.setReportErrorsOnly(reportErrorsOnly);
+    if (certifyRunner.isReportErrorsOnly()) {
+      System.out.println("     - Report Errors Only");
+    }
     certifyRunner.setCondenseErrors(condenseErrors);
+    if (certifyRunner.isCondenseErrors()) {
+      System.out.println("     - Condense Errors");
+    }
     certifyRunner.setTestMessageMapMap(testMessageMapMap);
+    if (certifyRunner.isRun(CertifyRunner.SUITE_E_FORECAST_PREP)) {
+      System.out.println("     - run suite Forecast Prep");
+    }
+    if (certifyRunner.isRun(CertifyRunner.SUITE_Q_FORECASTER_ENGAGED)) {
+      System.out.println("     - run suite Forecaster Engaged");
+    }
     if (certifyRunner.isRun(CertifyRunner.SUITE_F_FORECAST)) {
+      System.out.println("     - run suite Forecast with "  + forecastTestPanelList.size() + " test panel(s)");
       for (ForecastTestPanel forecastTestPanel : forecastTestPanelList) {
         certifyRunner.addForecastTestPanel(forecastTestPanel);
+        System.out.println("        forecast test panel: " + forecastTestPanel.getLabel());
       }
     }
     if (certifyRunner.isRun(CertifyRunner.SUITE_I_PROFILING)) {
+      System.out.println("     - run suite Profiling");
       certifyRunner.setProfileManager(profileManager);
       if (profileUsageId > 0) {
         certifyRunner.setProfileUsage(profileManager.getProfileUsageList().get(profileUsageId - 1));
+        System.out.println("        profile usage id = " + (profileManager.getProfileUsageList().get(profileUsageId - 1)).getLabel());
       }
       if (profileUsageIdForInteroperability > 0) {
-        certifyRunner.setProfileUsageComparisonInteroperability(profileManager.getProfileUsageList().get(profileUsageIdForInteroperability - 1));
+        certifyRunner.setProfileUsageComparisonInteroperability(
+            profileManager.getProfileUsageList().get(profileUsageIdForInteroperability - 1));
       }
       if (profileUsageIdForConformance < 0) {
-        certifyRunner.setProfileUsageComparisonConformance(profileManager.getProfileUsageList().get(profileUsageIdForConformance - 1));
+        certifyRunner.setProfileUsageComparisonConformance(
+            profileManager.getProfileUsageList().get(profileUsageIdForConformance - 1));
       }
     }
+    if (certifyRunner.isRun(CertifyRunner.SUITE_A_BASIC)) {
+      System.out.println("     - run suite Basic");
+    }
+    if (certifyRunner.isRun(CertifyRunner.SUITE_K_NOT_ACCEPTED)) {
+      System.out.println("     - run suite Not Accepted");
+    }
+    if (certifyRunner.isRun(CertifyRunner.SUITE_J_ONC_2015)) {
+      System.out.println("     - run suite ONC 2015");
+    }
+    if (certifyRunner.isRun(CertifyRunner.SUITE_B_INTERMEDIATE)) {
+      System.out.println("     - run suite Intermediate");
+    }
+    if (certifyRunner.isRun(CertifyRunner.SUITE_C_ADVANCED)) {
+      System.out.println("     - run suite Advanced");
+    }
+    if (certifyRunner.isRun(CertifyRunner.SUITE_D_EXCEPTIONAL)) {
+      System.out.println("     - run suite Exceptional");
+    }
+    if (certifyRunner.isRun(CertifyRunner.SUITE_N_TRANSFORM)) {
+      System.out.println("     - run suite Transform");
+    }
+    if (certifyRunner.isRun(CertifyRunner.SUITE_M_QBP_SUPPORT)) {
+      System.out.println("     - run suite QBP Support");
+    }
+    if (certifyRunner.isRun(CertifyRunner.SUITE_O_EXTRA)) {
+      System.out.println("     - run suite Extra");
+    }
+    if (certifyRunner.isRun(CertifyRunner.SUITE_P_DEDUPLICATION_ENGAGED)) {
+      System.out.println("     - run suite Deduplication Engaged");
+    }
+    if (certifyRunner.isRun(CertifyRunner.SUITE_G_PERFORMANCE)) {
+      System.out.println("     - run suite Performance");
+    }
+    if (certifyRunner.isRun(CertifyRunner.SUITE_H_CONFORMANCE)) {
+      System.out.println("     - run suite Conformance");
+    }
+    if (certifyRunner.isRun(CertifyRunner.SUITE_L_CONFORMANCE_2015)) {
+      System.out.println("     - run suite Conformance 2015");
+    }
+
 
     if (runAgainst != null && !runAgainst.equals("")) {
       certifyRunner.setRunAgainstTestStartTime(runAgainst);
@@ -372,12 +441,17 @@ public class CertifyClient {
       }
     }
     String guideName = participantResponse.getGuideName();
-    if (!guideName.equals("")) {
+    if (guideName.equals("")) {
+      System.out.println("No guide name defined");
+    }
+    else {
+      System.out.println("Looking for guide named " + guideName);
       profileUsageId = 0;
       int i = 0;
       for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
         i++;
         if (profileUsage.toString().equalsIgnoreCase(guideName)) {
+          System.out.println("Guide name " + guideName + " was found in position " + i);
           profileUsageId = i;
           break;
         }
@@ -406,7 +480,8 @@ public class CertifyClient {
         {
           File[] dirs = testCaseDir.listFiles(new FileFilter() {
             public boolean accept(File arg0) {
-              return arg0.isDirectory() && !arg0.getName().startsWith(CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX);
+              return arg0.isDirectory()
+                  && !arg0.getName().startsWith(CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX);
             }
           });
           if (dirs != null) {
@@ -422,7 +497,8 @@ public class CertifyClient {
           CreateTestCaseServlet.readTestCases(testMessageMapMap, globalDir, null, true);
           File[] dirs = globalDir.listFiles(new FileFilter() {
             public boolean accept(File arg0) {
-              return arg0.isDirectory() && !arg0.getName().startsWith(CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX);
+              return arg0.isDirectory()
+                  && !arg0.getName().startsWith(CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX);
             }
           });
           if (dirs != null) {
