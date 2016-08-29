@@ -10,6 +10,11 @@ public interface RecordServletInterface {
   public static final String VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK = "Tolerance Check:";
 
   
+  public static final String PARAM_RESOURCE = "resource";
+  public static final String RESOURCE_PROFILE = "profile";
+  public static final String RESOURCE_TEST_PARTICIPANT = "testParticipant";
+  public static final String PARAM_PROFILE_USAGE_ID = "profileUsageId";
+
   public static final String VALUE_YES = "Y";
   public static final String VALUE_NO = "N";
 
@@ -37,7 +42,8 @@ public interface RecordServletInterface {
   
   public static final int SUITE_Q_FORECAST = 16;
 
-  public static final String PARAM_TC_CONNECTION_LABEL = "tc_connectionLabel";
+  public static final String PARAM_TC_PUBLIC_ID_CODE = "tc_publicIdCode";
+  public static final String PARAM_TC_ACCESS_PASSCODE = "tc_accessPasscode";
   public static final String PARAM_TC_CONNECTION_TYPE = "tc_connectionType";
   public static final String PARAM_TC_CONNECTION_URL = "tc_connectionUrl";
   public static final String PARAM_TC_CONNECTION_ACK_TYPE = "tc_connectionAckType";
@@ -76,7 +82,7 @@ public interface RecordServletInterface {
   public static final String PARAM_TC_PER_UPDATE_STD = "tc_perUpdateStd";
   public static final String PARAM_TC_TRANSFORMS = "tc_transforms";
 
-  public static final String[] PARAMS_TC = { PARAM_TC_CONNECTION_LABEL, PARAM_TC_CONNECTION_TYPE, PARAM_TC_CONNECTION_URL,
+  public static final String[] PARAMS_TC = { PARAM_TC_PUBLIC_ID_CODE, PARAM_TC_ACCESS_PASSCODE, PARAM_TC_CONNECTION_TYPE, PARAM_TC_CONNECTION_URL,
       PARAM_TC_CONNECTION_ACK_TYPE, PARAM_TC_CONNECTION_CONFIG, PARAM_TC_QUERY_TYPE, PARAM_TC_QUERY_ENABLED, PARAM_TC_QUERY_PAUSE, PARAM_TC_TEST_LOG,
       PARAM_TC_TEST_STATUS, PARAM_TC_TEST_STARTED_TIME, PARAM_TC_TEST_FINISHED_TIME, PARAM_TC_COUNT_UPDATE, PARAM_TC_COUNT_QUERY,
       PARAM_TC_PROFILE_BASE_NAME, PARAM_TC_PROFILE_COMPARE_NAME, PARAM_TC_SCORE_OVERALL, PARAM_TC_SCORE_INTEROP, PARAM_TC_SCORE_CODED,
@@ -205,7 +211,8 @@ public interface RecordServletInterface {
   public static final int MAP_ROWS_MAX = 8;
 
   public static final String PARAM_TPAR_ORGANIZATION_NAME = "tpar_organizationName";
-  public static final String PARAM_TPAR_CONNECTION_LABEL = "tpar_connectionLabel";
+  public static final String PARAM_TPAR_PUBLIC_ID_CODE = "tpar_publicIdCode";
+  public static final String PARAM_TPAR_ACCESS_PASSCODE = "tpar_accessPasscode";
   public static final String PARAM_TPAR_MAP_ROW = "tpar_mapRow";
   public static final String PARAM_TPAR_MAP_COL = "tpar_mapCol";
   public static final String PARAM_TPAR_PLATFORM_LABEL = "tpar_platformLabel";
@@ -225,10 +232,8 @@ public interface RecordServletInterface {
   public static final String PARAM_TPAR_TRANSPORT_TYPE = "tpar_transportType";
   public static final String PARAM_TPAR_QUERY_SUPPORT = "tpar_querySupport";
   public static final String PARAM_TPAR_NIST_STATUS = "tpar_nistStatus";
-  public static final String PARAM_TPAR_ACCESS_PASSCODE = "tpar_accessPasscode";
-  public static final String PARAM_TPAR_PUBLIC_ID_CODE = "tpar_publicIdCode";
 
-  public static final String[] PARAMS_TPAR = { PARAM_TPAR_ORGANIZATION_NAME, PARAM_TPAR_CONNECTION_LABEL, PARAM_TPAR_MAP_ROW, PARAM_TPAR_MAP_COL,
+  public static final String[] PARAMS_TPAR = { PARAM_TPAR_ORGANIZATION_NAME, PARAM_TPAR_MAP_ROW, PARAM_TPAR_MAP_COL,
       PARAM_TPAR_PLATFORM_LABEL, PARAM_TPAR_VENDOR_LABEL, PARAM_TPAR_INTERNAL_COMMENTS, PARAM_TPAR_PHASE1_PARTICIPATION, PARAM_TPAR_PHASE1_STATUS,
       PARAM_TPAR_PHASE1_COMMENTS, PARAM_TPAR_PHASE2_PARTICIPATION, PARAM_TPAR_PHASE2_STATUS, PARAM_TPAR_PHASE2_COMMENTS, PARAM_TPAR_IHS_STATUS,
       PARAM_TPAR_GUIDE_STATUS, PARAM_TPAR_GUIDE_NAME, PARAM_TPAR_CONNECT_STATUS, PARAM_TPAR_GENERAL_COMMENTS, PARAM_TPAR_TRANSPORT_TYPE,
@@ -277,7 +282,8 @@ public interface RecordServletInterface {
   public static final String PARAM_TESTER_STATUS_UPDATE = "testerStatus_update";
   public static final String PARAM_TESTER_STATUS_TESTER_NAME = "testerStatus_testerName";
   public static final String PARAM_TESTER_STATUS_READY_STATUS = "testerStatus_readyStatus";
-  public static final String PARAM_TESTER_STATUS_TEST_CONNECTION_LABEL = "testerStatus_connectionLabel";
+  public static final String PARAM_TESTER_STATUS_PUBLIC_ID_CODE = "testerStatus_publicIdCode";
+  public static final String PARAM_TESTER_STATUS_ACCESS_PASSCODE = "testerStatus_accessPasscode";
   public static final String PARAM_TESTER_STATUS_TEST_STARTED_TIME = "testerStatus_testStartedTime";
   public static final String PARAM_TESTER_STATUS_ETC_QUERY_DATE = "testerStatus_etcQueryDate";
   public static final String PARAM_TESTER_STATUS_ETC_UPDATE_DATE = "testerStatus_etcUpdateDate";

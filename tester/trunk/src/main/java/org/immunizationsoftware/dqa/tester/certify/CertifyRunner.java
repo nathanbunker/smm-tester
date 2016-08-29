@@ -2080,7 +2080,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     return ((int) (ms / 100.0 + 0.5)) / 10.0 + "s";
   }
 
-  public static String reportStatus(String aartName, String status, String connectionLabel, Date testStarted, Date etcUpdate, Date etcQuery) {
+  public static String reportStatus(String aartName, String status, ParticipantResponse participantResponse, Date testStarted, Date etcUpdate, Date etcQuery) {
 
     String line = "";
     try {
@@ -2099,11 +2099,15 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       r.append(PARAM_TESTER_STATUS_READY_STATUS);
       r.append("=");
       r.append(URLEncoder.encode(status, "UTF-8"));
-      if (connectionLabel != null) {
+      if (participantResponse != null) {
         r.append("&");
-        r.append(PARAM_TESTER_STATUS_TEST_CONNECTION_LABEL);
+        r.append(PARAM_TESTER_STATUS_PUBLIC_ID_CODE);
         r.append("=");
-        r.append(URLEncoder.encode(connectionLabel, "UTF-8"));
+        r.append(URLEncoder.encode(participantResponse.getPublicIdCode(), "UTF-8"));
+        r.append("&");
+        r.append(PARAM_TESTER_STATUS_ACCESS_PASSCODE);
+        r.append("=");
+        r.append(URLEncoder.encode(participantResponse.getAccessPasscode(), "UTF-8"));
       }
       if (testStarted != null) {
         r.append("&");
@@ -2229,7 +2233,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
       sb.append("action=Submit");
       addField(sb, PARAM_TPAR_ORGANIZATION_NAME, participantResponse.getOrganizationName());
-      addField(sb, PARAM_TPAR_CONNECTION_LABEL, participantResponse.getFolderName());
+      addField(sb, PARAM_TPAR_PUBLIC_ID_CODE, participantResponse.getPublicIdCode());
+      addField(sb, PARAM_TPAR_ACCESS_PASSCODE, participantResponse.getAccessPasscode());
       if (participantResponse.getRow() == 0 && participantResponse.getCol() == 0 && !participantResponse.getMap().equals("1,1")) {
         addField(sb, PARAM_TPAR_MAP_ROW, 0);
         addField(sb, PARAM_TPAR_MAP_COL, 0);
@@ -2311,7 +2316,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       if (participantResponse != null) {
         addField(sb, PARAM_TPAR_ORGANIZATION_NAME, participantResponse.getOrganizationName());
       }
-      addField(sb, PARAM_TC_CONNECTION_LABEL, connector.getLabel());
+      addField(sb, PARAM_TC_PUBLIC_ID_CODE, participantResponse.getPublicIdCode());
+      addField(sb, PARAM_TC_ACCESS_PASSCODE, participantResponse.getAccessPasscode());
       addField(sb, PARAM_TC_CONNECTION_TYPE, connector.getType());
       addField(sb, PARAM_TC_CONNECTION_URL, connector.getUrl());
       addField(sb, PARAM_TC_CONNECTION_ACK_TYPE, connector.getAckType().toString());
@@ -2554,7 +2560,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       StringBuilder sb = new StringBuilder();
 
       sb.append("action=Submit");
-      addField(sb, PARAM_TC_CONNECTION_LABEL, connector.getLabel());
+      addField(sb, PARAM_TC_PUBLIC_ID_CODE, participantResponse.getPublicIdCode());
+      addField(sb, PARAM_TC_ACCESS_PASSCODE, participantResponse.getAccessPasscode());
 
       addField(sb, PARAM_TC_TEST_STARTED_TIME, testStarted);
       addField(sb, PARAM_TS_TEST_SECTION_TYPE, certifyAreas[currentSuite].getAreaLabel());
