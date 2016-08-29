@@ -121,8 +121,8 @@ public class QueryRunner extends CertifyRunner {
 
     logStatusMessage("Reading from file: " + queryFile.getName());
     BufferedReader in = new BufferedReader(new FileReader(queryFile));
-    String line = in.readLine();
-    List<String> valueList = CvsReader.readValuesFromCsv(line);
+    String line; //  = in.readLine();
+    List<String> valueList; //  = CvsReader.readValuesFromCsv(line);
     // ignore this first one, it's the header
 
     int lineNumber = 0;

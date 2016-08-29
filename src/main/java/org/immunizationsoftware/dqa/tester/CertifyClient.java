@@ -114,7 +114,7 @@ public class CertifyClient
 
   public static void main(String[] args) throws Exception {
     if (args.length < 1) {
-      System.err.println("Usage: java org.immunizationsoftware.dqa.tester.CeritfyClient config.txt");
+      System.err.println("Usage: java org.immunizationsoftware.dqa.tester.CertifyClient config.txt");
       System.err.println("The following options are supported in the config file: ");
       System.err.println("  + AART Name: [Required: Name of this service as it will appear in AART]");
       System.err.println("  + Scan Folder: [Required: Root folder location to look for configurations]");
@@ -179,7 +179,7 @@ public class CertifyClient
               System.out.println("  + Testing was stopped");
               testerStatus = RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_STOPPED;
             }
-            aartAction = CertifyRunner.reportStatus(aartName, testerStatus, certifyRunner.getConnector().getLabel(),
+            aartAction = CertifyRunner.reportStatus(aartName, testerStatus, participantResponse,
                 certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc(), certifyRunner.getQueryEtc());
             certifyRunner = null;
           }
@@ -236,7 +236,7 @@ public class CertifyClient
         } else {
           certifyRunner.printTextUpdate(System.out);
           aartAction = CertifyRunner.reportStatus(aartName,
-              RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_TESTING, certifyRunner.getConnector().getLabel(),
+              RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_TESTING, participantResponse,
               certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc(), certifyRunner.getQueryEtc());
 
           if (aartAction.equals("")) {
@@ -332,7 +332,7 @@ public class CertifyClient
       certifyRunner.setProfileManager(profileManager);
       if (profileUsageId > 0) {
         certifyRunner.setProfileUsage(profileManager.getProfileUsageList().get(profileUsageId - 1));
-        System.out.println("        profile usage id = " + (profileManager.getProfileUsageList().get(profileUsageId - 1)).getLabel());
+        System.out.println("        profile usage id = " + (profileManager.getProfileUsageList().get(profileUsageId - 1)));
       }
       if (profileUsageIdForInteroperability > 0) {
         certifyRunner.setProfileUsageComparisonInteroperability(
