@@ -372,8 +372,6 @@ public class ForecastTesterManager {
                   obsValue = "L";
                 } else if (obsValue.equals("3")) {
                   obsValue = "N";
-                } else {
-                  obsValue = "";
                 }
               }
               forecastActual.setSeriesStatus(obsValue);
