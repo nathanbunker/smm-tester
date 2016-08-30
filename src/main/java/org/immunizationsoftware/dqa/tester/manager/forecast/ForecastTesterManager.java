@@ -199,6 +199,7 @@ public class ForecastTesterManager {
   private static final String POST_DOSE_NUMBER = "doseNumber";
   private static final String POST_SCHEDULE_NAME = "scheduleName";
   private static final String POST_FORECAST_CVX = "forecastCvx";
+  private static final String POST_SERIES_STATUS = "seriesStatus";
 
   public String reportForecastResults(TestCaseMessage queryTestCaseMessage, Connector connector) throws IOException {
     StringBuilder submittedResults = new StringBuilder();
@@ -253,7 +254,7 @@ public class ForecastTesterManager {
     String line;
     while ((line = buffReader.readLine()) != null) {
       if (line.startsWith("OBX") || line.startsWith("RXA")) {
-    	  sb.append(URLEncoder.encode(line + "\n", "UTF-8"));
+        sb.append(URLEncoder.encode(line + "\n", "UTF-8"));
       }
     }
 
@@ -282,6 +283,8 @@ public class ForecastTesterManager {
         sb.append(POST_OVERDUE_DATE + pos + "=" + forecastActual.getOverdueDate());
         sb.append("&");
         sb.append(POST_FINISHED_DATE + pos + "=" + forecastActual.getFinishedDate());
+        sb.append("&");
+        sb.append(POST_SERIES_STATUS + pos + "=" + forecastActual.getSeriesStatus());
         pos++;
       }
     }
@@ -336,6 +339,7 @@ public class ForecastTesterManager {
         String obs = reader.getValue(3);
         String obs2 = reader.getValue(3, 1, 2);
         String obsValue = reader.getValue(5);
+        String obsTable = reader.getValue(5, 3);
         if (isForecast) {
           if (obs.equals("30956-7") || (obs.equals("30979-9") && obs2.equals("")) || obs.equals("38890-0")) {
             if (forecastActual != null) {
@@ -361,6 +365,17 @@ public class ForecastTesterManager {
             } else if (obs.equals("59778-1")) {
               forecastActual.setOverdueDate(obsValue);
             } else if (obs.equals("59783-1")) {
+              if (obsTable.equals("eval_result_id")) {
+                if (obsValue.equals("1")) {
+                  obsValue = "C";
+                } else if (obsValue.equals("2")) {
+                  obsValue = "L";
+                } else if (obsValue.equals("3")) {
+                  obsValue = "N";
+                } else {
+                  obsValue = "";
+                }
+              }
               forecastActual.setSeriesStatus(obsValue);
             } else if (obs.equals("59780-7")) {
               forecastActual.setSeriesName(obsValue);
