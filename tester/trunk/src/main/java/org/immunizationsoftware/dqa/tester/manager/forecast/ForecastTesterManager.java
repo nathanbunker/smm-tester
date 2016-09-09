@@ -265,6 +265,7 @@ public class ForecastTesterManager {
         sb.append(POST_VACCINATION_CVX + pos + "=" + evaluationActual.getVaccineCvx());
         sb.append("&");
         sb.append(POST_VACCINATION_DATE + pos + "=" + evaluationActual.getVaccineDate());
+        pos++;
       }
     }
 

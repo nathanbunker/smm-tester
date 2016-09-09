@@ -3,7 +3,7 @@ package org.immunizationsoftware.dqa;
 
 public class SoftwareVersion
 {
-  public static String VERSION = "1.71";
+  public static String VERSION = "1.72";
   public static String VERSION_FOR_SMM_DOWNLOAD = "1.68";
   public static String VERSION_FOR_TESTER_DOWNLOAD = "1.69";
   
