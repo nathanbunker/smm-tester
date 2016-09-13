@@ -375,6 +375,14 @@ public class ForecastTesterManager {
                   obsValue = "N";
                 } else if (obsValue.equals("4")) {
                   obsValue = "O";
+                } else if (obsValue.equals("5")) {
+                  obsValue = "D";
+                } else if (obsValue.equals("6")) {
+                  obsValue = "W";
+                } else if (obsValue.equals("7")) {
+                  obsValue = "S";
+                } else if (obsValue.equals("8")) {
+                  obsValue = "R";
                 }
               }
               forecastActual.setSeriesStatus(obsValue);
