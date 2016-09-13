@@ -380,10 +380,21 @@ public class ForecastTesterManager {
               // + R: no results
               // + S: complete for season
               // + U: unknown
-              // + V: Consider
-              // + W: Waivered
+              // + V: consider
+              // + W: waivered
               // + X: contraindicated
-              // + Z: Recommend, but not Required
+              // + Z: recommend, but not required
+              /*MCIR Specific Codes: 
+                    ID  CD    NAME        PROT  DESCRIPTION
+                    1   C     Complete    Y     All doses are complete at this time. If a series level evaluation no more doses are required
+                    2   U     Up-To-Date  Y     Doses are up-to-date.  Future doses are required
+                    3   I     Incomplete  N     This child can receive a vaccination today but is not yet overdue
+                    4   O     Overdue     N     This child is not protected.  Vaccinations are overdue
+                    5   D     Immune      Y     Specific to a series.  This child has documented immunity for this disease. Vaccination is not required
+                    6   W     Waivered    N     Specific to a series.  A waiver has been requested for this series
+                    7   S     Consider    N     Specific to a series.  A non-mandatory evaluation result that the provider should consider
+                    8   R     Recommended N     A recommended dose is due. However, this does is not required.
+              */
               if (obsTable.equals("eval_result_id")) {
                 if (obsValue.equals("1")) {
                   obsValue = "C";
