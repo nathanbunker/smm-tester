@@ -366,6 +366,24 @@ public class ForecastTesterManager {
             } else if (obs.equals("59778-1")) {
               forecastActual.setOverdueDate(obsValue);
             } else if (obs.equals("59783-1")) {
+              // Here are the current TCH Forecast Tester
+              // + A: assumed complete or immune
+              // + C: complete
+              // + D: due
+              // + E: error
+              // + F: finished
+              // + G: aged out
+              // + I: immune
+              // + L: due later
+              // + N: not complete
+              // + O: overdue
+              // + R: no results
+              // + S: complete for season
+              // + U: unknown
+              // + V: Consider
+              // + W: Waivered
+              // + X: contraindicated
+              // + Z: Recommend, but not Required
               if (obsTable.equals("eval_result_id")) {
                 if (obsValue.equals("1")) {
                   obsValue = "C";
@@ -376,13 +394,13 @@ public class ForecastTesterManager {
                 } else if (obsValue.equals("4")) {
                   obsValue = "O";
                 } else if (obsValue.equals("5")) {
-                  obsValue = "D";
+                  obsValue = "I";
                 } else if (obsValue.equals("6")) {
                   obsValue = "W";
                 } else if (obsValue.equals("7")) {
-                  obsValue = "S";
+                  obsValue = "V";
                 } else if (obsValue.equals("8")) {
-                  obsValue = "R";
+                  obsValue = "Z";
                 }
               }
               forecastActual.setSeriesStatus(obsValue);
