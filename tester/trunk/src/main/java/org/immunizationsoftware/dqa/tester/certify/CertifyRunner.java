@@ -2316,8 +2316,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       if (participantResponse != null) {
         addField(sb, PARAM_TPAR_ORGANIZATION_NAME, participantResponse.getOrganizationName());
       }
-      addField(sb, PARAM_TC_PUBLIC_ID_CODE, participantResponse.getPublicIdCode());
-      addField(sb, PARAM_TC_ACCESS_PASSCODE, participantResponse.getAccessPasscode());
+      addField(sb, PARAM_TC_PUBLIC_ID_CODE, connector.getAartPublicIdCode());
+      addField(sb, PARAM_TC_ACCESS_PASSCODE, connector.getAartAccessPasscode());
       addField(sb, PARAM_TC_CONNECTION_TYPE, connector.getType());
       addField(sb, PARAM_TC_CONNECTION_URL, connector.getUrl());
       addField(sb, PARAM_TC_CONNECTION_ACK_TYPE, connector.getAckType().toString());
@@ -2531,7 +2531,11 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
         response.append('\r');
       }
       input.close();
-      response.toString();
+      String responseString = response.toString();
+      if (!responseString.equals("ok"))
+      {
+        System.err.println("Problem! Unable to report to central server: " + responseString);
+      }
     } catch (IOException e) {
       e.printStackTrace();
     }

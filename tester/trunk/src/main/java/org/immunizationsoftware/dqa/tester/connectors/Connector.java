@@ -54,7 +54,7 @@ public abstract class Connector
       AckAnalyzer.AckType ackType, TransferType transferType, List<String> fields, String customTransformations,
       List<Connector> connectors, String purpose, int tchForecastTesterSoftwareId, int tchForecastTesterTaskGroupId, String rxaFilterFacilityId,
       Set<String> queryResponseFieldsNotReturnedSet, Map<String, String> scenarioTransformationsMap,
-      boolean disableServerCertificateCheck) throws Exception {
+      boolean disableServerCertificateCheck, String aartPublicIdCode, String aartAccessPasscode) throws Exception {
     if (!label.equals("") && !type.equals("")) {
       Connector connector = null;
       if (type.equals(ConnectorFactory.TYPE_SOAP)) {
@@ -114,6 +114,8 @@ public abstract class Connector
       connector.setQueryResponseFieldsNotReturnedSet(queryResponseFieldsNotReturnedSet);
       connector.setScenarioTransformationsMap(scenarioTransformationsMap);
       connector.setRxaFilterFacilityId(rxaFilterFacilityId);
+      connector.setAartPublicIdCode(aartPublicIdCode);
+      connector.setAartAccessPasscode(aartAccessPasscode);
       connectors.add(connector);
 
       return connector;
@@ -149,6 +151,24 @@ public abstract class Connector
   private Map<String, String> scenarioTransformationsMap = new HashMap<String, String>();
   private String segmentSeparator = "\r";
   private String rxaFilterFacilityId = "";
+  private String aartPublicIdCode = "";
+  private String aartAccessPasscode = "";
+
+  public String getAartPublicIdCode() {
+    return aartPublicIdCode;
+  }
+
+  public void setAartPublicIdCode(String aartPublicIdCode) {
+    this.aartPublicIdCode = aartPublicIdCode;
+  }
+
+  public String getAartAccessPasscode() {
+    return aartAccessPasscode;
+  }
+
+  public void setAartAccessPasscode(String aartAccessPasscode) {
+    this.aartAccessPasscode = aartAccessPasscode;
+  }
 
   public String getRxaFilterFacilityId() {
     return rxaFilterFacilityId;
@@ -523,6 +543,8 @@ public abstract class Connector
     String keyStorePassword = "";
     String enableTimeStart = "";
     String enableTimeEnd = "";
+    String aartPublicIdCode = "";
+    String aartAccessPasscode = "";
     boolean disableServerCertificateCheck = false;
     Set<String> queryResponseFieldsNotReturnedSet = null;
     Map<String, String> scenarioTransformationsMap = new HashMap<String, String>();
@@ -541,7 +563,7 @@ public abstract class Connector
         addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
             enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose,
             tchForecastTesterSoftwareId, tchForecastTesterTaskGroupId, rxaFilterFacilityId, queryResponseFieldsNotReturnedSet,
-            scenarioTransformationsMap, disableServerCertificateCheck);
+            scenarioTransformationsMap, disableServerCertificateCheck, aartPublicIdCode, aartAccessPasscode);
         label = "";
         purpose = "";
         type = "";
@@ -582,6 +604,10 @@ public abstract class Connector
         transferType = TransferType.valueOf(readValue(line));
       } else if (line.startsWith("Password:")) {
         password = PasswordEncryptUtil.decrypt(readValue(line));
+      } else if (line.startsWith("AART Public Id Code:")) {
+        aartPublicIdCode = readValue(line);
+      } else if (line.startsWith("AART Access Passcode:")) {
+        aartAccessPasscode = readValue(line);
       } else if (line.startsWith("Facility Id:")) {
         facilityid = readValue(line);
       } else if (line.startsWith("Disable Certificate Check:")) {
@@ -646,7 +672,7 @@ public abstract class Connector
     addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
         enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose,
         tchForecastTesterSoftwareId,tchForecastTesterTaskGroupId, rxaFilterFacilityId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap,
-        disableServerCertificateCheck);
+        disableServerCertificateCheck, aartPublicIdCode, aartAccessPasscode);
     return connectors;
   }
 
