@@ -15,7 +15,7 @@ import org.immunizationsoftware.dqa.tester.certify.CAForecast;
 import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.manager.CvsReader;
-import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
+import org.immunizationsoftware.dqa.tester.manager.TestParticipant;
 import org.immunizationsoftware.dqa.tester.manager.forecast.EvaluationActual;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastActual;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTesterManager;
@@ -59,9 +59,9 @@ public class QueryRunner extends CertifyRunner {
     this.testPanelLabel = testPanelLabel;
   }
 
-  public QueryRunner(Connector connector, SendData sendData, String queryType, ParticipantResponse participantResponse,
+  public QueryRunner(Connector connector, SendData sendData, String queryType,
       Set<String> filenamesSelectedSet, String userName, String password) {
-    super(connector, sendData, queryType, participantResponse);
+    super(connector, sendData, queryType);
     this.filenamesSelectedSet = filenamesSelectedSet;
     this.userName = userName;
     this.password = password;

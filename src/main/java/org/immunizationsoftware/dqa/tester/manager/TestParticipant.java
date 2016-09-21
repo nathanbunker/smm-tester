@@ -2,31 +2,17 @@ package org.immunizationsoftware.dqa.tester.manager;
 
 import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
 
-public class ParticipantResponse
+public class TestParticipant
 {
   private String organizationName = "";
   private String folderName = "";
-  private String map = "";
-  private String platform = "";
-  private String vendor = "";
   private String queryType = "";
   private boolean redactListResponses = false;
-  private String internalComments = "";
-  private String phaseIParticipation = "";
-  private String phase1Status = "";
-  private String phase1Comments = "";
-  private String phaseIIParticipation = "";
-  private String phaseIIStatus = "";
-  private String phaseIIComments = "";
-  private String iHS = "";
   private String recordRequirementsStatus = "";
   private String connecttoIISStatus = "";
-  private String comments = "";
   private String guideName = "";
   private String transport = "";
   private String querySupport = "";
-  private String nistStatus = "";
-  private String accessPasscode = "";
   private String publicIdCode = "";
   private String tchForecastSoftwareId = "";
   private int col = 0;
@@ -80,14 +66,6 @@ public class ParticipantResponse
     this.row = row;
   }
 
-  public String getAccessPasscode() {
-    return accessPasscode;
-  }
-
-  public void setAccessPasscode(String accessPasscode) {
-    this.accessPasscode = accessPasscode;
-  }
-
   public String getTransport() {
     return transport;
   }
@@ -117,14 +95,6 @@ public class ParticipantResponse
     }
   }
 
-  public String getNistStatus() {
-    return nistStatus;
-  }
-
-  public void setNistStatus(String nistStatus) {
-    this.nistStatus = nistStatus;
-  }
-
   public String getGuideName() {
     return guideName;
   }
@@ -149,94 +119,6 @@ public class ParticipantResponse
     this.folderName = folderName;
   }
 
-  public String getMap() {
-    return map;
-  }
-
-  public void setMap(String map) {
-    this.map = map;
-  }
-
-  public String getPlatform() {
-    return platform;
-  }
-
-  public void setPlatform(String platform) {
-    this.platform = platform;
-  }
-
-  public String getVendor() {
-    return vendor;
-  }
-
-  public void setVendor(String vendor) {
-    this.vendor = vendor;
-  }
-
-  public String getInternalComments() {
-    return internalComments;
-  }
-
-  public void setInternalComments(String internalComments) {
-    this.internalComments = internalComments;
-  }
-
-  public String getPhaseIParticipation() {
-    return phaseIParticipation;
-  }
-
-  public void setPhaseIParticipation(String phaseIParticipation) {
-    this.phaseIParticipation = phaseIParticipation;
-  }
-
-  public String getPhase1Status() {
-    return phase1Status;
-  }
-
-  public void setPhase1Status(String phase1Status) {
-    this.phase1Status = phase1Status;
-  }
-
-  public String getPhase1Comments() {
-    return phase1Comments;
-  }
-
-  public void setPhase1Comments(String phase1Comments) {
-    this.phase1Comments = phase1Comments;
-  }
-
-  public String getPhaseIIParticipation() {
-    return phaseIIParticipation;
-  }
-
-  public void setPhaseIIParticipation(String phaseIIParticipation) {
-    this.phaseIIParticipation = phaseIIParticipation;
-  }
-
-  public String getPhaseIIStatus() {
-    return phaseIIStatus;
-  }
-
-  public void setPhaseIIStatus(String phaseIIStatus) {
-    this.phaseIIStatus = phaseIIStatus;
-  }
-
-  public String getPhaseIIComments() {
-    return phaseIIComments;
-  }
-
-  public void setPhaseIIComments(String phaseIIComments) {
-    this.phaseIIComments = phaseIIComments;
-  }
-
-  public String getIHS() {
-    return iHS;
-  }
-
-  public void setIHS(String iHS) {
-    this.iHS = iHS;
-  }
-
   public String getRecordRequirementsStatus() {
     return recordRequirementsStatus;
   }
@@ -251,14 +133,6 @@ public class ParticipantResponse
 
   public void setConnecttoIISStatus(String connecttoIISStatus) {
     this.connecttoIISStatus = connecttoIISStatus;
-  }
-
-  public String getComments() {
-    return comments;
-  }
-
-  public void setComments(String comments) {
-    this.comments = comments;
   }
 
 }

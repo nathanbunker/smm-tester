@@ -17,7 +17,7 @@ import org.immunizationsoftware.dqa.mover.ConnectionManager;
 import org.immunizationsoftware.dqa.mover.ManagerServlet;
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
-import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
+import org.immunizationsoftware.dqa.tester.manager.TestParticipant;
 import org.immunizationsoftware.dqa.tester.profile.ProfileManager;
 import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 
@@ -38,7 +38,7 @@ public class ClientServlet extends HttpServlet
   
   protected static ProfileManager profileManager = null;
   
-  protected void initProfileManager(boolean forceRefresh) throws IOException {
+  public static void initProfileManager(boolean forceRefresh) throws IOException {
     if ((forceRefresh || profileManager == null) && ConnectionManager.getRequirementTestFieldsFile() != null
         ) {
       profileManager = new ProfileManager();
@@ -208,30 +208,4 @@ public class ClientServlet extends HttpServlet
     return connectorSelected;
   }
   
-  protected void switchParticipantResponse(HttpSession session, Authenticate.User user, ParticipantResponse participantResponse) throws IOException {
-    session.setAttribute("participantResponse", participantResponse);
-    String folderName = participantResponse.getFolderName();
-    if (!folderName.equals("")) {
-      SendData sendData = ConnectionManager.getSendDatayByLabel(folderName);
-      if (sendData != null && sendData.getConnector() != null) {
-        ConnectServlet.addNewConnection(session, user, "", sendData.getInternalId(), true);
-      }
-    }
-    String guideName = participantResponse.getGuideName();
-    if (!guideName.equals("")) {
-      initProfileManager(false);
-      int profileUsageId = 0;
-      int i = 0;
-      for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
-        i++;
-        if (profileUsage.toString().equalsIgnoreCase(guideName)) {
-          profileUsageId = i;
-          break;
-        }
-      }
-      if (profileUsageId > 0) {
-        session.setAttribute("profileUsageId", profileUsageId);
-      }
-    }
-  }
 }

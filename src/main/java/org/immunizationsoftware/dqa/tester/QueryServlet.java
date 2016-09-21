@@ -14,7 +14,7 @@ import javax.servlet.http.HttpSession;
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
-import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
+import org.immunizationsoftware.dqa.tester.manager.TestParticipant;
 import org.immunizationsoftware.dqa.tester.query.QueryRunner;
 
 public class QueryServlet extends ClientServlet {
@@ -35,12 +35,11 @@ public class QueryServlet extends ClientServlet {
     }
     Authenticate.User user = (Authenticate.User) session.getAttribute("user");
 
-    ParticipantResponse participantResponse = (ParticipantResponse) session.getAttribute("participantResponse");
     String queryType = CertifyRunner.QUERY_TYPE_NONE;
     if (request.getParameter("queryType") != null) {
       queryType = request.getParameter("queryType");
-    } else if (participantResponse != null) {
-      queryType = participantResponse.getQueryType();
+    } else if (user.getSendData() != null && user.getSendData().getTestParticipant() != null) {
+      queryType = user.getSendData().getTestParticipant().getQueryType();
     }
 
     Set<String> filenamesSelectedSet = new HashSet<String>();
@@ -60,7 +59,7 @@ public class QueryServlet extends ClientServlet {
       if (action.equals("Start") && isReadyToStart(queryRunner)) {
         List<Connector> connectors = ConnectServlet.getConnectors(session);
         int id = Integer.parseInt(request.getParameter("id"));
-        queryRunner = new QueryRunner(connectors.get(id - 1), user.getSendData(), queryType, participantResponse, filenamesSelectedSet, userName, password);
+        queryRunner = new QueryRunner(connectors.get(id - 1), user.getSendData(), queryType, filenamesSelectedSet, userName, password);
         queryRunner.start();
         session.setAttribute("queryRunner", queryRunner);
       } else if (action.equals("Stop") && queryRunner != null) {
@@ -71,7 +70,6 @@ public class QueryServlet extends ClientServlet {
     PrintWriter out = response.getWriter();
     try {
       printHtmlHead(out, MENU_HEADER_TEST, request);
-      CertifyHistoryServlet.printViewMenu(out, "", this);
       out.println("<h2>Query IIS</h2>");
       out.println("<form id=\"queryForm\" action=\"QueryServlet\" method=\"POST\">");
       out.println("  <table border=\"0\">");

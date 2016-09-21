@@ -37,6 +37,7 @@ public enum ForecastTestPanel {
   ENVISION_ZOSTER(31, "Envision Zoster"),
   
   LOCAL_DEV_TESTING(54, "Development"),
+  MCIR_FULL_SAMPLE_JULY_TRY_III_2016(106, "MCIR Full Sample July (TRY III) 2016", true);
   ;
   
   private int id = 0;

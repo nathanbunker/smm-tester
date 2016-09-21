@@ -35,8 +35,9 @@ import org.immunizationsoftware.dqa.tester.connectors.Connector.TransferType;
 import org.immunizationsoftware.dqa.tester.connectors.RunAgainstConnector;
 import org.immunizationsoftware.dqa.tester.manager.CompareManager;
 import org.immunizationsoftware.dqa.tester.manager.HL7Reader;
-import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
 import org.immunizationsoftware.dqa.tester.manager.QueryConverter;
+import org.immunizationsoftware.dqa.tester.manager.TestParticipant;
+import org.immunizationsoftware.dqa.tester.manager.TestParticipantManager;
 import org.immunizationsoftware.dqa.tester.manager.forecast.EvaluationActual;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastActual;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastTesterManager;
@@ -432,7 +433,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
   Connector queryConnector;
 
-  public CertifyRunner(Connector connector, SendData sendData, String queryType, ParticipantResponse participantResponse) {
+  public CertifyRunner(Connector connector, SendData sendData, String queryType) {
     this.connector = connector;
     this.queryConnector = connector.getOtherConnectorMap().get(Connector.PURPOSE_QUERY);
     if (this.queryConnector == null) {
@@ -461,8 +462,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
     }
 
-    if (connector.getTchForecastTesterSoftwareId() == 0 && participantResponse.getTchForecastSoftwareId().length() > 0) {
-      connector.setTchForecastTesterSoftwareId(Integer.parseInt(participantResponse.getTchForecastSoftwareId()));
+    if (connector.getTchForecastTesterSoftwareId() == 0 && sendData.getTestParticipant().getTchForecastSoftwareId().length() > 0) {
+      connector.setTchForecastTesterSoftwareId(Integer.parseInt(sendData.getTestParticipant().getTchForecastSoftwareId()));
     }
 
     logStatusMessage("IIS Tester Initialized");
@@ -475,16 +476,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   protected Transformer transformer;
   protected SendData sendData;
   protected File testDir;
-  protected ParticipantResponse participantResponse = null;
   protected TestCaseMessage testCaseMessageBase = null;
-
-  public ParticipantResponse getParticipantResponse() {
-    return participantResponse;
-  }
-
-  public void setParticipantResponse(ParticipantResponse participantResponse) {
-    this.participantResponse = participantResponse;
-  }
 
   @Override
   public void run() {
@@ -507,9 +499,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       boolean goodToGo = true;
 
       logStatusMessage("Reporting progress");
-      if (participantResponse != null) {
-        reportParticipant(participantResponse);
-      }
       reportProgress(null, true, null);
 
       if (runAgainstTestStartTime != null) {
@@ -2080,7 +2069,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     return ((int) (ms / 100.0 + 0.5)) / 10.0 + "s";
   }
 
-  public static String reportStatus(String aartName, String status, ParticipantResponse participantResponse, Date testStarted, Date etcUpdate, Date etcQuery) {
+  public static String reportStatus(String aartName, String status, Connector connector, Date testStarted, Date etcUpdate, Date etcQuery) {
 
     String line = "";
     try {
@@ -2099,15 +2088,15 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       r.append(PARAM_TESTER_STATUS_READY_STATUS);
       r.append("=");
       r.append(URLEncoder.encode(status, "UTF-8"));
-      if (participantResponse != null) {
+      if (connector != null) {
         r.append("&");
         r.append(PARAM_TESTER_STATUS_PUBLIC_ID_CODE);
         r.append("=");
-        r.append(URLEncoder.encode(participantResponse.getPublicIdCode(), "UTF-8"));
+        r.append(URLEncoder.encode(connector.getAartPublicIdCode(), "UTF-8"));
         r.append("&");
         r.append(PARAM_TESTER_STATUS_ACCESS_PASSCODE);
         r.append("=");
-        r.append(URLEncoder.encode(participantResponse.getAccessPasscode(), "UTF-8"));
+        r.append(URLEncoder.encode(connector.getAartAccessPasscode(), "UTF-8"));
       }
       if (testStarted != null) {
         r.append("&");
@@ -2210,78 +2199,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     return "";
   }
 
-  public static void reportParticipant(ParticipantResponse participantResponse) {
-    if (REPORT_URL == null) {
-      return;
-    }
-    try {
-      HttpURLConnection urlConn;
-      DataOutputStream printout;
-      InputStreamReader input = null;
-      URL url = new URL(REPORT_URL);
-
-      urlConn = (HttpURLConnection) url.openConnection();
-      urlConn.setConnectTimeout(120 * 1000);
-      urlConn.setRequestMethod("POST");
-
-      urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-      urlConn.setDoInput(true);
-      urlConn.setDoOutput(true);
-      urlConn.setUseCaches(false);
-      String content;
-      StringBuilder sb = new StringBuilder();
-
-      sb.append("action=Submit");
-      addField(sb, PARAM_TPAR_ORGANIZATION_NAME, participantResponse.getOrganizationName());
-      addField(sb, PARAM_TPAR_PUBLIC_ID_CODE, participantResponse.getPublicIdCode());
-      addField(sb, PARAM_TPAR_ACCESS_PASSCODE, participantResponse.getAccessPasscode());
-      if (participantResponse.getRow() == 0 && participantResponse.getCol() == 0 && !participantResponse.getMap().equals("1,1")) {
-        addField(sb, PARAM_TPAR_MAP_ROW, 0);
-        addField(sb, PARAM_TPAR_MAP_COL, 0);
-      } else {
-        addField(sb, PARAM_TPAR_MAP_ROW, participantResponse.getRow() + 1);
-        addField(sb, PARAM_TPAR_MAP_COL, participantResponse.getCol() + 1);
-      }
-      addField(sb, PARAM_TPAR_PLATFORM_LABEL, participantResponse.getPlatform());
-      addField(sb, PARAM_TPAR_VENDOR_LABEL, participantResponse.getVendor());
-      addField(sb, PARAM_TPAR_INTERNAL_COMMENTS, participantResponse.getInternalComments());
-      addField(sb, PARAM_TPAR_PHASE1_PARTICIPATION, participantResponse.getPhaseIParticipation());
-      addField(sb, PARAM_TPAR_PHASE1_STATUS, participantResponse.getPhase1Status());
-      addField(sb, PARAM_TPAR_PHASE1_COMMENTS, participantResponse.getPhase1Comments());
-      addField(sb, PARAM_TPAR_PHASE2_PARTICIPATION, participantResponse.getPhaseIIParticipation());
-      addField(sb, PARAM_TPAR_PHASE2_STATUS, participantResponse.getPhaseIIStatus());
-      addField(sb, PARAM_TPAR_PHASE2_COMMENTS, participantResponse.getPhaseIIComments());
-      addField(sb, PARAM_TPAR_IHS_STATUS, participantResponse.getIHS());
-      addField(sb, PARAM_TPAR_GUIDE_STATUS, participantResponse.getRecordRequirementsStatus());
-      addField(sb, PARAM_TPAR_GUIDE_NAME, participantResponse.getGuideName());
-      addField(sb, PARAM_TPAR_CONNECT_STATUS, participantResponse.getConnecttoIISStatus());
-      addField(sb, PARAM_TPAR_GENERAL_COMMENTS, participantResponse.getComments());
-      addField(sb, PARAM_TPAR_TRANSPORT_TYPE, participantResponse.getTransport());
-      addField(sb, PARAM_TPAR_QUERY_SUPPORT, participantResponse.getQuerySupport());
-      addField(sb, PARAM_TPAR_NIST_STATUS, participantResponse.getNistStatus());
-      addField(sb, PARAM_TPAR_ACCESS_PASSCODE, participantResponse.getAccessPasscode());
-      addField(sb, PARAM_TPAR_PUBLIC_ID_CODE, participantResponse.getPublicIdCode());
-
-      content = sb.toString();
-      printout = new DataOutputStream(urlConn.getOutputStream());
-      printout.writeBytes(content);
-      printout.flush();
-      printout.close();
-      input = new InputStreamReader(urlConn.getInputStream());
-      StringBuilder response = new StringBuilder();
-      BufferedReader in = new BufferedReader(input);
-      String line;
-      while ((line = in.readLine()) != null) {
-        response.append(line);
-        response.append('\r');
-      }
-      input.close();
-      response.toString();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
   protected void reportProgress(TestCaseMessage testMessage) {
     reportProgress(testMessage, false, null);
   }
@@ -2313,8 +2230,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       StringBuilder sb = new StringBuilder();
 
       sb.append("action=Submit");
-      if (participantResponse != null) {
-        addField(sb, PARAM_TPAR_ORGANIZATION_NAME, participantResponse.getOrganizationName());
+      if (sendData.getTestParticipant() != null) {
+        addField(sb, PARAM_TPAR_ORGANIZATION_NAME, sendData.getTestParticipant().getOrganizationName());
       }
       addField(sb, PARAM_TC_PUBLIC_ID_CODE, connector.getAartPublicIdCode());
       addField(sb, PARAM_TC_ACCESS_PASSCODE, connector.getAartAccessPasscode());
@@ -2527,19 +2444,57 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       BufferedReader in = new BufferedReader(input);
       String line;
       while ((line = in.readLine()) != null) {
+        if (response.length() > 0) {
+          response.append('\r');
+        }
         response.append(line);
-        response.append('\r');
       }
       input.close();
       String responseString = response.toString();
-      if (!responseString.equals("ok"))
-      {
+      if (!responseString.equals("ok")) {
         System.err.println("Problem! Unable to report to central server: " + responseString);
       }
     } catch (IOException e) {
       e.printStackTrace();
     }
 
+  }
+
+  public static TestParticipant getParticipantResponse(SendData sendData) {
+    TestParticipant testParticipant = null;
+    if (REPORT_URL != null) {
+      if (sendData.getConnector() != null && !sendData.getConnector().getAartPublicIdCode().equals("")) {
+        try {
+          HttpURLConnection urlConn;
+          InputStreamReader input = null;
+          String link = REPORT_URL + "?" + PARAM_RESOURCE + "=" + RESOURCE_TEST_PARTICIPANT + "&" + PARAM_TPAR_PUBLIC_ID_CODE + "="
+              + sendData.getConnector().getAartPublicIdCode() + "&" + PARAM_TPAR_ACCESS_PASSCODE + "="
+              + sendData.getConnector().getAartAccessPasscode();
+          URL url = new URL(link);
+          urlConn = (HttpURLConnection) url.openConnection();
+          urlConn.setConnectTimeout(120 * 1000);
+          urlConn.setRequestMethod("GET");
+
+          urlConn.setDoInput(true);
+          urlConn.setDoOutput(true);
+          urlConn.setUseCaches(false);
+          input = new InputStreamReader(urlConn.getInputStream());
+          StringBuilder response = new StringBuilder();
+          BufferedReader in = new BufferedReader(input);
+          String line;
+          while ((line = in.readLine()) != null) {
+            response.append(line);
+            response.append('\r');
+          }
+          input.close();
+          testParticipant = TestParticipantManager.readString(response.toString());
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+
+      }
+    }
+    return testParticipant;
   }
 
   protected void reportForecastProgress(TestCaseMessage testMessage) {
@@ -2564,8 +2519,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       StringBuilder sb = new StringBuilder();
 
       sb.append("action=Submit");
-      addField(sb, PARAM_TC_PUBLIC_ID_CODE, participantResponse.getPublicIdCode());
-      addField(sb, PARAM_TC_ACCESS_PASSCODE, participantResponse.getAccessPasscode());
+      addField(sb, PARAM_TC_PUBLIC_ID_CODE, sendData.getConnector().getAartPublicIdCode());
+      addField(sb, PARAM_TC_ACCESS_PASSCODE, sendData.getConnector().getAartAccessPasscode());
 
       addField(sb, PARAM_TC_TEST_STARTED_TIME, testStarted);
       addField(sb, PARAM_TS_TEST_SECTION_TYPE, certifyAreas[currentSuite].getAreaLabel());
