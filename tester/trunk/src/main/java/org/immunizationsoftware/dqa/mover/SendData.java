@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Random;
 
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
+import org.immunizationsoftware.dqa.tester.manager.TestParticipant;
 import org.immunizationsoftware.dqa.transform.Transformer;
 
 public class SendData extends Thread {
@@ -282,6 +283,7 @@ public class SendData extends Thread {
   private File queryDir = null;
 
   private Connector connector = null;
+  private TestParticipant testParticipant = null;
   private List<Connector> connectorListForRxaFilter = null;
   private StatusLogger statusLogger = null;
   private StatusReporter statusReporter = null;
@@ -302,6 +304,14 @@ public class SendData extends Thread {
   private int errorCount = 0;
 
   private Date lastSentRBURequestDate = null;
+
+  public TestParticipant getTestParticipant() {
+    return testParticipant;
+  }
+
+  public void setTestParticipant(TestParticipant testResponse) {
+    this.testParticipant = testResponse;
+  }
 
   public StatusReporter getStatusReporter() {
     return statusReporter;

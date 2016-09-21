@@ -207,9 +207,6 @@ public interface RecordServletInterface {
   public static final String[] PARAMS_C = { PARAM_C_FIELD_NAME, PARAM_C_FIELD_LABEL, PARAM_C_PRIORITY_LABEL, PARAM_C_VALUE_ORIGINAL,
       PARAM_C_VALUE_COMPARE, PARAM_C_COMPARISON_STATUS };
   
-  public static final int MAP_COLS_MAX = 12;
-  public static final int MAP_ROWS_MAX = 8;
-
   public static final String PARAM_TPAR_ORGANIZATION_NAME = "tpar_organizationName";
   public static final String PARAM_TPAR_PUBLIC_ID_CODE = "tpar_publicIdCode";
   public static final String PARAM_TPAR_ACCESS_PASSCODE = "tpar_accessPasscode";

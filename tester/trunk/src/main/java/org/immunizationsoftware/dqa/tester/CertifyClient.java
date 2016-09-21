@@ -24,8 +24,8 @@ import org.immunizationsoftware.dqa.mover.ConnectionManager;
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
-import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
-import org.immunizationsoftware.dqa.tester.manager.ParticipantResponseManager;
+import org.immunizationsoftware.dqa.tester.manager.TestParticipant;
+import org.immunizationsoftware.dqa.tester.manager.TestParticipantManager;
 import org.immunizationsoftware.dqa.tester.profile.ProfileManager;
 import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
@@ -36,8 +36,7 @@ import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
  * 
  * @author nathan
  */
-public class CertifyClient
-{
+public class CertifyClient {
 
   private static ProfileManager profileManager = null;
   private static Map<String, Map<String, TestCaseMessage>> testMessageMapMap = new HashMap<String, Map<String, TestCaseMessage>>();
@@ -47,8 +46,6 @@ public class CertifyClient
   private static int profileUsageIdForInteroperability = 0;
   private static int profileUsageIdForConformance = 0;
   private static String aartName = null;
-  private static ParticipantResponse participantResponse = null;
-  private static ParticipantResponse[][] participantResponseMap = null;
   private static String queryType = CertifyRunner.QUERY_TYPE_NONE;
   private static boolean runA = true;
   private static boolean runB = true;
@@ -84,9 +81,9 @@ public class CertifyClient
   }
 
   private static void initRuns() {
-    if (participantResponse != null) {
-      queryType = participantResponse.getQueryType();
-      redactListResponses = participantResponse.isRedactListResponses();
+    if (sendData.getTestParticipant() != null) {
+      queryType = sendData.getTestParticipant().getQueryType();
+      redactListResponses = sendData.getTestParticipant().isRedactListResponses();
     }
     runA = true;
     runB = true;
@@ -161,8 +158,7 @@ public class CertifyClient
       try {
 
         boolean canStart = certifyRunner == null || certifyRunner.getStatus().equals(CertifyRunner.STATUS_COMPLETED)
-            || certifyRunner.getStatus().equals(CertifyRunner.STATUS_STOPPED)
-            || certifyRunner.getStatus().equals(CertifyRunner.STATUS_PROBLEM);
+            || certifyRunner.getStatus().equals(CertifyRunner.STATUS_STOPPED) || certifyRunner.getStatus().equals(CertifyRunner.STATUS_PROBLEM);
 
         String aartAction = null;
         String autoTestNameSelect = null;
@@ -179,12 +175,11 @@ public class CertifyClient
               System.out.println("  + Testing was stopped");
               testerStatus = RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_STOPPED;
             }
-            aartAction = CertifyRunner.reportStatus(aartName, testerStatus, participantResponse,
-                certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc(), certifyRunner.getQueryEtc());
+            aartAction = CertifyRunner.reportStatus(aartName, testerStatus, certifyRunner.getConnector(), certifyRunner.getTestStarted(),
+                certifyRunner.getUpdateEtc(), certifyRunner.getQueryEtc());
             certifyRunner = null;
           }
-          aartAction = CertifyRunner.reportStatus(aartName,
-              RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_READY, null, null, null, null);
+          aartAction = CertifyRunner.reportStatus(aartName, RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_READY, null, null, null, null);
           if (aartAction.equals("")) {
             aartAction = null;
           } else {
@@ -192,28 +187,13 @@ public class CertifyClient
               {
                 int pos = aartAction.indexOf(RecordServletInterface.OPTION_AUTO_TEST_NAME_SELECT);
                 if (pos > 0) {
-                  autoTestNameSelect = aartAction
-                      .substring(pos + RecordServletInterface.OPTION_AUTO_TEST_NAME_SELECT.length()).trim();
+                  autoTestNameSelect = aartAction.substring(pos + RecordServletInterface.OPTION_AUTO_TEST_NAME_SELECT.length()).trim();
                   aartAction = aartAction.substring(0, pos).trim();
                 }
               }
               String connectionLabel = aartAction.substring(6);
               System.out.println("Start command received");
               System.out.println("  + Connection label: " + connectionLabel);
-              System.out.println("  + Initializing participant response map");
-              inittParticipantResponseMap();
-              for (int i = 0; i < participantResponseMap.length; i++) {
-                for (int j = 0; j < participantResponseMap[i].length; j++) {
-                  if (participantResponseMap[i][j] != null
-                      && participantResponseMap[i][j].getFolderName().equals(connectionLabel)) {
-                    participantResponse = participantResponseMap[i][j];
-                    switchParticipantResponse();
-                    i = participantResponseMap.length;
-                    System.out.println("  + Found participant details");
-                    break;
-                  }
-                }
-              }
               if (connector == null) {
                 System.err.println("  + Problem, connector was not intialized ");
                 continue;
@@ -235,9 +215,9 @@ public class CertifyClient
           }
         } else {
           certifyRunner.printTextUpdate(System.out);
-          aartAction = CertifyRunner.reportStatus(aartName,
-              RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_TESTING, participantResponse,
-              certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc(), certifyRunner.getQueryEtc());
+          aartAction = CertifyRunner.reportStatus(aartName, RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_TESTING,
+              (certifyRunner == null ? null : certifyRunner.getConnector()), certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc(),
+              certifyRunner.getQueryEtc());
 
           if (aartAction.equals("")) {
             aartAction = null;
@@ -259,8 +239,7 @@ public class CertifyClient
             if ((System.currentTimeMillis() - certifyRunner.getLastLogStatus()) > 15 * 60 * 1000) {
               SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
               String lastUpdate = sdf.format(new Date(certifyRunner.getLastLogStatus()));
-              certifyRunner.switchStatus(CertifyRunner.STATUS_PROBLEM,
-                  "Stopping process, no update logged since " + lastUpdate);
+              certifyRunner.switchStatus(CertifyRunner.STATUS_PROBLEM, "Stopping process, no update logged since " + lastUpdate);
               System.out.println("## PROBLEM: Process frozen since " + lastUpdate);
               certifyRunner.stopRunning();
             }
@@ -279,7 +258,7 @@ public class CertifyClient
   }
 
   public static void setupCertifyRunner() {
-    certifyRunner = new CertifyRunner(connector, sendData, queryType, participantResponse);
+    certifyRunner = new CertifyRunner(connector, sendData, queryType);
     certifyRunner.setRun(runA, CertifyRunner.SUITE_A_BASIC);
     certifyRunner.setRun(runB, CertifyRunner.SUITE_B_INTERMEDIATE);
     certifyRunner.setRun(runC, CertifyRunner.SUITE_C_ADVANCED);
@@ -321,7 +300,7 @@ public class CertifyClient
       System.out.println("     - run suite Forecaster Engaged");
     }
     if (certifyRunner.isRun(CertifyRunner.SUITE_F_FORECAST)) {
-      System.out.println("     - run suite Forecast with "  + forecastTestPanelList.size() + " test panel(s)");
+      System.out.println("     - run suite Forecast with " + forecastTestPanelList.size() + " test panel(s)");
       for (ForecastTestPanel forecastTestPanel : forecastTestPanelList) {
         certifyRunner.addForecastTestPanel(forecastTestPanel);
         System.out.println("        forecast test panel: " + forecastTestPanel.getLabel());
@@ -335,12 +314,10 @@ public class CertifyClient
         System.out.println("        profile usage id = " + (profileManager.getProfileUsageList().get(profileUsageId - 1)));
       }
       if (profileUsageIdForInteroperability > 0) {
-        certifyRunner.setProfileUsageComparisonInteroperability(
-            profileManager.getProfileUsageList().get(profileUsageIdForInteroperability - 1));
+        certifyRunner.setProfileUsageComparisonInteroperability(profileManager.getProfileUsageList().get(profileUsageIdForInteroperability - 1));
       }
       if (profileUsageIdForConformance < 0) {
-        certifyRunner.setProfileUsageComparisonConformance(
-            profileManager.getProfileUsageList().get(profileUsageIdForConformance - 1));
+        certifyRunner.setProfileUsageComparisonConformance(profileManager.getProfileUsageList().get(profileUsageIdForConformance - 1));
       }
     }
     if (certifyRunner.isRun(CertifyRunner.SUITE_A_BASIC)) {
@@ -383,7 +360,6 @@ public class CertifyClient
       System.out.println("     - run suite Conformance 2015");
     }
 
-
     if (runAgainst != null && !runAgainst.equals("")) {
       certifyRunner.setRunAgainstTestStartTime(runAgainst);
     }
@@ -417,48 +393,6 @@ public class CertifyClient
     connectionManager.init();
   }
 
-  private static void switchParticipantResponse() throws IOException {
-    String folderName = participantResponse.getFolderName();
-    if (folderName.equals("")) {
-      System.err.println("Sender does not have a folder name it is connected to");
-    } else {
-      sendData = ConnectionManager.getSendDatayByLabel(folderName);
-      if (sendData != null && sendData.getConnector() != null) {
-        connector = sendData.getConnector();
-        setupKeystore();
-        if (connector == null) {
-          System.err.println("Connection is not setup properly, can't find connection");
-        }
-        testMessageMapMap.clear();
-        try {
-          loadTestCases();
-        } catch (Exception e) {
-          System.err.println("Unable to load test cases: " + e.getMessage());
-          e.printStackTrace();
-        }
-      } else {
-        System.err.println("Connection is not setup properly");
-      }
-    }
-    String guideName = participantResponse.getGuideName();
-    if (guideName.equals("")) {
-      System.out.println("No guide name defined");
-    }
-    else {
-      System.out.println("Looking for guide named " + guideName);
-      profileUsageId = 0;
-      int i = 0;
-      for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
-        i++;
-        if (profileUsage.toString().equalsIgnoreCase(guideName)) {
-          System.out.println("Guide name " + guideName + " was found in position " + i);
-          profileUsageId = i;
-          break;
-        }
-      }
-    }
-  }
-
   protected static void setupKeystore() throws IOException {
     if (connector.getKeyStorePassword() != null && !connector.getKeyStorePassword().equals("")) {
       File keyStoreFile = new File(sendData.getRootDir(), SendData.KEYSTORE_FILE_NAME);
@@ -480,8 +414,7 @@ public class CertifyClient
         {
           File[] dirs = testCaseDir.listFiles(new FileFilter() {
             public boolean accept(File arg0) {
-              return arg0.isDirectory()
-                  && !arg0.getName().startsWith(CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX);
+              return arg0.isDirectory() && !arg0.getName().startsWith(CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX);
             }
           });
           if (dirs != null) {
@@ -497,8 +430,7 @@ public class CertifyClient
           CreateTestCaseServlet.readTestCases(testMessageMapMap, globalDir, null, true);
           File[] dirs = globalDir.listFiles(new FileFilter() {
             public boolean accept(File arg0) {
-              return arg0.isDirectory()
-                  && !arg0.getName().startsWith(CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX);
+              return arg0.isDirectory() && !arg0.getName().startsWith(CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX);
             }
           });
           if (dirs != null) {
@@ -508,13 +440,6 @@ public class CertifyClient
           }
         }
       }
-    }
-  }
-
-  private static void inittParticipantResponseMap() throws IOException {
-    if (participantResponseMap == null) {
-      participantResponseMap = new ParticipantResponse[RecordServletInterface.MAP_COLS_MAX][RecordServletInterface.MAP_ROWS_MAX];
-      ParticipantResponseManager.readFile(participantResponseMap);
     }
   }
 

@@ -19,10 +19,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.immunizationsoftware.dqa.mover.ConnectionManager;
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
-import org.immunizationsoftware.dqa.tester.manager.ParticipantResponse;
+import org.immunizationsoftware.dqa.tester.manager.TestParticipant;
 import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
 import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
@@ -64,7 +65,7 @@ public class CertifyServlet extends ClientServlet {
     } else if (action != null) {
 
       if (action.equals("Start")) {
-        if (request.getParameter("id") == null) {
+        if (request.getParameter("id") == null || request.getParameter("id").equals("")) {
           problem = "Unable to start service is not selected";
         } else if (certifyRunner != null && !certifyRunner.getStatus().equals(CertifyRunner.STATUS_COMPLETED)
             && !certifyRunner.getStatus().equals(CertifyRunner.STATUS_STOPPED) && !certifyRunner.getStatus().equals(CertifyRunner.STATUS_PROBLEM)) {
@@ -74,8 +75,7 @@ public class CertifyServlet extends ClientServlet {
           int id = Integer.parseInt(request.getParameter("id"));
           String queryType = request.getParameter("queryType");
 
-          certifyRunner = new CertifyRunner(connectors.get(id - 1), user.getSendData(), queryType,
-              (ParticipantResponse) session.getAttribute("participantResponse"));
+          certifyRunner = new CertifyRunner(connectors.get(id - 1), user.getSendData(), queryType);
           certifyRunner.setRun(true, CertifyRunner.SUITE_A_BASIC);
           certifyRunner.setRun(request.getParameter("runA") != null, CertifyRunner.SUITE_A_BASIC);
           certifyRunner.setRun(request.getParameter("runB") != null, CertifyRunner.SUITE_B_INTERMEDIATE);
@@ -201,8 +201,6 @@ public class CertifyServlet extends ClientServlet {
     try {
       printHtmlHead(out, MENU_HEADER_TEST, request);
 
-      CertifyHistoryServlet.printViewMenu(out, "", this);
-
       if (problem != null) {
         out.println("<p>" + problem + "</p>");
       }
@@ -251,8 +249,8 @@ public class CertifyServlet extends ClientServlet {
             } else if (certifyRunner.getStatus().equals(CertifyRunner.STATUS_STOPPED)) {
               testerStatus = RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_STOPPED;
             }
-            aartAction = CertifyRunner.reportStatus(aartName, testerStatus, (ParticipantResponse) session.getAttribute("participantResponse"),
-                certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc(), certifyRunner.getQueryEtc());
+            aartAction = CertifyRunner.reportStatus(aartName, testerStatus, certifyRunner.getConnector(), certifyRunner.getTestStarted(),
+                certifyRunner.getUpdateEtc(), certifyRunner.getQueryEtc());
             certifyRunner = null;
           }
           aartAction = CertifyRunner.reportStatus(aartName, RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_READY, null, null, null, null);
@@ -267,15 +265,13 @@ public class CertifyServlet extends ClientServlet {
                   aartAction = aartAction.substring(0, pos).trim();
                 }
               }
-              String connectionLabel = aartAction.substring(6);
-              ParticipantResponse[][] participantResponseMap = CertifyHistoryServlet.getParticipantResponseMap(session);
-              for (int i = 0; i < participantResponseMap.length; i++) {
-                for (int j = 0; j < participantResponseMap[i].length; j++) {
-                  if (participantResponseMap[i][j] != null && participantResponseMap[i][j].getFolderName().equals(connectionLabel)) {
-                    switchParticipantResponse(session, user, participantResponseMap[i][j]);
-                    autoAction = "Start";
-                    i = participantResponseMap.length;
-                    break;
+              String aartPublicIdCode = aartAction.substring(6);
+              boolean found = false;
+              for (SendData sendData : ConnectionManager.getSendDataList()) {
+                if (sendData.getConnector() != null && sendData.getConnector().getAartPublicIdCode().equals(aartPublicIdCode)) {
+                  String message = ConnectServlet.addNewConnection(session, user, null, sendData.getInternalId(), true);
+                  if (message == null) {
+                    found = true;
                   }
                 }
               }
@@ -283,7 +279,7 @@ public class CertifyServlet extends ClientServlet {
           }
         } else {
           aartAction = CertifyRunner.reportStatus(aartName, RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_TESTING,
-              (ParticipantResponse) session.getAttribute("participantResponse"), certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc(),
+              (certifyRunner == null ? null : certifyRunner.getConnector()), certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc(),
               certifyRunner.getQueryEtc());
           if (aartAction.equals("")) {
             aartAction = null;
@@ -339,10 +335,9 @@ public class CertifyServlet extends ClientServlet {
         printServiceSelector(request, session, out);
         String queryType = CertifyRunner.QUERY_TYPE_NONE;
         boolean readactListResponses = true;
-        ParticipantResponse participantResponse = (ParticipantResponse) session.getAttribute("participantResponse");
-        if (participantResponse != null) {
-          queryType = participantResponse.getQueryType();
-          readactListResponses = participantResponse.isRedactListResponses();
+        if (sendData != null && sendData.getTestParticipant() != null) {
+          queryType = sendData.getTestParticipant().getQueryType();
+          readactListResponses = sendData.getTestParticipant().isRedactListResponses();
         }
         out.println("        <tr>");
         out.println("          <td>Query Type</td>");
@@ -520,7 +515,8 @@ public class CertifyServlet extends ClientServlet {
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td valign=\"top\">");
-        out.println("            <input id=\"ChkForecasting\" type=\"checkbox\" name=\"runF\" value=\"true\"/> Forecasting");
+        out.println("            <input id=\"ChkForecasting\" type=\"checkbox\" name=\"runF\" value=\"true\""
+            + (!queryType.equals(CertifyRunner.QUERY_TYPE_NONE) ? " checked=\"true\"" : "") + "/> Forecasting");
         List<ForecastTestPanel> forecastTestPanelList = Arrays.asList(ForecastTestPanel.values());
         out.println("          </td>");
         out.println("          <td>TCH Forecaster Test Panel<br/>");
