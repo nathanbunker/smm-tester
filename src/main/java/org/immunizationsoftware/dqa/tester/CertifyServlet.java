@@ -266,12 +266,12 @@ public class CertifyServlet extends ClientServlet {
                 }
               }
               String aartPublicIdCode = aartAction.substring(6);
-              boolean found = false;
               for (SendData sendData : ConnectionManager.getSendDataList()) {
                 if (sendData.getConnector() != null && sendData.getConnector().getAartPublicIdCode().equals(aartPublicIdCode)) {
-                  String message = ConnectServlet.addNewConnection(session, user, null, sendData.getInternalId(), true);
-                  if (message == null) {
-                    found = true;
+                  SendData sd = ConnectServlet.addNewConnection(session, sendData.getInternalId(), true);
+                  user.setSendData(sd);
+                  if (sd != null) {
+                    autoAction = "Start";
                   }
                 }
               }
