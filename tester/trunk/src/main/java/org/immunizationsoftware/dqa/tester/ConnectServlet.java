@@ -70,7 +70,12 @@ public class ConnectServlet extends ClientServlet {
           addConnection(request, session);
         } else if (action.equals("Switch")) {
           int internalId = Integer.parseInt(request.getParameter("sendDataInternalId"));
-          message = addNewConnection(session, user, message, internalId, true);
+          try {
+            user.setSendData(addNewConnection(session, internalId, true));
+          } catch (Exception e) {
+            e.printStackTrace(System.out);
+            message = "Unable to load test cases: " + e.getMessage();
+          }
         }
       }
       if (message != null) {
@@ -248,17 +253,19 @@ public class ConnectServlet extends ClientServlet {
     }
   }
 
-  public static String addNewConnection(HttpSession session, Authenticate.User user, String message, int internalId, boolean removeOtherConnections) {
-    CreateTestCaseServlet.getTestCaseMessageMapMap(session).clear();
-    if (internalId == 0) {
-      user.setSendData(null);
-    } else {
-      SendData sendData = ConnectionManager.getSendData(internalId);
-      user.setSendData(sendData);
-      if (removeOtherConnections) {
+  public static SendData addNewConnection(HttpSession session, int internalId, boolean removeOtherConnections) throws ServletException, IOException {
+    SendData sendData = null;
+    if (session != null) {
+      CreateTestCaseServlet.getTestCaseMessageMapMap(session).clear();
+    }
+    if (internalId != 0) {
+      sendData = ConnectionManager.getSendData(internalId);
+      if (removeOtherConnections && session != null) {
         getConnectors(session).clear();
       }
-      ConnectServlet.addConnector(sendData.getConnector(), session);
+      if (session != null) {
+        ConnectServlet.addConnector(sendData.getConnector(), session);
+      }
       if (sendData.getConnector().isSetupGlobalKeyStore()) {
         try {
           setupKeystore(sendData);
@@ -268,42 +275,41 @@ public class ConnectServlet extends ClientServlet {
       } else {
         sendData.readKeyStore();
       }
-      if (sendData.getConnector().getOtherConnectorMap().size() > 0) {
-        for (Connector connector : sendData.getConnector().getOtherConnectorMap().values()) {
-          ConnectServlet.addConnector(connector, session);
+      if (session != null) {
+        if (sendData.getConnector().getOtherConnectorMap().size() > 0) {
+          for (Connector connector : sendData.getConnector().getOtherConnectorMap().values()) {
+            ConnectServlet.addConnector(connector, session);
+          }
         }
-      }
-      try {
         CreateTestCaseServlet.loadTestCases(session);
-      } catch (Exception e) {
-        e.printStackTrace();
-        message = "Unable to load test cases: " + e.getMessage();
       }
       sendData.setTestParticipant(CertifyRunner.getParticipantResponse(sendData));
-      if (sendData.getTestParticipant() != null) {
-        try {
-          String guideName = sendData.getTestParticipant().getGuideName();
-          if (!guideName.equals("")) {
-            initProfileManager(false);
-            int profileUsageId = 0;
-            int i = 0;
-            for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
-              i++;
-              if (profileUsage.toString().equalsIgnoreCase(guideName)) {
-                profileUsageId = i;
-                break;
+      if (session != null) {
+        if (sendData.getTestParticipant() != null) {
+          try {
+            String guideName = sendData.getTestParticipant().getGuideName();
+            if (!guideName.equals("")) {
+              initProfileManager(false);
+              int profileUsageId = 0;
+              int i = 0;
+              for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
+                i++;
+                if (profileUsage.toString().equalsIgnoreCase(guideName)) {
+                  profileUsageId = i;
+                  break;
+                }
+              }
+              if (profileUsageId > 0) {
+                session.setAttribute("profileUsageId", profileUsageId);
               }
             }
-            if (profileUsageId > 0) {
-              session.setAttribute("profileUsageId", profileUsageId);
-            }
+          } catch (IOException ioe) {
+            ioe.printStackTrace();
           }
-        } catch (IOException ioe) {
-          ioe.printStackTrace();
         }
       }
     }
-    return message;
+    return sendData;
   }
 
   protected static void setupKeystore(SendData sendData) throws IOException {

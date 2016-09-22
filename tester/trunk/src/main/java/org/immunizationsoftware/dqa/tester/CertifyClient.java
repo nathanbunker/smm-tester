@@ -191,13 +191,26 @@ public class CertifyClient {
                   aartAction = aartAction.substring(0, pos).trim();
                 }
               }
-              String connectionLabel = aartAction.substring(6);
+              String aartPublicIdCode = aartAction.substring(6);
               System.out.println("Start command received");
-              System.out.println("  + Connection label: " + connectionLabel);
+              System.out.println("  + AART Public Id Code: " + aartPublicIdCode);
+              for (SendData sd1 : ConnectionManager.getSendDataList()) {
+                if (sd1.getConnector() != null && sd1.getConnector().getAartPublicIdCode().equals(aartPublicIdCode)) {
+                  sendData = ConnectServlet.addNewConnection(null, sd1.getInternalId(), true);
+                  connector = sendData.getConnector();
+                }
+              }
               if (connector == null) {
                 System.err.println("  + Problem, connector was not intialized ");
                 continue;
               }
+              else if (sendData.getTestParticipant() == null)
+              {
+                System.err.println("  + Problem, test participant is not recognized and can't be reported to AART ");
+                continue;
+              }
+              
+              System.out.println("  + Test Participant Organization: " + sendData.getTestParticipant().getOrganizationName());
               System.out.println("  + Initializing certify runner");
               initRuns();
               setupCertifyRunner();
