@@ -7,6 +7,7 @@ public class ConnectorFactory
   public static final String TYPE_POST = "POST";
   public static final String TYPE_RAW = "RAW";
   public static final String TYPE_AL_SOAP = "AL SOAP";
+  public static final String TYPE_FL_SOAP = "FL SOAP";
   public static final String TYPE_CO_SOAP = "CO SOAP";
   public static final String TYPE_KS_SOAP = "KS SOAP";
   public static final String TYPE_IL_WS = "IL WS";
@@ -66,6 +67,8 @@ public class ConnectorFactory
       connector = new ALSoapConnector(label, url);
     } else if (type.equals(TYPE_CO_SOAP)) {
       connector = new COSoapConnector(label, url);
+    } else if (type.equals(TYPE_FL_SOAP)) {
+      connector = new FLSoapConnector(label, url);
     } else if (type.equals(TYPE_KS_SOAP)) {
       connector = new KSSoapConnector(label, url);
     } else if (type.equals(TYPE_ND_SOAP)) {
