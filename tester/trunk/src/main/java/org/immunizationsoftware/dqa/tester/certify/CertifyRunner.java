@@ -2099,22 +2099,25 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
         r.append(URLEncoder.encode(connector.getAartAccessPasscode(), "UTF-8"));
       }
       if (testStarted != null) {
+        SimpleDateFormat sdf = new SimpleDateFormat(VALUE_DATE_FORMAT);
         r.append("&");
         r.append(PARAM_TESTER_STATUS_TEST_STARTED_TIME);
         r.append("=");
-        r.append(URLEncoder.encode(VALUE_DATE_FORMAT.format(testStarted), "UTF-8"));
+        r.append(URLEncoder.encode(sdf.format(testStarted), "UTF-8"));
       }
       if (etcUpdate != null) {
+        SimpleDateFormat sdf = new SimpleDateFormat(VALUE_DATE_FORMAT);
         r.append("&");
         r.append(PARAM_TESTER_STATUS_ETC_UPDATE_DATE);
         r.append("=");
-        r.append(URLEncoder.encode(VALUE_DATE_FORMAT.format(etcUpdate), "UTF-8"));
+        r.append(URLEncoder.encode(sdf.format(etcUpdate), "UTF-8"));
       }
       if (etcQuery != null) {
+        SimpleDateFormat sdf = new SimpleDateFormat(VALUE_DATE_FORMAT);
         r.append("&");
         r.append(PARAM_TESTER_STATUS_ETC_QUERY_DATE);
         r.append("=");
-        r.append(URLEncoder.encode(VALUE_DATE_FORMAT.format(etcQuery), "UTF-8"));
+        r.append(URLEncoder.encode(sdf.format(etcQuery), "UTF-8"));
       }
 
       URL url = new URL(r.toString());
@@ -2636,11 +2639,12 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   }
 
   private static void addField(StringBuilder sb, String field, Date value) throws UnsupportedEncodingException {
+    SimpleDateFormat sdf = new SimpleDateFormat(VALUE_DATE_FORMAT);
     sb.append("&");
     sb.append(field);
     sb.append("=");
     if (value != null) {
-      sb.append(URLEncoder.encode(VALUE_DATE_FORMAT.format(value), "UTF-8"));
+      sb.append(URLEncoder.encode(sdf.format(value), "UTF-8"));
     }
   }
 
