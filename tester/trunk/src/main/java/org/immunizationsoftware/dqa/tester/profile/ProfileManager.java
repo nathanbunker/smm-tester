@@ -4,12 +4,13 @@ import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_FU
 import static org.immunizationsoftware.dqa.transform.ScenarioManager.createTestCaseMessage;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -18,12 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.immunizationsoftware.dqa.mover.ConnectionManager;
+import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.manager.CvsReader;
+import org.immunizationsoftware.dqa.tester.manager.TestParticipant;
+import org.immunizationsoftware.dqa.tester.manager.TestParticipantManager;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 
-public class ProfileManager
-{
+public class ProfileManager {
 
   public static final String USE_FULL_TEST_CASE = "Use Full Test Case";
   private static final String ABSENT = " Absent";
@@ -31,7 +33,12 @@ public class ProfileManager
 
   private List<ProfileField> profileFieldList = null;
   private List<ProfileUsage> profileUsageList = null;
+  private Map<String, ProfileUsage> profileUsageMap = null;
   private Map<String, List<ProfileField>> dataTypeMapList = null;
+
+  public ProfileUsage getProfileUsage(String profileUsageId) {
+    return profileUsageMap.get(profileUsageId);
+  }
 
   public List<ProfileField> getProfileFieldList() {
     return profileFieldList;
@@ -42,18 +49,20 @@ public class ProfileManager
   }
 
   public ProfileManager() throws IOException {
-    readProfileFields(ConnectionManager.getRequirementTestFieldsFile());
-    profileUsageList = ProfileManager.readProfileUsage(ConnectionManager.getRequirementTestProfileFileSet(),
-        profileFieldList);
-    ProfileManager.readTransforms(ConnectionManager.getRequirementTestTransformsFile(), profileFieldList);
+    readProfileFields();
+    profileUsageList = readProfileUsageList();
+    profileUsageMap = new HashMap<String, ProfileUsage>();
+    for (ProfileUsage profileUsage : profileUsageList) {
+      profileUsageMap.put(profileUsage.getProfileUsageId(), profileUsage);
+    }
+    ProfileManager.readTransforms(profileFieldList);
   }
 
   public List<ProfileLine> createProfileLines(ProfileUsage profileUsage, boolean includeDataType) {
     return createProfileLines(profileFieldList, profileUsage, includeDataType);
   }
 
-  public static List<ProfileLine> createProfileLines(List<ProfileField> profileFieldList, ProfileUsage profileUsage,
-      boolean includeDataType) {
+  public static List<ProfileLine> createProfileLines(List<ProfileField> profileFieldList, ProfileUsage profileUsage, boolean includeDataType) {
     List<ProfileLine> profileLineList = new ArrayList<ProfileLine>();
     for (ProfileField profileField : profileFieldList) {
       if (profileField.isDataType() && !includeDataType) {
@@ -116,76 +125,75 @@ public class ProfileManager
     }
   }
 
-  public void writeTransforms() throws FileNotFoundException, IOException {
-    writeTransforms(ConnectionManager.getRequirementTestTransformsFile(), profileFieldList);
-  }
-
-  public static void writeTransforms(File profileTransformFile, List<ProfileField> profileFieldList)
-      throws FileNotFoundException, IOException {
-    PrintWriter out = new PrintWriter(new FileWriter(profileTransformFile));
-    for (ProfileField profileField : profileFieldList) {
-      out.println("======================================================================");
-      out.println(profileField.getFieldName() + " Present");
-      out.println("----------------------------------------------------------------------");
-      out.println(profileField.getTransformsPresent());
-      out.println("======================================================================");
-      out.println(profileField.getFieldName() + " Absent");
-      out.println("----------------------------------------------------------------------");
-      out.println(profileField.getTransformsAbsent());
-    }
-    out.close();
-  }
-
-  public static void readTransforms(File profileTransformFile, List<ProfileField> profileFieldList)
-      throws FileNotFoundException, IOException {
+  public static void readTransforms(List<ProfileField> profileFieldList) throws FileNotFoundException, IOException {
     Map<String, ProfileField> profileFieldMap = new HashMap<String, ProfileField>();
     for (ProfileField profileField : profileFieldList) {
       profileFieldMap.put(profileField.getFieldName().toUpperCase(), profileField);
     }
-    BufferedReader in = new BufferedReader(new FileReader(profileTransformFile));
-    String line;
-    String transforms = "";
-    ProfileField profileField = null;
-    boolean present = false;
-    boolean expectingFieldName = false;
-    while ((line = in.readLine()) != null) {
-      line = line.trim();
-      if (line.length() > 0) {
-        if (line.startsWith("=====")) {
-          if (!transforms.equals("") && profileField != null) {
-            if (present) {
-              profileField.setTransformsPresent(transforms);
+
+    if (CertifyRunner.REPORT_URL != null) {
+      try {
+        HttpURLConnection urlConn;
+        InputStreamReader input = null;
+        String link = CertifyRunner.REPORT_URL + "?" + CertifyRunner.PARAM_RESOURCE + "=" + CertifyRunner.RESOURCE_TEST_TRANSFORMS;
+        URL url = new URL(link);
+        urlConn = (HttpURLConnection) url.openConnection();
+        urlConn.setConnectTimeout(120 * 1000);
+        urlConn.setRequestMethod("GET");
+
+        urlConn.setDoInput(true);
+        urlConn.setDoOutput(true);
+        urlConn.setUseCaches(false);
+        input = new InputStreamReader(urlConn.getInputStream());
+        BufferedReader in = new BufferedReader(input);
+        String line = in.readLine();
+        String transforms = "";
+        ProfileField profileField = null;
+        boolean present = false;
+        boolean expectingFieldName = false;
+        while ((line = in.readLine()) != null) {
+          line = line.trim();
+          if (line.length() > 0) {
+            if (line.startsWith("=====")) {
+              if (!transforms.equals("") && profileField != null) {
+                if (present) {
+                  profileField.setTransformsPresent(transforms);
+                } else {
+                  profileField.setTransformsAbsent(transforms);
+                }
+              }
+              transforms = "";
+              expectingFieldName = true;
+            } else if (line.startsWith("-----")) {
+              expectingFieldName = false;
+            } else if (expectingFieldName && (line.endsWith(PRESENT) || line.endsWith(ABSENT))) {
+              String fieldName;
+              present = line.endsWith(PRESENT);
+              if (present) {
+                fieldName = line.substring(0, line.length() - PRESENT.length()).trim();
+              } else {
+                fieldName = line.substring(0, line.length() - ABSENT.length()).trim();
+              }
+              profileField = profileFieldMap.get(fieldName.toUpperCase());
             } else {
-              profileField.setTransformsAbsent(transforms);
+              transforms += line + "\n";
             }
           }
-          transforms = "";
-          expectingFieldName = true;
-        } else if (line.startsWith("-----")) {
-          expectingFieldName = false;
-        } else if (expectingFieldName && (line.endsWith(PRESENT) || line.endsWith(ABSENT))) {
-          String fieldName;
-          present = line.endsWith(PRESENT);
-          if (present) {
-            fieldName = line.substring(0, line.length() - PRESENT.length()).trim();
-          } else {
-            fieldName = line.substring(0, line.length() - ABSENT.length()).trim();
-          }
-          profileField = profileFieldMap.get(fieldName.toUpperCase());
-        } else {
-          transforms += line + "\n";
         }
+        if (!transforms.equals("") && profileField != null) {
+          if (present) {
+            profileField.setTransformsPresent(transforms);
+          } else {
+            profileField.setTransformsAbsent(transforms);
+          }
+          transforms = "";
+        }
+        in.close();
+
+      } catch (IOException e) {
+        e.printStackTrace();
       }
     }
-    if (!transforms.equals("") && profileField != null) {
-      if (present) {
-        profileField.setTransformsPresent(transforms);
-      } else {
-        profileField.setTransformsAbsent(transforms);
-      }
-      transforms = "";
-    }
-    in.close();
 
   }
 
@@ -230,67 +238,27 @@ public class ProfileManager
     }
   }
 
-  public static List<ProfileUsage> readProfileUsage(Set<ProfileUsage> requirementTestProfileFileSet,
-      List<ProfileField> profileFieldList) throws FileNotFoundException, IOException {
+  public static List<ProfileUsage> readProfileUsage(Set<ProfileUsage> requirementTestProfileFileSet, List<ProfileField> profileFieldList)
+      throws FileNotFoundException, IOException {
     List<ProfileUsage> profileUsageList = new ArrayList<ProfileUsage>();
 
     List<ProfileUsage> profileUsageToLoad = new ArrayList<ProfileUsage>(requirementTestProfileFileSet);
     Collections.sort(profileUsageToLoad, new Comparator<ProfileUsage>() {
       public int compare(ProfileUsage profileUsage1, ProfileUsage profileUsage2) {
-        if (profileUsage1.getCategory() == profileUsage2.getCategory()) {
-          if (profileUsage1.getLabel().equals(profileUsage2.getLabel())) {
-            return profileUsage1.getVersion().compareTo(profileUsage2.getVersion());
-          }
-          return profileUsage1.getLabel().compareTo(profileUsage2.getLabel());
-        }
-        return profileUsage1.getCategory().toString().compareTo(profileUsage2.getCategory().toString());
+        return profileUsage1.toString().compareTo(profileUsage2.toString());
       }
     });
 
     for (ProfileUsage profileUsage : profileUsageToLoad) {
       BufferedReader in = new BufferedReader(new FileReader(profileUsage.getFile()));
-      String line = in.readLine();
-      Map<String, List<String>> valueListMap = new HashMap<String, List<String>>();
-      while ((line = in.readLine()) != null) {
-        List<String> valueList = CvsReader.readValuesFromCsv(line);
-        String fieldNameString = CvsReader.readValue(0, valueList);
-        valueListMap.put(fieldNameString, valueList);
-      }
-      in.close();
-
-      for (ProfileField profileField : profileFieldList) {
-        List<String> valueList = valueListMap.get(profileField.getFieldName());
-        if (valueList != null) {
-          String usageString = CvsReader.readValue(1, valueList);
-          String usageValue = CvsReader.readValue(2, valueList);
-          String usageComments = CvsReader.readValue(3, valueList);
-          String usageNotes = CvsReader.readValue(4, valueList);
-          String usageDetectedString = CvsReader.readValue(5, valueList);
-          String enforcementString = CvsReader.readValue(6, valueList);
-          String implementationString = CvsReader.readValue(7, valueList);
-          ProfileUsageValue profileUsageValue = profileUsage.getProfileUsageValueMap().get(profileField);
-          if (profileUsageValue == null) {
-            profileUsageValue = new ProfileUsageValue();
-            profileUsage.getProfileUsageValueMap().put(profileField, profileUsageValue);
-          }
-          profileUsageValue.setUsageDetected(Usage.readUsage(usageDetectedString));
-          profileUsageValue.setUsage(Usage.readUsage(usageString.toUpperCase()));
-          profileUsageValue.setEnforcement(Enforcement.readEnforcement(enforcementString));
-          profileUsageValue.setImplementation(Implementation.readImplementation(implementationString));
-          profileUsageValue.setValue(usageValue);
-          profileUsageValue.setComments(usageComments);
-          profileUsageValue.setNotes(usageNotes);
-        }
-      }
+      readProfileUsage(profileFieldList, profileUsage, in);
       profileUsageList.add(profileUsage);
     }
 
     {
       // create default base profile
       ProfileUsage profileUsage = new ProfileUsage();
-      profileUsage.setCategory(ProfileCategory.US);
-      profileUsage.setLabel("Base");
-      profileUsage.setVersion("");
+      profileUsage.setLabel("US-Base");
       profileUsageList.add(profileUsage);
       for (ProfileField profileField : profileFieldList) {
         ProfileUsageValue profileUsageValue = new ProfileUsageValue();
@@ -301,6 +269,107 @@ public class ProfileManager
     return profileUsageList;
   }
 
+  public List<ProfileUsage> readProfileUsageList() {
+    List<ProfileUsage> profileUsageList = new ArrayList<ProfileUsage>();
+    if (CertifyRunner.REPORT_URL != null) {
+      try {
+        HttpURLConnection urlConn;
+        InputStreamReader input = null;
+        String link = CertifyRunner.REPORT_URL + "?" + CertifyRunner.PARAM_RESOURCE + "=" + CertifyRunner.RESOURCE_PROFILES;
+        URL url = new URL(link);
+        urlConn = (HttpURLConnection) url.openConnection();
+        urlConn.setConnectTimeout(120 * 1000);
+        urlConn.setRequestMethod("GET");
+
+        urlConn.setDoInput(true);
+        urlConn.setDoOutput(true);
+        urlConn.setUseCaches(false);
+        input = new InputStreamReader(urlConn.getInputStream());
+        BufferedReader in = new BufferedReader(input);
+        String line = in.readLine();
+        while ((line = in.readLine()) != null) {
+          List<String> valueList = CvsReader.readValuesFromCsv(line);
+          String profileUsageId = CvsReader.readValue(0, valueList);
+          String label = CvsReader.readValue(1, valueList);
+          ProfileUsage profileUsage = new ProfileUsage();
+          profileUsage.setProfileUsageId(profileUsageId);
+          profileUsage.setLabel(label);
+          profileUsageList.add(profileUsage);
+        }
+
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
+    return profileUsageList;
+  }
+
+  public ProfileUsage readProfileUsage(TestParticipant testParticipant) {
+   // System.out.println("--> Reading profile usage for: " + testParticipant.getFolderName() + " with " + testParticipant.getProfileUsageId());
+    ProfileUsage profileUsage = testParticipant.getProfileUsage();
+    if (CertifyRunner.REPORT_URL != null) {
+      if (testParticipant.getProfileUsage() != null ) {
+        try {
+          HttpURLConnection urlConn;
+          InputStreamReader input = null;
+          String link = CertifyRunner.REPORT_URL + "?" + CertifyRunner.PARAM_RESOURCE + "=" + CertifyRunner.RESOURCE_PROFILE + "&"
+              + CertifyRunner.PARAM_PROFILE_USAGE_ID + "=" + profileUsage.getProfileUsageId();
+          URL url = new URL(link);
+          urlConn = (HttpURLConnection) url.openConnection();
+          urlConn.setConnectTimeout(120 * 1000);
+          urlConn.setRequestMethod("GET");
+
+          urlConn.setDoInput(true);
+          urlConn.setDoOutput(true);
+          urlConn.setUseCaches(false);
+          input = new InputStreamReader(urlConn.getInputStream());
+          BufferedReader in = new BufferedReader(input);
+          readProfileUsage(profileFieldList, profileUsage, in);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    return profileUsage;
+  }
+
+  private static void readProfileUsage(List<ProfileField> profileFieldList, ProfileUsage profileUsage, BufferedReader in) throws IOException {
+    String line = in.readLine();
+    Map<String, List<String>> valueListMap = new HashMap<String, List<String>>();
+    while ((line = in.readLine()) != null) {
+      List<String> valueList = CvsReader.readValuesFromCsv(line);
+      String fieldNameString = CvsReader.readValue(0, valueList);
+      valueListMap.put(fieldNameString, valueList);
+    }
+    in.close();
+
+    for (ProfileField profileField : profileFieldList) {
+      List<String> valueList = valueListMap.get(profileField.getFieldName());
+      if (valueList != null) {
+        String usageString = CvsReader.readValue(1, valueList);
+        String usageValue = CvsReader.readValue(2, valueList);
+        String usageComments = CvsReader.readValue(3, valueList);
+        String usageNotes = CvsReader.readValue(4, valueList);
+        String usageDetectedString = CvsReader.readValue(5, valueList);
+        String enforcementString = CvsReader.readValue(6, valueList);
+        String implementationString = CvsReader.readValue(7, valueList);
+        ProfileUsageValue profileUsageValue = profileUsage.getProfileUsageValueMap().get(profileField);
+        if (profileUsageValue == null) {
+          profileUsageValue = new ProfileUsageValue();
+          profileUsage.getProfileUsageValueMap().put(profileField, profileUsageValue);
+        }
+        profileUsageValue.setUsageDetected(Usage.readUsage(usageDetectedString));
+        profileUsageValue.setUsage(Usage.readUsage(usageString.toUpperCase()));
+        profileUsageValue.setEnforcement(Enforcement.readEnforcement(enforcementString));
+        profileUsageValue.setImplementation(Implementation.readImplementation(implementationString));
+        profileUsageValue.setValue(usageValue);
+        profileUsageValue.setComments(usageComments);
+        profileUsageValue.setNotes(usageNotes);
+      }
+    }
+  }
+
   private static void updateFieldName(ProfileField profileField) {
     String fieldName = "";
     switch (profileField.getType()) {
@@ -308,24 +377,22 @@ public class ProfileManager
       fieldName = profileField.getSegmentName() + "-" + profileField.getPosInSegment();
       break;
     case FIELD_PART:
-      fieldName = profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "."
-          + profileField.getPosInField();
+      fieldName = profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "." + profileField.getPosInField();
       break;
     case FIELD_PART_VALUE:
-      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "."
-          + profileField.getPosInField() + " " + profileField.getCodeValue());
+      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "." + profileField.getPosInField() + " " + profileField
+          .getCodeValue());
       break;
     case FIELD_SUB_PART:
-      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "."
-          + profileField.getPosInField() + "." + profileField.getPosInSubField());
+      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "." + profileField.getPosInField() + "." + profileField
+          .getPosInSubField());
       break;
     case FIELD_SUB_PART_VALUE:
-      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "."
-          + profileField.getPosInField() + "." + profileField.getPosInSubField() + " " + profileField.getCodeValue());
+      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + "." + profileField.getPosInField() + "."
+          + profileField.getPosInSubField() + " " + profileField.getCodeValue());
       break;
     case FIELD_VALUE:
-      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + " " + profileField
-          .getCodeValue());
+      fieldName = (profileField.getSegmentName() + "-" + profileField.getPosInSegment() + " " + profileField.getCodeValue());
       break;
     case SEGMENT:
       fieldName = (profileField.getSegmentName());
@@ -349,86 +416,103 @@ public class ProfileManager
     profileField.setFieldName(fieldName);
   }
 
-  private void readProfileFields(File fieldFile) throws FileNotFoundException, IOException {
+  private void readProfileFields() throws FileNotFoundException, IOException {
     profileFieldList = new ArrayList<ProfileField>();
     dataTypeMapList = new HashMap<String, List<ProfileField>>();
     List<ProfileField> dataTypeList = new ArrayList<ProfileField>();
-    BufferedReader in = new BufferedReader(new FileReader(fieldFile));
-    try {
-      String line = in.readLine();
-      List<String> valueList = CvsReader.readValuesFromCsv(line);
+    if (CertifyRunner.REPORT_URL != null) {
+      try {
+        HttpURLConnection urlConn;
+        InputStreamReader input = null;
+        String link = CertifyRunner.REPORT_URL + "?" + CertifyRunner.PARAM_RESOURCE + "=" + CertifyRunner.RESOURCE_TEST_FIELDS;
+        URL url = new URL(link);
+        urlConn = (HttpURLConnection) url.openConnection();
+        urlConn.setConnectTimeout(120 * 1000);
+        urlConn.setRequestMethod("GET");
 
-      int posPosInSegment = CvsReader.findPosition("Pos in Seg", valueList);
-      int posPosInField = CvsReader.findPosition("Pos in Field", valueList);
-      int posPosInSubField = CvsReader.findPosition("Pos in Sub Field", valueList);
-      int posSpecialSection = CvsReader.findPosition("Special Section", valueList);
-      int posSpecialName = CvsReader.findPosition("Special Name", valueList);
-      int posDataType = CvsReader.findPosition("Data Type", valueList);
-      int posDataTypeDef = CvsReader.findPosition("Data Type Def", valueList);
-      int posDataTypePos = CvsReader.findPosition("Data Type Pos", valueList);
-      int posTableName = CvsReader.findPosition("Table Name", valueList);
-      int posType = CvsReader.findPosition("Type", valueList);
-      int posSegmentName = CvsReader.findPosition("Segment", valueList);
-      int posDescription = CvsReader.findPosition("Description", valueList);
-      int posCodeValue = CvsReader.findPosition("Code Value", valueList);
-      int posCodeLabel = CvsReader.findPosition("Code Label", valueList);
-      int posTestUsage = CvsReader.findPosition("Test Usage", valueList);
-      int posBaseUsage = CvsReader.findPosition("Base Usage", valueList);
-      while ((line = in.readLine()) != null) {
-        valueList = CvsReader.readValuesFromCsv(line);
-        int posInSegment = CvsReader.readValueInt(posPosInSegment, valueList);
-        int posInField = CvsReader.readValueInt(posPosInField, valueList);
-        int posInSubField = CvsReader.readValueInt(posPosInSubField, valueList);
-        String specialSection = CvsReader.readValue(posSpecialSection, valueList);
-        String specialName = CvsReader.readValue(posSpecialName, valueList);
-        String dataType = CvsReader.readValue(posDataType, valueList);
-        String dataTypeDef = CvsReader.readValue(posDataTypeDef, valueList);
-        int dataTypePos = CvsReader.readValueInt(posDataTypePos, valueList);
-        String tableName = CvsReader.readValue(posTableName, valueList);
-        String type = CvsReader.readValue(posType, valueList);
-        String segmentName = CvsReader.readValue(posSegmentName, valueList);
-        String description = CvsReader.readValue(posDescription, valueList);
-        String codeValue = CvsReader.readValue(posCodeValue, valueList);
-        String codeLabel = CvsReader.readValue(posCodeLabel, valueList);
-        String testUsage = CvsReader.readValue(posTestUsage, valueList);
-        String baseUsage = CvsReader.readValue(posBaseUsage, valueList);
-        ProfileField profileField = new ProfileField();
-        profileField.setPosInSegment(posInSegment);
-        profileField.setPosInField(posInField);
-        profileField.setPosInSubField(posInSubField);
-        profileField.setSpecialSection(specialSection);
-        profileField.setSpecialName(specialName);
-        profileField.setDataType(dataType);
-        profileField.setDataTypeDef(dataTypeDef);
-        profileField.setDataTypePos(dataTypePos);
-        profileField.setTableName(tableName);
-        profileField.setTestUsage(Usage.readUsage(testUsage));
-        profileField.setBaseUsage(baseUsage);
-        try {
-          profileField.setType(ProfileFieldType.valueOf(type.toUpperCase().replace(" ", "_")));
-        } catch (IllegalArgumentException iae) {
-          throw new IllegalArgumentException("Unrecognized type '" + type + "'", iae);
-        }
-        profileField.setSegmentName(segmentName);
-        profileField.setDescription(description);
-        profileField.setCodeValue(codeValue);
-        profileField.setCodeLabel(codeLabel);
-        updateFieldName(profileField);
-        profileFieldList.add(profileField);
-        profileField.setPos(profileFieldList.size());
-        if (profileField.isDataType()) {
-          if (profileField.getType() == ProfileFieldType.DATA_TYPE) {
-            dataTypeList = new ArrayList<ProfileField>();
-            dataTypeMapList.put(profileField.getDataTypeDef(), dataTypeList);
-          } else if (profileField.getType() == ProfileFieldType.DATA_TYPE_FIELD) {
-            dataTypeList.add(profileField);
+        urlConn.setDoInput(true);
+        urlConn.setDoOutput(true);
+        urlConn.setUseCaches(false);
+        input = new InputStreamReader(urlConn.getInputStream());
+        BufferedReader in = new BufferedReader(input);
+        String line = in.readLine();
+        List<String> valueList = CvsReader.readValuesFromCsv(line);
+
+        int posPosInSegment = CvsReader.findPosition("Pos in Seg", valueList);
+        int posPosInField = CvsReader.findPosition("Pos in Field", valueList);
+        int posPosInSubField = CvsReader.findPosition("Pos in Sub Field", valueList);
+        int posSpecialSection = CvsReader.findPosition("Special Section", valueList);
+        int posSpecialName = CvsReader.findPosition("Special Name", valueList);
+        int posDataType = CvsReader.findPosition("Data Type", valueList);
+        int posDataTypeDef = CvsReader.findPosition("Data Type Def", valueList);
+        int posDataTypePos = CvsReader.findPosition("Data Type Pos", valueList);
+        int posTableName = CvsReader.findPosition("Table Name", valueList);
+        int posType = CvsReader.findPosition("Type", valueList);
+        int posSegmentName = CvsReader.findPosition("Segment", valueList);
+        int posDescription = CvsReader.findPosition("Description", valueList);
+        int posCodeValue = CvsReader.findPosition("Code Value", valueList);
+        int posCodeLabel = CvsReader.findPosition("Code Label", valueList);
+        int posTestUsage = CvsReader.findPosition("Test Usage", valueList);
+        int posBaseUsage = CvsReader.findPosition("Base Usage", valueList);
+        while ((line = in.readLine()) != null) {
+          valueList = CvsReader.readValuesFromCsv(line);
+          int posInSegment = CvsReader.readValueInt(posPosInSegment, valueList);
+          int posInField = CvsReader.readValueInt(posPosInField, valueList);
+          int posInSubField = CvsReader.readValueInt(posPosInSubField, valueList);
+          String specialSection = CvsReader.readValue(posSpecialSection, valueList);
+          String specialName = CvsReader.readValue(posSpecialName, valueList);
+          String dataType = CvsReader.readValue(posDataType, valueList);
+          String dataTypeDef = CvsReader.readValue(posDataTypeDef, valueList);
+          int dataTypePos = CvsReader.readValueInt(posDataTypePos, valueList);
+          String tableName = CvsReader.readValue(posTableName, valueList);
+          String type = CvsReader.readValue(posType, valueList);
+          String segmentName = CvsReader.readValue(posSegmentName, valueList);
+          String description = CvsReader.readValue(posDescription, valueList);
+          String codeValue = CvsReader.readValue(posCodeValue, valueList);
+          String codeLabel = CvsReader.readValue(posCodeLabel, valueList);
+          String testUsage = CvsReader.readValue(posTestUsage, valueList);
+          String baseUsage = CvsReader.readValue(posBaseUsage, valueList);
+          ProfileField profileField = new ProfileField();
+          profileField.setPosInSegment(posInSegment);
+          profileField.setPosInField(posInField);
+          profileField.setPosInSubField(posInSubField);
+          profileField.setSpecialSection(specialSection);
+          profileField.setSpecialName(specialName);
+          profileField.setDataType(dataType);
+          profileField.setDataTypeDef(dataTypeDef);
+          profileField.setDataTypePos(dataTypePos);
+          profileField.setTableName(tableName);
+          profileField.setTestUsage(Usage.readUsage(testUsage));
+          profileField.setBaseUsage(baseUsage);
+          try {
+            if (type.equals("null")) {
+              continue;
+            }
+            profileField.setType(ProfileFieldType.valueOf(type.toUpperCase().replace(" ", "_")));
+          } catch (IllegalArgumentException iae) {
+            throw new IllegalArgumentException("Unrecognized type '" + type + "'", iae);
           }
-        } else {
-          addDataTypeProfileFields(profileField);
+          profileField.setSegmentName(segmentName);
+          profileField.setDescription(description);
+          profileField.setCodeValue(codeValue);
+          profileField.setCodeLabel(codeLabel);
+          updateFieldName(profileField);
+          profileFieldList.add(profileField);
+          profileField.setPos(profileFieldList.size());
+          if (profileField.isDataType()) {
+            if (profileField.getType() == ProfileFieldType.DATA_TYPE) {
+              dataTypeList = new ArrayList<ProfileField>();
+              dataTypeMapList.put(profileField.getDataTypeDef(), dataTypeList);
+            } else if (profileField.getType() == ProfileFieldType.DATA_TYPE_FIELD) {
+              dataTypeList.add(profileField);
+            }
+          } else {
+            addDataTypeProfileFields(profileField);
+          }
         }
+      } catch (IOException e) {
+        e.printStackTrace();
       }
-    } finally {
-      in.close();
     }
   }
 
@@ -538,8 +622,7 @@ public class ProfileManager
     }
   }
 
-  public static MessageAcceptStatus determineMessageAcceptStatus(ProfileLine profileLine,
-      MessageAcceptStatus masHigher, StringBuilder debug) {
+  public static MessageAcceptStatus determineMessageAcceptStatus(ProfileLine profileLine, MessageAcceptStatus masHigher, StringBuilder debug) {
     if (debug != null) {
       debug.append("Determining accept status of concept " + profileLine.getField().getFieldName() + "\n");
     }
@@ -567,8 +650,7 @@ public class ProfileManager
       debug.append(" + Message will only be accepted if this concept is not messaged. \n");
       mas = MessageAcceptStatus.ONLY_IF_ABSENT;
     } else if (masHigher == MessageAcceptStatus.ONLY_IF_PRESENT && usage == Usage.R) {
-      debug
-          .append(" + Message will only be accepted if this concept is messaged because this concept and its containing concept is required. \n");
+      debug.append(" + Message will only be accepted if this concept is messaged because this concept and its containing concept is required. \n");
       mas = MessageAcceptStatus.ONLY_IF_PRESENT;
     } else {
       debug.append(" + Message should be accepted with or without this concept being messaged. \n");

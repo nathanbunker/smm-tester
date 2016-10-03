@@ -111,22 +111,8 @@ public class CertifyServlet extends ClientServlet {
           if (certifyRunner.isRun(CertifyRunner.SUITE_I_PROFILING)) {
             initProfileManager(false);
             certifyRunner.setProfileManager(profileManager);
-            String profileUsageIdString = request.getParameter("profileUsageId");
-            String profileUsageIdForInteroperabilityString = request.getParameter("profileUsageIdForInteroperability");
-            String profileUsageIdForConformanceString = request.getParameter("profileUsageIdForConformance");
-            if (!profileUsageIdString.equals("")) {
-              int profileUsageId = Integer.parseInt(profileUsageIdString);
-              session.setAttribute("profileUsageId", profileUsageId);
-              certifyRunner.setProfileUsage(profileManager.getProfileUsageList().get(profileUsageId - 1));
-            }
-            if (!profileUsageIdForInteroperabilityString.equals("")) {
-              int profileUsageId = Integer.parseInt(profileUsageIdForInteroperabilityString);
-              certifyRunner.setProfileUsageComparisonInteroperability(profileManager.getProfileUsageList().get(profileUsageId - 1));
-            }
-            if (!profileUsageIdForConformanceString.equals("")) {
-              int profileUsageId = Integer.parseInt(profileUsageIdForConformanceString);
-              certifyRunner.setProfileUsageComparisonConformance(profileManager.getProfileUsageList().get(profileUsageId - 1));
-            }
+            certifyRunner.setProfileUsage(profileManager.getProfileUsage(request.getParameter("profileUsageId")));
+            certifyRunner.setProfileUsageComparisonConformance(profileManager.getProfileUsage(request.getParameter("profileUsageIdForConformance")));
           }
 
           String runAgainst = request.getParameter("runAgainst");
@@ -422,22 +408,18 @@ public class CertifyServlet extends ClientServlet {
           out.println("          <td valign=\"top\">");
           out.println("            <input id=\"ChkProfiling\" type=\"checkbox\" name=\"runI\" value=\"true\" checked=\"true\"/> Profiling");
           out.println("          </td>");
-          int profileUsageId = profileManager.getProfileUsageList().size();
-          if (session.getAttribute("profileUsageId") != null) {
-            profileUsageId = (Integer) session.getAttribute("profileUsageId");
-          }
+          ProfileUsage profileUsageSelected = (ProfileUsage) session.getAttribute("profileUsage");
           out.println("          <td>");
           out.println("            Verify requirements:");
           {
             out.println("            <select name=\"profileUsageId\">");
             out.println("              <option value=\"\">select</option>");
-            int i = 0;
             for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
-              i++;
-              if (profileUsageId == i) {
-                out.println("              <option value=\"" + i + "\" selected=\"true\">" + profileUsage + "</option>");
+              if (profileUsageSelected != null && profileUsageSelected.equals(profileUsage)) {
+                out.println("              <option value=\"" + profileUsage.getProfileUsageId() + "\" selected=\"true\">" + profileUsage
+                    + "</option>");
               } else {
-                out.println("              <option value=\"" + i + "\">" + profileUsage + "</option>");
+                out.println("              <option value=\"" + profileUsage.getProfileUsageId() + "\">" + profileUsage + "</option>");
               }
             }
           }
@@ -447,26 +429,13 @@ public class CertifyServlet extends ClientServlet {
           {
             out.println("            <select name=\"profileUsageIdForConformance\">");
             out.println("              <option value=\"\">select</option>");
-            int i = 0;
             for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
-              i++;
               if (profileUsage.toString().equals("US - Base")) {
-                out.println("              <option value=\"" + i + "\" selected=\"true\">" + profileUsage + "</option>");
+                out.println("              <option value=\"" + profileUsage.getProfileUsageId() + "\" selected=\"true\">" + profileUsage
+                    + "</option>");
               } else {
-                out.println("              <option value=\"" + i + "\">" + profileUsage + "</option>");
+                out.println("              <option value=\"" + profileUsage.getProfileUsageId() + "\">" + profileUsage + "</option>");
               }
-            }
-          }
-          out.println("            </select>");
-          out.println("            <br/>");
-          out.println("            Compare for interoperability: ");
-          {
-            out.println("            <select name=\"profileUsageIdForInteroperability\">");
-            out.println("              <option value=\"\">select</option>");
-            int i = 0;
-            for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
-              i++;
-              out.println("              <option value=\"" + i + "\">" + profileUsage + "</option>");
             }
           }
           out.println("            </select>");
@@ -488,8 +457,7 @@ public class CertifyServlet extends ClientServlet {
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println(
-            "            <input id=\"ChkTransformConfirmation\" type=\"checkbox\" name=\"runN\" value=\"true\" checked=\"true\"/> Transform Confirmation");
+        out.println("            <input id=\"ChkTransformConfirmation\" type=\"checkbox\" name=\"runN\" value=\"true\" checked=\"true\"/> Transform Confirmation");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
@@ -523,8 +491,8 @@ public class CertifyServlet extends ClientServlet {
         out.println("            <select multiple size=\"5\" name=\"forecastTestPanelId\">");
         for (ForecastTestPanel forecastTestPanel : forecastTestPanelList) {
           if (forecastTestPanel.isStandard()) {
-            out.println(
-                "              <option value=\"" + forecastTestPanel.getId() + "\" selected" + ">" + forecastTestPanel.getLabel() + "</option>");
+            out.println("              <option value=\"" + forecastTestPanel.getId() + "\" selected" + ">" + forecastTestPanel.getLabel()
+                + "</option>");
           } else {
             out.println("              <option value=\"" + forecastTestPanel.getId() + "\">" + forecastTestPanel.getLabel() + "</option>");
           }
@@ -535,8 +503,7 @@ public class CertifyServlet extends ClientServlet {
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println(
-            "            <input id=\"ChkPerformance\" type=\"checkbox\" name=\"runG\" value=\"true\" checked=\"true\" disabled=\"disabled\"/> Performance");
+        out.println("            <input id=\"ChkPerformance\" type=\"checkbox\" name=\"runG\" value=\"true\" checked=\"true\" disabled=\"disabled\"/> Performance");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");

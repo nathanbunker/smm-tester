@@ -24,8 +24,6 @@ import org.immunizationsoftware.dqa.mover.ConnectionManager;
 import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
-import org.immunizationsoftware.dqa.tester.manager.TestParticipant;
-import org.immunizationsoftware.dqa.tester.manager.TestParticipantManager;
 import org.immunizationsoftware.dqa.tester.profile.ProfileManager;
 import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
@@ -42,8 +40,6 @@ public class CertifyClient {
   private static Map<String, Map<String, TestCaseMessage>> testMessageMapMap = new HashMap<String, Map<String, TestCaseMessage>>();
   private static SendData sendData = null;
   private static Connector connector = null;
-  private static int profileUsageId = 0;
-  private static int profileUsageIdForInteroperability = 0;
   private static int profileUsageIdForConformance = 0;
   private static String aartName = null;
   private static String queryType = CertifyRunner.QUERY_TYPE_NONE;
@@ -141,10 +137,6 @@ public class CertifyClient {
       System.err.println("AART name is not defined in configuration file ");
       return;
     }
-    if (ConnectionManager.getRequirementTestFieldsFile() == null) {
-      System.out.println("  + Requirements test fields file is missing, unable to initialize");
-      return;
-    }
     System.out.println("  + Initializing profile manager");
     profileManager = new ProfileManager();
     certifyRunner = null;
@@ -203,13 +195,11 @@ public class CertifyClient {
               if (connector == null) {
                 System.err.println("  + Problem, connector was not intialized ");
                 continue;
-              }
-              else if (sendData.getTestParticipant() == null)
-              {
+              } else if (sendData.getTestParticipant() == null) {
                 System.err.println("  + Problem, test participant is not recognized and can't be reported to AART ");
                 continue;
               }
-              
+
               System.out.println("  + Test Participant Organization: " + sendData.getTestParticipant().getOrganizationName());
               System.out.println("  + Initializing certify runner");
               initRuns();
@@ -322,15 +312,17 @@ public class CertifyClient {
     if (certifyRunner.isRun(CertifyRunner.SUITE_I_PROFILING)) {
       System.out.println("     - run suite Profiling");
       certifyRunner.setProfileManager(profileManager);
-      if (profileUsageId > 0) {
-        certifyRunner.setProfileUsage(profileManager.getProfileUsageList().get(profileUsageId - 1));
-        System.out.println("        profile usage id = " + (profileManager.getProfileUsageList().get(profileUsageId - 1)));
+      if (sendData.getTestParticipant().getProfileUsage() == null) {
+        System.out.println("         profile usage is not defined for " + sendData.getTestParticipant().getProfileUsageId());
+      } else {
+        certifyRunner.setProfileUsage(sendData.getTestParticipant().getProfileUsage());
+        System.out.println("          profile usage '" + sendData.getTestParticipant().getProfileUsage() + "'");
       }
-      if (profileUsageIdForInteroperability > 0) {
-        certifyRunner.setProfileUsageComparisonInteroperability(profileManager.getProfileUsageList().get(profileUsageIdForInteroperability - 1));
-      }
-      if (profileUsageIdForConformance < 0) {
-        certifyRunner.setProfileUsageComparisonConformance(profileManager.getProfileUsageList().get(profileUsageIdForConformance - 1));
+      for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
+        if (profileUsage.toString().equals("US - Base")) {
+          certifyRunner.setProfileUsageComparisonConformance(profileUsage);
+          System.out.println("         comparing to '" + profileUsage + "'");
+        }
       }
     }
     if (certifyRunner.isRun(CertifyRunner.SUITE_A_BASIC)) {

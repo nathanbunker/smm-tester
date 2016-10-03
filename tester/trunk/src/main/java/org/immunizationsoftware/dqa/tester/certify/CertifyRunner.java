@@ -64,7 +64,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   // "http://localhost:8289/";
   // "http://ois-pt.org/dqacm/";
 
-  private static final String REPORT_URL = DQACM_BASE + "record";
+  public static final String REPORT_URL = DQACM_BASE + "record";
   private static final String MANUAL_URL = DQACM_BASE + "manual";
 
   private static final boolean SAVE_TEST_CASES_TO_DIR = false;
@@ -808,7 +808,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   }
 
   protected ProfileUsage profileUsage = null;
-  protected ProfileUsage profileUsageComparisonInteroperability = null;
   protected ProfileUsage profileUsageComparisonConformance = null;
 
   private String runAgainstTestStartTime = null;
@@ -823,10 +822,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
   public void setProfileUsage(ProfileUsage profileUsage) {
     this.profileUsage = profileUsage;
-  }
-
-  public void setProfileUsageComparisonInteroperability(ProfileUsage profileUsageComparisonEhr) {
-    this.profileUsageComparisonInteroperability = profileUsageComparisonEhr;
   }
 
   public void setProfileUsageComparisonConformance(ProfileUsage profileUsageComparisonUs) {
@@ -1940,39 +1935,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       }
     }
   }
-
-  public void printProfileLineComparisonInteroperability(PrintWriter out, boolean toFile, ProfileLine profileLine) {
-    ProfileUsageValue profileUsageValue = profileUsageComparisonInteroperability.getProfileUsageValueMap().get(profileLine.getField());
-    if (profileUsageValue != null) {
-      CompatibilityInteroperability compatibilityInteroperability = ProfileManager
-          .getCompatibilityInteroperability(profileLine.getProfileUsageValue(), profileUsageValue);
-      String usageClass = "";
-      switch (compatibilityInteroperability) {
-      case COMPATIBLE:
-      case DATA_LOSS:
-      case IF_CONFIGURED:
-      case IF_POPULATED:
-      case NO_PROBLEM:
-        usageClass = "pass";
-        break;
-      case MAJOR_PROBLEM:
-      case PROBLEM:
-        usageClass = "fail";
-        break;
-      case UNABLE_TO_DETERMINE:
-        usageClass = "";
-        break;
-      }
-      out.println("  <tr>");
-      out.println("    <td class=\"pass\">" + profileLine.getField().getFieldName() + "</td>");
-      out.println("    <td class=\"pass\">" + profileLine.getField().getDescription() + "</td>");
-      out.println("    <td class=\"" + usageClass + "\">" + compatibilityInteroperability + "</td>");
-      out.println("    <td class=\"" + usageClass + "\">" + profileUsageValue.getUsage() + "</td>");
-      out.println("  </tr>");
-    }
-  }
-
-  // profileUsageComparisonInteroperability
 
   public void printTestMessageCell(PrintWriter out, boolean toFile, TestCaseMessage testCaseMessage, boolean highlightUnexpected) {
     String classText = "nottested";

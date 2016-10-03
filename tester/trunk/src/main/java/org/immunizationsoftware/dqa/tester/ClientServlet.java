@@ -13,36 +13,29 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.immunizationsoftware.dqa.SoftwareVersion;
-import org.immunizationsoftware.dqa.mover.ConnectionManager;
-import org.immunizationsoftware.dqa.mover.ManagerServlet;
-import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
-import org.immunizationsoftware.dqa.tester.manager.TestParticipant;
 import org.immunizationsoftware.dqa.tester.profile.ProfileManager;
-import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 
 /**
  * 
  * @author nathan
  */
-public class ClientServlet extends HttpServlet
-{
+public class ClientServlet extends HttpServlet {
 
   protected static final String MENU_HEADER_HOME = "Home";
   protected static final String MENU_HEADER_CONNECT = "Connect to IIS";
   protected static final String MENU_HEADER_SETUP = "Manage Test Cases";
   protected static final String MENU_HEADER_EDIT = "Edit Test Case";
   protected static final String MENU_HEADER_SEND = "Send Message";
-  protected static final String MENU_HEADER_PROFILE = "Profile";
   protected static final String MENU_HEADER_TEST = "Test";
-  
+
   protected static ProfileManager profileManager = null;
-  
-  public static void initProfileManager(boolean forceRefresh) throws IOException {
-    if ((forceRefresh || profileManager == null) && ConnectionManager.getRequirementTestFieldsFile() != null
-        ) {
+
+  public static ProfileManager initProfileManager(boolean forceRefresh) throws IOException {
+    if ((forceRefresh || profileManager == null)) {
       profileManager = new ProfileManager();
     }
+    return profileManager;
   }
 
   protected static void printHtmlHead(PrintWriter out, String title, HttpServletRequest request) {
@@ -80,11 +73,10 @@ public class ClientServlet extends HttpServlet
     return makeMenu(request, "&nbsp;");
   }
 
-  private static final String[][] MENU_LOGGED_OUT = { { Authenticate.APP_DEFAULT_HOME, MENU_HEADER_HOME },
-      { "LoginServlet", "Login" } };
-  private static final String[][] MENU_LOGGED_IN = { { Authenticate.APP_DEFAULT_HOME, MENU_HEADER_HOME },
-      { "ConnectServlet", MENU_HEADER_CONNECT }, { "SetupServlet", MENU_HEADER_SETUP }, { "CreateTestCaseServlet", MENU_HEADER_EDIT },
-      { "SubmitServlet", MENU_HEADER_SEND },  { "ProfileServlet", MENU_HEADER_PROFILE }, { "CertifyServlet", MENU_HEADER_TEST }, { "LoginServlet?action=Logout", "Logout" } };
+  private static final String[][] MENU_LOGGED_OUT = { { Authenticate.APP_DEFAULT_HOME, MENU_HEADER_HOME }, { "LoginServlet", "Login" } };
+  private static final String[][] MENU_LOGGED_IN = { { Authenticate.APP_DEFAULT_HOME, MENU_HEADER_HOME }, { "ConnectServlet", MENU_HEADER_CONNECT },
+      { "SetupServlet", MENU_HEADER_SETUP }, { "CreateTestCaseServlet", MENU_HEADER_EDIT }, { "SubmitServlet", MENU_HEADER_SEND },
+      { "CertifyServlet", MENU_HEADER_TEST }, { "LoginServlet?action=Logout", "Logout" } };
 
   public static String makeMenu(HttpServletRequest request, String title) {
     boolean loggedIn = false;
@@ -131,8 +123,7 @@ public class ClientServlet extends HttpServlet
   }
 
   public static void printFooter(PrintWriter out) {
-    out.println("    <p>American Immunization Registry Association - IIS HL7 Tester &amp; Simple Message Mover - Version "
-        + SoftwareVersion.VERSION
+    out.println("    <p>American Immunization Registry Association - IIS HL7 Tester &amp; Simple Message Mover - Version " + SoftwareVersion.VERSION
         + "</p>");
 
   }
@@ -176,7 +167,7 @@ public class ClientServlet extends HttpServlet
     if (request.getParameter("id") != null && !request.getParameter("id").equals("")) {
       id = Integer.parseInt(request.getParameter("id"));
     }
-    if (session.getAttribute("id") != null ) {
+    if (session.getAttribute("id") != null) {
       id = (Integer) session.getAttribute("id");
     }
     out.println("        <tr>");
@@ -194,8 +185,7 @@ public class ClientServlet extends HttpServlet
       for (Connector connector : connectors) {
         i++;
         if (id == i) {
-          out.println("              <option value=\"" + i + "\" selected=\"true\">" + connector.getLabelDisplay()
-              + "</option>");
+          out.println("              <option value=\"" + i + "\" selected=\"true\">" + connector.getLabelDisplay() + "</option>");
           connectorSelected = connector;
         } else {
           out.println("              <option value=\"" + i + "\">" + connector.getLabelDisplay() + "</option>");
@@ -207,5 +197,5 @@ public class ClientServlet extends HttpServlet
     out.println("        </tr>");
     return connectorSelected;
   }
-  
+
 }

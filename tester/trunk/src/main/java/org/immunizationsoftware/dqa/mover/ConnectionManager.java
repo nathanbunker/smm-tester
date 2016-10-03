@@ -1,7 +1,6 @@
 package org.immunizationsoftware.dqa.mover;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -22,8 +21,6 @@ import java.util.Random;
 import java.util.Set;
 
 import org.immunizationsoftware.dqa.tester.Authenticate;
-import org.immunizationsoftware.dqa.tester.profile.ProfileCategory;
-import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 
 public class ConnectionManager
 {
@@ -113,10 +110,6 @@ public class ConnectionManager
   private static String supportCenterCode = "";
   private static ShutdownInterceptor shutdownInterceptor;
   private static File softwareDir = null;
-  private static File requirementTestFieldsFile = null;
-  private static File iisParticipantResponsesAndAccountInfoFile = null;
-  private static File requirementTestTransformsFile = null;
-  private static Set<ProfileUsage> requirementTestProfileFileSet = new HashSet<ProfileUsage>();
   private static boolean scanDirectories = true;
 
   public static void setSoftwareDir(File softwareDir) {
@@ -131,28 +124,6 @@ public class ConnectionManager
 
   public static void setScanDirectories(boolean scanDirectories) {
     ConnectionManager.scanDirectories = scanDirectories;
-  }
-
-  private static final String REQUIREMENT_TEST_FIELDS_FILE = "SMM Requirement Test Fields.csv";
-  private static final String IIS_PARTICIPANT_RESPONSES_AND_ACCOUNT_INFO = "IIS Participant Responses and Account Info.csv";
-  private static final String REQUIREMENT_TEST_TRANSFORMS = "SMM Requirement Test Transforms.txt";
-  private static final String REQUIREMENT_TEST_PROFILE_START = "SMM Requirement ";
-  private static final String REQUIREMENT_TEST_PROFILE_END = ".csv";
-
-  public static Set<ProfileUsage> getRequirementTestProfileFileSet() {
-    return requirementTestProfileFileSet;
-  }
-
-  public static File getRequirementTestFieldsFile() {
-    return requirementTestFieldsFile;
-  }
-
-  public static File getIisParticipantResponsesAndAccountInfoFile() {
-    return iisParticipantResponsesAndAccountInfoFile;
-  }
-
-  public static File getRequirementTestTransformsFile() {
-    return requirementTestTransformsFile;
   }
 
   public static File getSoftwareDir() {
@@ -306,32 +277,6 @@ public class ConnectionManager
             if (scanStartFile.exists() && scanStartFile.isDirectory()) {
               System.out.println("SMM fold exists, adding to scan directory");
               foldersToScan.add(scanStartFile);
-              if (requirementTestFieldsFile == null) {
-                requirementTestFieldsFile = new File(scanStartFile, REQUIREMENT_TEST_FIELDS_FILE);
-                if (!requirementTestFieldsFile.exists()) {
-                  requirementTestFieldsFile = null;
-                } else {
-                  System.out.println("Found " + requirementTestFieldsFile);
-                }
-              }
-              if (iisParticipantResponsesAndAccountInfoFile == null) {
-                iisParticipantResponsesAndAccountInfoFile = new File(scanStartFile,
-                    IIS_PARTICIPANT_RESPONSES_AND_ACCOUNT_INFO);
-                if (!iisParticipantResponsesAndAccountInfoFile.exists()) {
-                  iisParticipantResponsesAndAccountInfoFile = null;
-                } else {
-                  System.out.println("Found " + iisParticipantResponsesAndAccountInfoFile);
-                }
-              }
-
-              if (requirementTestTransformsFile == null) {
-                requirementTestTransformsFile = new File(scanStartFile, REQUIREMENT_TEST_TRANSFORMS);
-                if (!requirementTestTransformsFile.exists()) {
-                  requirementTestTransformsFile = null;
-                } else {
-                  System.out.println("Found " + requirementTestTransformsFile);
-                }
-              }
             }
           }
         }
@@ -373,50 +318,6 @@ public class ConnectionManager
 
     ShutdownInterceptor shutdownInterceptor = new ShutdownInterceptor();
     Runtime.getRuntime().addShutdownHook(shutdownInterceptor);
-  }
-
-  public void scanForFieldDefinitions(File scanStartFile) {
-    File profileFileList[] = scanStartFile.listFiles(new FilenameFilter() {
-      public boolean accept(File dir, String name) {
-        return name.startsWith(REQUIREMENT_TEST_PROFILE_START) && name.endsWith(REQUIREMENT_TEST_PROFILE_END);
-      }
-    });
-    for (File profileFile : profileFileList) {
-      String name = profileFile.getName();
-      if (name.startsWith(REQUIREMENT_TEST_PROFILE_START) && name.endsWith(REQUIREMENT_TEST_PROFILE_END)) {
-        name = name
-            .substring(REQUIREMENT_TEST_PROFILE_START.length(), name.length() - REQUIREMENT_TEST_PROFILE_END.length())
-            .trim();
-        int pos = name.indexOf("-");
-        if (pos > 0) {
-          try {
-            ProfileUsage profileUsage = new ProfileUsage();
-            ProfileCategory category;
-            try {
-              category = ProfileCategory.valueOf(name.substring(0, pos).trim().toUpperCase());
-            } catch (IllegalArgumentException iae) {
-              throw new Exception("Unable to read requirements file named '" + name + "' because the profile catagory '"
-                  + name.substring(0, pos).trim() + "' is not recognized. ");
-            }
-            profileUsage.setCategory(category);
-            name = name.substring(pos + 1).trim();
-            pos = name.indexOf("-");
-            if (pos > 0) {
-              profileUsage.setVersion(name.substring(pos + 1).trim());
-              name = name.substring(0, pos).trim();
-            }
-            profileUsage.setLabel(name);
-            profileUsage.setFile(profileFile);
-            synchronized (requirementTestProfileFileSet) {
-              requirementTestProfileFileSet.add(profileUsage);
-            }
-          } catch (Exception e) {
-            System.out.println("Unable to load profile requirements file");
-            e.printStackTrace();
-          }
-        }
-      }
-    }
   }
 
   protected static String doHash(String valueIn) {

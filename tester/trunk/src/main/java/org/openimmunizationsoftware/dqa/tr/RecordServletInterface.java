@@ -11,8 +11,11 @@ public interface RecordServletInterface {
   
   public static final String PARAM_RESOURCE = "resource";
   public static final String RESOURCE_PROFILE = "profile";
+  public static final String RESOURCE_PROFILES = "profiles";
   public static final String RESOURCE_TEST_PARTICIPANT = "testParticipant";
   public static final String PARAM_PROFILE_USAGE_ID = "profileUsageId";
+  public static final String RESOURCE_TEST_FIELDS = "testFields";
+  public static final String RESOURCE_TEST_TRANSFORMS = "testTransforms";
 
   public static final String VALUE_YES = "Y";
   public static final String VALUE_NO = "N";

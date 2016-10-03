@@ -30,7 +30,7 @@ public class TestParticipantManager {
       testParticipant.setFolderName(CvsReader.readValue(posFolderName, valueList));
       testParticipant.setRecordRequirementsStatus(CvsReader.readValue(posRecordRequirementsStatus, valueList));
       testParticipant.setConnecttoIISStatus(CvsReader.readValue(posConnecttoIISStatus, valueList));
-      testParticipant.setGuideName(CvsReader.readValue(posGuideName, valueList));
+      testParticipant.setProfileUsageId(CvsReader.readValue(posGuideName, valueList));
       testParticipant.setTransport(CvsReader.readValue(posTransport, valueList));
       testParticipant.setQuerySupport(CvsReader.readValue(posQuerySupport, valueList));
       testParticipant.setPublicIdCode(CvsReader.readValue(posPublicIdCode, valueList));
