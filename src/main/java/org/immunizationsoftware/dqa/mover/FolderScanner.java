@@ -81,7 +81,6 @@ public class FolderScanner extends Thread
       // this folder should not be scanned
       return;
     }
-    managerServlet.scanForFieldDefinitions(folder);
     log("Looking in folder " + folder.getAbsolutePath());
     File configFile = new File(folder, "smm.config.txt");
     if (configFile.exists() && configFile.isFile() && configFile.canRead()) {

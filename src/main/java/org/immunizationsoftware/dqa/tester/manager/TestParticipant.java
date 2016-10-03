@@ -1,6 +1,7 @@
 package org.immunizationsoftware.dqa.tester.manager;
 
 import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
+import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 
 public class TestParticipant
 {
@@ -10,13 +11,22 @@ public class TestParticipant
   private boolean redactListResponses = false;
   private String recordRequirementsStatus = "";
   private String connecttoIISStatus = "";
-  private String guideName = "";
+  private String profileUsageId = "";
   private String transport = "";
   private String querySupport = "";
   private String publicIdCode = "";
   private String tchForecastSoftwareId = "";
+  private ProfileUsage profileUsage = null;
   private int col = 0;
   private int row = 0;
+  
+  public ProfileUsage getProfileUsage() {
+    return profileUsage;
+  }
+  
+  public void setProfileUsage(ProfileUsage profileUsage) {
+    this.profileUsage = profileUsage;
+  }
   
   public String getTchForecastSoftwareId() {
     return tchForecastSoftwareId;
@@ -95,12 +105,12 @@ public class TestParticipant
     }
   }
 
-  public String getGuideName() {
-    return guideName;
+  public String getProfileUsageId() {
+    return profileUsageId;
   }
 
-  public void setGuideName(String guideName) {
-    this.guideName = guideName;
+  public void setProfileUsageId(String guideName) {
+    this.profileUsageId = guideName;
   }
 
   public String getOrganizationName() {

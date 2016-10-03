@@ -4,13 +4,19 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProfileUsage
-{
-  private ProfileCategory category = null;
+public class ProfileUsage {
+  private String profileUsageId = "";
   private String label = "";
-  private String version = "";
   private File file = null;
 
+  public String getProfileUsageId() {
+    return profileUsageId;
+  }
+  
+  public void setProfileUsageId(String profileUsageId) {
+    this.profileUsageId = profileUsageId;
+  }
+  
   public File getFile() {
     return file;
   }
@@ -19,18 +25,10 @@ public class ProfileUsage
     this.file = file;
   }
 
-  private Map<ProfileField, ProfileUsageValue> profileUsageValueMap = new HashMap<ProfileField, ProfileUsageValue>(); 
-  
+  private Map<ProfileField, ProfileUsageValue> profileUsageValueMap = new HashMap<ProfileField, ProfileUsageValue>();
+
   public Map<ProfileField, ProfileUsageValue> getProfileUsageValueMap() {
     return profileUsageValueMap;
-  }
-
-  public ProfileCategory getCategory() {
-    return category;
-  }
-
-  public void setCategory(ProfileCategory category) {
-    this.category = category;
   }
 
   public String getLabel() {
@@ -41,21 +39,19 @@ public class ProfileUsage
     this.label = label;
   }
 
-  public String getVersion() {
-    return version;
-  }
-
-  public void setVersion(String version) {
-    this.version = version;
+  @Override
+  public String toString() {
+    return label;
   }
   
   @Override
-  public String toString() {
-    if (version.equals("")) {
-      return category + " - " + label;
+  public boolean equals(Object obj) {
+    if (obj instanceof ProfileUsage)
+    {
+      ProfileUsage pu = (ProfileUsage) obj;
+      return pu.getProfileUsageId().equals(this.getProfileUsageId());
     }
-    return category + " - " + label + " - " + version;
+    return super.equals(obj);
   }
-
 
 }

@@ -19,6 +19,7 @@ import org.immunizationsoftware.dqa.mover.SendData;
 import org.immunizationsoftware.dqa.tester.certify.CertifyRunner;
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.connectors.ConnectorFactory;
+import org.immunizationsoftware.dqa.tester.profile.ProfileManager;
 import org.immunizationsoftware.dqa.tester.profile.ProfileUsage;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 
@@ -193,8 +194,8 @@ public class ConnectServlet extends ClientServlet {
         out.println("      <select name=\"type\">");
         out.println("        <option value=\"\">select</option>");
         for (String[] option : ConnectorFactory.TYPES) {
-          out.println(
-              "        <option value=\"" + option[0] + "\"" + (type.equals(option[0]) ? " selected=\"true\"" : "") + ">" + option[1] + "</option>");
+          out.println("        <option value=\"" + option[0] + "\"" + (type.equals(option[0]) ? " selected=\"true\"" : "") + ">" + option[1]
+              + "</option>");
         }
         out.println("      </select>");
         out.println("    </td>");
@@ -284,24 +285,22 @@ public class ConnectServlet extends ClientServlet {
         CreateTestCaseServlet.loadTestCases(session);
       }
       sendData.setTestParticipant(CertifyRunner.getParticipantResponse(sendData));
+      if (sendData.getTestParticipant() != null) {
+        ProfileManager profileManager = ClientServlet.initProfileManager(false);
+        profileManager.readProfileUsage(sendData.getTestParticipant());
+      }
       if (session != null) {
         if (sendData.getTestParticipant() != null) {
           try {
-            String guideName = sendData.getTestParticipant().getGuideName();
-            if (!guideName.equals("")) {
+            session.removeAttribute("profileUsage");
+            String profileUsageId = sendData.getTestParticipant().getProfileUsageId();
+            if (!profileUsageId.equals("")) {
               initProfileManager(false);
-              int profileUsageId = 0;
-              int i = 0;
-              for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
-                i++;
-                if (profileUsage.toString().equalsIgnoreCase(guideName)) {
-                  profileUsageId = i;
-                  break;
-                }
+              ProfileUsage profileUsage = profileManager.getProfileUsage(profileUsageId);
+              if (profileUsage != null) {
+                session.setAttribute("profileUsage", profileUsage);
               }
-              if (profileUsageId > 0) {
-                session.setAttribute("profileUsageId", profileUsageId);
-              }
+              sendData.getTestParticipant().setProfileUsage(profileUsage);
             }
           } catch (IOException ioe) {
             ioe.printStackTrace();
