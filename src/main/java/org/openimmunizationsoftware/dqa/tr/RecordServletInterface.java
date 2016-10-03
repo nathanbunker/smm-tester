@@ -1,10 +1,9 @@
 package org.openimmunizationsoftware.dqa.tr;
 
-import java.text.SimpleDateFormat;
 
 public interface RecordServletInterface {
-  public static final SimpleDateFormat VALUE_DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmmss+z");
-  public static final SimpleDateFormat VALUE_DATE_NO_TIME_FORMAT = new SimpleDateFormat("yyyyMMdd");
+  public static final String VALUE_DATE_FORMAT = "yyyyMMddHHmmss+z";
+  public static final String VALUE_DATE_NO_TIME_FORMAT = "yyyyMMdd";
 
   public static final String VALUE_EXCEPTIONAL_PREFIX_CERTIFIED_MESSAGE = "Certified Message:";
   public static final String VALUE_EXCEPTIONAL_PREFIX_TOLERANCE_CHECK = "Tolerance Check:";
