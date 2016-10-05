@@ -288,23 +288,8 @@ public class ConnectServlet extends ClientServlet {
       if (sendData.getTestParticipant() != null) {
         ProfileManager profileManager = ClientServlet.initProfileManager(false);
         profileManager.readProfileUsage(sendData.getTestParticipant());
-      }
-      if (session != null) {
-        if (sendData.getTestParticipant() != null) {
-          try {
-            session.removeAttribute("profileUsage");
-            String profileUsageId = sendData.getTestParticipant().getProfileUsageId();
-            if (!profileUsageId.equals("")) {
-              initProfileManager(false);
-              ProfileUsage profileUsage = profileManager.getProfileUsage(profileUsageId);
-              if (profileUsage != null) {
-                session.setAttribute("profileUsage", profileUsage);
-              }
-              sendData.getTestParticipant().setProfileUsage(profileUsage);
-            }
-          } catch (IOException ioe) {
-            ioe.printStackTrace();
-          }
+        if (session != null && sendData.getTestParticipant().getProfileUsage()  != null) {
+          session.setAttribute("profileUsage", sendData.getTestParticipant().getProfileUsage());
         }
       }
     }

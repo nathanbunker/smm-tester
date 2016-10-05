@@ -305,11 +305,12 @@ public class ProfileManager {
     return profileUsageList;
   }
 
-  public ProfileUsage readProfileUsage(TestParticipant testParticipant) {
-   // System.out.println("--> Reading profile usage for: " + testParticipant.getFolderName() + " with " + testParticipant.getProfileUsageId());
-    ProfileUsage profileUsage = testParticipant.getProfileUsage();
+  public void readProfileUsage(TestParticipant testParticipant) {
+    String profileUsageId = testParticipant.getProfileUsageId();
+    ProfileUsage profileUsage = null;
     if (CertifyRunner.REPORT_URL != null) {
-      if (testParticipant.getProfileUsage() != null ) {
+      if (profileUsageId != null) {
+        profileUsage = getProfileUsage(profileUsageId);
         try {
           HttpURLConnection urlConn;
           InputStreamReader input = null;
@@ -331,7 +332,7 @@ public class ProfileManager {
         }
       }
     }
-    return profileUsage;
+    testParticipant.setProfileUsage(profileUsage);
   }
 
   private static void readProfileUsage(List<ProfileField> profileFieldList, ProfileUsage profileUsage, BufferedReader in) throws IOException {

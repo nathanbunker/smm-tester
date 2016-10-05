@@ -236,7 +236,7 @@ public class CertifyServlet extends ClientServlet {
               testerStatus = RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_STOPPED;
             }
             aartAction = CertifyRunner.reportStatus(aartName, testerStatus, certifyRunner.getConnector(), certifyRunner.getTestStarted(),
-                certifyRunner.getUpdateEtc(), certifyRunner.getQueryEtc());
+                certifyRunner.getUpdateEtc().getDate(), certifyRunner.getQueryEtc().getDate());
             certifyRunner = null;
           }
           aartAction = CertifyRunner.reportStatus(aartName, RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_READY, null, null, null, null);
@@ -265,8 +265,8 @@ public class CertifyServlet extends ClientServlet {
           }
         } else {
           aartAction = CertifyRunner.reportStatus(aartName, RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_TESTING,
-              (certifyRunner == null ? null : certifyRunner.getConnector()), certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc(),
-              certifyRunner.getQueryEtc());
+              (certifyRunner == null ? null : certifyRunner.getConnector()), certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc().getDate(),
+              certifyRunner.getQueryEtc().getDate());
           if (aartAction.equals("")) {
             aartAction = null;
           } else {
