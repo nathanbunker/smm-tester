@@ -168,7 +168,7 @@ public class CertifyClient {
               testerStatus = RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_STOPPED;
             }
             aartAction = CertifyRunner.reportStatus(aartName, testerStatus, certifyRunner.getConnector(), certifyRunner.getTestStarted(),
-                certifyRunner.getUpdateEtc(), certifyRunner.getQueryEtc());
+                certifyRunner.getUpdateEtc().getDate(), certifyRunner.getQueryEtc().getDate());
             certifyRunner = null;
           }
           aartAction = CertifyRunner.reportStatus(aartName, RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_READY, null, null, null, null);
@@ -190,6 +190,7 @@ public class CertifyClient {
                 if (sd1.getConnector() != null && sd1.getConnector().getAartPublicIdCode().equals(aartPublicIdCode)) {
                   sendData = ConnectServlet.addNewConnection(null, sd1.getInternalId(), true);
                   connector = sendData.getConnector();
+                  break;
                 }
               }
               if (connector == null) {
@@ -197,6 +198,10 @@ public class CertifyClient {
                 continue;
               } else if (sendData.getTestParticipant() == null) {
                 System.err.println("  + Problem, test participant is not recognized and can't be reported to AART ");
+                continue;
+              } else if (sendData.getTestParticipant().getProfileUsage() == null)
+              {
+                System.err.println("  + Problem, test participant has no profile usage, unable to run ");
                 continue;
               }
 
@@ -219,8 +224,8 @@ public class CertifyClient {
         } else {
           certifyRunner.printTextUpdate(System.out);
           aartAction = CertifyRunner.reportStatus(aartName, RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_TESTING,
-              (certifyRunner == null ? null : certifyRunner.getConnector()), certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc(),
-              certifyRunner.getQueryEtc());
+              (certifyRunner == null ? null : certifyRunner.getConnector()), certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc().getDate(),
+              certifyRunner.getQueryEtc().getDate());
 
           if (aartAction.equals("")) {
             aartAction = null;
