@@ -871,7 +871,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
           okay = true;
         } else if (messageType.equals("RSP")) {
           String profile = responseReader.getValue(21);
-          if (profile.equalsIgnoreCase("Z32") || profile.equalsIgnoreCase("Z34")) {
+          if (profile.equalsIgnoreCase("Z32") || profile.equalsIgnoreCase("Z42")) {
             okay = true;
           }
         }
