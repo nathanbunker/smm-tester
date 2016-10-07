@@ -311,24 +311,26 @@ public class ProfileManager {
     if (CertifyRunner.REPORT_URL != null) {
       if (profileUsageId != null) {
         profileUsage = getProfileUsage(profileUsageId);
-        try {
-          HttpURLConnection urlConn;
-          InputStreamReader input = null;
-          String link = CertifyRunner.REPORT_URL + "?" + CertifyRunner.PARAM_RESOURCE + "=" + CertifyRunner.RESOURCE_PROFILE + "&"
-              + CertifyRunner.PARAM_PROFILE_USAGE_ID + "=" + profileUsage.getProfileUsageId();
-          URL url = new URL(link);
-          urlConn = (HttpURLConnection) url.openConnection();
-          urlConn.setConnectTimeout(120 * 1000);
-          urlConn.setRequestMethod("GET");
+        if (profileUsage != null) {
+          try {
+            HttpURLConnection urlConn;
+            InputStreamReader input = null;
+            String link = CertifyRunner.REPORT_URL + "?" + CertifyRunner.PARAM_RESOURCE + "=" + CertifyRunner.RESOURCE_PROFILE + "&"
+                + CertifyRunner.PARAM_PROFILE_USAGE_ID + "=" + profileUsage.getProfileUsageId();
+            URL url = new URL(link);
+            urlConn = (HttpURLConnection) url.openConnection();
+            urlConn.setConnectTimeout(120 * 1000);
+            urlConn.setRequestMethod("GET");
 
-          urlConn.setDoInput(true);
-          urlConn.setDoOutput(true);
-          urlConn.setUseCaches(false);
-          input = new InputStreamReader(urlConn.getInputStream());
-          BufferedReader in = new BufferedReader(input);
-          readProfileUsage(profileFieldList, profileUsage, in);
-        } catch (IOException e) {
-          e.printStackTrace();
+            urlConn.setDoInput(true);
+            urlConn.setDoOutput(true);
+            urlConn.setUseCaches(false);
+            input = new InputStreamReader(urlConn.getInputStream());
+            BufferedReader in = new BufferedReader(input);
+            readProfileUsage(profileFieldList, profileUsage, in);
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
         }
       }
     }
