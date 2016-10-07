@@ -110,138 +110,109 @@ public class EnvisionConnector extends HttpConnector
     }
 
     HttpURLConnection urlConn = null;
-    try {
-      SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
+    SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
 
-      DataOutputStream printout;
-      InputStreamReader input = null;
-      URL url = new URL(conn.getUrl());
+    DataOutputStream printout;
+    InputStreamReader input = null;
+    URL url = new URL(conn.getUrl());
 
-      urlConn = (HttpURLConnection) url.openConnection();
-      if (factory != null && urlConn instanceof HttpsURLConnection) {
-        ((HttpsURLConnection) urlConn).setSSLSocketFactory(factory);
-      }
+    urlConn = (HttpURLConnection) url.openConnection();
+    if (factory != null && urlConn instanceof HttpsURLConnection) {
+      ((HttpsURLConnection) urlConn).setSSLSocketFactory(factory);
+    }
 
-      urlConn.setRequestMethod("POST");
+    urlConn.setRequestMethod("POST");
 
-      if (useSoap11) {
-        urlConn.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
-        urlConn.setRequestProperty("SOAPAction", "http://tempuri.org/ExecuteHL7Message");
-      } else {
-        urlConn.setRequestProperty("Content-Type", "application/soap+xml; charset=utf-8");
-      }
-      urlConn.setDoInput(true);
-      urlConn.setDoOutput(true);
-      String content;
+    if (useSoap11) {
+      urlConn.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
+      urlConn.setRequestProperty("SOAPAction", "http://tempuri.org/ExecuteHL7Message");
+    } else {
+      urlConn.setRequestProperty("Content-Type", "application/soap+xml; charset=utf-8");
+    }
+    urlConn.setDoInput(true);
+    urlConn.setDoOutput(true);
+    String content;
 
-      StringBuilder sb = new StringBuilder();
-      if (useSoap11) {
-        sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-        sb.append(
-            "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
-        sb.append("  <soap:Body>");
-        sb.append("    <ExecuteHL7Message xmlns=\"http://tempuri.org/\">");
-        sb.append("      <userName>" + userid + "</userName>");
-        sb.append("      <password>" + password + "</password>");
-        sb.append("      <flatWire>" + replaceAmpersand(request) + "</flatWire>");
-        sb.append("    </ExecuteHL7Message>");
-        sb.append("  </soap:Body>");
-        sb.append("</soap:Envelope>");
-      } else {
-        sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-        sb.append(
-            "<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">");
-        sb.append("  <soap12:Body>");
-        sb.append("    <ExecuteHL7Message xmlns=\"http://tempuri.org/\">");
-        sb.append("      <userName>" + userid + "</userName>");
-        sb.append("      <password>" + password + "</password>");
-        sb.append("      <flatWire>" + replaceAmpersand(request) + "</flatWire>");
-        sb.append("    </ExecuteHL7Message>");
-        sb.append("  </soap12:Body>");
-        sb.append("</soap12:Envelope>");
-      }
+    StringBuilder sb = new StringBuilder();
+    if (useSoap11) {
+      sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+      sb.append(
+          "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
+      sb.append("  <soap:Body>");
+      sb.append("    <ExecuteHL7Message xmlns=\"http://tempuri.org/\">");
+      sb.append("      <userName>" + userid + "</userName>");
+      sb.append("      <password>" + password + "</password>");
+      sb.append("      <flatWire>" + replaceAmpersand(request) + "</flatWire>");
+      sb.append("    </ExecuteHL7Message>");
+      sb.append("  </soap:Body>");
+      sb.append("</soap:Envelope>");
+    } else {
+      sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+      sb.append(
+          "<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">");
+      sb.append("  <soap12:Body>");
+      sb.append("    <ExecuteHL7Message xmlns=\"http://tempuri.org/\">");
+      sb.append("      <userName>" + userid + "</userName>");
+      sb.append("      <password>" + password + "</password>");
+      sb.append("      <flatWire>" + replaceAmpersand(request) + "</flatWire>");
+      sb.append("    </ExecuteHL7Message>");
+      sb.append("  </soap12:Body>");
+      sb.append("</soap12:Envelope>");
+    }
 
-      content = sb.toString();
+    content = sb.toString();
 
-      printout = new DataOutputStream(urlConn.getOutputStream());
-      printout.writeBytes(content);
-      printout.flush();
-      printout.close();
-      input = new InputStreamReader(urlConn.getInputStream());
-      StringBuilder response = new StringBuilder();
-      BufferedReader in = new BufferedReader(input);
-      String line;
-      while ((line = in.readLine()) != null) {
-        response.append(line);
-        response.append('\r');
-      }
-      input.close();
-      String responseString = response.toString();
-      int startPos = responseString.indexOf(HL7_REQUEST_RESULT_START_TAG);
-      int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG);
-      if (startPos > 0 && endPos > startPos) {
-        responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
-        responseString = responseString.replaceAll("\\Q&amp;\\E", "&");
-        response = new StringBuilder();
-        boolean found226 = false;
-        boolean found8364 = false;
-        for (int i = 0; i < responseString.length(); i++) {
-          char c = responseString.charAt(i);
-          if (c == 226) {
-            found226 = true;
-          } else if (found226 && c == 8364) {
-            found8364 = true;
-          } else if (found8364) {
-            if ((c == 339 || c == 65533)) {
-              response.append("\"");
-            } else {
-              response.append("??" + ((int) c) + "??");
-            }
-            found226 = false;
-            found8364 = false;
-          } else if (c < 256) {
-            response.append(c);
-            found226 = false;
-            found8364 = false;
+    printout = new DataOutputStream(urlConn.getOutputStream());
+    printout.writeBytes(content);
+    printout.flush();
+    printout.close();
+    input = new InputStreamReader(urlConn.getInputStream());
+    StringBuilder response = new StringBuilder();
+    BufferedReader in = new BufferedReader(input);
+    String line;
+    while ((line = in.readLine()) != null) {
+      response.append(line);
+      response.append('\r');
+    }
+    input.close();
+    String responseString = response.toString();
+    int startPos = responseString.indexOf(HL7_REQUEST_RESULT_START_TAG);
+    int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG);
+    if (startPos > 0 && endPos > startPos) {
+      responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
+      responseString = responseString.replaceAll("\\Q&amp;\\E", "&");
+      response = new StringBuilder();
+      boolean found226 = false;
+      boolean found8364 = false;
+      for (int i = 0; i < responseString.length(); i++) {
+        char c = responseString.charAt(i);
+        if (c == 226) {
+          found226 = true;
+        } else if (found226 && c == 8364) {
+          found8364 = true;
+        } else if (found8364) {
+          if ((c == 339 || c == 65533)) {
+            response.append("\"");
           } else {
             response.append("??" + ((int) c) + "??");
           }
+          found226 = false;
+          found8364 = false;
+        } else if (c < 256) {
+          response.append(c);
+          found226 = false;
+          found8364 = false;
+        } else {
+          response.append("??" + ((int) c) + "??");
         }
-      }
-      if (debug) {
-        response.append("\r");
-        response.append("DEBUG LOG: \r");
-        response.append(debugLog);
-      }
-      return response.toString();
-    } catch (IOException e) {
-      e.printStackTrace();
-      if (debug) {
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter out = new PrintWriter(stringWriter);
-        out.println("Unable to complete request");
-        e.printStackTrace(out);
-        out.println("DEBUG LOG: \r");
-        out.println(debugLog);
-        if (urlConn != null) {
-          try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(urlConn.getErrorStream()));
-            String line;
-            while ((line = in.readLine()) != null) {
-              out.println(line);
-            }
-            in.close();
-          } catch (IOException ioe) {
-            // ignore
-          }
-        }
-
-        out.close();
-        return stringWriter.toString();
-      } else {
-        throw e;
       }
     }
+    if (debug) {
+      response.append("\r");
+      response.append("DEBUG LOG: \r");
+      response.append(debugLog);
+    }
+    return response.toString();
 
   }
 
