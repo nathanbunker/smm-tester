@@ -106,6 +106,7 @@ public class CertifyClient {
   }
 
   public static void main(String[] args) throws Exception {
+    ConnectionManager.setScanDirectories(false);
     if (args.length < 1) {
       System.err.println("Usage: java org.immunizationsoftware.dqa.tester.CertifyClient config.txt");
       System.err.println("The following options are supported in the config file: ");
