@@ -507,7 +507,7 @@ public abstract class CertifyArea implements RecordServletInterface {
   }
 
   public void addTwins(int count) {
-    String middleName1 = certifyRunner.transformer.getValue("GIRL");
+    String middleName1 = certifyRunner.transformer.getRandomValue("GIRL");
     String middleName2 = middleName1;
     {
       String middleInitial = middleName1.substring(0, 1);
@@ -518,7 +518,7 @@ public abstract class CertifyArea implements RecordServletInterface {
           // give up already! We'll go with what we have
           break;
         }
-        middleName2 = certifyRunner.transformer.getValue("GIRL");
+        middleName2 = certifyRunner.transformer.getRandomValue("GIRL");
       }
     }
     TestCaseMessage testCaseMessage1 = ScenarioManager.createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);

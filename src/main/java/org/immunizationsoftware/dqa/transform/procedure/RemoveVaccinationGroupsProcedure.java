@@ -8,8 +8,12 @@ import java.util.LinkedList;
 import org.immunizationsoftware.dqa.transform.TransformRequest;
 import org.immunizationsoftware.dqa.transform.Transformer;
 
-public class RemoveVaccinationGroupsProcedure implements ProcedureInterface
-{
+public class RemoveVaccinationGroupsProcedure implements ProcedureInterface {
+
+  public void setTransformer(Transformer transformer) {
+    // not needed
+  }
+
   // run procedure Remove_Vaccination_Groups where RXA-20 equals 'RE'
   public void doProcedure(TransformRequest transformRequest, LinkedList<String> tokenList) throws IOException {
     String token = "";

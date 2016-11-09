@@ -93,6 +93,7 @@ public class CertifyServlet extends ClientServlet {
           certifyRunner.setRun(request.getParameter("runO") != null, CertifyRunner.SUITE_O_EXTRA);
           certifyRunner.setRun(request.getParameter("runP") != null, CertifyRunner.SUITE_P_DEDUPLICATION_ENGAGED);
           certifyRunner.setRun(request.getParameter("runQ") != null, CertifyRunner.SUITE_Q_FORECASTER_ENGAGED);
+          certifyRunner.setRun(request.getParameter("runS") != null, CertifyRunner.SUITE_S_ASSESSMENT);
           certifyRunner.setPauseBeforeQuerying(request.getParameter("pauseBeforeQuerying") != null);
           certifyRunner.setRedactListResponses(request.getParameter("redactListResponses") != null);
           certifyRunner.setReportErrorsOnly(request.getParameter("reportErrorsOnly") != null);
@@ -400,6 +401,12 @@ public class CertifyServlet extends ClientServlet {
         out.println("        <tr>");
         out.println("          <td>");
         out.println("            <input id=\"ChkAdvanced\" type=\"checkbox\" name=\"runC\" value=\"true\" checked=\"true\"/> Advanced");
+        out.println("          </td>");
+        out.println("          <td></td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td>");
+        out.println("            <input id=\"ChkAssessment\" type=\"checkbox\" name=\"runS\" value=\"true\" checked=\"true\"/> Assessment");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");

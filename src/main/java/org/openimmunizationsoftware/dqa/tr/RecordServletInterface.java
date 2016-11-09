@@ -41,6 +41,7 @@ public interface RecordServletInterface {
   public static final String VALUE_TEST_SECTION_TYPE_EXTRA = "Extra";
   public static final String VALUE_TEST_SECTION_TYPE_DEDUPLICATION_ENGAGED = "Deduplication Engaged";
   public static final String VALUE_TEST_SECTION_TYPE_FORECASTER_ENGAGED = "Forecaster Engaged";
+  public static final String VALUE_TEST_SECTION_TYPE_ASSESSMENT = "Assessment";
   
   public static final int SUITE_Q_FORECAST = 16;
 

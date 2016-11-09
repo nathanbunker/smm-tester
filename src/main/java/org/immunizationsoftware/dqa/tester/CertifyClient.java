@@ -60,6 +60,7 @@ public class CertifyClient {
   private static boolean runO = true;
   private static boolean runP = true;
   private static boolean runQ = true;
+  private static boolean runS = true;
   private static boolean pauseBeforeQuerying = false;
   private static boolean redactListResponses = true;
   private static boolean reportErrorsOnly = true;
@@ -103,6 +104,7 @@ public class CertifyClient {
     runO = true;
     runP = !queryType.equals(CertifyRunner.QUERY_TYPE_NONE);
     runQ = !queryType.equals(CertifyRunner.QUERY_TYPE_NONE);
+    runS = true;
   }
 
   public static void main(String[] args) throws Exception {
@@ -285,6 +287,7 @@ public class CertifyClient {
     certifyRunner.setRun(runO, CertifyRunner.SUITE_O_EXTRA);
     certifyRunner.setRun(runP, CertifyRunner.SUITE_P_DEDUPLICATION_ENGAGED);
     certifyRunner.setRun(runQ, CertifyRunner.SUITE_Q_FORECASTER_ENGAGED);
+    certifyRunner.setRun(runS, CertifyRunner.SUITE_S_ASSESSMENT);
     certifyRunner.setPauseBeforeQuerying(pauseBeforeQuerying);
     if (certifyRunner.isPauseBeforeQuerying()) {
       System.out.println("     - Pause before querying");
