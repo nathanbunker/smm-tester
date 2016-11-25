@@ -100,6 +100,10 @@ public class LoginServlet extends ClientServlet
                 message = "Unable to load test cases: " + e.getMessage();
               }
             }
+            else
+            {
+              CreateTestCaseServlet.loadTestCases(session);
+            }
           } else
           {
             message = "Invalid username or password";

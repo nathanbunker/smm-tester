@@ -11,6 +11,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.immunizationsoftware.dqa.tester.manager.forecast.EvaluationActual;
 import org.immunizationsoftware.dqa.tester.manager.forecast.ForecastActual;
@@ -23,8 +24,7 @@ import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
  * 
  * @author nathan
  */
-public class TestCaseMessage
-{
+public class TestCaseMessage {
 
   public static final String TEST_CASE_SET = "Test Case Set:";
   public static final String TEST_CASE_NUMBER = "Test Case Number:";
@@ -78,8 +78,7 @@ public class TestCaseMessage
     return result;
   }
 
-  protected static void addTestMessageToList(List<TestCaseMessage> testCaseMessageList,
-      TestCaseMessage testCaseMessage) {
+  protected static void addTestMessageToList(List<TestCaseMessage> testCaseMessageList, TestCaseMessage testCaseMessage) {
     if (testCaseMessage.getMessageText().startsWith("MSH|TRANSFORM")) {
       Transformer transformer = new Transformer();
       transformer.transform(testCaseMessage);
@@ -166,11 +165,11 @@ public class TestCaseMessage
   public String getTchForecastTesterPassword() {
     return tchForecastTesterPassword;
   }
-  
+
   public void setTchForecastTesterPassword(String tchForecastTesterPassword) {
     this.tchForecastTesterPassword = tchForecastTesterPassword;
   }
-  
+
   public String getPatientDob() {
     return patientDob;
   }
@@ -554,7 +553,6 @@ public class TestCaseMessage
     this.derivedFromTestCaseCategoryId = derivedFromTestCaseCategoryId;
   }
 
-
   public TestCaseMessage(TestCaseMessage copy) {
     this.testCaseSet = copy.testCaseSet;
     this.testCaseNumber = copy.testCaseNumber;
@@ -670,8 +668,7 @@ public class TestCaseMessage
     comments.add(comment);
   }
 
-  public class Comment
-  {
+  public class Comment {
 
     private String name = "";
     private String text = "";
@@ -840,8 +837,7 @@ public class TestCaseMessage
       if (derivedFromVXUMessage != null && !derivedFromVXUMessage.equals("")) {
         printHL7(forHtml, stringOut, DERIVED_FROM_VXU_MESSAGE, derivedFromVXUMessage);
       }
-      if (quickTransformations != null && quickTransformations.length > 0
-          && quickTransformations[0].trim().length() > 0) {
+      if (quickTransformations != null && quickTransformations.length > 0 && quickTransformations[0].trim().length() > 0) {
         stringOut.print(QUICK_TRANSFORMATIONS + " ");
         boolean first = true;
         for (String extra : quickTransformations) {
@@ -976,4 +972,16 @@ public class TestCaseMessage
     preparedMessage = sb.toString();
   }
 
+  public void registerTestCaseMap(Map<String, TestCaseMessage> testCaseMessageMap) {
+    if (originalMessage.startsWith("[")) {
+      int posEndBracket = originalMessage.indexOf("]");
+      if (posEndBracket > 0) {
+        String otherTestCaseNumber = originalMessage.substring(1, posEndBracket).trim();
+        TestCaseMessage otherTestCaseMessage = testCaseMessageMap.get(otherTestCaseNumber);
+        if (otherTestCaseMessage != null) {
+          preparedMessage = otherTestCaseMessage.getMessageText();
+        }
+      }
+    }
+  }
 }

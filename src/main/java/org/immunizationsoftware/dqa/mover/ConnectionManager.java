@@ -111,6 +111,11 @@ public class ConnectionManager
   private static ShutdownInterceptor shutdownInterceptor;
   private static File softwareDir = null;
   private static boolean scanDirectories = true;
+  private static List<File> globalFolders = new ArrayList<File>();
+
+  public static List<File> getGlobalFolders() {
+    return globalFolders;
+  }
 
   public static void setSoftwareDir(File softwareDir) {
     ConnectionManager.softwareDir = softwareDir;

@@ -15,6 +15,8 @@ public class TransformRequest
   private String resultText = null;
   private Patient patient = null;
   private String yesterday = null;
+  private String dayBeforeYesterday = null;
+  private String threeDaysAgo = null;
   private String today = null;
   private String tomorrow = null;
   private String longTimeFromNow = null;
@@ -23,6 +25,22 @@ public class TransformRequest
   private String line = null;
   private String segmentSeparator = "\r";
 
+  public String getThreeDaysAgo() {
+    return threeDaysAgo;
+  }
+  
+  public void setThreeDaysAgo(String threeDaysAgo) {
+    this.threeDaysAgo = threeDaysAgo;
+  }
+  
+  public String getDayBeforeYesterday() {
+    return dayBeforeYesterday;
+  }
+  
+  public void setDayBeforeYesterday(String dayBeforeYesterday) {
+    this.dayBeforeYesterday = dayBeforeYesterday;
+  }
+  
   public String getTransformText() {
     return transformText;
   }
@@ -78,6 +96,16 @@ public class TransformRequest
       Calendar yesterdayCalendar = Calendar.getInstance();
       yesterdayCalendar.add(Calendar.DAY_OF_MONTH, -1);
       yesterday = sdf.format(yesterdayCalendar.getTime());
+    }
+    {
+      Calendar dayBeforeYesterdayCalendar = Calendar.getInstance();
+      dayBeforeYesterdayCalendar.add(Calendar.DAY_OF_MONTH, -2);
+      dayBeforeYesterday = sdf.format(dayBeforeYesterdayCalendar.getTime());
+    }
+    {
+      Calendar threeDaysAgoCalendar = Calendar.getInstance();
+      threeDaysAgoCalendar.add(Calendar.DAY_OF_MONTH, -3);
+      threeDaysAgo = sdf.format(threeDaysAgoCalendar.getTime());
     }
     sdf = new SimpleDateFormat("yyyyMMddHHmmssZ");
     now = sdf.format(new Date());

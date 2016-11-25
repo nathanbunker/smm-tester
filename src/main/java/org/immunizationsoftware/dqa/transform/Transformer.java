@@ -2484,6 +2484,10 @@ public class Transformer {
       t.value = transformRequest.getLongTimeFromNow();
     } else if (t.value.equalsIgnoreCase("[YESTERDAY]")) {
       t.value = transformRequest.getYesterday();
+    } else if (t.value.equalsIgnoreCase("[DAY_BEFORE_YESTERDAY]")) {
+      t.value = transformRequest.getDayBeforeYesterday();
+    } else if (t.value.equalsIgnoreCase("[THREE_DAYS_AGO]")) {
+      t.value = transformRequest.getThreeDaysAgo();
     } else if (t.value.equalsIgnoreCase("[CONTROL_ID]")) {
       t.value = connector.getCurrentControlId();
     } else if (t.value.toLowerCase().startsWith("[map") && t.value.endsWith("]")) {

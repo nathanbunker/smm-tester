@@ -544,6 +544,7 @@ public class CertifyServlet extends ClientServlet {
         out.println("                document.getElementById(\"ChkNotAccepted\").checked = toggle;");
         out.println("                document.getElementById(\"ChkIntermediate\").checked = toggle;");
         out.println("                document.getElementById(\"ChkAdvanced\").checked = toggle;");
+        out.println("                document.getElementById(\"ChkAssessment\").checked = toggle;");
         out.println("                document.getElementById(\"ChkProfiling\").checked = toggle;");
         out.println("                document.getElementById(\"ChkExceptional\").checked = toggle;");
         out.println("                document.getElementById(\"ChkQBPSupport\").checked = toggle;");

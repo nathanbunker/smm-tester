@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,7 @@ public abstract class CertifyArea implements RecordServletInterface {
   protected String areaLabel = "";
   protected String areaLetter = "";
   protected boolean performanceConformance = false;
+  protected Map<String, TestCaseMessage> updateMap = new HashMap<String, TestCaseMessage>();
 
   protected void incrementUpdateProgress() {
     areaProgressCount[0]++;
@@ -161,10 +163,13 @@ public abstract class CertifyArea implements RecordServletInterface {
   }
 
   public TestCaseMessage register(int count, int masterCount, TestCaseMessage testCaseMessage) {
+    String originalTestCaseNumber = testCaseMessage.getTestCaseNumber();
     testCaseMessage.setTestCaseSet(certifyRunner.testCaseSet);
     testCaseMessage.setTestCaseCategoryId(areaLetter + "." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
     testCaseMessage.setTestCaseNumber(certifyRunner.uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
     updateList.add(testCaseMessage);
+    updateMap.put(originalTestCaseNumber, testCaseMessage);
+    testCaseMessage.registerTestCaseMap(updateMap);
     testCaseMessage.setTestPosition(certifyRunner.incrementingInt.next());
     testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
     if (testCaseMessage.getAssertResult() == null || testCaseMessage.getAssertResult().equals("")) {

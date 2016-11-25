@@ -1053,8 +1053,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
           if (certifyArea instanceof CATotal) {
             updateEtc = caTotal.estimatedUpdateCompletion();
             SimpleDateFormat timeFormat = new SimpleDateFormat("H:mm");
-            if (updateEtc != null) {
-              out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">ETC " + timeFormat.format(updateEtc) + "</td>");
+            if (updateEtc != null && updateEtc.getDate() != null) {
+              out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">ETC " + timeFormat.format(updateEtc.getDate()) + "</td>");
             } else {
               out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">-</td>");
             }
@@ -1095,7 +1095,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
           if (certifyArea instanceof CATotal) {
             ETC queryEtc = caTotal.estimatedQueryCompletion();
             SimpleDateFormat timeFormat = new SimpleDateFormat("H:mm");
-            if (queryEtc != null) {
+            if (queryEtc != null && queryEtc.getDate() != null) {
               out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">ETC " + timeFormat.format(queryEtc.getDate()) + "</td>");
             } else {
               out.println("    <td class=\"" + classStyle + "\" style=\"text-align: center;\">-</td>");
@@ -1571,18 +1571,18 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     } else {
       if (caTotal.getAreaProgress()[0] < 100) {
         updateEtc = caTotal.estimatedUpdateCompletion();
-        if (updateEtc != null) {
+        if (updateEtc != null && updateEtc.getDate() == null) {
           out.println("  <tr>");
           out.println("    <th>Update ETC</th>");
-          out.println("    <td>" + sdf.format(updateEtc) + "</td>");
+          out.println("    <td>" + sdf.format(updateEtc.getDate()) + "</td>");
           out.println("  </tr>");
         }
       } else if (caTotal.getAreaProgress()[1] < 100) {
         queryEtc = caTotal.estimatedQueryCompletion();
-        if (queryEtc != null) {
+        if (queryEtc != null && queryEtc.getDate() != null) {
           out.println("  <tr>");
           out.println("    <th>Query ETC</th>");
-          out.println("    <td>" + sdf.format(queryEtc) + "</td>");
+          out.println("    <td>" + sdf.format(queryEtc.getDate()) + "</td>");
           out.println("  </tr>");
         }
       }

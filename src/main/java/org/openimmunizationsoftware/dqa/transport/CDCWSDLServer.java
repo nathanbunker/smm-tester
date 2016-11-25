@@ -179,7 +179,6 @@ public abstract class CDCWSDLServer {
           value = xmlMessage.substring(fieldStartPos, fieldEndPos).trim();
           if (value.startsWith(CDATA_START) && value.endsWith(CDATA_END)) {
             value = value.substring(CDATA_START.length(), value.length() - CDATA_END.length());
-            System.out.println("-->   + using CDATA ");
           } else {
             value = value.replaceAll("\\Q&amp;\\E", "&").replaceAll("\\Q&#xd;\\E", "\r");
           }

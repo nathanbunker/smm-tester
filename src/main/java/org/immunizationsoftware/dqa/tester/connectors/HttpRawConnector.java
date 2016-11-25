@@ -109,9 +109,7 @@ public class HttpRawConnector extends Connector {
         StringReader stringReader = new StringReader(request);
         BufferedReader bufReader = new BufferedReader(stringReader);
         String line;
-        System.out.println("--> Sending this: ");
         while ((line = bufReader.readLine()) != null) {
-          System.out.println("--> " + line);
           content.append(line);
           content.append('\r');
         }
