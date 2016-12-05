@@ -21,6 +21,7 @@ import org.immunizationsoftware.dqa.tester.run.TestRunner;
 import org.immunizationsoftware.dqa.transform.Comparison;
 import org.immunizationsoftware.dqa.transform.ScenarioManager;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
+import org.immunizationsoftware.dqa.transform.TestCaseMode;
 import org.immunizationsoftware.dqa.transform.Transformer;
 import org.immunizationsoftware.dqa.transform.forecast.ForecastTestPanel;
 import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
@@ -163,9 +164,14 @@ public abstract class CertifyArea implements RecordServletInterface {
   }
 
   public TestCaseMessage register(int count, int masterCount, TestCaseMessage testCaseMessage) {
+    String testCaseId = makeTwoDigits(masterCount) + "." + makeTwoDigits(count);
+    return register(testCaseId, testCaseMessage);
+  }
+
+  public TestCaseMessage register(String testCaseId, TestCaseMessage testCaseMessage) {
     String originalTestCaseNumber = testCaseMessage.getTestCaseNumber();
     testCaseMessage.setTestCaseSet(certifyRunner.testCaseSet);
-    testCaseMessage.setTestCaseCategoryId(areaLetter + "." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
+    testCaseMessage.setTestCaseCategoryId(areaLetter + "." + testCaseId);
     testCaseMessage.setTestCaseNumber(certifyRunner.uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
     updateList.add(testCaseMessage);
     updateMap.put(originalTestCaseNumber, testCaseMessage);
@@ -548,6 +554,10 @@ public abstract class CertifyArea implements RecordServletInterface {
   }
 
   public void addTestCasesFromSavedSet(String testCaseSet, int masterCount) {
+    addTestCasesFromSavedSet(testCaseSet, masterCount, TestCaseMode.DEFAULT);
+  }
+
+  public void addTestCasesFromSavedSet(String testCaseSet, int masterCount, TestCaseMode testCaseMode) {
     Map<String, TestCaseMessage> testCaseMessageMap = certifyRunner.testMessageMapMap.get(testCaseSet);
     if (testCaseMessageMap != null && testCaseMessageMap.size() > 0) {
       List<String> testNumList = new ArrayList<String>(testCaseMessageMap.keySet());
@@ -557,8 +567,29 @@ public abstract class CertifyArea implements RecordServletInterface {
         count++;
         TestCaseMessage testCaseMessage = testCaseMessageMap.get(testNum);
         TestCaseMessage tcm = new TestCaseMessage(testCaseMessage);
+        tcm.setTestCaseMode(testCaseMode);
         register(count, masterCount, tcm);
       }
     }
   }
+
+  public void addTestCasesFromSavedSetAssessment(String testCaseSet, TestCaseMode testCaseMode) {
+    Map<String, TestCaseMessage> testCaseMessageMap = certifyRunner.testMessageMapMap.get(testCaseSet);
+    if (testCaseMessageMap != null && testCaseMessageMap.size() > 0) {
+      List<String> testNumList = new ArrayList<String>(testCaseMessageMap.keySet());
+      Collections.sort(testNumList);
+      for (String testNum : testNumList) {
+        TestCaseMessage testCaseMessage = testCaseMessageMap.get(testNum);
+        TestCaseMessage tcm = new TestCaseMessage(testCaseMessage);
+        tcm.setTestCaseMode(testCaseMode);
+        String testCaseId = testCaseMessage.getTestCaseNumber();
+        if (testCaseMode == TestCaseMode.DEFAULT) {
+          testCaseId += "d";
+          testCaseMessage.setDescription(testCaseMessage.getDescription() + " (Deviates)");
+        }
+        register(testCaseId, tcm);
+      }
+    }
+  }
+
 }

@@ -161,6 +161,15 @@ public class TestCaseMessage {
   private String tchForecastTesterTestCaseNumber = null;
   private String patientDob = null;
   private String patientSex = null;
+  private TestCaseMode testCaseMode = TestCaseMode.DEFAULT;
+
+  public TestCaseMode getTestCaseMode() {
+    return testCaseMode;
+  }
+
+  public void setTestCaseMode(TestCaseMode testCaseMode) {
+    this.testCaseMode = testCaseMode;
+  }
 
   public String getTchForecastTesterPassword() {
     return tchForecastTesterPassword;
@@ -611,7 +620,7 @@ public class TestCaseMessage {
       additionalTransformations = updated.getAdditionalTransformations();
     }
     if (!updated.getExcludeTransformations().equals("")) {
-      additionalTransformations = updated.getExcludeTransformations();
+      excludeTransformations = updated.getExcludeTransformations();
     }
     if (!updated.getCauseIssues().equals("")) {
       causeIssues = updated.getCauseIssues();

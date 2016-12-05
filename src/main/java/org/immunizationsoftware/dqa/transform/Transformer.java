@@ -459,16 +459,20 @@ public class Transformer {
     if (additionalTransformations.equals("")) {
       additionalTransformations = null;
     }
-    if (!connector.getCustomTransformations().equals("") || scenarioTransforms != null || additionalTransformations != null) {
+    String transforms = connector.getCustomTransformations();
+    if (testCaseMessage.getTestCaseMode() == TestCaseMode.ASSESSMENT) {
+      transforms = connector.getAssessmentTransformations();
+    }
+    if (!transforms.equals("") || scenarioTransforms != null || additionalTransformations != null) {
       Transformer transformer = new Transformer();
       SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
       connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
-      message = transformer.transform(connector, message, scenarioTransforms, testCaseMessage.getExcludeTransformations(), additionalTransformations);
+      message = transformer.transformForTesting(connector, message, transforms, scenarioTransforms, testCaseMessage.getExcludeTransformations(), additionalTransformations);
     }
     return message;
   }
 
-  public String transform(Connector connector, String messageText, String scenarioTransformations, String excludeTransformations,
+  public String transformForTesting(Connector connector, String messageText, String customTransformations, String scenarioTransformations, String excludeTransformations,
       String additionalTransformations) {
     String quickTransforms = "";
 
@@ -482,10 +486,10 @@ public class Transformer {
       }
     }
     String transforms = quickTransforms + "\n";
-    if (!connector.getCustomTransformations().equals("")) {
+    if (!customTransformations.equals("")) {
       if (excludeTransformations != null && !excludeTransformations.equals("")) {
         try {
-          BufferedReader customTransformsIn = new BufferedReader(new StringReader(connector.getCustomTransformations()));
+          BufferedReader customTransformsIn = new BufferedReader(new StringReader(customTransformations));
           String line;
           while ((line = customTransformsIn.readLine()) != null) {
             BufferedReader etIn = new BufferedReader(new StringReader(excludeTransformations));
@@ -505,7 +509,7 @@ public class Transformer {
           // shouldn't happen, but if it does then just keep going
         }
       } else {
-        transforms += connector.getCustomTransformations() + "\n";
+        transforms += customTransformations + "\n";
       }
     }
     if (scenarioTransformations != null)
@@ -527,7 +531,7 @@ public class Transformer {
     return transformRequest.getResultText();
   }
 
-  public String transform(Connector connector, String messageText, String customTransformations, String scenarioTransformations,
+  public String transformForSubmitServlet(Connector connector, String messageText, String customTransformations, String scenarioTransformations,
       String excludeTransformations, String additionalTransformations) {
     String quickTransforms = "";
 

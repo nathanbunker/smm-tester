@@ -30,8 +30,7 @@ import org.immunizationsoftware.dqa.tester.PasswordEncryptUtil;
  * 
  * @author nathan
  */
-public abstract class Connector
-{
+public abstract class Connector {
 
   public static final String PURPOSE_GENERAL = "General";
   public static final String PURPOSE_UPDATE = "Update";
@@ -49,12 +48,12 @@ public abstract class Connector
 
   protected abstract void setupFields(List<String> fields);
 
-  protected static Connector addConnector(String label, String type, String url, String userid, String otherid,
-      String facilityid, String password, String keyStorePassword, String enableTimeStart, String enableTimeEnd,
-      AckAnalyzer.AckType ackType, TransferType transferType, List<String> fields, String customTransformations,
-      List<Connector> connectors, String purpose, int tchForecastTesterSoftwareId, int tchForecastTesterTaskGroupId, String rxaFilterFacilityId,
-      Set<String> queryResponseFieldsNotReturnedSet, Map<String, String> scenarioTransformationsMap,
-      boolean disableServerCertificateCheck, String aartPublicIdCode, String aartAccessPasscode) throws Exception {
+  protected static Connector addConnector(String label, String type, String url, String userid, String otherid, String facilityid, String password,
+      String keyStorePassword, String enableTimeStart, String enableTimeEnd, AckAnalyzer.AckType ackType, TransferType transferType,
+      List<String> fields, String customTransformations, String assesmentTransformations, List<Connector> connectors, String purpose,
+      int tchForecastTesterSoftwareId, int tchForecastTesterTaskGroupId, String rxaFilterFacilityId, Set<String> queryResponseFieldsNotReturnedSet,
+      Map<String, String> scenarioTransformationsMap, boolean disableServerCertificateCheck, String aartPublicIdCode, String aartAccessPasscode)
+      throws Exception {
     if (!label.equals("") && !type.equals("")) {
       Connector connector = null;
       if (type.equals(ConnectorFactory.TYPE_SOAP)) {
@@ -105,6 +104,7 @@ public abstract class Connector
       connector.setPassword(password);
       connector.setupFields(fields);
       connector.setCustomTransformations(customTransformations);
+      connector.setAssessmentTransformations(assesmentTransformations);
       connector.setKeyStorePassword(keyStorePassword);
       connector.setAckType(ackType);
       connector.setTransferType(transferType);
@@ -143,6 +143,7 @@ public abstract class Connector
   protected boolean disableServerCertificateCheck = false;
   protected TransferType transferType = TransferType.NEAR_REAL_TIME_LINK;
   private String customTransformations = "";
+  private String assessmentTransformations = "";
   private String[] quickTransformations;
   private KeyStore keyStore = null;
   private String keyStorePassword = null;
@@ -155,6 +156,14 @@ public abstract class Connector
   private String rxaFilterFacilityId = "";
   private String aartPublicIdCode = "";
   private String aartAccessPasscode = "";
+
+  public String getAssessmentTransformations() {
+    return assessmentTransformations;
+  }
+
+  public void setAssessmentTransformations(String assessmentTransformations) {
+    this.assessmentTransformations = assessmentTransformations;
+  }
 
   public String getAartPublicIdCode() {
     return aartPublicIdCode;
@@ -199,6 +208,7 @@ public abstract class Connector
     this.disableServerCertificateCheck = copy.disableServerCertificateCheck;
     this.transferType = copy.transferType;
     this.customTransformations = copy.customTransformations;
+    this.assessmentTransformations = copy.assessmentTransformations;
     this.quickTransformations = copy.quickTransformations;
     this.keyStore = copy.keyStore;
     this.keyStorePassword = copy.keyStorePassword;
@@ -380,6 +390,14 @@ public abstract class Connector
     }
   }
 
+  public void addAsssementTransformation(String assessmentTransformation) {
+    if (this.assessmentTransformations == null) {
+      this.assessmentTransformations = assessmentTransformations + "/n";
+    } else {
+      this.assessmentTransformations += assessmentTransformations + "/n";
+    }
+  }
+
   public String getUrl() {
     return url;
   }
@@ -507,6 +525,10 @@ public abstract class Connector
       sb.append("Custom Transformations: \n");
       printTransformString(sb, customTransformations);
     }
+    if (assessmentTransformations != null && assessmentTransformations.length() > 0) {
+      sb.append("Assessment Transformations: \n");
+      printTransformString(sb, assessmentTransformations);
+    }
     for (String scenarioTransformName : scenarioTransformationsMap.keySet()) {
       sb.append("Scenario Transform for " + scenarioTransformName + ": \n");
       printTransformString(sb, scenarioTransformationsMap.get(scenarioTransformName));
@@ -542,6 +564,7 @@ public abstract class Connector
     String facilityid = "";
     String url = "";
     String customTransformations = "";
+    String assesmentTransformations = "";
     String keyStorePassword = "";
     String enableTimeStart = "";
     String enableTimeEnd = "";
@@ -562,10 +585,10 @@ public abstract class Connector
     while ((line = in.readLine()) != null) {
       line = line.trim();
       if (line.startsWith("Connection")) {
-        addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
-            enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose,
-            tchForecastTesterSoftwareId, tchForecastTesterTaskGroupId, rxaFilterFacilityId, queryResponseFieldsNotReturnedSet,
-            scenarioTransformationsMap, disableServerCertificateCheck, aartPublicIdCode, aartAccessPasscode);
+        addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart, enableTimeEnd, ackType, transferType,
+            fields, customTransformations, assesmentTransformations, connectors, purpose, tchForecastTesterSoftwareId, tchForecastTesterTaskGroupId,
+            rxaFilterFacilityId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap, disableServerCertificateCheck, aartPublicIdCode,
+            aartAccessPasscode);
         label = "";
         purpose = "";
         type = "";
@@ -579,6 +602,7 @@ public abstract class Connector
         ackType = AckAnalyzer.AckType.DEFAULT;
         transferType = TransferType.NEAR_REAL_TIME_LINK;
         customTransformations = "";
+        assesmentTransformations = "";
         keyStorePassword = "";
         tchForecastTesterSoftwareId = 0;
         tchForecastTesterTaskGroupId = 0;
@@ -614,8 +638,7 @@ public abstract class Connector
         facilityid = readValue(line);
       } else if (line.startsWith("Disable Certificate Check:")) {
         String s = readValue(line);
-        disableServerCertificateCheck = s.equalsIgnoreCase("y") || s.equalsIgnoreCase("yes")
-            || s.equalsIgnoreCase("true");
+        disableServerCertificateCheck = s.equalsIgnoreCase("y") || s.equalsIgnoreCase("yes") || s.equalsIgnoreCase("true");
       } else if (line.startsWith("Key Store Password:")) {
         keyStorePassword = PasswordEncryptUtil.decrypt(readValue(line));
       } else if (line.startsWith("Cause Issues:")) {
@@ -633,6 +656,8 @@ public abstract class Connector
         }
       } else if (line.startsWith("Custom Transformations:")) {
         lastList = "CT";
+      } else if (line.startsWith("Assessment Transformations:")) {
+        lastList = "ST";
       } else if (line.startsWith("Scenario Transform for ")) {
         int endPos = line.lastIndexOf(':');
         if (endPos == -1) {
@@ -657,6 +682,8 @@ public abstract class Connector
         String ctLine = line.substring(1).trim() + "\n";
         if (lastList.equals("CT")) {
           customTransformations += ctLine;
+        } else if (lastList.equals("ST")) {
+          assesmentTransformations += ctLine;
         } else {
           String transform = scenarioTransformationsMap.get(lastList);
           if (transform == null) {
@@ -671,10 +698,10 @@ public abstract class Connector
       }
 
     }
-    addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart,
-        enableTimeEnd, ackType, transferType, fields, customTransformations, connectors, purpose,
-        tchForecastTesterSoftwareId,tchForecastTesterTaskGroupId, rxaFilterFacilityId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap,
-        disableServerCertificateCheck, aartPublicIdCode, aartAccessPasscode);
+    addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart, enableTimeEnd, ackType, transferType,
+        fields, customTransformations, assesmentTransformations, connectors, purpose, tchForecastTesterSoftwareId, tchForecastTesterTaskGroupId,
+        rxaFilterFacilityId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap, disableServerCertificateCheck, aartPublicIdCode,
+        aartAccessPasscode);
     return connectors;
   }
 
@@ -729,8 +756,7 @@ public abstract class Connector
   // return skt;
   // }
 
-  protected static class SavingTrustManager implements X509TrustManager
-  {
+  protected static class SavingTrustManager implements X509TrustManager {
 
     private final X509TrustManager tm;
     private X509Certificate[] chain;

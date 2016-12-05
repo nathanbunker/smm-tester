@@ -1571,7 +1571,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     } else {
       if (caTotal.getAreaProgress()[0] < 100) {
         updateEtc = caTotal.estimatedUpdateCompletion();
-        if (updateEtc != null && updateEtc.getDate() == null) {
+        if (updateEtc != null && updateEtc.getDate() != null) {
           out.println("  <tr>");
           out.println("    <th>Update ETC</th>");
           out.println("    <td>" + sdf.format(updateEtc.getDate()) + "</td>");

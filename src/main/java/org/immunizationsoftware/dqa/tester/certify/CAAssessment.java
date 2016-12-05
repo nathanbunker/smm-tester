@@ -1,5 +1,7 @@
 package org.immunizationsoftware.dqa.tester.certify;
 
+import org.immunizationsoftware.dqa.transform.TestCaseMode;
+
 public class CAAssessment extends CertifyArea
 {
 
@@ -11,7 +13,8 @@ public class CAAssessment extends CertifyArea
 
   @Override
   public void prepareUpdates() {
-    addTestCasesFromSavedSet(TEST_CASE_SET_FOR_ASSESSMENT, 1);
+    addTestCasesFromSavedSetAssessment(TEST_CASE_SET_FOR_ASSESSMENT, TestCaseMode.ASSESSMENT);
+    addTestCasesFromSavedSetAssessment(TEST_CASE_SET_FOR_ASSESSMENT, TestCaseMode.DEFAULT);
   }
 
 
