@@ -3,6 +3,7 @@ package org.immunizationsoftware.dqa.transform;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 
 import org.immunizationsoftware.dqa.tester.connectors.Connector;
 import org.immunizationsoftware.dqa.tester.transform.Patient;
@@ -24,6 +25,15 @@ public class TransformRequest
   private String nowNoTimezone = null;
   private String line = null;
   private String segmentSeparator = "\r";
+  private Map<String, TestCaseMessage> testCaseMessageMap = null;
+
+  public Map<String, TestCaseMessage> getTestCaseMessageMap() {
+    return testCaseMessageMap;
+  }
+
+  public void setTestCaseMessageMap(Map<String, TestCaseMessage> testCaseMessageMap) {
+    this.testCaseMessageMap = testCaseMessageMap;
+  }
 
   public String getThreeDaysAgo() {
     return threeDaysAgo;

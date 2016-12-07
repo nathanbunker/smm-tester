@@ -162,6 +162,11 @@ public class TestCaseMessage {
   private String patientDob = null;
   private String patientSex = null;
   private TestCaseMode testCaseMode = TestCaseMode.DEFAULT;
+  private transient Map<String, TestCaseMessage> testCaseMessageMap = null;
+
+  public Map<String, TestCaseMessage> getTestCaseMessageMap() {
+    return testCaseMessageMap;
+  }
 
   public TestCaseMode getTestCaseMode() {
     return testCaseMode;
@@ -982,6 +987,7 @@ public class TestCaseMessage {
   }
 
   public void registerTestCaseMap(Map<String, TestCaseMessage> testCaseMessageMap) {
+    this.testCaseMessageMap = testCaseMessageMap;
     if (originalMessage.startsWith("[")) {
       int posEndBracket = originalMessage.indexOf("]");
       if (posEndBracket > 0) {

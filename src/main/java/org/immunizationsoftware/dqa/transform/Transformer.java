@@ -563,13 +563,13 @@ public class Transformer {
     return transformRequest.getResultText();
   }
 
-  public static String readField(String message, String reference) {
+  public static String readField(String message, String reference, TransformRequest transformRequest) {
     Transform t = readHL7Reference(reference, reference.length());
     if (t == null) {
       return "";
     }
     try {
-      return getValueFromHL7(message, t);
+      return getValueFromHL7(message, t, transformRequest);
     } catch (IOException ioe) {
       throw new IllegalArgumentException(ioe);
     }
@@ -591,6 +591,7 @@ public class Transformer {
     transformRequest.setPatientType(testCaseMessage.getPatientType());
     transformRequest.setTransformText(transforms);
     transformRequest.setSegmentSeparator(testCaseMessage.getLineEnding());
+    transformRequest.setTestCaseMessageMap(testCaseMessage.getTestCaseMessageMap());
     transform(transformRequest);
     String result = transformRequest.getResultText();
     testCaseMessage.setMessageText(result);
@@ -1062,7 +1063,7 @@ public class Transformer {
     int if18minus = line.indexOf(IF_18_MINUS);
     int if19minus = line.indexOf(IF_19_MINUS);
     if (if18plus > 0 || if19plus > 0 || if18minus > 0 || if19minus > 0) {
-      String dobString = readValueFromHL7Text("PID-7", transformRequest.getResultText());
+      String dobString = readValueFromHL7Text("PID-7", transformRequest.getResultText(), transformRequest);
       if (dobString.length() > 8) {
         dobString = dobString.substring(0, 8);
       }
@@ -1258,20 +1259,20 @@ public class Transformer {
         resultText = sb.toString();
       }
       if (line.toLowerCase().indexOf(FIX_MISSING_MOTHER_MAIDEN_FIRST) > 0) {
-        String motherMaidenFirst = readValueFromHL7Text("PID-6.2", resultText);
-        String motherMaidenLast = readValueFromHL7Text("PID-6.1", resultText);
+        String motherMaidenFirst = readValueFromHL7Text("PID-6.2", resultText, transformRequest);
+        String motherMaidenLast = readValueFromHL7Text("PID-6.1", resultText, transformRequest);
         boolean needToClear = true;
         if (!motherMaidenLast.equals("")) {
           if (!motherMaidenFirst.equals("")) {
             needToClear = false;
           } else {
-            String guardianType = readValueFromHL7Text("NK1-3.1", resultText);
-            motherMaidenFirst = readValueFromHL7Text("NK1-2.2", resultText);
+            String guardianType = readValueFromHL7Text("NK1-3.1", resultText, transformRequest);
+            motherMaidenFirst = readValueFromHL7Text("NK1-2.2", resultText, transformRequest);
             int pos = 1;
             while (!guardianType.equals("") && !guardianType.equals("MTH")) {
               pos++;
-              guardianType = readValueFromHL7Text("NK1#" + pos + "-3.1", resultText);
-              motherMaidenFirst = readValueFromHL7Text("NK1#" + pos + "-2.2", resultText);
+              guardianType = readValueFromHL7Text("NK1#" + pos + "-3.1", resultText, transformRequest);
+              motherMaidenFirst = readValueFromHL7Text("NK1#" + pos + "-2.2", resultText, transformRequest);
             }
             if (guardianType.equals("MTH")) {
               resultText = setValueInHL7("PID-6.2", motherMaidenFirst, resultText, transformRequest);
@@ -1791,9 +1792,9 @@ public class Transformer {
     return resultText;
   }
 
-  public String readValueFromHL7Text(String ref, String resultText) throws IOException {
+  public String readValueFromHL7Text(String ref, String resultText, TransformRequest transformRequest) throws IOException {
     Transform transform = readHL7Reference(ref, ref.length());
-    String value = getValueFromHL7(resultText, transform);
+    String value = getValueFromHL7(resultText, transform, transformRequest);
     return value;
   }
 
@@ -2216,13 +2217,31 @@ public class Transformer {
     }
   }
 
-  public static String getValueFromHL7(final String ref, final String messageText) throws IOException {
+  public static String getValueFromHL7(final String ref, final String messageText, TransformRequest transformRequest) throws IOException {
     Transform t = readHL7Reference(ref, ref.length());
-    return getValueFromHL7(messageText, t);
+    return getValueFromHL7(messageText, t, transformRequest);
   }
 
-  protected static String getValueFromHL7(final String resultText, Transform t) throws IOException {
-    BufferedReader inResult = new BufferedReader(new StringReader(resultText));
+  protected static String getValueFromHL7(final String resultText, Transform t, TransformRequest transformRequest) throws IOException {
+    BufferedReader inResult;
+    {
+      if (t.testCaseId != null) 
+      {
+        if (transformRequest == null)
+        {
+          return "";
+        }
+        Map<String, TestCaseMessage> testCaseMessageMap = transformRequest.getTestCaseMessageMap();
+        if (testCaseMessageMap == null || !testCaseMessageMap.containsKey(t.testCaseId))
+        {
+          return "";
+        }
+        inResult = new BufferedReader(new StringReader(testCaseMessageMap.get(t.testCaseId).getMessageText()));
+      }
+      else {
+      inResult = new BufferedReader(new StringReader(resultText));
+      }
+    }
     boolean foundBoundStart = false;
     boolean foundBoundEnd = false;
     int boundCount = 0;
@@ -2374,6 +2393,16 @@ public class Transformer {
 
   public static Transform readHL7Reference(String line, int endOfInput) {
     Transform t = null;
+    String testCaseId = null;
+    {
+      int posColons = line.indexOf("::");
+      if (posColons > 0 && posColons < endOfInput)
+      {
+        testCaseId = line.substring(0, posColons).trim();
+        line = line.substring(posColons + 2);
+        endOfInput -= (posColons + 2);
+      }
+    }
     int posStar = line.indexOf("*");
     boolean all = false;
     if (posStar >= 0 && posStar < endOfInput) {
@@ -2391,6 +2420,7 @@ public class Transformer {
     }
     if (endOfInput != -1 && (posDot == -1 || (posDot > posDash && posDot < endOfInput))) {
       t = new Transform();
+      t.testCaseId = testCaseId;
       t.all = all;
       if (posDash == -1 || posDash >= endOfInput) {
         posDash = endOfInput;
@@ -2506,7 +2536,7 @@ public class Transformer {
     }
     if (t.valueTransform != null) {
       t.valueTransform.segmentRepeat = t.segmentRepeat;
-      t.value = getValueFromHL7(resultText, t.valueTransform);
+      t.value = getValueFromHL7(resultText, t.valueTransform, transformRequest);
     }
   }
 

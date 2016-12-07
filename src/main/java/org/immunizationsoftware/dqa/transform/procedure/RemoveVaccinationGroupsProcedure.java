@@ -34,7 +34,7 @@ public class RemoveVaccinationGroupsProcedure implements ProcedureInterface {
             lineResult = lineResult.trim();
             if (lineResult.startsWith("ORC|")) {
               if (!vaccinationGroup.equals("")) {
-                String valueActual = Transformer.getValueFromHL7(hl7Ref, vaccinationGroup);
+                String valueActual = Transformer.getValueFromHL7(hl7Ref, vaccinationGroup, transformRequest);
                 if (!valueSearch.equalsIgnoreCase(valueActual)) {
                   finalMessage += vaccinationGroup;
                 }
@@ -47,7 +47,7 @@ public class RemoveVaccinationGroupsProcedure implements ProcedureInterface {
             }
           }
           if (!vaccinationGroup.equals("")) {
-            String valueActual = Transformer.getValueFromHL7(hl7Ref, vaccinationGroup);
+            String valueActual = Transformer.getValueFromHL7(hl7Ref, vaccinationGroup, transformRequest);
             if (!valueSearch.equalsIgnoreCase(valueActual)) {
               finalMessage += vaccinationGroup;
             }

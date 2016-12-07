@@ -93,7 +93,8 @@ public class CertifyServlet extends ClientServlet {
           certifyRunner.setRun(request.getParameter("runO") != null, CertifyRunner.SUITE_O_EXTRA);
           certifyRunner.setRun(request.getParameter("runP") != null, CertifyRunner.SUITE_P_DEDUPLICATION_ENGAGED);
           certifyRunner.setRun(request.getParameter("runQ") != null, CertifyRunner.SUITE_Q_FORECASTER_ENGAGED);
-          certifyRunner.setRun(request.getParameter("runS") != null, CertifyRunner.SUITE_S_ASSESSMENT);
+          certifyRunner.setRun(request.getParameter("runS") != null, CertifyRunner.SUITE_S_ASSESSMENT_FOR_SUBMISSION);
+          certifyRunner.setRun(request.getParameter("runT") != null, CertifyRunner.SUITE_T_ASSESSMENT_FOR_QUERY);
           certifyRunner.setPauseBeforeQuerying(request.getParameter("pauseBeforeQuerying") != null);
           certifyRunner.setRedactListResponses(request.getParameter("redactListResponses") != null);
           certifyRunner.setReportErrorsOnly(request.getParameter("reportErrorsOnly") != null);
@@ -406,7 +407,13 @@ public class CertifyServlet extends ClientServlet {
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td>");
-        out.println("            <input id=\"ChkAssessment\" type=\"checkbox\" name=\"runS\" value=\"true\" checked=\"true\"/> Assessment");
+        out.println("            <input id=\"ChkAssessmentForSubmission\" type=\"checkbox\" name=\"runS\" value=\"true\" checked=\"true\"/> Assessment for Submission");
+        out.println("          </td>");
+        out.println("          <td></td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td>");
+        out.println("            <input id=\"ChkAssessmentForQuery\" type=\"checkbox\" name=\"runT\" value=\"true\" checked=\"true\"/> Assessment for Query");
         out.println("          </td>");
         out.println("          <td></td>");
         out.println("        </tr>");
@@ -544,7 +551,8 @@ public class CertifyServlet extends ClientServlet {
         out.println("                document.getElementById(\"ChkNotAccepted\").checked = toggle;");
         out.println("                document.getElementById(\"ChkIntermediate\").checked = toggle;");
         out.println("                document.getElementById(\"ChkAdvanced\").checked = toggle;");
-        out.println("                document.getElementById(\"ChkAssessment\").checked = toggle;");
+        out.println("                document.getElementById(\"ChkAssessmentForSubmission\").checked = toggle;");
+        out.println("                document.getElementById(\"ChkAssessmentForQuery\").checked = toggle;");
         out.println("                document.getElementById(\"ChkProfiling\").checked = toggle;");
         out.println("                document.getElementById(\"ChkExceptional\").checked = toggle;");
         out.println("                document.getElementById(\"ChkQBPSupport\").checked = toggle;");
@@ -562,6 +570,7 @@ public class CertifyServlet extends ClientServlet {
         out.println("                document.getElementById(\"ChkDeduplicationEngaged\").checked = toggle;");
         out.println("                document.getElementById(\"ChkForecasterEngaged\").checked = toggle;");
         out.println("                document.getElementById(\"ChkForecasting\").checked = toggle;");
+        out.println("                document.getElementById(\"ChkAssessmentForQuery\").checked = toggle;");
         out.println("                return false;");
         out.println("              }");
         out.println("            </script>");

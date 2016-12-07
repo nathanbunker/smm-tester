@@ -28,6 +28,7 @@ import org.immunizationsoftware.dqa.transform.PatientType;
 import org.immunizationsoftware.dqa.transform.ScenarioManager;
 import org.immunizationsoftware.dqa.transform.TestCaseMessage;
 import org.immunizationsoftware.dqa.transform.Transformer;
+import org.openimmunizationsoftware.dqa.tr.RecordServletInterface;
 
 /**
  * 
@@ -81,6 +82,7 @@ public class CreateTestCaseServlet extends ClientServlet {
         }
       }
 
+      
       String testCaseNumber;
       String testCaseSet;
       TestCaseMessage testCaseMessage = null;
@@ -187,6 +189,15 @@ public class CreateTestCaseServlet extends ClientServlet {
             if (testCaseMessage == null) {
               testCaseMessage = new TestCaseMessage();
             }
+            if (!testCaseMessage.getTestCaseNumber().equals(testCaseNumber) || !testCaseMessage.getTestCaseSet().equals(testCaseSet))
+            {
+              testCaseMessage = new TestCaseMessage();
+              if (selectedTestCaseMessageList != null)
+              {
+                selectedTestCaseMessageList.add(testCaseMessage);
+                testCasePos = selectedTestCaseMessageList.size() - 1;
+              }
+            }
             testCaseMessage.setTestCaseNumber(testCaseNumber);
             testCaseMessage.setTestCaseSet(testCaseSet);
             testCaseMessage.setAssertResult(assertResult);
@@ -285,6 +296,18 @@ public class CreateTestCaseServlet extends ClientServlet {
             + (testCaseMessage.getAssertResult().equals("Accept and Warn") ? " selected=\"true\"" : "") + ">Accept and Warn</option>");
         out.println("              <option value=\"Reject\"" + (testCaseMessage.getAssertResult().equals("Reject") ? " selected=\"true\"" : "")
             + ">Reject</option>");
+        
+        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH);
+        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH_Z32);
+        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH_Z42);
+        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST);
+        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND);
+        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33);
+        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY);
+        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR);
+        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MULTIPLE_Z31_Z33);
+        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND_OR_TOO_MANY);
+
         out.println("            </select>");
         out.println("          </td>");
         out.println("        </tr>");
@@ -529,6 +552,11 @@ public class CreateTestCaseServlet extends ClientServlet {
         out.close();
       }
     }
+  }
+
+  private void printQueryOption(PrintWriter out, TestCaseMessage testCaseMessage, String queryField) {
+    out.println("              <option value=\"" + queryField + "\"" + (testCaseMessage.getAssertResult().equals(queryField) ? " selected=\"true\"" : "")
+        + ">Query " + queryField +  "</option>");
   }
 
   protected void makeButtons(List<TestCaseMessage> selectedTestCaseMessageList, PrintWriter out, int testCasePos) {

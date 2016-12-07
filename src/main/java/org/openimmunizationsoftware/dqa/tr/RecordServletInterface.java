@@ -41,7 +41,8 @@ public interface RecordServletInterface {
   public static final String VALUE_TEST_SECTION_TYPE_EXTRA = "Extra";
   public static final String VALUE_TEST_SECTION_TYPE_DEDUPLICATION_ENGAGED = "Deduplication Engaged";
   public static final String VALUE_TEST_SECTION_TYPE_FORECASTER_ENGAGED = "Forecaster Engaged";
-  public static final String VALUE_TEST_SECTION_TYPE_ASSESSMENT = "Assessment";
+  public static final String VALUE_TEST_SECTION_TYPE_ASSESSMENT_FOR_SUBMISSION = "Assessment for Submission";
+  public static final String VALUE_TEST_SECTION_TYPE_ASSESSMENT_FOR_QUERY = "Assessment for Query";
   
   public static final int SUITE_Q_FORECAST = 16;
 
@@ -119,10 +120,15 @@ public interface RecordServletInterface {
   public static final String VALUE_RESULT_ACK_STORE_STATUS_NOT_ACCEPTED_NOT_RETURNED = "na-nr";
   
   public static final String VALUE_RESULT_QUERY_TYPE_MATCH = "Match";
+  public static final String VALUE_RESULT_QUERY_TYPE_MATCH_Z32 = "Match (Z32)";
+  public static final String VALUE_RESULT_QUERY_TYPE_MATCH_Z42 = "Match (Z42)";
   public static final String VALUE_RESULT_QUERY_TYPE_LIST = "List";
   public static final String VALUE_RESULT_QUERY_TYPE_NOT_FOUND = "Not Found";
+  public static final String VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33 = "Not Found (Z33)";
   public static final String VALUE_RESULT_QUERY_TYPE_TOO_MANY = "Too Many";
   public static final String VALUE_RESULT_QUERY_TYPE_ERROR = "Error";
+  public static final String VALUE_RESULT_QUERY_TYPE_MULTIPLE_Z31_Z33 = "List or Not Found or Too Many (Z31 or Z33)";
+  public static final String VALUE_RESULT_QUERY_TYPE_NOT_FOUND_OR_TOO_MANY = "Not Found or Too Many (Z33)";
   
   public static final String VALUE_RESULT_FORECAST_STATUS_INCLUDED = "Included";
   public static final String VALUE_RESULT_FORECAST_STATUS_NOT_INCLUDED = "Not Included";

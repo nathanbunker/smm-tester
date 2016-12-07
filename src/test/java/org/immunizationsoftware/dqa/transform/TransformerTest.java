@@ -27,11 +27,12 @@ public class TransformerTest extends TestCase
   @Test
   public void testReadValue()
   {
-    assertEquals("Burt", Transformer.readField(TEST1_ORIGINAL, "PID-5.1"));
-    assertEquals("Burt", Transformer.readField(TEST1_ORIGINAL, "PID-5"));
-    assertEquals("20150303154321-0500", Transformer.readField(TEST1_ORIGINAL, "MSH-7"));
-    assertEquals("", Transformer.readField(TEST1_ORIGINAL, "PID-100"));
-    assertEquals("", Transformer.readField(TEST1_ORIGINAL, "ZZZ-1"));
+    TransformRequest transformRequest = new TransformRequest(TEST1_ORIGINAL);
+    assertEquals("Burt", Transformer.readField(TEST1_ORIGINAL, "PID-5.1", transformRequest));
+    assertEquals("Burt", Transformer.readField(TEST1_ORIGINAL, "PID-5", transformRequest));
+    assertEquals("20150303154321-0500", Transformer.readField(TEST1_ORIGINAL, "MSH-7", transformRequest));
+    assertEquals("", Transformer.readField(TEST1_ORIGINAL, "PID-100", transformRequest));
+    assertEquals("", Transformer.readField(TEST1_ORIGINAL, "ZZZ-1", transformRequest));
   }
 
   private static final String TEST1_ORIGINAL = "MSH|^~\\&|||||20150303154321-0500||VXU^V04^VXU_V04|G98P76.1245|P|2.5.1|\r"

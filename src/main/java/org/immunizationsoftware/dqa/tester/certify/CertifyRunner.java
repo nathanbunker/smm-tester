@@ -163,8 +163,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   public static final int SUITE_G_PERFORMANCE = 14;
   public static final int SUITE_H_CONFORMANCE = 15;
   public static final int SUITE_L_CONFORMANCE_2015 = 16;
-  public static final int SUITE_S_ASSESSMENT = 17;
-  public static final int SUITE_COUNT = 18;
+  public static final int SUITE_S_ASSESSMENT_FOR_SUBMISSION = 17;
+  public static final int SUITE_T_ASSESSMENT_FOR_QUERY = 18;
+  public static final int SUITE_COUNT = 19;
 
   protected int currentSuite = SUITE_A_BASIC;
   protected IncrementingInt incrementingInt = null;
@@ -203,7 +204,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     certifyAreas[SUITE_O_EXTRA] = new CAExtra(this);
     certifyAreas[SUITE_P_DEDUPLICATION_ENGAGED] = new CADeduplicationEngaged(this);
     certifyAreas[SUITE_Q_FORECASTER_ENGAGED] = new CAForecasterEngaged(this);
-    certifyAreas[SUITE_S_ASSESSMENT] = new CAAssessment(this);
+    certifyAreas[SUITE_S_ASSESSMENT_FOR_SUBMISSION] = new CAAssessmentForSubmission(this);
+    certifyAreas[SUITE_T_ASSESSMENT_FOR_QUERY] = new CAAssessmentForQuery(this);
     performance = (CAPerformance) certifyAreas[SUITE_G_PERFORMANCE];
   }
 

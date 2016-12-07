@@ -22,5 +22,6 @@ public class Transform {
     protected String boundSegment = null;
     protected int boundRepeat = 1;
     protected boolean all = false;
+    protected String testCaseId = null;
     protected Transform valueTransform = null;
 }
