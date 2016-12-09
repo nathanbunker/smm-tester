@@ -300,7 +300,7 @@
     <filter-class>org.apache.wicket.protocol.http.WicketFilter</filter-class>
     <init-param>
       <param-name>applicationClassName</param-name>
-      <param-value>org.immregistries.smm.WicketApplication</param-value>
+      <param-value>org.immregistries.smm.tester.WicketApplication</param-value>
     </init-param>
   </filter>
 
