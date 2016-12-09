@@ -1,0 +1,30 @@
+package org.immregistries.smm.tester.manager.hl7.predicates;
+
+import org.immregistries.smm.tester.manager.hl7.HL7Component;
+import org.immregistries.smm.tester.manager.hl7.UsageType;
+
+public class IsNotValuedAs extends ConditionalPredicate
+{
+
+  private String value = "";
+
+  public IsNotValuedAs(HL7Component component, String value, UsageType usageTypeMet, UsageType usageTypeNotMet) {
+    super(component, usageTypeMet, usageTypeNotMet);
+    this.value = value;
+  }
+
+  @Override
+  public boolean isMet() {
+    return component.getValue() == null || !component.getValue().equalsIgnoreCase(value);
+  }
+  
+  @Override
+  public String printDocument() {
+    if (component != null) {
+      return "If " + component.getComponentReferenceShort() + " is not valued as \"" + value + "\"";
+    }
+    return "";
+  }
+
+
+}

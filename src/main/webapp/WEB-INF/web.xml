@@ -6,7 +6,7 @@
 
   <servlet>
     <servlet-name>ManagerServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.mover.ManagerServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.mover.ManagerServlet</servlet-class>
     <init-param>
       <param-name>scan.start.folders</param-name>
       <param-value>/home/oisptorg/ois-pt.org/data/tester;C:/test/smm;/Tools/dqa-tester/</param-value>
@@ -57,119 +57,119 @@
   </servlet>
   <servlet>
     <servlet-name>CDCWSDLServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.mover.CDCWSDLServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.mover.CDCWSDLServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>WSDLDemoServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.mover.WSDLDemoServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.mover.WSDLDemoServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>CreateTestCaseServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.CreateTestCaseServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.CreateTestCaseServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>CatchServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.CatchServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.CatchServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>VerifyServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.VerifyServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.VerifyServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>DashboardServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.DashboardServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.DashboardServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>GenerateDataServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.GenerateDataServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.GenerateDataServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>ModifyMessageServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.ModifyMessageServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.ModifyMessageServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>CertifyServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.CertifyServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.CertifyServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>QueryServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.QueryServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.QueryServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>DocumentServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.DocumentServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.DocumentServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>ConformanceServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.ConformanceServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.ConformanceServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>DownloadServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.DownloadServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.DownloadServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>TestCaseMessageViewerServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.TestCaseMessageViewerServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.TestCaseMessageViewerServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>CompareServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.CompareServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.CompareServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>HomeServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.HomeServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.HomeServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>TestCaseServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.TestCaseServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.TestCaseServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>StressTestServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.StressTestServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.StressTestServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>SubmitServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.SubmitServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.SubmitServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>InstallCertServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.InstallCertServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.InstallCertServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>LoginServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.LoginServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.LoginServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>InterfaceProfileServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.InterfaceProfileServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.InterfaceProfileServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>SetupServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.SetupServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.SetupServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>ConnectServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.tester.ConnectServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.tester.ConnectServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>smm.install.ConfigureServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.mover.install.ConfigureServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.mover.install.ConfigureServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>smm.install.DownloadServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.mover.install.DownloadServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.mover.install.DownloadServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>smm.install.PrepareServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.mover.install.PrepareServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.mover.install.PrepareServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>smm.install.InstallServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.mover.install.InstallServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.mover.install.InstallServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>dqa.install.DownloadServlet</servlet-name>
-    <servlet-class>org.immunizationsoftware.dqa.install.DownloadServlet</servlet-class>
+    <servlet-class>org.immregistries.smm.install.DownloadServlet</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>DashboardServlet</servlet-name>
@@ -300,7 +300,7 @@
     <filter-class>org.apache.wicket.protocol.http.WicketFilter</filter-class>
     <init-param>
       <param-name>applicationClassName</param-name>
-      <param-value>org.immunizationsoftware.dqa.WicketApplication</param-value>
+      <param-value>org.immregistries.smm.WicketApplication</param-value>
     </init-param>
   </filter>
 

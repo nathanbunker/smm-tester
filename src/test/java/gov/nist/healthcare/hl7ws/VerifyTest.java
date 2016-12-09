@@ -3,10 +3,10 @@ package gov.nist.healthcare.hl7ws;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.immunizationsoftware.dqa.tester.manager.nist.Assertion;
-import org.immunizationsoftware.dqa.tester.manager.nist.NISTValidator;
-import org.immunizationsoftware.dqa.tester.manager.nist.ValidationReport;
-import org.immunizationsoftware.dqa.tester.manager.nist.ValidationResource;
+import org.immregistries.smm.tester.manager.nist.Assertion;
+import org.immregistries.smm.tester.manager.nist.NISTValidator;
+import org.immregistries.smm.tester.manager.nist.ValidationReport;
+import org.immregistries.smm.tester.manager.nist.ValidationResource;
 import org.junit.Test;
 
 import gov.nist.healthcare.hl7ws.client.MessageValidationV2SoapClient;
