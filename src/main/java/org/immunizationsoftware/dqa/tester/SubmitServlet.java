@@ -105,7 +105,7 @@ public class SubmitServlet extends ClientServlet
             Transformer transformer = new Transformer();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
             connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
-            message = transformer.transformForTesting(connector, message, connector.getCustomTransformations(), scenarioTransforms, null, additionalTransformations);
+            message = transformer.transformForTesting(connector, message, connector.getCustomTransformations(), scenarioTransforms, null, additionalTransformations, null);
           }
         } else {
           String customTranformations = "";

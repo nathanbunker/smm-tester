@@ -448,6 +448,7 @@ public class Transformer {
     transformRequest.setConnector(connector);
     transformRequest.setPatientType(PatientType.NONE);
     transformRequest.setTransformText(transforms);
+    // transformRequest.setTestCaseMessageMap(testCaseMessage.getTestCaseMessageMap());
     transform(transformRequest);
     return transformRequest.getResultText();
   }
@@ -467,13 +468,13 @@ public class Transformer {
       Transformer transformer = new Transformer();
       SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
       connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
-      message = transformer.transformForTesting(connector, message, transforms, scenarioTransforms, testCaseMessage.getExcludeTransformations(), additionalTransformations);
+      message = transformer.transformForTesting(connector, message, transforms, scenarioTransforms, testCaseMessage.getExcludeTransformations(), additionalTransformations, testCaseMessage.getTestCaseMessageMap());
     }
     return message;
   }
 
   public String transformForTesting(Connector connector, String messageText, String customTransformations, String scenarioTransformations, String excludeTransformations,
-      String additionalTransformations) {
+      String additionalTransformations, Map<String, TestCaseMessage> testCaseMessageMap) {
     String quickTransforms = "";
 
     if (connector.getQuickTransformations() != null) {
@@ -527,6 +528,7 @@ public class Transformer {
     transformRequest.setConnector(connector);
     transformRequest.setPatientType(PatientType.NONE);
     transformRequest.setTransformText(transforms);
+    transformRequest.setTestCaseMessageMap(testCaseMessageMap);
     transform(transformRequest);
     return transformRequest.getResultText();
   }
@@ -604,6 +606,7 @@ public class Transformer {
     transformRequest.setPatientType(testCaseMessage.getPatientType());
     transformRequest.setTransformText(additionTransformations);
     transformRequest.setSegmentSeparator(testCaseMessage.getLineEnding());
+    transformRequest.setTestCaseMessageMap(testCaseMessage.getTestCaseMessageMap());
     transform(transformRequest);
     return transformRequest.getResultText();
   }

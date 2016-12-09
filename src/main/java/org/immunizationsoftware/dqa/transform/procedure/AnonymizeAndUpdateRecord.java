@@ -81,8 +81,8 @@ public class AnonymizeAndUpdateRecord implements ProcedureInterface {
           updateName(fields, 5, 1, patient.getLastName());
           updateName(fields, 5, 2, isGirl ? patient.getGirlName() : patient.getBoyName());
           updateName(fields, 5, 3, isGirl ? patient.getMiddleNameGirl() : patient.getMiddleNameBoy());
-          updateName(fields, 6, 3, patient.getMotherMaidenName());
-          updateName(fields, 6, 3, patient.getMotherName());
+          updateName(fields, 6, 1, patient.getMotherMaidenName());
+          updateName(fields, 6, 2, patient.getMotherName());
           update(fields, 11, 1, patient.getStreet());
           update(fields, 11, 2, patient.getStreet2());
           update(fields, 11, 3, patient.getCity());

@@ -32,6 +32,8 @@ public class TestCaseMessage {
   public static final String FIELD_NAME = "Field Name:";
   public static final String EXPECTED_RESULT = "Expected Result:";
   public static final String ASSERT_RESULT = "Assert Result:";
+  public static final String MESSAGE_TYPE = "Message Type:";
+  public static final String DERIVED_FROM_TEST_CASE_NUMBER = "Derived From Test Case Number:";
   public static final String ORIGINAL_MESSAGE = "Original Message:";
   public static final String ACTUAL_RESPONSE_MESSAGE = "Actual Response Message:";
   public static final String DERIVED_FROM_VXU_MESSAGE = "Derived From VXU Message:";
@@ -101,12 +103,15 @@ public class TestCaseMessage {
 
   private String testCaseSet = "";
   private String testCaseNumber = "";
+  private String testCaseNumberOriginal = "";
   private String testCaseCategoryId = "";
   private String description = "";
   private String expectedResult = "";
   private String messageText = "";
   private String messageTextSent = "";
   private String assertResult = "";
+  private String messageType = "";
+  private String derivedFromTestCaseNumber = "";
   private String fieldName = "";
   private String originalMessage = "";
   private String originalMessageResponse = "";
@@ -164,6 +169,30 @@ public class TestCaseMessage {
   private TestCaseMode testCaseMode = TestCaseMode.DEFAULT;
   private transient Map<String, TestCaseMessage> testCaseMessageMap = null;
 
+  public String getTestCaseNumberOriginal() {
+    return testCaseNumberOriginal;
+  }
+  
+  public void setTestCaseNumberOriginal(String testCaseNumberOriginal) {
+    this.testCaseNumberOriginal = testCaseNumberOriginal;
+  }
+  
+  public String getDerivedFromTestCaseNumber() {
+    return derivedFromTestCaseNumber;
+  }
+  
+  public void setDerivedFromTestCaseNumber(String derivedFromTestCaseNumber) {
+    this.derivedFromTestCaseNumber = derivedFromTestCaseNumber;
+  }
+  
+  public String getMessageType() {
+    return messageType;
+  }
+  
+  public void setMessageType(String messageType) {
+    this.messageType = messageType;
+  }
+  
   public Map<String, TestCaseMessage> getTestCaseMessageMap() {
     return testCaseMessageMap;
   }
@@ -570,11 +599,13 @@ public class TestCaseMessage {
   public TestCaseMessage(TestCaseMessage copy) {
     this.testCaseSet = copy.testCaseSet;
     this.testCaseNumber = copy.testCaseNumber;
+    this.testCaseNumberOriginal = copy.testCaseNumber;
     this.description = copy.description;
     this.fieldName = copy.fieldName;
     this.expectedResult = copy.expectedResult;
     this.messageText = copy.messageText;
     this.assertResult = copy.assertResult;
+    this.messageType = copy.messageType;
     this.originalMessage = copy.originalMessage;
     this.quickTransformations = new String[copy.quickTransformations.length];
     System.arraycopy(copy.quickTransformations, 0, this.quickTransformations, 0, copy.quickTransformations.length);
@@ -838,6 +869,12 @@ public class TestCaseMessage {
       stringOut.println(EXPECTED_RESULT + " " + expectedResult);
       if (!assertResult.equals("")) {
         stringOut.println(ASSERT_RESULT + " " + assertResult);
+      }
+      if (!messageType.equals("")) {
+        stringOut.println(MESSAGE_TYPE + " " + messageType);
+      }
+      if (!derivedFromTestCaseNumber.equals("")) {
+        stringOut.println(DERIVED_FROM_TEST_CASE_NUMBER + " " + derivedFromTestCaseNumber);
       }
       for (Comment comment : comments) {
         stringOut.println(COMMENT + " " + comment.getName() + " - " + comment.getText());

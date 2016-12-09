@@ -2,6 +2,8 @@ package org.immunizationsoftware.dqa.tester.certify;
 
 import static org.immunizationsoftware.dqa.transform.ScenarioManager.SCENARIO_1_R_ADMIN_CHILD;
 
+import static org.openimmunizationsoftware.dqa.tr.RecordServletInterface.*;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -336,8 +338,40 @@ public abstract class CertifyArea implements RecordServletInterface {
     queryList.add(queryTestCaseMessage);
     queryTestCaseMessage.setTestPosition(certifyRunner.incrementingInt.next());
     queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
-    queryTestCaseMessage.setAssertResult(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH);
+    queryTestCaseMessage.setAssertResult(VALUE_RESULT_QUERY_TYPE_MATCH);
     queryTestCaseMessage.setForecastTestCase(testCaseMessage.getForecastTestCase());
+    String message = Transformer.transform(certifyRunner.queryConnector, queryTestCaseMessage);
+    queryTestCaseMessage.setMessageTextSent(message);
+    certifyRunner.register(queryTestCaseMessage);
+    return queryTestCaseMessage;
+  }
+
+  public TestCaseMessage registerQuery(String testCaseId, TestCaseMessage testCaseMessage, TestCaseMessage queryTestCaseMessage) {
+    queryTestCaseMessage.setTestCaseSet(certifyRunner.testCaseSet);
+    queryTestCaseMessage.setTestCaseCategoryId(areaLetter + "." + testCaseId);
+    queryTestCaseMessage.setTestCaseNumber(certifyRunner.uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
+    if (testCaseMessage != null) {
+      System.out.println("--> test case message " + testCaseMessage.getTestCaseNumber());
+      queryTestCaseMessage.setDerivedFromTestCaseCategoryId(testCaseMessage.getTestCaseCategoryId());
+      queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageTextSent());
+      queryTestCaseMessage.setOriginalMessageResponse(testCaseMessage.getActualResponseMessage());
+      queryTestCaseMessage.setOriginalAccepted(testCaseMessage.isAccepted());
+      TestCaseMessage tcmUpdates = testCaseMessage.getUpdateTestCaseMessage();
+      while (tcmUpdates != null) {
+        queryTestCaseMessage.setDerivedFromVXUMessage(tcmUpdates.getMessageText() + queryTestCaseMessage.getDerivedFromVXUMessage());
+        queryTestCaseMessage.setOriginalMessageResponse(tcmUpdates.getActualResponseMessage() + queryTestCaseMessage.getOriginalMessageResponse());
+        queryTestCaseMessage.setOriginalAccepted(tcmUpdates.isAccepted() && queryTestCaseMessage.isOriginalAccepted());
+        tcmUpdates = tcmUpdates.getUpdateTestCaseMessage();
+      }
+      System.out.println("--> " + queryTestCaseMessage.getDerivedFromVXUMessage());
+    }
+    queryList.add(queryTestCaseMessage);
+    queryTestCaseMessage.setTestPosition(certifyRunner.incrementingInt.next());
+    queryTestCaseMessage.setTestType(VALUE_TEST_TYPE_QUERY);
+    queryTestCaseMessage.setAssertResult(queryTestCaseMessage.getAssertResult());
+    if (testCaseMessage != null) {
+      queryTestCaseMessage.setForecastTestCase(testCaseMessage.getForecastTestCase());
+    }
     String message = Transformer.transform(certifyRunner.queryConnector, queryTestCaseMessage);
     queryTestCaseMessage.setMessageTextSent(message);
     certifyRunner.register(queryTestCaseMessage);
@@ -374,9 +408,9 @@ public abstract class CertifyArea implements RecordServletInterface {
       testPass = setPassFailForQuery(queryTestCaseMessage, testPass);
       readForecastActual(queryTestCaseMessage);
       if (queryTestCaseMessage.getForecastActualList().size() > 0) {
-        queryTestCaseMessage.setResultForecastStatus(RecordServletInterface.VALUE_RESULT_FORECAST_STATUS_INCLUDED);
+        queryTestCaseMessage.setResultForecastStatus(VALUE_RESULT_FORECAST_STATUS_INCLUDED);
       } else {
-        queryTestCaseMessage.setResultForecastStatus(RecordServletInterface.VALUE_RESULT_FORECAST_STATUS_NOT_INCLUDED);
+        queryTestCaseMessage.setResultForecastStatus(VALUE_RESULT_FORECAST_STATUS_NOT_INCLUDED);
       }
       recordForecastResults(queryTestCaseMessage);
       if (shouldValidate() && (!certifyRunner.isRedactListResponses() || rspMessage.indexOf(CertifyRunner.REDACTION_NOTICE) == -1)) {
@@ -437,28 +471,31 @@ public abstract class CertifyArea implements RecordServletInterface {
       if (responseReader.advanceToSegment("MSH")) {
         String messageType = responseReader.getValue(9);
         if (messageType.equals("VXR")) {
-          queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH;
+          queryType = VALUE_RESULT_QUERY_TYPE_MATCH;
         } else if (messageType.equals("VXX")) {
-          queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST;
+          queryType = VALUE_RESULT_QUERY_TYPE_LIST;
         } else if (messageType.equals("QCK")) {
           if (responseReader.advanceToSegment("QAK") && responseReader.getValue(2).equals("NF")) {
-            queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND;
+            queryType = VALUE_RESULT_QUERY_TYPE_NOT_FOUND;
           }
         } else if (messageType.equals("ACK")) {
-          queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR;
+          queryType = VALUE_RESULT_QUERY_TYPE_ERROR;
         } else if (messageType.equals("RSP")) {
           String profile = responseReader.getValue(21);
-          if (profile.equalsIgnoreCase("Z32") || profile.equalsIgnoreCase("Z42")) {
-            queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH;
+
+          if (profile.equalsIgnoreCase("Z32")) {
+            queryType = VALUE_RESULT_QUERY_TYPE_MATCH_Z32;
+          } else if (profile.equalsIgnoreCase("Z42")) {
+            queryType = VALUE_RESULT_QUERY_TYPE_MATCH_Z42;
           } else if (profile.equalsIgnoreCase("Z31")) {
-            queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST;
+            queryType = VALUE_RESULT_QUERY_TYPE_LIST;
           } else if (profile.equalsIgnoreCase("Z33")) {
             if (responseReader.advanceToSegment("QAK")) {
               String responseStatus = responseReader.getValue(2);
               if (responseStatus.equals("NF")) {
-                queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND;
+                queryType = VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33;
               } else if (responseStatus.equals("TM")) {
-                queryType = RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY;
+                queryType = VALUE_RESULT_QUERY_TYPE_TOO_MANY;
               }
             }
           }
@@ -470,16 +507,25 @@ public abstract class CertifyArea implements RecordServletInterface {
 
     boolean passed = queryTestCaseMessage.getAssertResult().equals(queryType);
 
-    if (queryTestCaseMessage.getAssertResult().equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH)) {
-      passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH);
-    } else if (queryTestCaseMessage.getAssertResult().equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST)) {
-      passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST);
-    } else if (queryTestCaseMessage.getAssertResult().equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND)) {
-      passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND);
-    } else if (queryTestCaseMessage.getAssertResult().equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY)) {
-      passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY);
-    } else if (queryTestCaseMessage.getAssertResult().equalsIgnoreCase(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR)) {
-      passed = queryType.equals(RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR);
+    String ar = queryTestCaseMessage.getAssertResult();
+    if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_MATCH)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_MATCH_Z32) || queryType.equals(VALUE_RESULT_QUERY_TYPE_MATCH_Z42);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_MATCH_Z32)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_MATCH_Z32);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_MATCH_Z42)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_MATCH_Z42);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_LIST)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_LIST);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_NOT_FOUND) || ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_TOO_MANY)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_TOO_MANY);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_ERROR)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_ERROR);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_MULTIPLE_Z31_Z33)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_LIST) || queryType.equals(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_OR_TOO_MANY)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_TOO_MANY) || queryType.equals(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33);
     }
 
     if (passed) {
@@ -574,16 +620,23 @@ public abstract class CertifyArea implements RecordServletInterface {
   }
 
   public void addTestCasesFromSavedSetAssessment(String testCaseSet, TestCaseMode testCaseMode) {
+    addTestCasesFromSavedSetAssessment(testCaseSet, testCaseMode, null);
+  }
+
+  public void addTestCasesFromSavedSetAssessment(String testCaseSet, TestCaseMode testCaseMode, String messageType) {
     Map<String, TestCaseMessage> testCaseMessageMap = certifyRunner.testMessageMapMap.get(testCaseSet);
     if (testCaseMessageMap != null && testCaseMessageMap.size() > 0) {
       List<String> testNumList = new ArrayList<String>(testCaseMessageMap.keySet());
       Collections.sort(testNumList);
       for (String testNum : testNumList) {
         TestCaseMessage testCaseMessage = testCaseMessageMap.get(testNum);
+        if (messageType != null && !messageType.equalsIgnoreCase(testCaseMessage.getMessageType())) {
+          continue;
+        }
         TestCaseMessage tcm = new TestCaseMessage(testCaseMessage);
         tcm.setTestCaseMode(testCaseMode);
         String testCaseId = testCaseMessage.getTestCaseNumber();
-        if (testCaseMode == TestCaseMode.DEFAULT) {
+        if (testCaseMode == TestCaseMode.DEVIATES) {
           testCaseId += "d";
           testCaseMessage.setDescription(testCaseMessage.getDescription() + " (Deviates)");
         }

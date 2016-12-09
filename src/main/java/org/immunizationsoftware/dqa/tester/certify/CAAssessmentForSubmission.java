@@ -14,7 +14,7 @@ public class CAAssessmentForSubmission extends CertifyArea
   @Override
   public void prepareUpdates() {
     addTestCasesFromSavedSetAssessment(TEST_CASE_SET_FOR_ASSESSMENT_FOR_SUBMISSION, TestCaseMode.ASSESSMENT);
-    addTestCasesFromSavedSetAssessment(TEST_CASE_SET_FOR_ASSESSMENT_FOR_SUBMISSION, TestCaseMode.DEFAULT);
+    addTestCasesFromSavedSetAssessment(TEST_CASE_SET_FOR_ASSESSMENT_FOR_SUBMISSION, TestCaseMode.DEVIATES);
   }
 
 

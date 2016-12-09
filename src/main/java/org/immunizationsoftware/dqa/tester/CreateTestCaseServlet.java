@@ -132,6 +132,8 @@ public class CreateTestCaseServlet extends ClientServlet {
             String description = request.getParameter("description");
             String expectedResult = request.getParameter("expectedResult");
             String assertResult = request.getParameter("assertResult");
+            String messageType = request.getParameter("messageType");
+            String derivedFromTestCaseNumber = request.getParameter("derivedFromTestCaseNumber");
             String[] quickTransformations = request.getParameterValues("extra");
             PatientType patientType = PatientType.ANY_CHILD;
             if (request.getParameter("patientType") != null) {
@@ -183,8 +185,20 @@ public class CreateTestCaseServlet extends ClientServlet {
             if (assertResult == null && testCaseMessage != null) {
               assertResult = testCaseMessage.getAssertResult();
             }
+            if (messageType == null && testCaseMessage != null) {
+              messageType = testCaseMessage.getMessageType();
+            }
+            if (derivedFromTestCaseNumber == null && testCaseMessage != null) {
+              derivedFromTestCaseNumber = testCaseMessage.getDerivedFromTestCaseNumber();
+            }
             if (assertResult == null) {
               assertResult = "Accept";
+            }
+            if (messageType == null) {
+              messageType = "VXU";
+            }
+            if (derivedFromTestCaseNumber == null) {
+              messageType = "";
             }
             if (testCaseMessage == null) {
               testCaseMessage = new TestCaseMessage();
@@ -201,6 +215,8 @@ public class CreateTestCaseServlet extends ClientServlet {
             testCaseMessage.setTestCaseNumber(testCaseNumber);
             testCaseMessage.setTestCaseSet(testCaseSet);
             testCaseMessage.setAssertResult(assertResult);
+            testCaseMessage.setMessageType(messageType);
+            testCaseMessage.setDerivedFromTestCaseNumber(derivedFromTestCaseNumber);
             testCaseMessage.setCustomTransformations(customTransformations);
             testCaseMessage.setAdditionalTransformations(additionalTransforms);
             testCaseMessage.setDescription(description);
@@ -310,6 +326,23 @@ public class CreateTestCaseServlet extends ClientServlet {
 
         out.println("            </select>");
         out.println("          </td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td valign=\"top\">Message Type</td>");
+        out.println("          <td colspan=\"2\">");
+        out.println("            <select name=\"messageType\">");
+        out.println("              <option value=\"\">select</option>");
+        out.println("              <option value=\"VXU\"" + (testCaseMessage.getMessageType().equals("VXU") ? " selected=\"true\"" : "")
+            + ">VXU</option>");
+        out.println("              <option value=\"QBP\"" + (testCaseMessage.getMessageType().equals("QBP") ? " selected=\"true\"" : "")
+            + ">QBP</option>");
+        out.println("            </select>");
+        out.println("          </td>");
+        out.println("        </tr>");
+        out.println("        <tr>");
+        out.println("          <td valign=\"top\">Derived From</td>");
+        out.println("          <td colspan=\"2\"><input type=\"text\" name=\"derivedFromTestCaseNumber\" value=\"" + testCaseMessage.getDerivedFromTestCaseNumber()
+            + "\" size=\"15\"></td>");
         out.println("        </tr>");
         if (!testCaseMessage.getActualResultAckType().equals("")) {
           out.println("        <tr>");
