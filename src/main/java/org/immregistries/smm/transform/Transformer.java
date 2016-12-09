@@ -2230,19 +2230,13 @@ public class Transformer {
     {
       if (t.testCaseId != null) 
       {
-        System.out.println("--> Running transform where t.testCaseId = \"" + t.testCaseId + "\"");
         if (transformRequest == null)
         {
-          System.out.println("--> transformRequest == null");
           return "";
         }
         Map<String, TestCaseMessage> testCaseMessageMap = transformRequest.getTestCaseMessageMap();
         if (testCaseMessageMap == null || !testCaseMessageMap.containsKey(t.testCaseId))
         {
-          System.out.println("--> testCaseMessageMap = " + testCaseMessageMap);
-          if (testCaseMessageMap != null) {
-          System.out.println("--> testCaseMessageMap.containsKey(\"" + t.testCaseId + "\") = " + testCaseMessageMap.containsKey(t.testCaseId));
-          }
           return "";
         }
         inResult = new BufferedReader(new StringReader(testCaseMessageMap.get(t.testCaseId).getMessageText()));
@@ -2257,9 +2251,6 @@ public class Transformer {
     String lineResult;
     int repeatCount = 0;
     while ((lineResult = inResult.readLine()) != null) {
-      if (t.testCaseId != null){
-      System.out.println("-->    >> " + lineResult);
-    }
       lineResult = lineResult.trim();
       if (lineResult.length() > 0) {
         if (t.boundSegment != null && !foundBoundEnd) {

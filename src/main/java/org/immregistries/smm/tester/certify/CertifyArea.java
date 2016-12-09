@@ -350,7 +350,6 @@ public abstract class CertifyArea implements RecordServletInterface {
     queryTestCaseMessage.setTestCaseCategoryId(areaLetter + "." + testCaseId);
     queryTestCaseMessage.setTestCaseNumber(certifyRunner.uniqueMRNBase + queryTestCaseMessage.getTestCaseCategoryId());
     if (testCaseMessage != null) {
-      System.out.println("--> test case message " + testCaseMessage.getTestCaseNumber());
       queryTestCaseMessage.setDerivedFromTestCaseCategoryId(testCaseMessage.getTestCaseCategoryId());
       queryTestCaseMessage.setDerivedFromVXUMessage(testCaseMessage.getMessageTextSent());
       queryTestCaseMessage.setOriginalMessageResponse(testCaseMessage.getActualResponseMessage());
@@ -362,7 +361,6 @@ public abstract class CertifyArea implements RecordServletInterface {
         queryTestCaseMessage.setOriginalAccepted(tcmUpdates.isAccepted() && queryTestCaseMessage.isOriginalAccepted());
         tcmUpdates = tcmUpdates.getUpdateTestCaseMessage();
       }
-      System.out.println("--> " + queryTestCaseMessage.getDerivedFromVXUMessage());
     }
     queryList.add(queryTestCaseMessage);
     queryTestCaseMessage.setTestPosition(certifyRunner.incrementingInt.next());

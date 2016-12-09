@@ -27,8 +27,6 @@ public class CAAssessmentForQuery extends CertifyArea
     addTestCasesFromSavedSetAssessment(TEST_CASE_SET_FOR_ASSESSMENT_FOR_QUERY, TestCaseMode.DEFAULT, "VXU");
     for (TestCaseMessage tcm : updateList)
     {
-      System.out.println("--> --------------------------------------------------------------------- ");
-      System.out.println("--> tcm.getTestCaseNumber() = '" + tcm.getTestCaseNumberOriginal() + "'");
       updateTestCaseMessageMap.put(tcm.getTestCaseNumberOriginal(), tcm);
     }
   }
@@ -53,13 +51,12 @@ public class CAAssessmentForQuery extends CertifyArea
         if ("QBP" != null && !"QBP".equalsIgnoreCase(queryTestCaseMessage.getMessageType())) {
           continue;
         }
-        System.out.println("--> ================================================================================");
-        System.out.println("--> queryTestCaseMessage.getTestCaseNumberOriginal() = '" + queryTestCaseMessage.getDerivedFromTestCaseNumber() +"'");
         TestCaseMessage tcm = updateTestCaseMessageMap.get(queryTestCaseMessage.getDerivedFromTestCaseNumber());
         TestCaseMessage queryTcm = new TestCaseMessage(queryTestCaseMessage);
         allTestCaseMessageMap.put(queryTcm.getTestCaseNumberOriginal(), queryTcm);
         queryTcm.setTestCaseMode(testCaseMode);
         queryTcm.registerTestCaseMap(allTestCaseMessageMap);
+        certifyRunner.transformer.transform(queryTcm);
         String testCaseId = queryTestCaseMessage.getTestCaseNumber();
         if (testCaseMode == TestCaseMode.DEVIATES) {
           testCaseId += "d";
