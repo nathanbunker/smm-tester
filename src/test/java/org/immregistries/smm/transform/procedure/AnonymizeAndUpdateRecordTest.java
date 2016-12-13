@@ -32,11 +32,11 @@ public class AnonymizeAndUpdateRecordTest extends TestCase {
     test("MSH|^~\\&|||||20160805102500-0600^~&||VXU^V04^VXU_V04|1cuT-A.01.01.3n|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS\r",
         "MSH|^~\\&|||||20161108102500-0600^~&||VXU^V04^VXU_V04|1cuT-A.01.01.3n|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS\r");
 
-    test(
-        MSH_ORIG
-            + "PID|1||1234^^^AIRA-TEST^MR||Pecos^Sawyer^K^^^^L|Marion^Valisa^^^^^M|20120725|F||2106-3^White^CDCREC|350 Greene Cir^^Little Lake^MI^49833^USA^P||^PRN^PH^^^906^3464569|||||||||2186-5^not Hispanic or Latino^CDCREC||N||||||N",
-        MSH_NEW
-            + "PID|1||1234^^^AIRA-TEST^MR||Pecos^Sawyer^K^^^^L|Marion^Valisa^^^^^M|20120725|F||2106-3^White^CDCREC|350 Greene Cir^^Little Lake^MI^49833^USA^P||^PRN^PH^^^906^3464569|||||||||2186-5^not Hispanic or Latino^CDCREC||N||||||N");
+//    test(
+//        MSH_ORIG
+//            + "PID|1||1234^^^AIRA-TEST^MR||Pecos^Sawyer^K^^^^L|Marion^Valisa^^^^^M|20120725|F||2106-3^White^CDCREC|350 Greene Cir^^Little Lake^MI^49833^USA^P||^PRN^PH^^^906^3464569|||||||||2186-5^not Hispanic or Latino^CDCREC||N||||||N",
+//        MSH_NEW
+//            + "PID|1||1234^^^AIRA-TEST^MR||Pecos^Sawyer^K^^^^L|Marion^Valisa^^^^^M|20120725|F||2106-3^White^CDCREC|350 Greene Cir^^Little Lake^MI^49833^USA^P||^PRN^PH^^^906^3464569|||||||||2186-5^not Hispanic or Latino^CDCREC||N||||||N");
 
   }
 

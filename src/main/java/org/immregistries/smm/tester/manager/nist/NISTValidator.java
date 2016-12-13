@@ -4,7 +4,9 @@ import gov.nist.healthcare.hl7ws.client.MessageValidationV2SoapClient;
 
 public class NISTValidator
 {
-  private static final String EVS_URL = "http://hit-testing2.nist.gov:8090/hl7v2ws/services/soap/MessageValidationV2";
+  private static final String EVS_URL = "http://hl7v2.ws.nist.gov/hl7v2ws//services/soap/MessageValidationV2";
+  // OLD URL: http://hit-testing2.nist.gov:8090/hl7v2ws/services/soap/MessageValidationV2
+  // Better URL because it won't move: http://hl7v2.ws.nist.gov/hl7v2ws//services/soap/MessageValidationV2 
 
   private static MessageValidationV2SoapClient soapClient = null;
 
