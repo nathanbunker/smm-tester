@@ -305,7 +305,7 @@ public abstract class CertifyArea implements RecordServletInterface {
 
   public void setDerivedFrom(TestCaseMessage tcm, TestCaseMessage tcmQuery) {
     tcmQuery.setDerivedFromTestCaseCategoryId(tcm.getTestCaseCategoryId());
-    tcmQuery.setDerivedFromVXUMessage(tcm.getMessageText());
+    tcmQuery.setDerivedFromVXUMessage(tcm.getMessageTextSent());
     tcmQuery.setOriginalMessageResponse(tcm.getActualResponseMessage());
     tcmQuery.setOriginalAccepted(tcm.isAccepted());
     TestCaseMessage tcmUpdates = tcm.getUpdateTestCaseMessage();

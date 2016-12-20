@@ -134,6 +134,10 @@ public class CreateTestCaseServlet extends ClientServlet {
             String assertResult = request.getParameter("assertResult");
             String messageType = request.getParameter("messageType");
             String derivedFromTestCaseNumber = request.getParameter("derivedFromTestCaseNumber");
+            if (derivedFromTestCaseNumber == null)
+            {
+              derivedFromTestCaseNumber = "";
+            }
             String[] quickTransformations = request.getParameterValues("extra");
             PatientType patientType = PatientType.ANY_CHILD;
             if (request.getParameter("patientType") != null) {

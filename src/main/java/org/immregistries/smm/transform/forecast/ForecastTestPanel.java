@@ -4,7 +4,8 @@ public enum ForecastTestPanel {
   
   AIRA_INTEROP_TESTING(72, "AIRA Interop Testing"),
   TCH_INITIAL(2, "TCH Initial"),
-  CDSI_TEST_CASES_V2_1(71, "CDSI v2.1 Nov 2015", true),
+  CDSI_TEST_CASES_V2_1(71, "CDSI v2.1"),
+  CDSI_TEST_CASES_V3_0(116, "CDSI v3.0", true),
   IHS_ROLLOUT_2013(18, "IHS Rollout"),
   IHS_FROM_RPMS(12, "IHS from RPMS"),
   VDH(15, "VDH"),
