@@ -61,7 +61,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
   public static final String REDACTION_NOTICE = "[IIS Tester: Message has been redacted. It may contain non-test patient information.]";
 
-  private static final String DQACM_BASE = "http://ois-pt.org/dqacm/";
+  private static final String DQACM_BASE = "http://localhost:8289/";
   // "http://localhost:8289/";
   // "http://ois-pt.org/dqacm/";
 
@@ -2300,6 +2300,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
         addField(sb, PARAM_TM_RESULT_RESPONSE_TYPE, testMessage.getActualMessageResponseType());
         addField(sb, PARAM_TM_RESULT_ACK_TYPE, testMessage.getActualResultAckType());
         addField(sb, PARAM_TM_RESULT_MANUAL_TEST, manualTest);
+        addField(sb, PARAM_TM_RESULT_RUN_TIME_MS, testMessage.getTotalRunTime());
         if (testMessage.getValidationReport() == null
             || !testMessage.getValidationReport().getHeaderReport().getValidationStatus().equals("Complete")) {
           addField(sb, PARAM_TM_RESULT_ACK_CONFORMANCE, VALUE_RESULT_ACK_CONFORMANCE_NOT_RUN);

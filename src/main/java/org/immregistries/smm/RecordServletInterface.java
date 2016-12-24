@@ -172,6 +172,7 @@ public interface RecordServletInterface {
   public static final String PARAM_TM_RESULT_MANUAL_TEST = "tm_resultManualTest";
   public static final String PARAM_TM_FORECAST_TEST_PANEL_CASE_ID = "tm_forecastTestPanelCaseId";
   public static final String PARAM_TM_FORECAST_TEST_PANEL_ID = "tm_forecastTestPanelId";
+  public static final String PARAM_TM_RESULT_RUN_TIME_MS = "tm_runTimeMs";
 
   public static final String[] PARAMS_TM = { PARAM_TM_TEST_POSITION, PARAM_TM_TEST_TYPE, PARAM_TM_TEST_CASE_SET, PARAM_TM_TEST_CASE_NUMBER,
       PARAM_TM_TEST_CASE_CATEGORY, PARAM_TM_TEST_CASE_DESCRIPTION, PARAM_TM_TEST_CASE_ASSERT_RESULT, PARAM_TM_PREP_PATIENT_TYPE,

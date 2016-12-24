@@ -168,6 +168,15 @@ public class TestCaseMessage {
   private String patientSex = null;
   private TestCaseMode testCaseMode = TestCaseMode.DEFAULT;
   private transient Map<String, TestCaseMessage> testCaseMessageMap = null;
+  private long totalRunTime = 0;
+
+  public long getTotalRunTime() {
+    return totalRunTime;
+  }
+
+  public void setTotalRunTime(long totalRunTime) {
+    this.totalRunTime = totalRunTime;
+  }
 
   public String getTestCaseNumberOriginal() {
     return testCaseNumberOriginal;

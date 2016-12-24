@@ -73,6 +73,7 @@ public class CAPerformance extends CertifyArea
   }
 
   public void addTotalQueryTime(long queryTime, TestCaseMessage tcm) {
+    tcm.setTotalRunTime(queryTime);
     queryTimeList.add(queryTime);
     totalQueryTime += queryTime;
     totalQueryCount++;
@@ -92,6 +93,7 @@ public class CAPerformance extends CertifyArea
   }
 
   public void addTotalUpdateTime(long updateTime, TestCaseMessage tcm) {
+    tcm.setTotalRunTime(updateTime);
     updateTimeList.add(updateTime);
     totalUpdateTime += updateTime;
     totalUpdateCount++;
