@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.immregistries.smm.RecordServletInterface;
+import org.immregistries.smm.SoftwareVersion;
 import org.immregistries.smm.mover.SendData;
 import org.immregistries.smm.tester.ClientServlet;
 import org.immregistries.smm.tester.CreateTestCaseServlet;
@@ -61,7 +62,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
   public static final String REDACTION_NOTICE = "[IIS Tester: Message has been redacted. It may contain non-test patient information.]";
 
-  private static final String DQACM_BASE = "http://localhost:8289/";
+  private static final String DQACM_BASE = "http://ois-pt.org/dqacm/";
   // "http://localhost:8289/";
   // "http://ois-pt.org/dqacm/";
 
@@ -473,6 +474,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     }
 
     logStatusMessage("IIS Tester Initialized");
+    logStatusMessage("  + SMM/Tester Version:      " + SoftwareVersion.VERSION);
+    logStatusMessage("  + SMM/Tester Release Date: " + SoftwareVersion.SOFTWARE_RELEASE_DATE);
   }
 
   private static int uniqueMRNBaseInc = 0;
