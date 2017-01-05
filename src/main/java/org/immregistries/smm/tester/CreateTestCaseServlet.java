@@ -823,9 +823,15 @@ public class CreateTestCaseServlet extends ClientServlet {
       }
 
     }
+    Map<String, Map<String, TestCaseMessage>> testMessageMapMap = getTestCaseMessageMapMap(session);
+    setupGlobalTestCases(testMessageMapMap);
+
+  }
+
+  public static void setupGlobalTestCases(Map<String, Map<String, TestCaseMessage>> testMessageMapMap) throws FileNotFoundException, IOException {
     for (File globalDir : ConnectionManager.getGlobalFolders()) {
       if (globalDir.exists() && globalDir.isDirectory()) {
-        readTestCases(getTestCaseMessageMapMap(session), globalDir, null, true);
+        readTestCases(testMessageMapMap, globalDir, null, true);
         File[] dirs = globalDir.listFiles(new FileFilter() {
           public boolean accept(File arg0) {
             return arg0.isDirectory() && !arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
@@ -833,13 +839,12 @@ public class CreateTestCaseServlet extends ClientServlet {
         });
         if (dirs != null) {
           for (File dir : dirs) {
-            readTestCases(getTestCaseMessageMapMap(session), dir, dir.getName(), true);
+            readTestCases(testMessageMapMap, dir, dir.getName(), true);
           }
         }
       }
 
     }
-
   }
 
   public static List<File> listIISTestReports(SendData sendData) {

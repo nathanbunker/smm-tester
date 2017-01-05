@@ -270,7 +270,8 @@ public class CertifyClient {
     }
   }
 
-  public static void setupCertifyRunner() {
+  public static void setupCertifyRunner() throws IOException {
+    loadTestCases();
     certifyRunner = new CertifyRunner(connector, sendData, queryType);
     certifyRunner.setRun(runA, CertifyRunner.SUITE_A_BASIC);
     certifyRunner.setRun(runB, CertifyRunner.SUITE_B_INTERMEDIATE);
@@ -441,22 +442,7 @@ public class CertifyClient {
           }
         }
       }
-      {
-        File globalDir = new File(sendData.getRootDir().getParentFile(), "_global");
-        if (globalDir.exists() && globalDir.isDirectory()) {
-          CreateTestCaseServlet.readTestCases(testMessageMapMap, globalDir, null, true);
-          File[] dirs = globalDir.listFiles(new FileFilter() {
-            public boolean accept(File arg0) {
-              return arg0.isDirectory() && !arg0.getName().startsWith(CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX);
-            }
-          });
-          if (dirs != null) {
-            for (File dir : dirs) {
-              CreateTestCaseServlet.readTestCases(testMessageMapMap, dir, dir.getName(), true);
-            }
-          }
-        }
-      }
+      CreateTestCaseServlet.setupGlobalTestCases(testMessageMapMap);
     }
   }
 
