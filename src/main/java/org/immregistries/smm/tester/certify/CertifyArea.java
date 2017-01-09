@@ -622,24 +622,26 @@ public abstract class CertifyArea implements RecordServletInterface {
 
   public void addTestCasesFromSavedSetAssessment(String testCaseSet, TestCaseMode testCaseMode, String messageType) {
     Map<String, TestCaseMessage> testCaseMessageMap = certifyRunner.testMessageMapMap.get(testCaseSet);
-    if (testCaseMessageMap != null && testCaseMessageMap.size() > 0) {
-      List<String> testNumList = new ArrayList<String>(testCaseMessageMap.keySet());
-      Collections.sort(testNumList);
-      for (String testNum : testNumList) {
-        TestCaseMessage testCaseMessage = testCaseMessageMap.get(testNum);
-        if (messageType != null && !messageType.equalsIgnoreCase(testCaseMessage.getMessageType())) {
-          continue;
-        }
-        TestCaseMessage tcm = new TestCaseMessage(testCaseMessage);
-        tcm.setTestCaseMode(testCaseMode);
-        String testCaseId = testCaseMessage.getTestCaseNumber();
-        if (testCaseMode == TestCaseMode.DEVIATES) {
-          testCaseId += "d";
-          testCaseMessage.setDescription(testCaseMessage.getDescription() + " (Deviates)");
-        }
-        register(testCaseId, tcm);
-      }
+    if (testCaseMessageMap == null || testCaseMessageMap.size() == 0) {
+      throw new IllegalArgumentException("Unable to find any assessment tests for '" + testCaseSet + "'");
     }
+    List<String> testNumList = new ArrayList<String>(testCaseMessageMap.keySet());
+    Collections.sort(testNumList);
+    for (String testNum : testNumList) {
+      TestCaseMessage testCaseMessage = testCaseMessageMap.get(testNum);
+      if (messageType != null && !messageType.equalsIgnoreCase(testCaseMessage.getMessageType())) {
+        continue;
+      }
+      TestCaseMessage tcm = new TestCaseMessage(testCaseMessage);
+      tcm.setTestCaseMode(testCaseMode);
+      String testCaseId = testCaseMessage.getTestCaseNumber();
+      if (testCaseMode == TestCaseMode.DEVIATES) {
+        testCaseId += "d";
+        testCaseMessage.setDescription(testCaseMessage.getDescription() + " (Deviates)");
+      }
+      register(testCaseId, tcm);
+    }
+
   }
 
 }
