@@ -18,6 +18,7 @@ public class CAAssessmentForQuery extends CertifyArea
 
   public CAAssessmentForQuery(CertifyRunner certifyRunner) {
     super("T", VALUE_TEST_SECTION_TYPE_ASSESSMENT_FOR_QUERY, certifyRunner);
+    this.doSafeQuery = false;
   }
 
   @Override

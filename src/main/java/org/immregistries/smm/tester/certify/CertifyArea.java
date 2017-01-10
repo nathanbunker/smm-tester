@@ -39,6 +39,7 @@ public abstract class CertifyArea implements RecordServletInterface {
   protected String areaLetter = "";
   protected boolean performanceConformance = false;
   protected Map<String, TestCaseMessage> updateMap = new HashMap<String, TestCaseMessage>();
+  protected boolean doSafeQuery = true;
 
   protected void incrementUpdateProgress() {
     areaProgressCount[0]++;
@@ -395,7 +396,8 @@ public abstract class CertifyArea implements RecordServletInterface {
   public int sendQuery(TestCaseMessage queryTestCaseMessage, int testPass) {
     try {
       long startTime = System.currentTimeMillis();
-      String rspMessage = certifyRunner.doSafeQuery(queryTestCaseMessage.getMessageTextSent());
+      String rspMessage = doSafeQuery ? certifyRunner.doSafeQuery(queryTestCaseMessage.getMessageTextSent())
+          : certifyRunner.doUnsafeQuery(queryTestCaseMessage.getMessageTextSent());
       certifyRunner.performance.addTotalQueryTime(System.currentTimeMillis() - startTime, queryTestCaseMessage);
       queryTestCaseMessage.setHasRun(true);
       queryTestCaseMessage.setActualResponseMessage(rspMessage);
@@ -410,12 +412,20 @@ public abstract class CertifyArea implements RecordServletInterface {
         queryTestCaseMessage.setResultForecastStatus(VALUE_RESULT_FORECAST_STATUS_NOT_INCLUDED);
       }
       recordForecastResults(queryTestCaseMessage);
-      if (shouldValidate() && (!certifyRunner.isRedactListResponses() || rspMessage.indexOf(CertifyRunner.REDACTION_NOTICE) == -1)) {
+      if (!shouldValidate()) {
+        queryTestCaseMessage.setValidationProblem(RecordServletInterface.VALUE_RESULT_ACK_CONFORMANCE_NOT_CONFIGURED_TO_RUN);
+      } else if ((certifyRunner.isRedactListResponses() && rspMessage.indexOf(CertifyRunner.REDACTION_NOTICE) != -1)) {
+        queryTestCaseMessage.setValidationProblem(RecordServletInterface.VALUE_RESULT_ACK_CONFORMANCE_RESPONSE_REDACTED);
+      } else {
         TestRunner.ascertainValidationResource(queryTestCaseMessage, rspMessage);
-        if (queryTestCaseMessage.getValidationResource() != null) {
+        if (queryTestCaseMessage.getValidationResource() == null) {
+          queryTestCaseMessage.setValidationProblem(RecordServletInterface.VALUE_RESULT_ACK_CONFORMANCE_VALIDATION_RESOURCE_NOT_FOUND);
+        } else {
           ValidationReport validationReport = NISTValidator.validate(rspMessage, queryTestCaseMessage.getValidationResource());
           queryTestCaseMessage.setValidationReport(validationReport);
-          if (validationReport != null) {
+          if (validationReport == null) {
+            queryTestCaseMessage.setValidationProblem(RecordServletInterface.VALUE_RESULT_ACK_CONFORMANCE_VALIDATION_REPORT_IS_NULL);
+          } else {
             queryTestCaseMessage.setValidationReportPass(validationReport.getHeaderReport().getValidationStatus().equals("Complete")
                 && validationReport.getHeaderReport().getErrorCount() == 0);
           }
@@ -424,6 +434,7 @@ public abstract class CertifyArea implements RecordServletInterface {
 
     } catch (Throwable t) {
       queryTestCaseMessage.setException(t);
+      queryTestCaseMessage.setValidationProblem(RecordServletInterface.VALUE_RESULT_ACK_CONFORMANCE_EXCEPTION_THROWN);
     }
 
     certifyRunner.saveTestCase(queryTestCaseMessage);

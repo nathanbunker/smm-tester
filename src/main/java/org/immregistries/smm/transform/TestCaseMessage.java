@@ -151,6 +151,7 @@ public class TestCaseMessage {
   private int testPosition = 0;
   private String testType = "";
   private ValidationReport validationReport = null;
+  private String validationProblem = "";
   private ValidationResource validationResource = null;
   private boolean validationReportPass = false;
   private String resultStoreStatus = "";
@@ -170,6 +171,14 @@ public class TestCaseMessage {
   private transient Map<String, TestCaseMessage> testCaseMessageMap = null;
   private long totalRunTime = 0;
 
+  public String getValidationProblem() {
+    return validationProblem;
+  }
+  
+  public void setValidationProblem(String validationProblem) {
+    this.validationProblem = validationProblem;
+  }
+  
   public long getTotalRunTime() {
     return totalRunTime;
   }
