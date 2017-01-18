@@ -204,9 +204,9 @@ public class CertifyClient {
               } else if (sendData.getTestParticipant() == null) {
                 System.err.println("  + Problem, test participant is not recognized and can't be reported to AART ");
                 continue;
-              } else if (sendData.getTestParticipant().getProfileUsage() == null)
-              {
-                System.err.println("  + Problem, test participant has no profile usage, unable to run ");
+              } else if (sendData.getTestParticipant().getProfileUsage() == null) {
+                System.err.println(
+                    "  + Problem, test participant has no profile usage (" + sendData.getTestParticipant().getProfileUsageId() + "), unable to run ");
                 continue;
               }
 
