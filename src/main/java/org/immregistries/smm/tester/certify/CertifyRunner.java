@@ -62,7 +62,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
   public static final String REDACTION_NOTICE = "[IIS Tester: Message has been redacted. It may contain non-test patient information.]";
 
-  private static final String DQACM_BASE = "http://ois-pt.org/dqacm/";
+  private static final String DQACM_BASE = "http://localhost:8289/";
   // "http://localhost:8289/";
   // "http://ois-pt.org/dqacm/";
 

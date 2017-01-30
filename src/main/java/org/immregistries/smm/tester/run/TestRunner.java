@@ -304,6 +304,8 @@ public class TestRunner
         validationResource = ValidationResource.IZ_RSP_Z31;
       } else if (profileId.equals("Z32") && messageType.equals("RSP")) {
         validationResource = ValidationResource.IZ_RSP_Z32;
+      } else if (profileId.equals("Z42") && messageType.equals("RSP")) {
+        validationResource = ValidationResource.IZ_RSP_Z42;
       } else if (profileId.equals("Z33") && messageType.equals("RSP")) {
         validationResource = ValidationResource.IZ_RSP_Z33;
       } else if (profileId.equals("Z34") && messageType.equals("QBP")) {

@@ -42,14 +42,18 @@ public class CAAssessmentForQuery extends CertifyArea
   public void prepareQueries() {
     allTestCaseMessageMap.putAll(updateTestCaseMessageMap);
     // do something special here
-    TestCaseMode testCaseMode = TestCaseMode.DEFAULT;
-    Map<String, TestCaseMessage> testCaseMessageMap = certifyRunner.testMessageMapMap.get(TEST_CASE_SET_FOR_ASSESSMENT_FOR_QUERY);
+    addQueryTestCasesFromSavedSetAssessment(TEST_CASE_SET_FOR_ASSESSMENT_FOR_QUERY, TestCaseMode.ASSESSMENT);
+    addQueryTestCasesFromSavedSetAssessment(TEST_CASE_SET_FOR_ASSESSMENT_FOR_QUERY, TestCaseMode.DEVIATES);
+  }
+
+  private void addQueryTestCasesFromSavedSetAssessment(String testCaseSet, TestCaseMode testCaseMode) {
+    Map<String, TestCaseMessage> testCaseMessageMap = certifyRunner.testMessageMapMap.get(testCaseSet);
     if (testCaseMessageMap != null && testCaseMessageMap.size() > 0) {
       List<String> testNumList = new ArrayList<String>(testCaseMessageMap.keySet());
       Collections.sort(testNumList);
       for (String testNum : testNumList) {
         TestCaseMessage queryTestCaseMessage = testCaseMessageMap.get(testNum);
-        if ("QBP" != null && !"QBP".equalsIgnoreCase(queryTestCaseMessage.getMessageType())) {
+        if (!"QBP".equalsIgnoreCase(queryTestCaseMessage.getMessageType())) {
           continue;
         }
         TestCaseMessage tcm = updateTestCaseMessageMap.get(queryTestCaseMessage.getDerivedFromTestCaseNumber());

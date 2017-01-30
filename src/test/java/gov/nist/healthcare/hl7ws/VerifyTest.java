@@ -36,6 +36,16 @@ public class VerifyTest {
   private static final String ACK_MESSAGE3 = "MSH|^~\\&|NISTIISAPP|NISTIISFAC|NISTEHRAPP|NISTEHRFAC|20150625121047.853-0500||ACK^V04^ACK|NIST-IZ-AD-7.2_Receive_ACK_Z23|P|2.5.1|||NE|NE|||||Z23^CDCPHINVS|NISTIISFAC^^^^^NIST-AA-IZ-1^XX^^^100-3322|NISTEHRFAC^^^^^NIST-AA-IZ-1^XX^^^100-6482\r"
       + "MSA|AA\r"
       + "ERR||RXA^1^5^1^1|999^Application error^HL70357|E|5^Table value not found^HL70533|||Vaccine code not recognized - message rejected\r";
+  
+  private static final String RSP_Z42_MESSAGE = "MSH|^~\\&|MYIIS|MyStateIIS|MYEHR|Myclinic|20091130020020-0500||RSP^K11^RSP_K11|7731029|P|2.5.1|||NE|NE|||||Z42^CDCPHINVS|A_Clinic^SOME_SYSTEM^^^^X68&&^AN^^^A_Clinic1234^\r"+
+"MSA|AA|793543\r"+
+"QAK|37374859|OK|Z44^Request Evaluated History and Forecast^CDCPHINVS\r"+
+"QPD|Z44^Request Evaluated History and Forecast^CDCPHINVS|37374859||Child^Bobbie^Q^^^^L|Que^Suzy^^^^^M|20050512|M|10 East Main St^^Myfaircity^GA^^^L\r"+
+"PID|1||123456^^^MYEHR^MR~987633^^^MYIIS^SR||Child^Robert^Quenton^^^^L|Que^Suzy^^^^^M|20070706|M|||32 Prescott Street Ave^^Warwick^MA^02452^USA^L\r"+
+"ORC|RE||197027^DCS|||||||^Clerk^Myron||^Pediatric^MARY^^^^^^^L^^^^^^^^^^^MD\r"+
+"RXA|0|1|20090412|20090412|48^HIB PRP-T^CVX|0.5|mL^^UCUM||00^new immunization record^NIP001|^Sticker^Nurse|^^^DCS_DC||||33k2a||PMC^sanofi^MVX|||CP|A\r"+
+"RXR|C28161^IM^NCIT^IM^IM^HL70162|\r"+
+"OBX|1|CE|59779-9^Schedule used^LN|1|VXC16^ACIP^CDCPHINVS||||||F|||20090415\r";
 
   private static final String OID = "2.16.840.1.113883.3.72.2.2.99001";
   /*
@@ -111,6 +121,22 @@ public class VerifyTest {
         fail("No problem found in message.");
       }
     }
+    
+    {
+      validationReport = NISTValidator.validate(RSP_Z42_MESSAGE, ValidationResource.IZ_RSP_Z42);
+      assertEquals("Complete", validationReport.getHeaderReport().getValidationStatus());
+      boolean hasError = false;
+      for (Assertion assertion : validationReport.getAssertionList()) {
+        if (assertion.getResult().equalsIgnoreCase("ERROR")) {
+          hasError = true;
+          break;
+        }
+      }
+      if (hasError) {
+        fail("Errors found in message");
+      }
+    }
+
 
   }
 
