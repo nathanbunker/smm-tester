@@ -28,7 +28,6 @@ public class CAAssessmentForQuery extends CertifyArea
     addTestCasesFromSavedSetAssessment(TEST_CASE_SET_FOR_ASSESSMENT_FOR_QUERY, TestCaseMode.DEFAULT, "VXU");
     for (TestCaseMessage tcm : updateList)
     {
-      tcm.addQuickTransformation("UPDATE_MESSAGE_CONTROL_ID");
       updateTestCaseMessageMap.put(tcm.getTestCaseNumberOriginal(), tcm);
     }
   }
@@ -54,11 +53,13 @@ public class CAAssessmentForQuery extends CertifyArea
       Collections.sort(testNumList);
       for (String testNum : testNumList) {
         TestCaseMessage queryTestCaseMessage = testCaseMessageMap.get(testNum);
+
         if (!"QBP".equalsIgnoreCase(queryTestCaseMessage.getMessageType())) {
           continue;
         }
         TestCaseMessage tcm = updateTestCaseMessageMap.get(queryTestCaseMessage.getDerivedFromTestCaseNumber());
         TestCaseMessage queryTcm = new TestCaseMessage(queryTestCaseMessage);
+        queryTcm.addQuickTransformation("UPDATE_MESSAGE_CONTROL_ID");
         allTestCaseMessageMap.put(queryTcm.getTestCaseNumberOriginal(), queryTcm);
         queryTcm.setTestCaseMode(testCaseMode);
         queryTcm.registerTestCaseMap(allTestCaseMessageMap);

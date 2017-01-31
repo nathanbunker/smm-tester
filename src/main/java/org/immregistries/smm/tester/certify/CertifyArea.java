@@ -644,6 +644,7 @@ public abstract class CertifyArea implements RecordServletInterface {
         continue;
       }
       TestCaseMessage tcm = new TestCaseMessage(testCaseMessage);
+      tcm.addQuickTransformation("UPDATE_MESSAGE_CONTROL_ID");
       tcm.setTestCaseMode(testCaseMode);
       String testCaseId = testCaseMessage.getTestCaseNumber();
       if (testCaseMode == TestCaseMode.DEVIATES) {

@@ -1,18 +1,16 @@
 package org.immregistries.smm.tester.manager.nist;
 
+import org.immregistries.smm.SoftwareVersion;
+
 import gov.nist.healthcare.hl7ws.client.MessageValidationV2SoapClient;
 
 public class NISTValidator
 {
-  private static final String EVS_URL = "http://hl7v2.ws.nist.gov/hl7v2ws//services/soap/MessageValidationV2";
-  // OLD URL: http://hit-testing2.nist.gov:8090/hl7v2ws/services/soap/MessageValidationV2
-  // Better URL because it won't move: http://hl7v2.ws.nist.gov/hl7v2ws//services/soap/MessageValidationV2 
-
   private static MessageValidationV2SoapClient soapClient = null;
 
   private static synchronized MessageValidationV2SoapClient getSoapClient() {
     if (soapClient == null) {
-      soapClient = new MessageValidationV2SoapClient(EVS_URL);
+      soapClient = new MessageValidationV2SoapClient(SoftwareVersion.EVS_URL);
     }
     return soapClient;
   }

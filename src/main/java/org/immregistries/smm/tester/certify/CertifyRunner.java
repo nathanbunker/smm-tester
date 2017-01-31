@@ -34,8 +34,8 @@ import org.immregistries.smm.tester.ClientServlet;
 import org.immregistries.smm.tester.CreateTestCaseServlet;
 import org.immregistries.smm.tester.certify.CATotal.ETC;
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.connectors.RunAgainstConnector;
 import org.immregistries.smm.tester.connectors.Connector.TransferType;
+import org.immregistries.smm.tester.connectors.RunAgainstConnector;
 import org.immregistries.smm.tester.manager.CompareManager;
 import org.immregistries.smm.tester.manager.HL7Reader;
 import org.immregistries.smm.tester.manager.QueryConverter;
@@ -46,7 +46,6 @@ import org.immregistries.smm.tester.manager.forecast.ForecastActual;
 import org.immregistries.smm.tester.manager.forecast.ForecastTesterManager;
 import org.immregistries.smm.tester.manager.nist.Assertion;
 import org.immregistries.smm.tester.profile.CompatibilityConformance;
-import org.immregistries.smm.tester.profile.CompatibilityInteroperability;
 import org.immregistries.smm.tester.profile.MessageAcceptStatus;
 import org.immregistries.smm.tester.profile.ProfileLine;
 import org.immregistries.smm.tester.profile.ProfileManager;
@@ -62,12 +61,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
   public static final String REDACTION_NOTICE = "[IIS Tester: Message has been redacted. It may contain non-test patient information.]";
 
-  private static final String DQACM_BASE = "http://localhost:8289/";
-  // "http://localhost:8289/";
-  // "http://ois-pt.org/dqacm/";
-
-  public static final String REPORT_URL = DQACM_BASE + "record";
-  private static final String MANUAL_URL = DQACM_BASE + "manual";
+  public static final String REPORT_URL = SoftwareVersion.DQACM_BASE + "record";
+  private static final String MANUAL_URL = SoftwareVersion.DQACM_BASE + "manual";
 
   private static final boolean SAVE_TEST_CASES_TO_DIR = false;
 
