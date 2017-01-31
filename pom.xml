@@ -26,6 +26,12 @@
 	  <artifactId>cxf-rt-frontend-jaxws</artifactId>
 	  <version>2.3.2</version>
     </dependency>
+
+		<dependency>
+			<groupId>org.immregistries</groupId>
+			<artifactId>dqa-hl7-utility</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	
 	
 		<!-- WICKET DEPENDENCIES -->

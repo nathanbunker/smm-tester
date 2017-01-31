@@ -14,14 +14,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.immregistries.dqa.hl7util.transport.cdc.CDCWSDLServer;
+import org.immregistries.dqa.hl7util.transport.cdc.Fault;
+import org.immregistries.dqa.hl7util.transport.cdc.SecurityFault;
+import org.immregistries.dqa.hl7util.transport.cdc.SubmitSingleMessage;
+import org.immregistries.dqa.hl7util.transport.cdc.UnknownFault;
 import org.immregistries.smm.tester.ClientServlet;
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.connectors.cdc.CDCWSDLServer;
-import org.immregistries.smm.tester.connectors.cdc.Fault;
-import org.immregistries.smm.tester.connectors.cdc.ProcessorFactory;
-import org.immregistries.smm.tester.connectors.cdc.SecurityFault;
-import org.immregistries.smm.tester.connectors.cdc.SubmitSingleMessage;
-import org.immregistries.smm.tester.connectors.cdc.UnknownFault;
 
 public class CDCWSDLServlet extends ClientServlet {
 
