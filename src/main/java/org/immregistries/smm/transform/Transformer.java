@@ -886,6 +886,8 @@ public class Transformer {
           quickTransforms += "RXR-1=OTH\n";
           quickTransforms += "RXR#2-1=OTH\n";
           quickTransforms += "RXR#3-1=OTH\n";
+        } else if (extra.equals("UPDATE_MESSAGE_CONTROL_ID")) {
+          quickTransforms += "MSH-10=" + actualTestCase + "\n";
         }
       }
     }

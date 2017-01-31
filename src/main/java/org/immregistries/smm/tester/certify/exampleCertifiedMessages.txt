@@ -661,3 +661,11 @@ OBX|1|CE|64994-7^Vaccine funding program eligibility category^LN|1|V02^VFC eligi
 OBX|2|CE|30956-7^Vaccine Type^LN|2|137^HPV^CVX||||||F|
 OBX|3|TS|29768-9^Date vaccine information statement published^LN|2|20120222||||||F|
 OBX|4|TS|29769-7^Date vaccine information statement presented^LN|2|20150930||||||F|
+
+-- 2:21 Allscripts example
+MSH|^~\&|||||20161031170717||VXU^V04^VXU_V04|206783|P|2.5.1|||||||||
+PID|1||12345^^^^MR~67890^^^^PI||Test^Test||19600101|F||2106-3^White^HL70005|1234 Test Street^^City^IA^12345^^H||(555)555-5555^PRN^PH^^^555^5555555~^NET^X.400^test@test.com||eng^English|||||||2186-5^Not Hispanic or Latino^HL70189|||||||
+PD1||||||||||||N|20081106000000|||A|20081106000000|
+IN1||||Insurance|||||||||||||||||||||||||||||||||
+ORC|RE||21935205400007|||||||^Evans^Lindsey
+RXA|0|1|20081106230000|20081106230000|33^pneumococcal polysaccharide PPV23^CVX|999|||01^Historical information - source unspecified^NIP001||^^^10366^^^^^1005 Pennsylvania Ave, Ste 104^^Ottumwa^IA^52501^^B|||||||||CP|A|20081106230000

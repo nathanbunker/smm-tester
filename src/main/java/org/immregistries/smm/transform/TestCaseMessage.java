@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.immregistries.smm.tester.manager.forecast.EvaluationActual;
 import org.immregistries.smm.tester.manager.forecast.ForecastActual;
 import org.immregistries.smm.tester.manager.nist.ValidationReport;
@@ -24,7 +25,8 @@ import org.immregistries.smm.transform.forecast.ForecastTestPanel;
  * 
  * @author nathan
  */
-public class TestCaseMessage {
+public class TestCaseMessage
+{
 
   public static final String TEST_CASE_SET = "Test Case Set:";
   public static final String TEST_CASE_NUMBER = "Test Case Number:";
@@ -80,7 +82,8 @@ public class TestCaseMessage {
     return result;
   }
 
-  protected static void addTestMessageToList(List<TestCaseMessage> testCaseMessageList, TestCaseMessage testCaseMessage) {
+  protected static void addTestMessageToList(List<TestCaseMessage> testCaseMessageList,
+      TestCaseMessage testCaseMessage) {
     if (testCaseMessage.getMessageText().startsWith("MSH|TRANSFORM")) {
       Transformer transformer = new Transformer();
       transformer.transform(testCaseMessage);
@@ -174,11 +177,11 @@ public class TestCaseMessage {
   public String getValidationProblem() {
     return validationProblem;
   }
-  
+
   public void setValidationProblem(String validationProblem) {
     this.validationProblem = validationProblem;
   }
-  
+
   public long getTotalRunTime() {
     return totalRunTime;
   }
@@ -190,27 +193,27 @@ public class TestCaseMessage {
   public String getTestCaseNumberOriginal() {
     return testCaseNumberOriginal;
   }
-  
+
   public void setTestCaseNumberOriginal(String testCaseNumberOriginal) {
     this.testCaseNumberOriginal = testCaseNumberOriginal;
   }
-  
+
   public String getDerivedFromTestCaseNumber() {
     return derivedFromTestCaseNumber;
   }
-  
+
   public void setDerivedFromTestCaseNumber(String derivedFromTestCaseNumber) {
     this.derivedFromTestCaseNumber = derivedFromTestCaseNumber;
   }
-  
+
   public String getMessageType() {
     return messageType;
   }
-  
+
   public void setMessageType(String messageType) {
     this.messageType = messageType;
   }
-  
+
   public Map<String, TestCaseMessage> getTestCaseMessageMap() {
     return testCaseMessageMap;
   }
@@ -731,7 +734,8 @@ public class TestCaseMessage {
     comments.add(comment);
   }
 
-  public class Comment {
+  public class Comment
+  {
 
     private String name = "";
     private String text = "";
@@ -872,6 +876,10 @@ public class TestCaseMessage {
     this.quickTransformations = quickTransformations;
   }
 
+  public void addQuickTransformation(String quickTransformation) {
+    quickTransformations = ArrayUtils.add(quickTransformations, quickTransformation);
+  }
+
   public String createText() {
     return createText(false);
   }
@@ -906,7 +914,8 @@ public class TestCaseMessage {
       if (derivedFromVXUMessage != null && !derivedFromVXUMessage.equals("")) {
         printHL7(forHtml, stringOut, DERIVED_FROM_VXU_MESSAGE, derivedFromVXUMessage);
       }
-      if (quickTransformations != null && quickTransformations.length > 0 && quickTransformations[0].trim().length() > 0) {
+      if (quickTransformations != null && quickTransformations.length > 0
+          && quickTransformations[0].trim().length() > 0) {
         stringOut.print(QUICK_TRANSFORMATIONS + " ");
         boolean first = true;
         for (String extra : quickTransformations) {

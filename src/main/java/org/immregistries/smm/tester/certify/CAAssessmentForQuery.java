@@ -28,6 +28,7 @@ public class CAAssessmentForQuery extends CertifyArea
     addTestCasesFromSavedSetAssessment(TEST_CASE_SET_FOR_ASSESSMENT_FOR_QUERY, TestCaseMode.DEFAULT, "VXU");
     for (TestCaseMessage tcm : updateList)
     {
+      tcm.addQuickTransformation("UPDATE_MESSAGE_CONTROL_ID");
       updateTestCaseMessageMap.put(tcm.getTestCaseNumberOriginal(), tcm);
     }
   }
