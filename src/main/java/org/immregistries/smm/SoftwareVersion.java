@@ -3,7 +3,7 @@ package org.immregistries.smm;
 
 public class SoftwareVersion
 {
-  public static final String DQACM_BASE = "http://ois-pt.org/dqacm/";
+  public static final String DQACM_BASE = "http://localhost:8289/";
   // "http://localhost:8289/";
   // "http://ois-pt.org/dqacm/";
   
