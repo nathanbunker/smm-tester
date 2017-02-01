@@ -2,7 +2,7 @@ package org.immregistries.smm.transform;
 
 public class ScenarioManager
 {
-  private static final String MESSAGE_ONC_2015_6 = "MSH|^~\\&|||||20150624093847.808-0500||VXU^V04^VXU_V04|18019|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS|wcEHR|IIS\n"
+  private static final String MESSAGE_ONC_2015_6 = "MSH|^~\\&|||||20150624093847.808-0500||VXU^V04^VXU_V04|18019|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS\n"
       + "PID|1||8891^^^wcEHR^MR||Banks^Tyler^Owen^^^^L||20140602|M||2106-3^White^CDCREC|924 Sycamore Lane^^Bozeman^MT^59715^USA^P||^PRN^PH^^^406^5555835|||||||||2186-5^Not Hispanic or Latino^CDCREC||Y|2|||||N\n"
       + "PD1|||||||||||02^Reminder/recall - any method^HL70215|Y|20150624|||A|20040602|20150624\n"
       + "NK1|1|Banks^Karl^Leonard^^^^L|FTH^Father^HL70063|924 Sycamore Lane^^Bozeman^MT^59715^USA^P|^PRN^PH^^^406^5555835\n"
@@ -13,7 +13,7 @@ public class ScenarioManager
       + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V01^Not VFC Eligible^HL70064||||||F|||20150624|||VXC40^per immunization^CDCPHINVS\n"
       + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300004211111025^Hepatitis A VIS^cdcgs1vis||||||F|||20150624\n"
       + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20150624||||||F|||20150624\n";
-  private static final String MESSAGE_ONC_2015_5 = "MSH|^~\\&|||||20150624093847.808-0500||VXU^V04^VXU_V04|18019|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS|wcEHR|IIS\n"
+  private static final String MESSAGE_ONC_2015_5 = "MSH|^~\\&|||||20150624093847.808-0500||VXU^V04^VXU_V04|18019|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS\n"
       + "PID|1||8891^^^wcEHR^MR||Banks^Tyler^Owen^^^^L||20140602|M||2106-3^White^CDCREC|924 Sycamore Lane^^Bozeman^MT^59715^USA^P||^PRN^PH^^^406^5555835|||||||||2186-5^Not Hispanic or Latino^CDCREC||Y|2|||||N\n"
       + "PD1|||||||||||02^Reminder/recall - any method^HL70215|N|20150624|||A|20040602|20150624\n"
       + "NK1|1|Banks^Karl^Leonard^^^^L|FTH^Father^HL70063|924 Sycamore Lane^^Bozeman^MT^59715^USA^P|^PRN^PH^^^406^5555835\n"
@@ -40,7 +40,7 @@ public class ScenarioManager
       + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20150624||||||F|||20150624\n"
       + "ORC|RE||9999^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|||||||wcEHR^West Clinic^HL70362\n"
       + "RXA|0|1|20150624||21^varicella^CVX|999||||||||||||00^Parental decision^NIP002||RE|A\n";
-  private static final String MESSAGE_ONC_2015_4 = "MSH|^~\\&|||||20150624093847.804-0500||VXU^V04^VXU_V04|71892|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS|wcEHR|IIS\n"
+  private static final String MESSAGE_ONC_2015_4 = "MSH|^~\\&|||||20150624093847.804-0500||VXU^V04^VXU_V04|71892|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS\n"
       + "PID|1||89778^^^wcEHR^MR||Benton^Katherine^Mackenzie^^^^L|Jones^^^^^^M|20031221|F||2106-3^White^CDCREC|89 West 21st Ave^^Bozeman^MT^59715^USA^P||^PRN^PH^^^406^5554019|||||||||2186-5^Not Hispanic or Latino^CDCREC||N|1|||||N\n"
       + "PD1|||||||||||01^No reminder/recall^HL70215|Y|20150624|||A|20031221|20150624\n"
       + "NK1|1|Benton^Kari^Michelle^^^^L|MTH^Mother^HL70063|89 West 21st Ave^^Bozeman^MT^59715^USA^P|^PRN^PH^^^406^5554019\n"
@@ -51,7 +51,7 @@ public class ScenarioManager
       + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V05^VFC Eligible - Underinsured^HL70064||||||F|||20150624|||VXC40^per immunization^CDCPHINVS\n"
       + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300007311110503^Human papillomavirus Vaccine (Cervarix) VIS^cdcgs1vis||||||F|||20150624\n"
       + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20150624||||||F|||20150624\n";
-  private static final String MESSAGE_ONC_2015_3 = "MSH|^~\\&|||||20150624093847.804-0500||VXU^V04^VXU_V04|77732|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS|wcEHR|IIS\n"
+  private static final String MESSAGE_ONC_2015_3 = "MSH|^~\\&|||||20150624093847.804-0500||VXU^V04^VXU_V04|77732|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS\n"
       + "PID|1||89778^^^wcEHR^MR||Benton^Katherine^Mackenzie^^^^L|Jones^^^^^^M|20031221|F||2106-3^White^CDCREC|89 West 21st Ave^^Bozeman^MT^59715^USA^P||^PRN^PH^^^406^5554019|||||||||2186-5^Not Hispanic or Latino^CDCREC||N|1|||||N\n"
       + "PD1|||||||||||01^No reminder/recall^HL70215|Y|20150624|||A|20031221|20150624\n"
       + "NK1|1|Benton^Kari^Michelle^^^^L|MTH^Mother^HL70063|89 West 21st Ave^^Bozeman^MT^59715^USA^P|^PRN^PH^^^406^5554019\n"
@@ -62,7 +62,7 @@ public class ScenarioManager
       + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V05^VFC Eligible - Underinsured^HL70064||||||F|||20150624|||VXC40^per immunization^CDCPHINVS\n"
       + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300007311110503^Human papillomavirus Vaccine (Cervarix) VIS^cdcgs1vis||||||F|||20150624\n"
       + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20150624||||||F|||20150624\n";
-  private static final String MESSAGE_ONC_2015_2 = "MSH|^~\\&|||||20150624084727.655-0500||VXU^V04^VXU_V04|72268|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS|wcEHR|IIS\n"
+  private static final String MESSAGE_ONC_2015_2 = "MSH|^~\\&|||||20150624084727.655-0500||VXU^V04^VXU_V04|72268|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS\n"
       + "PID|1||90012^^^wcEHR^MR||Wong^Elise^^^^^L||19830615|F||2028-9^Asian^CDCREC|9200 Wellington Trail^^Bozeman^MT^59715^USA^P||^PRN^PH^^^406^5557896~^NET^Internet^Elise.Wong@isp.com|||||||||2186-5^Not Hispanic or Latino^CDCREC||N|1|||||N\n"
       + "PD1|||||||||||02^Reminder/recall - any method^HL70215|N|20150624|||A|19830615|20150624\n"
       + "ORC|RE|4422^wcEHR|13696^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN||654^Thomas^Wilma^Elizabeth^^^^^wcEHR^L^^^MD|||||wcEHR^West Clinic^HL70362\n"
@@ -76,7 +76,7 @@ public class ScenarioManager
       + "RXA|0|1|20141012||88^influenza, unspecified formulation^CVX|999|||01^Historical Administration^NIP001|||||||||||CP|A\n"
       + "ORC|RE|7600^wcEHR|35508^wcEHR|||||||7824^Jackson^Lily^Suzanne^^^^^wcEHR^L^^^PRN|||||||wcEHR^West Clinic^HL70362\n"
       + "RXA|0|1|20131112||88^influenza, unspecified formulation^CVX|999|||01^Historical Administration^NIP001|||||||||||CP|A\n";
-  private static final String MESSAGE_ONC_2015_1 = "MSH|^~\\&|||||20150624073733.994-0500||VXU^V04^VXU_V04|12462|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS|wcEHR|IIS\n"
+  private static final String MESSAGE_ONC_2015_1 = "MSH|^~\\&|||||20150624073733.994-0500||VXU^V04^VXU_V04|12462|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS\n"
       + "PID|1||3123^^^wcEHR^MR||Richardson^Russell^Clint^^^^L|Billington^^^^^^M|20150415|M||1002-5^American Indian or Alaska Native^CDCREC|543 Blount Drive^^Bozeman^MT^59715^USA^P||^PRN^PH^^^406^5557690|||||||||2186-5^Not Hispanic or Latino^CDCREC||N|1|||||N\n"
       + "PD1|||||||||||07^Recall only - no calls^HL70215|N|20150624|||A|20150415|20150624\n"
       + "NK1|1|Richardson^Maria^Elizabeth^^^^L|MTH^Mother^HL70063|543 Blount Drive^^Bozeman^MT^59715^USA^P|^PRN^PH^^^406^5557690\n"
