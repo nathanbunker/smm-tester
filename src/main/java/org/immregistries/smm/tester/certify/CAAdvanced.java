@@ -8,11 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.immregistries.smm.tester.run.TestRunner;
 import org.immregistries.smm.tester.transform.Issue;
 import org.immregistries.smm.transform.TestCaseMessage;
 
-public class CAAdvanced extends CertifyArea
-{
+public class CAAdvanced extends CertifyArea {
 
   public CAAdvanced(CertifyRunner certifyRunner) {
     super("C", VALUE_TEST_SECTION_TYPE_ADVANCED, certifyRunner);
@@ -37,31 +37,33 @@ public class CAAdvanced extends CertifyArea
       List<Issue> issueList = issueMap.get(priority);
       if (issueList != null && issueList.size() > 0) {
         for (Issue issue : issueList) {
-            count++;
-            TestCaseMessage testCaseMessage = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
-            testCaseMessage.setDescription(issue.getName());
-            testCaseMessage.setFieldName(issue.getFieldName());
-            testCaseMessage.addCauseIssues(issue.getName());
-            registerIfHasIssue(count, priority, testCaseMessage).setAssertResult("Accept or Reject");
+          count++;
+          TestCaseMessage testCaseMessage = createTestCaseMessage(SCENARIO_1_R_ADMIN_CHILD);
+          testCaseMessage.setDescription(issue.getName());
+          testCaseMessage.setFieldName(issue.getFieldName());
+          testCaseMessage.addCauseIssues(issue.getName());
+          if (issue.getFieldName().equals("")) {
+            testCaseMessage.setAssertResult(TestRunner.ASSERT_RESULT_ACCEPT_ACCEPT_OR_ERROR);
+          } else {
+            testCaseMessage.setAssertResult(TestRunner.ASSERT_RESULT_ERROR_LOCATION_IS_ + issue.getFieldName());
+          }
+          registerIfHasIssue(count, priority, testCaseMessage);
         }
       }
     }
   }
 
-  public TestCaseMessage registerIfHasIssue(int count, int masterCount, TestCaseMessage testCaseMessage) {
+  public void registerIfHasIssue(int count, int masterCount, TestCaseMessage testCaseMessage) {
     testCaseMessage.setTestCaseSet(certifyRunner.testCaseSet);
     testCaseMessage.setTestCaseCategoryId(areaLetter + "." + makeTwoDigits(masterCount) + "." + makeTwoDigits(count));
     testCaseMessage.setTestCaseNumber(certifyRunner.uniqueMRNBase + testCaseMessage.getTestCaseCategoryId());
     testCaseMessage.setTestPosition(certifyRunner.incrementingInt.next());
     testCaseMessage.setTestType(VALUE_TEST_TYPE_UPDATE);
-    testCaseMessage.setAssertResult("Accept");
     certifyRunner.transformer.transform(testCaseMessage);
     if (testCaseMessage.hasIssue()) {
       certifyRunner.register(testCaseMessage);
       updateList.add(testCaseMessage);
     }
-    return testCaseMessage;
-
   }
 
   @Override
