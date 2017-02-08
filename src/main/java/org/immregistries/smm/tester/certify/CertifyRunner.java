@@ -882,7 +882,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
           }
         }
         if (!okay) {
-          response = responseReader.getOriginalSegment();
+          response = responseReader.getOriginalSegment() + "\r";
           while (responseReader.advance()) {
             if (responseReader.getSegmentName().equals("PID") || responseReader.getSegmentName().equals("NK1")) {
               response += responseReader.getSegmentName() + "|---\r";
