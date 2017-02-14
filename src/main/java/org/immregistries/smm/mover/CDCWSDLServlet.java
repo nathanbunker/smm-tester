@@ -14,11 +14,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.immregistries.dqa.hl7util.transport.cdc.CDCWSDLServer;
-import org.immregistries.dqa.hl7util.transport.cdc.Fault;
-import org.immregistries.dqa.hl7util.transport.cdc.SecurityFault;
-import org.immregistries.dqa.hl7util.transport.cdc.SubmitSingleMessage;
-import org.immregistries.dqa.hl7util.transport.cdc.UnknownFault;
+import org.immregistries.smm.cdc.CDCWSDLServer;
+import org.immregistries.smm.cdc.Fault;
+import org.immregistries.smm.cdc.SecurityFault;
+import org.immregistries.smm.cdc.SubmitSingleMessage;
+import org.immregistries.smm.cdc.UnknownFault;
 import org.immregistries.smm.tester.ClientServlet;
 import org.immregistries.smm.tester.connectors.Connector;
 
