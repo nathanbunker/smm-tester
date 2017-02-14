@@ -491,7 +491,9 @@ public abstract class CertifyArea implements RecordServletInterface {
         } else if (messageType.equals("RSP")) {
           String profile = responseReader.getValue(21);
 
-          if (profile.equalsIgnoreCase("Z32")) {
+          if (profile.equalsIgnoreCase("")) {
+            queryType = VALUE_RESULT_QUERY_TYPE_PROFILE_ID_MISSING;
+          } else if (profile.equalsIgnoreCase("Z32")) {
             queryType = VALUE_RESULT_QUERY_TYPE_MATCH_Z32;
           } else if (profile.equalsIgnoreCase("Z42")) {
             queryType = VALUE_RESULT_QUERY_TYPE_MATCH_Z42;
@@ -506,6 +508,8 @@ public abstract class CertifyArea implements RecordServletInterface {
                 queryType = VALUE_RESULT_QUERY_TYPE_TOO_MANY;
               }
             }
+          } else {
+            queryType = VALUE_RESULT_QUERY_TYPE_PROFILE_ID_UNEXPECTED;
           }
         }
       }
