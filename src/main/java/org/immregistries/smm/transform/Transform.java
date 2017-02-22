@@ -11,7 +11,7 @@ package org.immregistries.smm.transform;
 public class Transform {
 
     protected String segment;
-    protected int field;
+    protected int field = 0;
     protected int segmentRepeat = 1;
     protected int fieldRepeat = 1;
     protected boolean fieldRepeatSet = false;
