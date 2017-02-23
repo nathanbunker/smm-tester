@@ -2464,6 +2464,7 @@ public class Transformer {
       if (posStar >= 0 && posStar < endOfInput) {
         line = line.substring(0, posStar) + line.substring(posStar + 2);
         endOfInput--;
+        endOfInput--;
         all = true;
       }
     }

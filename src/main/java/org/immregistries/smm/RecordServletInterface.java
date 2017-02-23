@@ -130,6 +130,7 @@ public interface RecordServletInterface {
   public static final String VALUE_RESULT_QUERY_TYPE_LIST = "List";
   public static final String VALUE_RESULT_QUERY_TYPE_NOT_FOUND = "Not Found";
   public static final String VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33 = "Not Found (Z33)";
+  public static final String VALUE_RESULT_QUERY_TYPE_ERROR_Z33 = "Error (Z33)";
   public static final String VALUE_RESULT_QUERY_TYPE_TOO_MANY = "Too Many";
   public static final String VALUE_RESULT_QUERY_TYPE_ERROR = "Error";
   public static final String VALUE_RESULT_QUERY_TYPE_PROFILE_ID_MISSING = "Profile Id Missing";

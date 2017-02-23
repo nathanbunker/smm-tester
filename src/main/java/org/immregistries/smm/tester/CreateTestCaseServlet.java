@@ -323,6 +323,7 @@ public class CreateTestCaseServlet extends ClientServlet {
         printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST);
         printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND);
         printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33);
+        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR_Z33);
         printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY);
         printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR);
         printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MULTIPLE_Z31_Z33);

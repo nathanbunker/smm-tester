@@ -506,6 +506,8 @@ public abstract class CertifyArea implements RecordServletInterface {
                 queryType = VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33;
               } else if (responseStatus.equals("TM")) {
                 queryType = VALUE_RESULT_QUERY_TYPE_TOO_MANY;
+              } else if (responseStatus.equals("AE")) {
+                queryType = VALUE_RESULT_QUERY_TYPE_ERROR_Z33;
               }
             }
           } else {
