@@ -26,8 +26,8 @@ public class AZ_ASIIS_Template extends ConnectionTemplate
       cc.setPasswordRequired(true);
       cc.setFacilityidRequired(true);
     } else if (templateName.endsWith(_TEST)) {
-      cc.setType(ConnectorFactory.TYPE_POST);
-      cc.setUrl("https://appqa.azdhs.gov/phs/asiis/hl7post/");
+      cc.setType(ConnectorFactory.TYPE_AZ_SOAP);
+      cc.setUrl("https://appqa.azdhs.gov/asiis/hl7Services/ASIIS.asmx");
       cc.setFacilityidShow(true);
       cc.setFacilityidLabel("IRMS ID");
       cc.setTypeShow(false);
