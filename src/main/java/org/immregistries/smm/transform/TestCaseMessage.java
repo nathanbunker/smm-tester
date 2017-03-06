@@ -707,6 +707,7 @@ public class TestCaseMessage
     this.actualResultStatus = actualResultStatus;
   }
 
+  @Deprecated
   public String getActualResultAckMessage() {
     return actualResultAckMessage;
   }
@@ -765,6 +766,7 @@ public class TestCaseMessage
     this.description = description;
   }
 
+  @Deprecated
   public String getExpectedResult() {
     return expectedResult;
   }

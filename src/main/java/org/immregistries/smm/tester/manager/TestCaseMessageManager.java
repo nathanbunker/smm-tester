@@ -14,6 +14,17 @@ import org.immregistries.smm.transform.Transformer;
 
 public class TestCaseMessageManager {
 
+  public static TestCaseMessage createTestCaseMessage(String source) throws Exception {
+    List<TestCaseMessage> testCaseMessageList = createTestCaseMessageList(source);
+    if (testCaseMessageList.isEmpty())
+    {
+      return null;
+    }
+    else
+    {
+      return testCaseMessageList.get(0);
+    }
+  }
   public static List<TestCaseMessage> createTestCaseMessageList(String source) throws Exception {
     List<TestCaseMessage> testCaseMessageList = new ArrayList<TestCaseMessage>();
 
