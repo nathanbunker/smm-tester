@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.mail.Session;
+
+import org.apache.cxf.test.TestApplicationContext;
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.RunAgainstConnector;
@@ -25,7 +28,6 @@ import org.immregistries.smm.transform.Transformer;
  * @author nathan
  */
 public class TestRunner {
-
   public static final String ASSERT_RESULT_ACCEPT_ACCEPT_OR_ERROR = "Accept or Error";
   public static final String ASSERT_RESULT_ACCEPT_ACCEPT_OR_REJECT = "Accept or Reject";
   public static final String ASSERT_RESULT_ACCEPT_REJECT = "Reject";
