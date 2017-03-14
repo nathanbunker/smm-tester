@@ -36,6 +36,7 @@ public class TestRunner {
   public static final String ASSERT_RESULT_ACCEPT_ACCEPT_AND_WARN = "Accept and Warn";
   public static final String ASSERT_RESULT_ACCEPT = "Accept";
   public static final String ASSERT_RESULT_ERROR_LOCATION_IS_ = "Error Location is ";
+  public static final String ASSERT_RESULT_ERROR_INDICATED ="Error Indicated";
 
   public static final String ACTUAL_RESULT_STATUS_FAIL = "FAIL";
   public static final String ACTUAL_RESULT_STATUS_PASS = "PASS";

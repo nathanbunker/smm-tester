@@ -82,6 +82,8 @@ public class TestCaseMessageManager {
             testCaseMessage.setQuickTransformations(readValues(line));
           } else if (line.startsWith(TestCaseMessage.ASSERT_RESULT)) {
             testCaseMessage.setAssertResult(readValue(line));
+          } else if (line.startsWith(TestCaseMessage.ASSERT_RESULT_PARAMETER)) {
+            testCaseMessage.setAssertResultParameter(readValue(line));
           } else if (line.startsWith(TestCaseMessage.DERIVED_FROM_TEST_CASE_NUMBER)) {
             testCaseMessage.setDerivedFromTestCaseNumber(readValue(line));
           } else if (line.startsWith(TestCaseMessage.MESSAGE_TYPE)) {

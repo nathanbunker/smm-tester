@@ -34,6 +34,7 @@ public class TestCaseMessage
   public static final String FIELD_NAME = "Field Name:";
   public static final String EXPECTED_RESULT = "Expected Result:";
   public static final String ASSERT_RESULT = "Assert Result:";
+  public static final String ASSERT_RESULT_PARAMETER = "Assert Result Parameter:";
   public static final String MESSAGE_TYPE = "Message Type:";
   public static final String DERIVED_FROM_TEST_CASE_NUMBER = "Derived From Test Case Number:";
   public static final String ORIGINAL_MESSAGE = "Original Message:";
@@ -113,6 +114,7 @@ public class TestCaseMessage
   private String messageText = "";
   private String messageTextSent = "";
   private String assertResult = "";
+  private String assertResultParameter = "";
   private String messageType = "";
   private String derivedFromTestCaseNumber = "";
   private String fieldName = "";
@@ -626,6 +628,7 @@ public class TestCaseMessage
     this.expectedResult = copy.expectedResult;
     this.messageText = copy.messageText;
     this.assertResult = copy.assertResult;
+    this.assertResultParameter = copy.assertResultParameter;
     this.messageType = copy.messageType;
     this.originalMessage = copy.originalMessage;
     this.quickTransformations = new String[copy.quickTransformations.length];
@@ -806,6 +809,14 @@ public class TestCaseMessage
   public void setAssertResult(String assertResult) {
     this.assertResult = assertResult;
   }
+  
+  public String getAssertResultParameter() {
+    return assertResultParameter;
+  }
+
+  public void setAssertResultParameter(String assertResultParameter) {
+    this.assertResultParameter = assertResultParameter;
+  }
 
   public String getCustomTransformations() {
     return customTransformations;
@@ -897,6 +908,9 @@ public class TestCaseMessage
       stringOut.println(EXPECTED_RESULT + " " + expectedResult);
       if (!assertResult.equals("")) {
         stringOut.println(ASSERT_RESULT + " " + assertResult);
+      }
+      if (!assertResultParameter.equals("")) {
+        stringOut.println(ASSERT_RESULT_PARAMETER + " " + assertResultParameter);
       }
       if (!messageType.equals("")) {
         stringOut.println(MESSAGE_TYPE + " " + messageType);
