@@ -5,6 +5,7 @@ public class ConnectorFactory
 
   public static final String TYPE_SOAP = "SOAP";
   public static final String TYPE_POST = "POST";
+  public static final String TYPE_MLLP = "MLLP";
   public static final String TYPE_RAW = "RAW";
   public static final String TYPE_AL_SOAP = "AL SOAP";
   public static final String TYPE_AZ_SOAP = "AZ SOAP";
@@ -25,7 +26,7 @@ public class ConnectorFactory
   public static final String TYPE_ND_SOAP = "ND SOAP";
   public static final String TYPE_WI_SOAP = "WI SOAP";
 
-  public static final String[][] TYPES = { { TYPE_SOAP, "SOAP" }, { TYPE_POST, "POST" }, { TYPE_AL_SOAP, "AL SOAP" },
+  public static final String[][] TYPES = { { TYPE_SOAP, "SOAP" }, { TYPE_POST, "POST" }, { TYPE_MLLP, "MLLP" },{ TYPE_AL_SOAP, "AL SOAP" },
       { TYPE_AZ_SOAP, "AZ SOAP" },
       { TYPE_CA_SOAP, "CA SOAP" }, { TYPE_CO_SOAP, "CO SOAP" }, { TYPE_KS_SOAP, "KS SOAP" },
       { TYPE_MA_SOAP, "MA SOAP" }, { TYPE_MO_SOAP, "MO SOAP" }, { TYPE_ND_SOAP, "ND SOAP" },
@@ -37,6 +38,8 @@ public class ConnectorFactory
     Connector connector = null;
     if (type.equals(TYPE_SOAP)) {
       connector = new SoapConnector(label, url);
+    } else if (type.equals(TYPE_MLLP)) {
+        connector = new MLLPConnector(label, url);
     } else if (type.equals(TYPE_NM_SOAP)) {
       connector = new NMSoapConnector(label, url);
     } else if (type.equals(TYPE_NJ_SOAP)) {
