@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester;
 
@@ -27,6 +26,7 @@ import org.immregistries.smm.tester.certify.CertifyRunner;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.profile.ProfileManager;
 import org.immregistries.smm.tester.profile.ProfileUsage;
+import org.immregistries.smm.tester.run.TestRunner;
 import org.immregistries.smm.transform.TestCaseMessage;
 import org.immregistries.smm.transform.forecast.ForecastTestPanel;
 
@@ -37,7 +37,8 @@ import org.immregistries.smm.transform.forecast.ForecastTestPanel;
 public class CertifyClient {
 
   private static ProfileManager profileManager = null;
-  private static Map<String, Map<String, TestCaseMessage>> testMessageMapMap = new HashMap<String, Map<String, TestCaseMessage>>();
+  private static Map<String, Map<String, TestCaseMessage>> testMessageMapMap =
+      new HashMap<String, Map<String, TestCaseMessage>>();
   private static SendData sendData = null;
   private static Connector connector = null;
   private static int profileUsageIdForConformance = 0;
@@ -114,8 +115,10 @@ public class CertifyClient {
     if (args.length < 1) {
       System.err.println("Usage: java  org.immregistries.smm.tester.CertifyClient config.txt");
       System.err.println("The following options are supported in the config file: ");
-      System.err.println("  + AART Name: [Required: Name of this service as it will appear in AART]");
-      System.err.println("  + Scan Folder: [Required: Root folder location to look for configurations]");
+      System.err
+          .println("  + AART Name: [Required: Name of this service as it will appear in AART]");
+      System.err
+          .println("  + Scan Folder: [Required: Root folder location to look for configurations]");
       System.err.println("  + Key Store: [Optional: Location of keystore]");
       System.err.println("  + Sun Security Allow Unsafe Renegotiation: [Optional: true | false]");
       return;
@@ -154,8 +157,10 @@ public class CertifyClient {
     while (true) {
       try {
 
-        boolean canStart = certifyRunner == null || certifyRunner.getStatus().equals(CertifyRunner.STATUS_COMPLETED)
-            || certifyRunner.getStatus().equals(CertifyRunner.STATUS_STOPPED) || certifyRunner.getStatus().equals(CertifyRunner.STATUS_PROBLEM);
+        boolean canStart = certifyRunner == null
+            || certifyRunner.getStatus().equals(CertifyRunner.STATUS_COMPLETED)
+            || certifyRunner.getStatus().equals(CertifyRunner.STATUS_STOPPED)
+            || certifyRunner.getStatus().equals(CertifyRunner.STATUS_PROBLEM);
 
         String aartAction = null;
         String autoTestNameSelect = null;
@@ -172,11 +177,14 @@ public class CertifyClient {
               System.out.println("  + Testing was stopped");
               testerStatus = RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_STOPPED;
             }
-            aartAction = CertifyRunner.reportStatus(aartName, testerStatus, certifyRunner.getConnector(), certifyRunner.getTestStarted(),
+            aartAction = CertifyRunner.reportStatus(aartName, testerStatus,
+                certifyRunner.getConnector(), certifyRunner.getTestStarted(),
                 certifyRunner.getUpdateEtc().getDate(), certifyRunner.getQueryEtc().getDate());
             certifyRunner = null;
           }
-          aartAction = CertifyRunner.reportStatus(aartName, RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_READY, null, null, null, null);
+          aartAction = CertifyRunner.reportStatus(aartName,
+              RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_READY, null, null, null,
+              null);
           if (aartAction.equals("")) {
             aartAction = null;
           } else {
@@ -184,7 +192,9 @@ public class CertifyClient {
               {
                 int pos = aartAction.indexOf(RecordServletInterface.OPTION_AUTO_TEST_NAME_SELECT);
                 if (pos > 0) {
-                  autoTestNameSelect = aartAction.substring(pos + RecordServletInterface.OPTION_AUTO_TEST_NAME_SELECT.length()).trim();
+                  autoTestNameSelect = aartAction
+                      .substring(pos + RecordServletInterface.OPTION_AUTO_TEST_NAME_SELECT.length())
+                      .trim();
                   aartAction = aartAction.substring(0, pos).trim();
                 }
               }
@@ -192,7 +202,8 @@ public class CertifyClient {
               System.out.println("Start command received");
               System.out.println("  + AART Public Id Code: " + aartPublicIdCode);
               for (SendData sd1 : ConnectionManager.getSendDataList()) {
-                if (sd1.getConnector() != null && sd1.getConnector().getAartPublicIdCode().equals(aartPublicIdCode)) {
+                if (sd1.getConnector() != null
+                    && sd1.getConnector().getAartPublicIdCode().equals(aartPublicIdCode)) {
                   sendData = ConnectServlet.addNewConnection(null, sd1.getInternalId(), true);
                   connector = sendData.getConnector();
                   break;
@@ -202,15 +213,17 @@ public class CertifyClient {
                 System.err.println("  + Problem, connector was not intialized ");
                 continue;
               } else if (sendData.getTestParticipant() == null) {
-                System.err.println("  + Problem, test participant is not recognized and can't be reported to AART ");
+                System.err.println(
+                    "  + Problem, test participant is not recognized and can't be reported to AART ");
                 continue;
               } else if (sendData.getTestParticipant().getProfileUsage() == null) {
-                System.err.println(
-                    "  + Problem, test participant has no profile usage (" + sendData.getTestParticipant().getProfileUsageId() + "), unable to run ");
+                System.err.println("  + Problem, test participant has no profile usage ("
+                    + sendData.getTestParticipant().getProfileUsageId() + "), unable to run ");
                 continue;
               }
 
-              System.out.println("  + Test Participant Organization: " + sendData.getTestParticipant().getOrganizationName());
+              System.out.println("  + Test Participant Organization: "
+                  + sendData.getTestParticipant().getOrganizationName());
               System.out.println("  + Initializing certify runner");
               initRuns();
               setupCertifyRunner();
@@ -218,18 +231,62 @@ public class CertifyClient {
               System.out.println("  + Certified runner started");
               try {
                 // give the certifyRunner 10 seconds to get started before
-                // showing
-                // status
+                // showing status
                 TimeUnit.SECONDS.sleep(10);
               } catch (InterruptedException ie) {
                 // just keep going
+              }
+            } else if (aartAction.startsWith(RecordServletInterface.PARAM_TESTER_ACTION_RUN)) {
+              String[] actionArgs = aartAction.split("\\s");
+              if (actionArgs.length > 2) {
+                String aartPublicIdCode = actionArgs[1];
+                String testMessageId = actionArgs[2];
+                System.out.println("Run command received");
+                System.out.println("  + AART Public Id Code: " + aartPublicIdCode);
+                System.out.println("  + Test Message Id:     " + testMessageId);
+                for (SendData sd1 : ConnectionManager.getSendDataList()) {
+                  if (sd1.getConnector() != null
+                      && sd1.getConnector().getAartPublicIdCode().equals(aartPublicIdCode)) {
+                    sendData = ConnectServlet.addNewConnection(null, sd1.getInternalId(), true);
+                    connector = sendData.getConnector();
+                    break;
+                  }
+                }
+                if (connector == null) {
+                  System.err.println("  + Problem, connector was not intialized ");
+                  continue;
+                } else if (sendData.getTestParticipant() == null) {
+                  System.err.println(
+                      "  + Problem, test participant is not recognized and can't be reported to AART ");
+                  continue;
+                }
+
+                System.out.println("  + Test Participant Organization: "
+                    + sendData.getTestParticipant().getOrganizationName());
+                System.out.println("Retrieving test case message");
+                TestCaseMessage testCaseMessage = CertifyRunner.getTestCaseMessage(testMessageId);
+                System.out.println("  + Found " + testCaseMessage.getDescription());
+                
+                TestRunner testRunner = new TestRunner();
+                testRunner.setValidateResponse(false);
+                try {
+                  testRunner.runTest(connector, testCaseMessage);
+                } catch (Throwable t) {
+                  System.err.println("Exception running base test case message: " + t.getMessage());
+                  t.printStackTrace(System.err);
+                }
+                System.out.println("Reporting results");
+                CertifyRunner.reportProgress(testCaseMessage, testMessageId, sendData);
+                System.out.println("Completed");
               }
             }
           }
         } else {
           certifyRunner.printTextUpdate(System.out);
-          aartAction = CertifyRunner.reportStatus(aartName, RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_TESTING,
-              (certifyRunner == null ? null : certifyRunner.getConnector()), certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc().getDate(),
+          aartAction = CertifyRunner.reportStatus(aartName,
+              RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_TESTING,
+              (certifyRunner == null ? null : certifyRunner.getConnector()),
+              certifyRunner.getTestStarted(), certifyRunner.getUpdateEtc().getDate(),
               certifyRunner.getQueryEtc().getDate());
 
           if (aartAction.equals("")) {
@@ -252,7 +309,8 @@ public class CertifyClient {
             if ((System.currentTimeMillis() - certifyRunner.getLastLogStatus()) > 15 * 60 * 1000) {
               SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
               String lastUpdate = sdf.format(new Date(certifyRunner.getLastLogStatus()));
-              certifyRunner.switchStatus(CertifyRunner.STATUS_PROBLEM, "Stopping process, no update logged since " + lastUpdate);
+              certifyRunner.switchStatus(CertifyRunner.STATUS_PROBLEM,
+                  "Stopping process, no update logged since " + lastUpdate);
               System.out.println("## PROBLEM: Process frozen since " + lastUpdate);
               certifyRunner.stopRunning();
             }
@@ -316,7 +374,8 @@ public class CertifyClient {
       System.out.println("     - run suite Forecaster Engaged");
     }
     if (certifyRunner.isRun(CertifyRunner.SUITE_F_FORECAST)) {
-      System.out.println("     - run suite Forecast with " + forecastTestPanelList.size() + " test panel(s)");
+      System.out.println(
+          "     - run suite Forecast with " + forecastTestPanelList.size() + " test panel(s)");
       for (ForecastTestPanel forecastTestPanel : forecastTestPanelList) {
         certifyRunner.addForecastTestPanel(forecastTestPanel);
         System.out.println("        forecast test panel: " + forecastTestPanel.getLabel());
@@ -326,10 +385,12 @@ public class CertifyClient {
       System.out.println("     - run suite Profiling");
       certifyRunner.setProfileManager(profileManager);
       if (sendData.getTestParticipant().getProfileUsage() == null) {
-        System.out.println("         profile usage is not defined for " + sendData.getTestParticipant().getProfileUsageId());
+        System.out.println("         profile usage is not defined for "
+            + sendData.getTestParticipant().getProfileUsageId());
       } else {
         certifyRunner.setProfileUsage(sendData.getTestParticipant().getProfileUsage());
-        System.out.println("          profile usage '" + sendData.getTestParticipant().getProfileUsage() + "'");
+        System.out.println(
+            "          profile usage '" + sendData.getTestParticipant().getProfileUsage() + "'");
       }
       for (ProfileUsage profileUsage : profileManager.getProfileUsageList()) {
         if (profileUsage.toString().equals("US - Base")) {
@@ -400,7 +461,8 @@ public class CertifyClient {
           } else if (key.equals("Key Store Password")) {
             connectionManager.setKeyStorePassword(value);
           } else if (key.equals("Sun Security Allow Unsafe Renegotiation: ")) {
-            connectionManager.setSunSecuritySslAllowUnsafeRenegotiation(value.equalsIgnoreCase("true"));
+            connectionManager
+                .setSunSecuritySslAllowUnsafeRenegotiation(value.equalsIgnoreCase("true"));
           } else if (key.equals("Scan Folder")) {
             connectionManager.setScanStartFolders(value);
           }
@@ -419,7 +481,8 @@ public class CertifyClient {
         System.setProperty("javax.net.ssl.keyStorePassword", connector.getKeyStorePassword());
         System.out.println("Set keystore to be: " + keyStoreFile.getCanonicalPath());
       } else {
-        System.err.println("Unable to find key store file here: " + keyStoreFile.getCanonicalPath());
+        System.err
+            .println("Unable to find key store file here: " + keyStoreFile.getCanonicalPath());
       }
     }
   }
@@ -432,7 +495,8 @@ public class CertifyClient {
         {
           File[] dirs = testCaseDir.listFiles(new FileFilter() {
             public boolean accept(File arg0) {
-              return arg0.isDirectory() && !arg0.getName().startsWith(CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX);
+              return arg0.isDirectory() && !arg0.getName()
+                  .startsWith(CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX);
             }
           });
           if (dirs != null) {

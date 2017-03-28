@@ -311,6 +311,9 @@ public interface RecordServletInterface {
   
   public static final String PARAM_TESTER_ACTION_STOP = "Stop";
   public static final String PARAM_TESTER_ACTION_START = "Start";
+  public static final String PARAM_TESTER_ACTION_RUN = "Run";
   
   public static final String OPTION_AUTO_TEST_NAME_SELECT = "--autoTestNameSelect ";
+  
+  public static final String PARAM_TEST_MESSAGE_ID = "testMessageId";
 }
