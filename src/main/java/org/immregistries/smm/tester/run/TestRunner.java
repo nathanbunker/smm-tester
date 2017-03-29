@@ -151,10 +151,22 @@ public class TestRunner {
     }
     return passedTest;
   }
+  
+  private static final int[][] ERROR_INDICATED_FIELDS_AND_COMPONENTS = new int[][] {{2,1}, {2,2}, {2,3}, {2,4}, {2,5}, {3,1}, {5,1}, {5,3}, {5,4}, {5,6}, {8,1}};
 
   protected void evaluateRunTest(Connector connector, TestCaseMessage testCaseMessage) {
     errorList = new ArrayList<TestError>();
     String assertResult = testCaseMessage.getAssertResult();
+    HL7Reader errorIndicatedReader = null;
+    if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ERROR_INDICATED))
+    {
+      String assertResultParameter = testCaseMessage.getAssertResultParameter();
+      errorIndicatedReader = new HL7Reader(assertResultParameter);
+      if (!errorIndicatedReader.advanceToSegment("ERR"))
+      {
+        errorIndicatedReader = null;
+      }
+    }
     if (!assertResult.equalsIgnoreCase("")) {
       if (ackMessageText == null || ackMessageText.equals("")) {
         if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT)) {
@@ -245,7 +257,24 @@ public class TestRunner {
                   error.setErrorType(ErrorType.UNKNOWN);
                 }
                 error.setDescription(userMessage);
-
+                if (errorIndicatedReader != null) {
+                  boolean allMatches = true;
+                  for (int[] fieldAndComponent : ERROR_INDICATED_FIELDS_AND_COMPONENTS) {
+                    int field = fieldAndComponent[0];
+                    int component = fieldAndComponent[1];
+                    boolean matches = checkMatches(errorIndicatedReader, field, component);
+                    if (!matches)
+                    {
+                      allMatches = false;
+                      break;
+                    }
+                  }
+                  if (allMatches)
+                  {
+                    passedTest = true;
+                  }
+                }
+                
               }
               if (testCaseMessage.getActualResultAckType().equals("AE") && !rejected) {
                 if (severitySet) {
@@ -308,6 +337,17 @@ public class TestRunner {
     testCaseMessage.setPassedTest(passedTest);
     testCaseMessage.setHasRun(true);
     wasRun = true;
+  }
+
+  private boolean checkMatches(HL7Reader errorIndicatedReader, int field, int component) {
+    boolean matches = false;
+    String indicatedValue = errorIndicatedReader.getValue(field, component);
+    String actualValue = ackMessageReader.getValue(field, component);
+    if (indicatedValue.equals("") || indicatedValue.equalsIgnoreCase(actualValue))
+    {
+      matches = true;
+    }
+    return matches;
   }
 
   private void doRunTest(Connector connector, TestCaseMessage testCaseMessage, String message) throws Exception {

@@ -2166,7 +2166,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   }
 
   public static TestCaseMessage getTestCaseMessage(String testMessageId) throws Exception {
-    String line = "";
+    StringBuilder testCaseMessageText = new StringBuilder();
     try {
       HttpURLConnection urlConn;
       InputStreamReader input = null;
@@ -2177,6 +2177,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       r.append(testMessageId);
 
       URL url = new URL(r.toString());
+
       urlConn = (HttpURLConnection) url.openConnection();
       urlConn.setRequestMethod("GET");
 
@@ -2187,15 +2188,18 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
       input = new InputStreamReader(urlConn.getInputStream());
       BufferedReader in = new BufferedReader(input);
-      line = in.readLine();
-      if (line == null) {
-        line = "";
+      String line = in.readLine();
+
+      while ((line = in.readLine()) != null) {
+        testCaseMessageText.append(line);
+        testCaseMessageText.append("\n");
       }
       input.close();
     } catch (IOException e) {
       e.printStackTrace();
     }
-    TestCaseMessage testCaseMessage = TestCaseMessageManager.createTestCaseMessage(line);
+    TestCaseMessage testCaseMessage =
+        TestCaseMessageManager.createTestCaseMessage(testCaseMessageText.toString());
     return testCaseMessage;
   }
 
@@ -2342,8 +2346,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
   }
 
 
-  public static void reportProgress(TestCaseMessage testCaseMessage,
-      String testMessageId, SendData sendData) {
+  public static void reportProgress(TestCaseMessage testCaseMessage, String testMessageId,
+      SendData sendData) {
     if (REPORT_URL == null) {
       return;
     }
@@ -2381,7 +2385,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       addField(sb, PARAM_TEST_MESSAGE_ID, testMessageId);
       addField(sb, PARAM_TESTER_STATUS_READY_STATUS, PARAM_TESTER_STATUS_TESTER_STATUS_TESTING);
 
-      
+
       addField(sb, PARAM_TM_TEST_POSITION, testCaseMessage.getTestPosition());
       addField(sb, PARAM_TM_TEST_TYPE, testCaseMessage.getTestType());
       addField(sb, PARAM_TM_TEST_CASE_SET, testCaseMessage.getTestCaseSet());
@@ -2393,7 +2397,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       addField(sb, PARAM_TM_PREP_PATIENT_TYPE, testCaseMessage.getPatientType().toString());
       addField(sb, PARAM_TM_PREP_TRANSFORMS_QUICK, testCaseMessage.getQuickTransformations());
       addField(sb, PARAM_TM_PREP_TRANSFORMS_CUSTOM, testCaseMessage.getCustomTransformations());
-      addField(sb, PARAM_TM_PREP_TRANSFORMS_ADDITION, testCaseMessage.getAdditionalTransformations());
+      addField(sb, PARAM_TM_PREP_TRANSFORMS_ADDITION,
+          testCaseMessage.getAdditionalTransformations());
       addField(sb, PARAM_TM_PREP_TRANSFORMS_CAUSE_ISSUE, testCaseMessage.getCauseIssueTransforms());
       addField(sb, PARAM_TM_PREP_CAUSE_ISSUE_NAMES, testCaseMessage.getCauseIssues());
       addField(sb, PARAM_TM_PREP_HAS_ISSUE, testCaseMessage.hasIssue());

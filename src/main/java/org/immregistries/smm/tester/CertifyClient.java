@@ -41,7 +41,6 @@ public class CertifyClient {
       new HashMap<String, Map<String, TestCaseMessage>>();
   private static SendData sendData = null;
   private static Connector connector = null;
-  private static int profileUsageIdForConformance = 0;
   private static String aartName = null;
   private static String queryType = CertifyRunner.QUERY_TYPE_NONE;
   private static boolean runA = true;
@@ -265,19 +264,32 @@ public class CertifyClient {
                     + sendData.getTestParticipant().getOrganizationName());
                 System.out.println("Retrieving test case message");
                 TestCaseMessage testCaseMessage = CertifyRunner.getTestCaseMessage(testMessageId);
-                System.out.println("  + Found " + testCaseMessage.getDescription());
-                
-                TestRunner testRunner = new TestRunner();
-                testRunner.setValidateResponse(false);
-                try {
-                  testRunner.runTest(connector, testCaseMessage);
-                } catch (Throwable t) {
-                  System.err.println("Exception running base test case message: " + t.getMessage());
-                  t.printStackTrace(System.err);
+                if (testCaseMessage == null) {
+                  System.err.println("  + Couldn't load test case " + testMessageId);
+                  System.err.println("Not able to run test");
+                } else {
+                  System.out.println("  + Found " + testCaseMessage.getDescription());
+                  TestRunner testRunner = new TestRunner();
+                  testRunner.setValidateResponse(false);
+                  System.out.println("Running test");
+                  boolean passed = false;
+                  try {
+                    passed = testRunner.runTest(connector, testCaseMessage);
+                    System.out.println("  + result " + testCaseMessage.getActualResultStatus());
+                    if (passed) {
+                      System.out.println("  + test PASSED");
+                    } else {
+                      System.out.println("  + test FAILED");
+                    }
+                  } catch (Throwable t) {
+                    System.err.println("Exception running test case message: " + t.getMessage());
+                    t.printStackTrace(System.err);
+                  }
+                  System.out.println("Reporting results");
+                  CertifyRunner.reportProgress(testCaseMessage, testMessageId, sendData);
+                  System.out.println("Completed");
                 }
-                System.out.println("Reporting results");
-                CertifyRunner.reportProgress(testCaseMessage, testMessageId, sendData);
-                System.out.println("Completed");
+
               }
             }
           }
@@ -317,10 +329,13 @@ public class CertifyClient {
           }
         }
 
-        try {
-          TimeUnit.SECONDS.sleep(30);
-        } catch (InterruptedException ie) {
-          // just keep going
+        if (aartAction == null
+            || !aartAction.startsWith(RecordServletInterface.PARAM_TESTER_ACTION_RUN)) {
+          try {
+            TimeUnit.SECONDS.sleep(30);
+          } catch (InterruptedException ie) {
+            // just keep going
+          }
         }
       } catch (Exception e) {
         e.printStackTrace();
