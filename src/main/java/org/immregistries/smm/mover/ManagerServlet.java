@@ -77,8 +77,10 @@ public class ManagerServlet extends ClientServlet
     connectionManager.setKeyStore(getInitParameter(INIT_PARAM_KEY_STORE));
     connectionManager.setKeyStorePassword(getInitParameter(INIT_PARAM_KEY_STORE_PASSWORD));
 
-    connectionManager.setSunSecuritySslAllowUnsafeRenegotiation(
-        getInitParameter(INIT_PARAM_SUN_SECURITY_SSL_ALLOW_UNSAFE_RENEGOTIATION) != null);
+    {
+      String s = getInitParameter(INIT_PARAM_SUN_SECURITY_SSL_ALLOW_UNSAFE_RENEGOTIATION);
+      connectionManager.setSunSecuritySslAllowUnsafeRenegotiation(s != null && s.equalsIgnoreCase("true"));
+    }
 
     ShutdownInterceptor shutdownInterceptor = new ShutdownInterceptor();
     Runtime.getRuntime().addShutdownHook(shutdownInterceptor);
