@@ -2394,22 +2394,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       addField(sb, PARAM_TM_TEST_CASE_DESCRIPTION, testCaseMessage.getDescription());
       addField(sb, PARAM_TM_TEST_CASE_ASSERT_RESULT, testCaseMessage.getAssertResult());
       addField(sb, PARAM_TM_TEST_CASE_FIELD_NAME, testCaseMessage.getFieldName());
-      addField(sb, PARAM_TM_PREP_PATIENT_TYPE, testCaseMessage.getPatientType().toString());
-      addField(sb, PARAM_TM_PREP_TRANSFORMS_QUICK, testCaseMessage.getQuickTransformations());
-      addField(sb, PARAM_TM_PREP_TRANSFORMS_CUSTOM, testCaseMessage.getCustomTransformations());
-      addField(sb, PARAM_TM_PREP_TRANSFORMS_ADDITION,
-          testCaseMessage.getAdditionalTransformations());
-      addField(sb, PARAM_TM_PREP_TRANSFORMS_CAUSE_ISSUE, testCaseMessage.getCauseIssueTransforms());
-      addField(sb, PARAM_TM_PREP_CAUSE_ISSUE_NAMES, testCaseMessage.getCauseIssues());
-      addField(sb, PARAM_TM_PREP_HAS_ISSUE, testCaseMessage.hasIssue());
       addField(sb, PARAM_TM_PREP_MAJOR_CHANGES_MADE, testCaseMessage.isMajorChangesMade());
-      addField(sb, PARAM_TM_PREP_NOT_EXPECTED_TO_CONFORM,
-          testCaseMessage.isResultNotExpectedToConform());
-      addField(sb, PARAM_TM_PREP_MESSAGE_ACCEPT_STATUS_DEBUG,
-          testCaseMessage.getMessageAcceptStatusDebug());
-      addField(sb, PARAM_TM_PREP_SCENARIO_NAME, testCaseMessage.getScenario());
       addField(sb, PARAM_TM_PREP_MESSAGE_DERIVED_FROM, testCaseMessage.getDerivedFromVXUMessage());
-      addField(sb, PARAM_TM_PREP_MESSAGE_ORIGINAL, testCaseMessage.getOriginalMessage());
       addField(sb, PARAM_TM_PREP_MESSAGE_ORIGINAL_RESPONSE,
           testCaseMessage.getOriginalMessageResponse());
       addField(sb, PARAM_TM_PREP_MESSAGE_ACTUAL, testCaseMessage.getMessageTextSent());
@@ -2571,21 +2557,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
         addField(sb, PARAM_TM_TEST_CASE_DESCRIPTION, testMessage.getDescription());
         addField(sb, PARAM_TM_TEST_CASE_ASSERT_RESULT, testMessage.getAssertResult());
         addField(sb, PARAM_TM_TEST_CASE_FIELD_NAME, testMessage.getFieldName());
-        addField(sb, PARAM_TM_PREP_PATIENT_TYPE, testMessage.getPatientType().toString());
-        addField(sb, PARAM_TM_PREP_TRANSFORMS_QUICK, testMessage.getQuickTransformations());
-        addField(sb, PARAM_TM_PREP_TRANSFORMS_CUSTOM, testMessage.getCustomTransformations());
-        addField(sb, PARAM_TM_PREP_TRANSFORMS_ADDITION, testMessage.getAdditionalTransformations());
-        addField(sb, PARAM_TM_PREP_TRANSFORMS_CAUSE_ISSUE, testMessage.getCauseIssueTransforms());
-        addField(sb, PARAM_TM_PREP_CAUSE_ISSUE_NAMES, testMessage.getCauseIssues());
-        addField(sb, PARAM_TM_PREP_HAS_ISSUE, testMessage.hasIssue());
         addField(sb, PARAM_TM_PREP_MAJOR_CHANGES_MADE, testMessage.isMajorChangesMade());
-        addField(sb, PARAM_TM_PREP_NOT_EXPECTED_TO_CONFORM,
-            testMessage.isResultNotExpectedToConform());
-        addField(sb, PARAM_TM_PREP_MESSAGE_ACCEPT_STATUS_DEBUG,
-            testMessage.getMessageAcceptStatusDebug());
-        addField(sb, PARAM_TM_PREP_SCENARIO_NAME, testMessage.getScenario());
         addField(sb, PARAM_TM_PREP_MESSAGE_DERIVED_FROM, testMessage.getDerivedFromVXUMessage());
-        addField(sb, PARAM_TM_PREP_MESSAGE_ORIGINAL, testMessage.getOriginalMessage());
         addField(sb, PARAM_TM_PREP_MESSAGE_ORIGINAL_RESPONSE,
             testMessage.getOriginalMessageResponse());
         addField(sb, PARAM_TM_PREP_MESSAGE_ACTUAL, testMessage.getMessageTextSent());
