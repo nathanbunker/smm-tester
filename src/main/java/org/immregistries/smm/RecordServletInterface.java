@@ -55,10 +55,8 @@ public interface RecordServletInterface {
   public static final String PARAM_TC_CONNECTION_ACK_TYPE = "tc_connectionAckType";
   public static final String PARAM_TC_CONNECTION_CONFIG = "tc_connectionConfig";
   public static final String PARAM_TC_COMPLETE_TEST = "tc_copmleteTest";
-  public static final String PARAM_TC_MANUAL_TEST = "tc_manualTest";
   public static final String PARAM_TC_QUERY_TYPE = "tc_queryType";
   public static final String PARAM_TC_QUERY_ENABLED = "tc_queryEnabled";
-  public static final String PARAM_TC_QUERY_PAUSE = "tc_queryPause";
   public static final String PARAM_TC_TEST_LOG = "tc_testLog";
   public static final String PARAM_TC_TEST_STATUS = "tc_testStatus";
   public static final String PARAM_TC_TEST_STARTED_TIME = "tc_testStartedTime";
@@ -67,15 +65,6 @@ public interface RecordServletInterface {
   public static final String PARAM_TC_COUNT_QUERY = "tc_countQuery";
   public static final String PARAM_TC_PROFILE_BASE_NAME = "tc_profileBaseName";
   public static final String PARAM_TC_PROFILE_COMPARE_NAME = "tc_profileCompareName";
-  public static final String PARAM_TC_SCORE_OVERALL = "tc_scoreOverall";
-  public static final String PARAM_TC_SCORE_INTEROP = "tc_scoreInterop";
-  public static final String PARAM_TC_SCORE_CODED = "tc_scoreCoded";
-  public static final String PARAM_TC_SCORE_LOCAL = "tc_scoreLocal";
-  public static final String PARAM_TC_SCORE_NATIONAL = "tc_scoreNational";
-  public static final String PARAM_TC_SCORE_TOLERANCE = "tc_scoreTolerance";
-  public static final String PARAM_TC_SCORE_EHR = "tc_scoreEhr";
-  public static final String PARAM_TC_SCORE_PERFORM = "tc_scorePerform";
-  public static final String PARAM_TC_SCORE_ACK = "tc_scoreAck";
   public static final String PARAM_TC_PER_QUERY_TOTAL = "tc_perQueryTotal";
   public static final String PARAM_TC_PER_QUERY_COUNT = "tc_perQueryCount";
   public static final String PARAM_TC_PER_QUERY_MIN = "tc_perQueryMin";
@@ -90,16 +79,13 @@ public interface RecordServletInterface {
 
   public static final String[] PARAMS_TC = {PARAM_TC_PUBLIC_ID_CODE, PARAM_TC_ACCESS_PASSCODE,
       PARAM_TC_CONNECTION_TYPE, PARAM_TC_CONNECTION_URL, PARAM_TC_CONNECTION_ACK_TYPE,
-      PARAM_TC_CONNECTION_CONFIG, PARAM_TC_QUERY_TYPE, PARAM_TC_QUERY_ENABLED, PARAM_TC_QUERY_PAUSE,
+      PARAM_TC_CONNECTION_CONFIG, PARAM_TC_QUERY_TYPE, PARAM_TC_QUERY_ENABLED,
       PARAM_TC_TEST_LOG, PARAM_TC_TEST_STATUS, PARAM_TC_TEST_STARTED_TIME,
       PARAM_TC_TEST_FINISHED_TIME, PARAM_TC_COUNT_UPDATE, PARAM_TC_COUNT_QUERY,
-      PARAM_TC_PROFILE_BASE_NAME, PARAM_TC_PROFILE_COMPARE_NAME, PARAM_TC_SCORE_OVERALL,
-      PARAM_TC_SCORE_INTEROP, PARAM_TC_SCORE_CODED, PARAM_TC_SCORE_LOCAL, PARAM_TC_SCORE_NATIONAL,
-      PARAM_TC_SCORE_TOLERANCE, PARAM_TC_SCORE_EHR, PARAM_TC_SCORE_PERFORM, PARAM_TC_SCORE_ACK,
-      PARAM_TC_PER_QUERY_TOTAL, PARAM_TC_PER_QUERY_COUNT, PARAM_TC_PER_QUERY_MIN,
-      PARAM_TC_PER_QUERY_MAX, PARAM_TC_PER_QUERY_STD, PARAM_TC_PER_UPDATE_TOTAL,
-      PARAM_TC_PER_UPDATE_COUNT, PARAM_TC_PER_UPDATE_MIN, PARAM_TC_PER_UPDATE_MAX,
-      PARAM_TC_PER_UPDATE_STD};
+      PARAM_TC_PROFILE_BASE_NAME, PARAM_TC_PROFILE_COMPARE_NAME, PARAM_TC_PER_QUERY_TOTAL,
+      PARAM_TC_PER_QUERY_COUNT, PARAM_TC_PER_QUERY_MIN, PARAM_TC_PER_QUERY_MAX,
+      PARAM_TC_PER_QUERY_STD, PARAM_TC_PER_UPDATE_TOTAL, PARAM_TC_PER_UPDATE_COUNT,
+      PARAM_TC_PER_UPDATE_MIN, PARAM_TC_PER_UPDATE_MAX, PARAM_TC_PER_UPDATE_STD};
 
   public static final String PARAM_TS_TEST_SECTION_TYPE = "ts_testSectionType";
   public static final String PARAM_TS_TEST_ENABLED = "ts_testEnabled";
@@ -158,9 +144,7 @@ public interface RecordServletInterface {
 
   public static final String PARAM_TM_TEST_POSITION = "tm_testPosition";
   public static final String PARAM_TM_TEST_TYPE = "tm_testType";
-  public static final String PARAM_TM_TEST_CASE_SET = "tm_testCaseSet";
   public static final String PARAM_TM_TEST_CASE_NUMBER = "tm_testCaseNumber";
-  public static final String PARAM_TM_TEST_CASE_CATEGORY = "tm_testCaseCategory";
   public static final String PARAM_TM_TEST_CASE_DESCRIPTION = "tm_testCaseDescription";
   public static final String PARAM_TM_TEST_CASE_ASSERT_RESULT = "tm_testCaseAssertResult";
   public static final String PARAM_TM_TEST_CASE_FIELD_NAME = "tm_testCaseFieldName";
@@ -175,26 +159,21 @@ public interface RecordServletInterface {
   public static final String PARAM_TM_RESULT_STATUS = "tm_resultStatus";
   public static final String PARAM_TM_RESULT_ACCEPTED = "tm_resultAccepted";
   public static final String PARAM_TM_RESULT_EXECEPTION_TEXT = "tm_resultExceptionText";
-  public static final String PARAM_TM_RESULT_ACCEPTED_MESSAGE = "tm_resultAcceptedMessage";
-  public static final String PARAM_TM_RESULT_RESPONSE_TYPE = "tm_resultResponseType";
   public static final String PARAM_TM_RESULT_ACK_TYPE = "tm_resultAckType";
   public static final String PARAM_TM_RESULT_ACK_CONFORMANCE = "tm_resultAckConformance";
   public static final String PARAM_TM_RESULT_QUERY_TYPE = "tm_resultQueryType";
   public static final String PARAM_TM_RESULT_ACK_STORE_STATUS = "tm_resultStoreStatus";
   public static final String PARAM_TM_RESULT_FORECAST_STATUS = "tm_resultForecastStatus";
-  public static final String PARAM_TM_RESULT_MANUAL_TEST = "tm_resultManualTest";
   public static final String PARAM_TM_FORECAST_TEST_PANEL_CASE_ID = "tm_forecastTestPanelCaseId";
   public static final String PARAM_TM_FORECAST_TEST_PANEL_ID = "tm_forecastTestPanelId";
   public static final String PARAM_TM_RESULT_RUN_TIME_MS = "tm_runTimeMs";
 
-  public static final String[] PARAMS_TM =
-      {PARAM_TM_TEST_POSITION, PARAM_TM_TEST_TYPE, PARAM_TM_TEST_CASE_SET,
-          PARAM_TM_TEST_CASE_NUMBER, PARAM_TM_TEST_CASE_CATEGORY, PARAM_TM_TEST_CASE_DESCRIPTION,
-          PARAM_TM_TEST_CASE_ASSERT_RESULT, PARAM_TM_PREP_MAJOR_CHANGES_MADE,
-          PARAM_TM_PREP_MESSAGE_DERIVED_FROM, PARAM_TM_PREP_MESSAGE_ACTUAL,
-          PARAM_TM_RESULT_MESSAGE_ACTUAL, PARAM_TM_RESULT_STATUS, PARAM_TM_RESULT_EXECEPTION_TEXT,
-          PARAM_TM_RESULT_ACCEPTED_MESSAGE, PARAM_TM_RESULT_RESPONSE_TYPE, PARAM_TM_RESULT_ACK_TYPE,
-          PARAM_TM_FORECAST_TEST_PANEL_CASE_ID, PARAM_TM_FORECAST_TEST_PANEL_ID};
+  public static final String[] PARAMS_TM = {PARAM_TM_TEST_POSITION, PARAM_TM_TEST_TYPE,
+      PARAM_TM_TEST_CASE_NUMBER, PARAM_TM_TEST_CASE_DESCRIPTION, PARAM_TM_TEST_CASE_ASSERT_RESULT,
+      PARAM_TM_PREP_MAJOR_CHANGES_MADE, PARAM_TM_PREP_MESSAGE_DERIVED_FROM,
+      PARAM_TM_PREP_MESSAGE_ACTUAL, PARAM_TM_RESULT_MESSAGE_ACTUAL, PARAM_TM_RESULT_STATUS,
+      PARAM_TM_RESULT_EXECEPTION_TEXT, PARAM_TM_RESULT_ACK_TYPE,
+      PARAM_TM_FORECAST_TEST_PANEL_CASE_ID, PARAM_TM_FORECAST_TEST_PANEL_ID};
 
   public static final String VALUE_PROFILE_TYPE_PRESENT = "present";
   public static final String VALUE_PROFILE_TYPE_ABSENT = "absent";

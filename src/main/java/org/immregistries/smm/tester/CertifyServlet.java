@@ -117,10 +117,6 @@ public class CertifyServlet extends ClientServlet {
             certifyRunner.setProfileUsageComparisonConformance(profileManager.getProfileUsage(request.getParameter("profileUsageIdForConformance")));
           }
 
-          String runAgainst = request.getParameter("runAgainst");
-          if (runAgainst != null && !runAgainst.equals("")) {
-            certifyRunner.setRunAgainstTestStartTime(runAgainst);
-          }
           session.setAttribute("certifyRunner", certifyRunner);
           certifyRunner.start();
           try {
@@ -355,23 +351,6 @@ public class CertifyServlet extends ClientServlet {
             + (readactListResponses ? " checked=\"true\"" : "") + "/> Redact List Responses");
         out.println("          </td>");
         out.println("        </tr>");
-        if (sendData != null) {
-          List<String> manualReportList = CertifyRunner.getManualReportList(sendData.getConnector().getLabel());
-          if (manualReportList.size() > 0) {
-            out.println("        <tr>");
-            out.println("          <td>Run Against</td>");
-            out.println("          <td>");
-            out.println("            <select name=\"runAgainst\">");
-            out.println("              <option value=\"\">Realtime Interface</option>");
-            for (String testName : manualReportList) {
-              out.println("              <option value=\"" + testName + "\""
-                  + (autoTestNameSelect != null && autoTestNameSelect.equals(testName) ? " selected=\"true\"" : "") + ">" + testName + "</option>");
-            }
-            out.println("          </td>");
-            out.println("        </tr>");
-          }
-        }
-
         out.println("        <tr>");
         out.println("          <td colspan=\"2\">Tests to Run</td>");
         out.println("        </tr>");

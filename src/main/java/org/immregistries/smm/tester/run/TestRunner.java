@@ -8,12 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.mail.Session;
-
-import org.apache.cxf.test.TestApplicationContext;
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.connectors.RunAgainstConnector;
 import org.immregistries.smm.tester.manager.HL7Reader;
 import org.immregistries.smm.tester.manager.nist.NISTValidator;
 import org.immregistries.smm.tester.manager.nist.ValidationReport;
@@ -351,23 +347,9 @@ public class TestRunner {
   }
 
   private void doRunTest(Connector connector, TestCaseMessage testCaseMessage, String message) throws Exception {
-    if (connector instanceof RunAgainstConnector) {
-      RunAgainstConnector rac = (RunAgainstConnector) connector;
-      rac.setTestCaseCategory(testCaseMessage.getTestCaseCategoryId());
-      rac.setTestSectionType(testSectionType);
-    }
-
     startTime = System.currentTimeMillis();
     ackMessageText = connector.submitMessage(message, false);
     endTime = System.currentTimeMillis();
-
-    if (connector instanceof RunAgainstConnector) {
-      RunAgainstConnector rac = (RunAgainstConnector) connector;
-      if (rac.getOriginalRequestMessage() != null) {
-        testCaseMessage.setMessageTextSent(rac.getOriginalRequestMessage());
-        testCaseMessage.setMessageText(rac.getOriginalRequestMessage());
-      }
-    }
   }
 
   private void setupForRunTest(TestCaseMessage testCaseMessage, String message) {

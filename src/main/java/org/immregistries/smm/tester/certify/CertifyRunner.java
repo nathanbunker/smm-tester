@@ -35,7 +35,6 @@ import org.immregistries.smm.tester.CreateTestCaseServlet;
 import org.immregistries.smm.tester.certify.CATotal.ETC;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.Connector.TransferType;
-import org.immregistries.smm.tester.connectors.RunAgainstConnector;
 import org.immregistries.smm.tester.manager.CompareManager;
 import org.immregistries.smm.tester.manager.HL7Reader;
 import org.immregistries.smm.tester.manager.QueryConverter;
@@ -525,14 +524,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       logStatusMessage("Reporting progress");
       reportProgress(null, true, null);
 
-      if (runAgainstTestStartTime != null) {
-        connector = new RunAgainstConnector(connector, runAgainstTestStartTime);
-        logStatusMessage("Running test against previously received responses in this report: "
-            + runAgainstTestStartTime);
-        if (queryConnector != null) {
-          queryConnector = new RunAgainstConnector(queryConnector, runAgainstTestStartTime);
-        }
-      } else {
+      {
         logStatusMessage("Connecting directly to real-time interface");
 
         logStatusMessage("Verify connection works by sending a message that is expected to pass");
@@ -838,16 +830,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
   protected ProfileUsage profileUsage = null;
   protected ProfileUsage profileUsageComparisonConformance = null;
-
-  private String runAgainstTestStartTime = null;
-
-  public String getRunAgainstTestStartTime() {
-    return runAgainstTestStartTime;
-  }
-
-  public void setRunAgainstTestStartTime(String runAgainstTestStartTime) {
-    this.runAgainstTestStartTime = runAgainstTestStartTime;
-  }
 
   public void setProfileUsage(ProfileUsage profileUsage) {
     this.profileUsage = profileUsage;
@@ -2277,70 +2259,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
     return line;
   }
 
-  public static List<String> getManualReportList(String connectionLabel) {
-    List<String> manualReportList = new ArrayList<String>();
-    try {
-      HttpURLConnection urlConn;
-      InputStreamReader input = null;
-      URL url = new URL(MANUAL_URL + "?query=reports&connectionLabel="
-          + URLEncoder.encode(connectionLabel, "UTF-8"));
-      urlConn = (HttpURLConnection) url.openConnection();
-      urlConn.setRequestMethod("GET");
-
-      urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-      urlConn.setDoInput(true);
-      urlConn.setDoOutput(false);
-      urlConn.setUseCaches(false);
-
-      input = new InputStreamReader(urlConn.getInputStream());
-      BufferedReader in = new BufferedReader(input);
-      String line;
-      while ((line = in.readLine()) != null) {
-        manualReportList.add(line);
-      }
-      input.close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return manualReportList;
-  }
-
-  public static String getManualMessage(String connectionLabel, String testStartTime,
-      String testSectionType, String testCaseCategory, String query) {
-    try {
-
-      HttpURLConnection urlConn;
-      InputStreamReader input = null;
-      String urlString = MANUAL_URL + "?query=" + query + "&connectionLabel="
-          + URLEncoder.encode(connectionLabel, "UTF-8") + "&testStartTime="
-          + URLEncoder.encode(testStartTime, "UTF-8") + "&testSectionType="
-          + URLEncoder.encode(testSectionType, "UTF-8") + "&testCaseCategory="
-          + URLEncoder.encode(testCaseCategory, "UTF-8");
-      URL url = new URL(urlString);
-      urlConn = (HttpURLConnection) url.openConnection();
-      urlConn.setRequestMethod("GET");
-
-      urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-      urlConn.setDoInput(true);
-      urlConn.setDoOutput(false);
-      urlConn.setUseCaches(false);
-
-      input = new InputStreamReader(urlConn.getInputStream());
-      BufferedReader in = new BufferedReader(input);
-      String line;
-      StringBuilder sb = new StringBuilder();
-      while ((line = in.readLine()) != null) {
-        sb.append(line);
-        sb.append("\r");
-      }
-      input.close();
-      return sb.toString();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return "";
-  }
-
   protected void reportProgress(TestCaseMessage testMessage) {
     reportProgress(testMessage, false, null);
   }
@@ -2388,9 +2306,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
       addField(sb, PARAM_TM_TEST_POSITION, testCaseMessage.getTestPosition());
       addField(sb, PARAM_TM_TEST_TYPE, testCaseMessage.getTestType());
-      addField(sb, PARAM_TM_TEST_CASE_SET, testCaseMessage.getTestCaseSet());
-      addField(sb, PARAM_TM_TEST_CASE_NUMBER, testCaseMessage.getTestCaseNumber());
-      addField(sb, PARAM_TM_TEST_CASE_CATEGORY, testCaseMessage.getTestCaseCategoryId());
+      addField(sb, PARAM_TM_TEST_CASE_NUMBER, testCaseMessage.getTestCaseCategoryId());
       addField(sb, PARAM_TM_TEST_CASE_DESCRIPTION, testCaseMessage.getDescription());
       addField(sb, PARAM_TM_TEST_CASE_ASSERT_RESULT, testCaseMessage.getAssertResult());
       addField(sb, PARAM_TM_TEST_CASE_FIELD_NAME, testCaseMessage.getFieldName());
@@ -2403,8 +2319,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       addField(sb, PARAM_TM_RESULT_STATUS, testCaseMessage.getActualResultStatus());
       addField(sb, PARAM_TM_RESULT_ACCEPTED, testCaseMessage.isAccepted());
       addField(sb, PARAM_TM_RESULT_EXECEPTION_TEXT, testCaseMessage.getException());
-      addField(sb, PARAM_TM_RESULT_ACCEPTED_MESSAGE, testCaseMessage.getActualResultAckMessage());
-      addField(sb, PARAM_TM_RESULT_RESPONSE_TYPE, testCaseMessage.getActualMessageResponseType());
       addField(sb, PARAM_TM_RESULT_ACK_TYPE, testCaseMessage.getActualResultAckType());
       addField(sb, PARAM_TM_RESULT_RUN_TIME_MS, testCaseMessage.getTotalRunTime());
 
@@ -2473,7 +2387,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       addField(sb, PARAM_TC_CONNECTION_URL, connector.getUrl());
       addField(sb, PARAM_TC_CONNECTION_ACK_TYPE, connector.getAckType().toString());
       addField(sb, PARAM_TC_CONNECTION_CONFIG, connector.getScript());
-      boolean manualTest = connector.isVerify() && runAgainstTestStartTime == null;
       boolean completeTest =
           status.equals(STATUS_COMPLETED) && certifyAreas[SUITE_A_BASIC].getAreaProgress()[0] == 100
               && certifyAreas[SUITE_B_INTERMEDIATE].getAreaProgress()[0] == 100
@@ -2484,11 +2397,9 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
               && certifyAreas[SUITE_K_NOT_ACCEPTED].getAreaProgress()[0] == 100
               && certifyAreas[SUITE_J_ONC_2015].getAreaProgress()[0] == 100;
       addField(sb, PARAM_TC_COMPLETE_TEST, completeTest);
-      addField(sb, PARAM_TC_MANUAL_TEST, manualTest);
 
       addField(sb, PARAM_TC_QUERY_TYPE, queryType);
       addField(sb, PARAM_TC_QUERY_ENABLED, willQuery);
-      addField(sb, PARAM_TC_QUERY_PAUSE, pauseBeforeQuerying);
       addField(sb, PARAM_TC_TEST_LOG, statusMessageList);
       addField(sb, PARAM_TC_TEST_STATUS, status);
       addField(sb, PARAM_TC_TEST_STARTED_TIME, testStarted);
@@ -2513,15 +2424,6 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       addField(sb, PARAM_TS_COUNT_LEVEL1, certifyAreas[currentSuite].getAreaCount()[0]);
       addField(sb, PARAM_TS_COUNT_LEVEL2, certifyAreas[currentSuite].getAreaCount()[1]);
       addField(sb, PARAM_TS_COUNT_LEVEL3, certifyAreas[currentSuite].getAreaCount()[2]);
-      addField(sb, PARAM_TC_SCORE_OVERALL, (int) (overallScore * 100));
-      addField(sb, PARAM_TC_SCORE_INTEROP, (int) (reportScore[REPORT_1_INTEROP] * 100));
-      addField(sb, PARAM_TC_SCORE_CODED, (int) (reportScore[REPORT_2_CODED] * 100));
-      addField(sb, PARAM_TC_SCORE_LOCAL, (int) (reportScore[REPORT_3_LOCAL] * 100));
-      addField(sb, PARAM_TC_SCORE_NATIONAL, (int) (reportScore[REPORT_4_NATIONAL] * 100));
-      addField(sb, PARAM_TC_SCORE_TOLERANCE, (int) (reportScore[REPORT_5_TOLERANCE] * 100));
-      addField(sb, PARAM_TC_SCORE_EHR, (int) (reportScore[REPORT_6_EHR] * 100));
-      addField(sb, PARAM_TC_SCORE_PERFORM, (int) (reportScore[REPORT_7_PERFORM] * 100));
-      addField(sb, PARAM_TC_SCORE_ACK, (int) (reportScore[REPORT_8_ACK] * 100));
       addField(sb, PARAM_TC_PER_QUERY_TOTAL, performance.getTotalQueryTime());
       addField(sb, PARAM_TC_PER_QUERY_COUNT, performance.getTotalQueryCount());
       addField(sb, PARAM_TC_PER_QUERY_MIN,
@@ -2551,9 +2453,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       if (testMessage != null) {
         addField(sb, PARAM_TM_TEST_POSITION, testMessage.getTestPosition());
         addField(sb, PARAM_TM_TEST_TYPE, testMessage.getTestType());
-        addField(sb, PARAM_TM_TEST_CASE_SET, testMessage.getTestCaseSet());
-        addField(sb, PARAM_TM_TEST_CASE_NUMBER, testMessage.getTestCaseNumber());
-        addField(sb, PARAM_TM_TEST_CASE_CATEGORY, testMessage.getTestCaseCategoryId());
+        addField(sb, PARAM_TM_TEST_CASE_NUMBER, testMessage.getTestCaseCategoryId());
         addField(sb, PARAM_TM_TEST_CASE_DESCRIPTION, testMessage.getDescription());
         addField(sb, PARAM_TM_TEST_CASE_ASSERT_RESULT, testMessage.getAssertResult());
         addField(sb, PARAM_TM_TEST_CASE_FIELD_NAME, testMessage.getFieldName());
@@ -2566,10 +2466,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
         addField(sb, PARAM_TM_RESULT_STATUS, testMessage.getActualResultStatus());
         addField(sb, PARAM_TM_RESULT_ACCEPTED, testMessage.isAccepted());
         addField(sb, PARAM_TM_RESULT_EXECEPTION_TEXT, testMessage.getException());
-        addField(sb, PARAM_TM_RESULT_ACCEPTED_MESSAGE, testMessage.getActualResultAckMessage());
-        addField(sb, PARAM_TM_RESULT_RESPONSE_TYPE, testMessage.getActualMessageResponseType());
         addField(sb, PARAM_TM_RESULT_ACK_TYPE, testMessage.getActualResultAckType());
-        addField(sb, PARAM_TM_RESULT_MANUAL_TEST, manualTest);
         addField(sb, PARAM_TM_RESULT_RUN_TIME_MS, testMessage.getTotalRunTime());
         if (testMessage.getValidationReport() == null || !testMessage.getValidationReport()
             .getHeaderReport().getValidationStatus().equals("Complete")) {

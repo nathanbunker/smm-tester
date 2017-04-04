@@ -67,7 +67,6 @@ public class CertifyClient {
   private static boolean reportErrorsOnly = true;
   private static boolean condenseErrors = true;
   private static List<ForecastTestPanel> forecastTestPanelList = new ArrayList<ForecastTestPanel>();
-  private static String runAgainst = null;
   private static CertifyRunner certifyRunner = null;
 
   static {
@@ -452,10 +451,6 @@ public class CertifyClient {
     }
     if (certifyRunner.isRun(CertifyRunner.SUITE_L_CONFORMANCE_2015)) {
       System.out.println("     - run suite Conformance 2015");
-    }
-
-    if (runAgainst != null && !runAgainst.equals("")) {
-      certifyRunner.setRunAgainstTestStartTime(runAgainst);
     }
   }
 
