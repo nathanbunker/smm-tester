@@ -2321,7 +2321,8 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
       addField(sb, PARAM_TM_RESULT_EXECEPTION_TEXT, testCaseMessage.getException());
       addField(sb, PARAM_TM_RESULT_ACK_TYPE, testCaseMessage.getActualResultAckType());
       addField(sb, PARAM_TM_RESULT_RUN_TIME_MS, testCaseMessage.getTotalRunTime());
-
+      addField(sb, PARAM_TM_TEST_RUN_LOG, testCaseMessage.getLog());
+      
       content = sb.toString();
       printout = new DataOutputStream(urlConn.getOutputStream());
       printout.writeBytes(content);
@@ -2468,6 +2469,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
         addField(sb, PARAM_TM_RESULT_EXECEPTION_TEXT, testMessage.getException());
         addField(sb, PARAM_TM_RESULT_ACK_TYPE, testMessage.getActualResultAckType());
         addField(sb, PARAM_TM_RESULT_RUN_TIME_MS, testMessage.getTotalRunTime());
+        addField(sb, PARAM_TM_TEST_RUN_LOG, testMessage.getLog());
         if (testMessage.getValidationReport() == null || !testMessage.getValidationReport()
             .getHeaderReport().getValidationStatus().equals("Complete")) {
           String validationProblem = testMessage.getValidationProblem();

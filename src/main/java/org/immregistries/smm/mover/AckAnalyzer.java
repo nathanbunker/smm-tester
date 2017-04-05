@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.immregistries.smm.tester.manager.HL7Reader;
+import org.immregistries.smm.transform.TestCaseMessage;
 
 public class AckAnalyzer
 {
@@ -81,6 +82,7 @@ public class AckAnalyzer
   private List<String> errorMessages = new ArrayList<String>();
   private List<String> segments;
   private FileOut errorFileOut = null;
+  private TestCaseMessage testCaseMessage = null;
 
   private void log(String s) {
     if (errorFileOut != null) {
@@ -89,6 +91,10 @@ public class AckAnalyzer
       } catch (IOException ioe) {
         ioe.printStackTrace();
       }
+    }
+    if (testCaseMessage != null)
+    {
+      testCaseMessage.log(s);
     }
   }
 
@@ -147,19 +153,23 @@ public class AckAnalyzer
   }
 
   public AckAnalyzer(String ack) {
-    this(ack, AckType.DEFAULT, null);
+    this(ack, AckType.DEFAULT, null, null);
   }
 
   public AckAnalyzer(String ack, AckType ackType) {
-    this(ack, ackType, null);
+    this(ack, ackType, null, null);
   }
-
   public AckAnalyzer(String ack, AckType ackType, FileOut errorFileOut) {
+    this(ack, ackType, errorFileOut, null);
+  }
+  public AckAnalyzer(String ack, AckType ackType, FileOut errorFileOut, TestCaseMessage testCaseMessage) {
     while (ack != null && ack.length() > 0 && ack.charAt(0) <= ' ') {
       ack = ack.substring(1);
     }
     this.ackType = ackType;
     this.errorFileOut = errorFileOut;
+    this.testCaseMessage = testCaseMessage;
+    log("  Ack Type = " + ackType);
 
     ack = convertToSegments(ack);
     String ackUpperCase = ack.toUpperCase();

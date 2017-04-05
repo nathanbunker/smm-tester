@@ -151,9 +151,11 @@ public class TestRunner {
   private static final int[][] ERROR_INDICATED_FIELDS_AND_COMPONENTS = new int[][] {{2,1}, {2,2}, {2,3}, {2,4}, {2,5}, {3,1}, {5,1}, {5,3}, {5,4}, {5,6}, {8,1}};
 
   protected void evaluateRunTest(Connector connector, TestCaseMessage testCaseMessage) {
+    testCaseMessage.log("EVALUATING TEST RUN");
     errorList = new ArrayList<TestError>();
     String assertResult = testCaseMessage.getAssertResult();
     HL7Reader errorIndicatedReader = null;
+    testCaseMessage.log("  + Assert Result = " + assertResult);
     if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ERROR_INDICATED))
     {
       String assertResultParameter = testCaseMessage.getAssertResultParameter();
@@ -162,9 +164,14 @@ public class TestRunner {
       {
         errorIndicatedReader = null;
       }
+      else
+      {
+        testCaseMessage.log("Will be looking for ERR segment that matches this one: " + assertResultParameter);
+      }
     }
     if (!assertResult.equalsIgnoreCase("")) {
       if (ackMessageText == null || ackMessageText.equals("")) {
+        testCaseMessage.log("No acknowledgment was returned");
         if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT)) {
           passedTest = false;
         } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_WARN)) {
@@ -179,6 +186,7 @@ public class TestRunner {
         } else if (assertResult.toUpperCase().startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
           passedTest = false;
         }
+        testCaseMessage.log("  + Passed Test = " + passedTest);
       } else {
         ackMessageReader = AckAnalyzer.getMessageReader(ackMessageText, connector.getAckType());
         if (ackMessageReader != null) {
@@ -186,10 +194,13 @@ public class TestRunner {
         }
         {
           if (ackMessageReader != null || !connector.getAckType().isInHL7Format()) {
-            AckAnalyzer ackAnalyzer = new AckAnalyzer(ackMessageText, connector.getAckType());
+            testCaseMessage.log("Analyzing acknowledgement");
+            AckAnalyzer ackAnalyzer = new AckAnalyzer(ackMessageText, connector.getAckType(), null, testCaseMessage);
             testCaseMessage.setAccepted(ackAnalyzer.isPositive());
 
+
             if (ackMessageReader != null && ackMessageReader.advanceToSegment("MSA")) {
+              passedTest = false;
               testCaseMessage.setActualResultAckType(ackMessageReader.getValue(1));
               testCaseMessage.setActualResultAckMessage(ackMessageReader.getValue(2));
               boolean accepted = false;
@@ -282,7 +293,6 @@ public class TestRunner {
                 }
               }
 
-              passedTest = false;
               if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT)) {
                 passedTest = ackAnalyzer.isPositive();
               } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_WARN)) {
@@ -333,6 +343,8 @@ public class TestRunner {
     testCaseMessage.setPassedTest(passedTest);
     testCaseMessage.setHasRun(true);
     wasRun = true;
+    
+    System.out.println(testCaseMessage.getLog());
   }
 
   private boolean checkMatches(HL7Reader errorIndicatedReader, int field, int component) {
@@ -341,7 +353,7 @@ public class TestRunner {
     String actualValue = ackMessageReader.getValue(field, component);
     if (indicatedValue.equals("") || indicatedValue.equalsIgnoreCase(actualValue))
     {
-      matches = true;
+            matches = true;
     }
     return matches;
   }

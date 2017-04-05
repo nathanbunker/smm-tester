@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.transform;
 
@@ -25,8 +24,7 @@ import org.immregistries.smm.transform.forecast.ForecastTestPanel;
  * 
  * @author nathan
  */
-public class TestCaseMessage
-{
+public class TestCaseMessage {
 
   public static final String TEST_CASE_SET = "Test Case Set:";
   public static final String TEST_CASE_NUMBER = "Test Case Number:";
@@ -94,7 +92,8 @@ public class TestCaseMessage
     }
 
     for (int i = 0; i < testCaseMessageList.size(); i++) {
-      if (testCaseMessage.getTestCaseNumber().equals(testCaseMessageList.get(i).getTestCaseNumber())) {
+      if (testCaseMessage.getTestCaseNumber()
+          .equals(testCaseMessageList.get(i).getTestCaseNumber())) {
         testCaseMessageList.get(i).merge(testCaseMessage);
         testCaseMessage = null;
         break;
@@ -175,6 +174,16 @@ public class TestCaseMessage
   private TestCaseMode testCaseMode = TestCaseMode.DEFAULT;
   private transient Map<String, TestCaseMessage> testCaseMessageMap = null;
   private long totalRunTime = 0;
+  private StringBuilder log = new StringBuilder();
+
+  public void log(String s) {
+    log.append(s);
+    log.append("\n");
+  }
+
+  public String getLog() {
+    return log.toString();
+  }
 
   public String getValidationProblem() {
     return validationProblem;
@@ -632,7 +641,8 @@ public class TestCaseMessage
     this.messageType = copy.messageType;
     this.originalMessage = copy.originalMessage;
     this.quickTransformations = new String[copy.quickTransformations.length];
-    System.arraycopy(copy.quickTransformations, 0, this.quickTransformations, 0, copy.quickTransformations.length);
+    System.arraycopy(copy.quickTransformations, 0, this.quickTransformations, 0,
+        copy.quickTransformations.length);
     this.quickTransformationsConverted = copy.quickTransformationsConverted;
     this.excludeTransformations = copy.excludeTransformations;
     this.customTransformations = copy.customTransformations;
@@ -667,7 +677,8 @@ public class TestCaseMessage
     if (!updated.getOriginalMessage().equals("")) {
       originalMessage = updated.getOriginalMessage();
     }
-    if (updated.getQuickTransformations().length > 0 && !updated.getQuickTransformations()[0].equals("")) {
+    if (updated.getQuickTransformations().length > 0
+        && !updated.getQuickTransformations()[0].equals("")) {
       quickTransformations = updated.getQuickTransformations();
     }
     if (!updated.getQuickTransformationsConverted().equals("")) {
@@ -738,8 +749,7 @@ public class TestCaseMessage
     comments.add(comment);
   }
 
-  public class Comment
-  {
+  public class Comment {
 
     private String name = "";
     private String text = "";
@@ -809,7 +819,7 @@ public class TestCaseMessage
   public void setAssertResult(String assertResult) {
     this.assertResult = assertResult;
   }
-  
+
   public String getAssertResultParameter() {
     return assertResultParameter;
   }
@@ -901,7 +911,8 @@ public class TestCaseMessage
     StringWriter stringWriter = new StringWriter();
     PrintWriter stringOut = new PrintWriter(stringWriter);
     try {
-      stringOut.println("--------------------------------------------------------------------------------");
+      stringOut.println(
+          "--------------------------------------------------------------------------------");
       stringOut.println(TEST_CASE_NUMBER + " " + testCaseNumber);
       stringOut.println(TEST_CASE_SET + " " + testCaseSet);
       stringOut.println(DESCRIPTION + " " + description);
@@ -955,7 +966,8 @@ public class TestCaseMessage
       }
       if (additionalTransformations != null && !additionalTransformations.equals("")) {
         stringOut.println(ADDITIONAL_TRANSFORMATIONS + " ");
-        BufferedReader inTransform = new BufferedReader(new StringReader(additionalTransformations));
+        BufferedReader inTransform =
+            new BufferedReader(new StringReader(additionalTransformations));
         String line;
         while ((line = inTransform.readLine()) != null) {
           line = line.trim();
@@ -984,7 +996,8 @@ public class TestCaseMessage
       if (!scenario.equals("")) {
         stringOut.println(SCENARIO + " " + scenario);
       }
-      stringOut.println("--------------------------------------------------------------------------------");
+      stringOut.println(
+          "--------------------------------------------------------------------------------");
       stringOut.print(messageText);
     } catch (Exception ioe) {
       stringOut.println("Exception occured: " + ioe);
@@ -995,7 +1008,8 @@ public class TestCaseMessage
     return stringWriter.toString();
   }
 
-  private void printHL7(boolean forHtml, PrintWriter stringOut, String fieldName, String message) throws IOException {
+  private void printHL7(boolean forHtml, PrintWriter stringOut, String fieldName, String message)
+      throws IOException {
     stringOut.print(fieldName + " ");
     BufferedReader inBase = new BufferedReader(new StringReader(message));
     String line;
