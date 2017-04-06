@@ -80,6 +80,7 @@ public class CertifyRunner extends Thread implements RecordServletInterface {
 
   public static final String STATUS_INITIALIZED = "Initialized";
   public static final String STATUS_STARTED = "Started";
+  public static final String STATUS_RUNNING = "Running";
   public static final String STATUS_COMPLETED = "Completed";
   public static final String STATUS_STOPPED = "Stopped";
   public static final String STATUS_PROBLEM = "Problem";
