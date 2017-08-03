@@ -9,16 +9,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.immregistries.smm.tester.certify.CertifyRunner;
 import org.immregistries.smm.tester.manager.CompareManager;
 import org.immregistries.smm.tester.manager.TestCaseMessageManager;
-import org.immregistries.smm.tester.manager.hl7.ConformanceIssue;
 import org.immregistries.smm.tester.manager.hl7.HL7Component;
 import org.immregistries.smm.tester.manager.nist.Assertion;
 import org.immregistries.smm.tester.manager.nist.ValidationReport;
 import org.immregistries.smm.transform.Comparison;
 import org.immregistries.smm.transform.TestCaseMessage;
-import org.immregistries.smm.transform.TestError;
 
 public class TestCaseMessageViewerServlet extends ClientServlet
 {
@@ -83,12 +80,6 @@ public class TestCaseMessageViewerServlet extends ClientServlet
       }
       TestCaseMessage testCaseMessage = (TestCaseMessage) session.getAttribute("testCaseMessage");
       String certifyServletBasicNum = request.getParameter("certifyServletBasicNum");
-      if (certifyServletBasicNum != null) {
-        CertifyRunner certifyRunner = (CertifyRunner) session.getAttribute("certifyRunner");
-        if (certifyRunner != null) {
-          testCaseMessage = certifyRunner.getStatusCheckTestCaseList().get(Integer.parseInt(certifyServletBasicNum));
-        }
-      }
 
       out.println("    <h3>TestCase Message</h3>");
       if (testCaseMessage != null) {
@@ -142,11 +133,6 @@ public class TestCaseMessageViewerServlet extends ClientServlet
           break;
         }
       }
-      if (foundImportantChanges) {
-        out.println("<div id=\"changesMade\"/>");
-        out.println("<h3>Substantial Changes Made To Message Actually Sent</h3>");
-        CompareServlet.printComparison(comparisonList, out);
-      }
     }
 
     if (testCaseMessage.getException() != null) {
@@ -162,12 +148,6 @@ public class TestCaseMessageViewerServlet extends ClientServlet
     }
     testCaseMessage.getErrorList();
     testCaseMessage.getTestCaseNumber();
-
-    if (testCaseMessage.getComparisonList() != null) {
-      out.println("    <div id=\"compareDetails\"/>");
-      out.println("    <h3>Comparison Results</h3>");
-      CompareServlet.printComparison(testCaseMessage.getComparisonList(), out);
-    }
 
     HL7Component actualResponseMessageComponent = TestCaseMessageManager.createHL7Component(testCaseMessage);
 

@@ -19,14 +19,13 @@ import org.immregistries.smm.mover.SendData;
 import org.immregistries.smm.tester.certify.CertifyRunner;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
-import org.immregistries.smm.tester.profile.ProfileManager;
-import org.immregistries.smm.tester.profile.ProfileUsage;
 import org.immregistries.smm.transform.TestCaseMessage;
 
 /**
  * 
  * @author nathan
  */
+@SuppressWarnings("serial")
 public class ConnectServlet extends ClientServlet {
 
   /**
@@ -285,13 +284,6 @@ public class ConnectServlet extends ClientServlet {
         CreateTestCaseServlet.loadTestCases(session);
       }
       sendData.setTestParticipant(CertifyRunner.getParticipantResponse(sendData));
-      if (sendData.getTestParticipant() != null) {
-        ProfileManager profileManager = ClientServlet.initProfileManager(false);
-        profileManager.readProfileUsage(sendData.getTestParticipant());
-        if (session != null && sendData.getTestParticipant().getProfileUsage()  != null) {
-          session.setAttribute("profileUsage", sendData.getTestParticipant().getProfileUsage());
-        }
-      }
     }
     return sendData;
   }

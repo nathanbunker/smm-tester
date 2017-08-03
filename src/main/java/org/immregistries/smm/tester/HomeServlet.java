@@ -68,10 +68,6 @@ public class HomeServlet extends ClientServlet
         out.println("    <td><a href=\"SubmitServlet\">" + MENU_HEADER_SEND + "</a></td>");
         out.println("    <td>Submit a message or a test case to an IIS for processing.</td>");
         out.println("  </tr>");
-        out.println("  <tr>");
-        out.println("    <td><a href=\"CertifyServlet\">" + MENU_HEADER_TEST + "</a></td>");
-        out.println("    <td>Start automated process to create report on how well IIS meets national standards.</td>");
-        out.println("  </tr>");
         out.println("</table>");
         out.println("<h2>Other Functions</h2>");
         out.println("<table border=\"1\" cellspacing=\"0\">");
@@ -98,10 +94,6 @@ public class HomeServlet extends ClientServlet
         out.println("  <tr>");
         out.println("    <td><a href=\"DocumentServlet\">Document</a></td>");
         out.println("    <td>Details on structure of HL7 Message, Segment or Field </td>");
-        out.println("  </tr>");
-        out.println("  <tr>");
-        out.println("    <td><a href=\"CompareServlet\">Compare</a></td>");
-        out.println("    <td>Compare VXU and RSP messages to determine if important information matches between the messages. </td>");
         out.println("  </tr>");
         out.println("  <tr>");
         out.println("    <td><a href=\"testCase\">Run Tests</a></td>");

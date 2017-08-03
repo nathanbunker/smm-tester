@@ -15,9 +15,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -30,8 +28,6 @@ import org.immregistries.smm.tester.manager.HL7Reader;
 import org.immregistries.smm.tester.manager.QueryConverter;
 import org.immregistries.smm.tester.manager.TestCaseMessageManager;
 import org.immregistries.smm.tester.manager.nist.Assertion;
-import org.immregistries.smm.tester.manager.nist.NISTValidator;
-import org.immregistries.smm.tester.manager.nist.ValidationReport;
 import org.immregistries.smm.tester.run.TestRunner;
 import org.immregistries.smm.transform.TestCaseMessage;
 import org.immregistries.smm.transform.Transformer;
@@ -40,6 +36,7 @@ import org.immregistries.smm.transform.Transformer;
  * 
  * @author nathan
  */
+@SuppressWarnings("serial")
 public class SubmitServlet extends ClientServlet
 {
 
@@ -314,7 +311,6 @@ public class SubmitServlet extends ClientServlet
         if (message.indexOf("|VXU^") > 0) {
           {
             String qbpMessage = QueryConverter.convertVXUtoQBPZ34(message);
-            session.setAttribute(CompareServlet.VXU_MESSAGE, message);
             out.println("<p>Submit QBP Z34 query message based from VXU displayed above</p>");
             printForm(id, connectors, qbpMessage, testCaseMessage, request, out);
           }
@@ -333,12 +329,6 @@ public class SubmitServlet extends ClientServlet
             out.println("<p>Submit VXQ query message based from VXU displayed above</p>");
             printForm(id, connectors, vxqMessage, testCaseMessage, request, out);
           }
-        }
-      }
-      if (responseText != null && responseText.indexOf("|RSP^") > 0) {
-        session.setAttribute(CompareServlet.RSP_MESSAGE, responseText);
-        if (session.getAttribute(CompareServlet.VXU_MESSAGE) != null) {
-          out.println("<p><a href=\"CompareServlet\">Compare response with original VXU</a></p>");
         }
       }
 

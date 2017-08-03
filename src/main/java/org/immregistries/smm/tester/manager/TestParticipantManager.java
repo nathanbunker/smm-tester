@@ -14,14 +14,11 @@ public class TestParticipantManager {
 
     int posOrganizationName = CvsReader.findPosition("Organization Name", valueList);
     int posFolderName = CvsReader.findPosition("Folder Name", valueList);
-    int posRedactListResponses = CvsReader.findPosition("Redact List Responses", valueList);
     int posRecordRequirementsStatus = CvsReader.findPosition("Record Requirements Status", valueList);
     int posConnecttoIISStatus = CvsReader.findPosition("Connect to IIS Status", valueList);
     int posGuideName = CvsReader.findPosition("Guide Name", valueList);
     int posTransport = CvsReader.findPosition("Transport", valueList);
-    int posQuerySupport = CvsReader.findPosition("Query Support", valueList);
     int posPublicIdCode = CvsReader.findPosition("Public Id Code", valueList);
-    int posTchForecastSoftwareId = CvsReader.findPosition("TCH Forecast Software Id", valueList);
 
     while ((line = in.readLine()) != null) {
       valueList = CvsReader.readValuesFromCsv(line);
@@ -32,10 +29,7 @@ public class TestParticipantManager {
       testParticipant.setConnecttoIISStatus(CvsReader.readValue(posConnecttoIISStatus, valueList));
       testParticipant.setProfileUsageId(CvsReader.readValue(posGuideName, valueList));
       testParticipant.setTransport(CvsReader.readValue(posTransport, valueList));
-      testParticipant.setQuerySupport(CvsReader.readValue(posQuerySupport, valueList));
       testParticipant.setPublicIdCode(CvsReader.readValue(posPublicIdCode, valueList));
-      testParticipant.setTchForecastSoftwareId(rn(CvsReader.readValue(posTchForecastSoftwareId, valueList)));
-      testParticipant.setRedactListResponses(!CvsReader.readValue(posRedactListResponses, valueList).equalsIgnoreCase("No"));
       return testParticipant;
     }
     }
@@ -43,12 +37,4 @@ public class TestParticipantManager {
     return null;
   }
 
-  private static String rn(String s)
-  {
-    if (s == null || s.equals("null"))
-    {
-      return "";
-    }
-    return s;
-  }
 }

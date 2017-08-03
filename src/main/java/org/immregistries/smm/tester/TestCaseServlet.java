@@ -360,13 +360,6 @@ public class TestCaseServlet extends ClientServlet
           id = (Integer) session.getAttribute("id");
         }
         TestCaseMessage testCaseMessage = (TestCaseMessage) session.getAttribute("testCaseMessage");
-        String certifyServletBasicNum = request.getParameter("certifyServletBasicNum");
-        if (certifyServletBasicNum != null) {
-          CertifyRunner certifyRunner = (CertifyRunner) session.getAttribute("certifyRunner");
-          if (certifyRunner != null) {
-            testCaseMessage = certifyRunner.getStatusCheckTestCaseList().get(Integer.parseInt(certifyServletBasicNum));
-          }
-        }
         if (testCaseMessage == null) {
           testCaseMessage = new TestCaseMessage();
         }

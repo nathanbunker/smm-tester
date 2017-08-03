@@ -88,14 +88,6 @@
     <servlet-class>org.immregistries.smm.tester.ModifyMessageServlet</servlet-class>
   </servlet>
   <servlet>
-    <servlet-name>CertifyServlet</servlet-name>
-    <servlet-class>org.immregistries.smm.tester.CertifyServlet</servlet-class>
-  </servlet>
-  <servlet>
-    <servlet-name>QueryServlet</servlet-name>
-    <servlet-class>org.immregistries.smm.tester.QueryServlet</servlet-class>
-  </servlet>
-  <servlet>
     <servlet-name>DocumentServlet</servlet-name>
     <servlet-class>org.immregistries.smm.tester.DocumentServlet</servlet-class>
   </servlet>
@@ -110,10 +102,6 @@
   <servlet>
     <servlet-name>TestCaseMessageViewerServlet</servlet-name>
     <servlet-class>org.immregistries.smm.tester.TestCaseMessageViewerServlet</servlet-class>
-  </servlet>
-  <servlet>
-    <servlet-name>CompareServlet</servlet-name>
-    <servlet-class>org.immregistries.smm.tester.CompareServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>HomeServlet</servlet-name>
@@ -182,14 +170,6 @@
   <servlet-mapping>
     <servlet-name>VerifyServlet</servlet-name>
     <url-pattern>/VerifyServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>CertifyServlet</servlet-name>
-    <url-pattern>/CertifyServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>QueryServlet</servlet-name>
-    <url-pattern>/QueryServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>GenerateDataServlet</servlet-name>

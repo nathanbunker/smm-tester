@@ -24,28 +24,6 @@ public interface RecordServletInterface {
   public static final String VALUE_TEST_TYPE_UPDATE = "update";
   public static final String VALUE_TEST_TYPE_QUERY = "query";
 
-  public static final String VALUE_TEST_SECTION_TYPE_BASIC = "Basic";
-  public static final String VALUE_TEST_SECTION_TYPE_INTERMEDIATE = "Intermediate";
-  public static final String VALUE_TEST_SECTION_TYPE_ADVANCED = "Advanced";
-  public static final String VALUE_TEST_SECTION_TYPE_EXCEPTIONAL = "Exceptional";
-  public static final String VALUE_TEST_SECTION_TYPE_FORECAST_PREP = "Forecast Prep";
-  public static final String VALUE_TEST_SECTION_TYPE_FORECAST = "Forecast";
-  public static final String VALUE_TEST_SECTION_TYPE_PERFORMANCE = "Performance";
-  public static final String VALUE_TEST_SECTION_TYPE_CONFORMANCE = "Conformance";
-  public static final String VALUE_TEST_SECTION_TYPE_CONFORMANCE_2015 = "Conformance 2015";
-  public static final String VALUE_TEST_SECTION_TYPE_PROFILING = "Profiling";
-  public static final String VALUE_TEST_SECTION_TYPE_ONC_2015 = "ONC 2015";
-  public static final String VALUE_TEST_SECTION_TYPE_NOT_ACCEPTED = "Not Accepted";
-  public static final String VALUE_TEST_SECTION_TYPE_QBP_SUPPORT = "QBP Support";
-  public static final String VALUE_TEST_SECTION_TYPE_TRANSFORM = "Transform";
-  public static final String VALUE_TEST_SECTION_TYPE_EXTRA = "Extra";
-  public static final String VALUE_TEST_SECTION_TYPE_DEDUPLICATION_ENGAGED =
-      "Deduplication Engaged";
-  public static final String VALUE_TEST_SECTION_TYPE_FORECASTER_ENGAGED = "Forecaster Engaged";
-  public static final String VALUE_TEST_SECTION_TYPE_ASSESSMENT_FOR_SUBMISSION =
-      "Assessment for Submission";
-  public static final String VALUE_TEST_SECTION_TYPE_ASSESSMENT_FOR_QUERY = "Assessment for Query";
-
   public static final int SUITE_Q_FORECAST = 16;
 
   public static final String PARAM_TC_PUBLIC_ID_CODE = "tc_publicIdCode";
@@ -87,34 +65,9 @@ public interface RecordServletInterface {
       PARAM_TC_PER_QUERY_STD, PARAM_TC_PER_UPDATE_TOTAL, PARAM_TC_PER_UPDATE_COUNT,
       PARAM_TC_PER_UPDATE_MIN, PARAM_TC_PER_UPDATE_MAX, PARAM_TC_PER_UPDATE_STD};
 
-  public static final String PARAM_TS_TEST_SECTION_TYPE = "ts_testSectionType";
-  public static final String PARAM_TS_TEST_ENABLED = "ts_testEnabled";
-  public static final String PARAM_TS_SCORE_LEVEL1 = "ts_scoreLevel1";
-  public static final String PARAM_TS_SCORE_LEVEL2 = "ts_scoreLevel2";
-  public static final String PARAM_TS_SCORE_LEVEL3 = "ts_scoreLevel3";
-  public static final String PARAM_TS_PROGRESS_LEVEL1 = "ts_progressLevel1";
-  public static final String PARAM_TS_PROGRESS_LEVEL2 = "ts_progressLevel2";
-  public static final String PARAM_TS_PROGRESS_LEVEL3 = "ts_progressLevel3";
-  public static final String PARAM_TS_COUNT_LEVEL1 = "ts_countLevel1";
-  public static final String PARAM_TS_COUNT_LEVEL2 = "ts_countLevel2";
-  public static final String PARAM_TS_COUNT_LEVEL3 = "ts_countLevel3";
 
-  public static final String[] PARAMS_TS = {PARAM_TS_TEST_SECTION_TYPE, PARAM_TS_TEST_ENABLED,
-      PARAM_TS_SCORE_LEVEL1, PARAM_TS_SCORE_LEVEL2, PARAM_TS_SCORE_LEVEL3, PARAM_TS_PROGRESS_LEVEL1,
-      PARAM_TS_PROGRESS_LEVEL2, PARAM_TS_PROGRESS_LEVEL3, PARAM_TS_COUNT_LEVEL1,
-      PARAM_TS_COUNT_LEVEL2, PARAM_TS_COUNT_LEVEL3};
 
-  public static final String VALUE_RESULT_ACK_CONFORMANCE_ERROR = "ERROR";
-  public static final String VALUE_RESULT_ACK_CONFORMANCE_OK = "OK";
-  public static final String VALUE_RESULT_ACK_CONFORMANCE_NOT_RUN = "NOT RUN";
-  public static final String VALUE_RESULT_ACK_CONFORMANCE_NOT_CONFIGURED_TO_RUN =
-      "NOT CONFIGURED TO RUN";
-  public static final String VALUE_RESULT_ACK_CONFORMANCE_RESPONSE_REDACTED = "RESPONSE REDACTED";
-  public static final String VALUE_RESULT_ACK_CONFORMANCE_VALIDATION_RESOURCE_NOT_FOUND =
-      "VALIDATION RESOURCE NOT FOUND";
-  public static final String VALUE_RESULT_ACK_CONFORMANCE_VALIDATION_REPORT_IS_NULL =
-      "VALIDATION REPORT IS NULL";
-  public static final String VALUE_RESULT_ACK_CONFORMANCE_EXCEPTION_THROWN = "EXCEPTION THROWN";
+
 
   public static final String VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_RETURNED = "a-r";
   public static final String VALUE_RESULT_ACK_STORE_STATUS_ACCEPTED_NOT_RETURNED = "a-nr";
@@ -291,18 +244,12 @@ public interface RecordServletInterface {
   public static final String PARAM_TESTER_STATUS_READY_STATUS = "testerStatus_readyStatus";
   public static final String PARAM_TESTER_STATUS_PUBLIC_ID_CODE = "testerStatus_publicIdCode";
   public static final String PARAM_TESTER_STATUS_ACCESS_PASSCODE = "testerStatus_accessPasscode";
-  public static final String PARAM_TESTER_STATUS_TEST_STARTED_TIME = "testerStatus_testStartedTime";
-  public static final String PARAM_TESTER_STATUS_ETC_QUERY_DATE = "testerStatus_etcQueryDate";
-  public static final String PARAM_TESTER_STATUS_ETC_UPDATE_DATE = "testerStatus_etcUpdateDate";
-
+  
   public static final String PARAM_TESTER_STATUS_TESTER_STATUS_READY = "Ready";
-  public static final String PARAM_TESTER_STATUS_TESTER_STATUS_FINISHED = "Finished";
   public static final String PARAM_TESTER_STATUS_TESTER_STATUS_ERROR = "Error";
   public static final String PARAM_TESTER_STATUS_TESTER_STATUS_STOPPED = "Stopped";
   public static final String PARAM_TESTER_STATUS_TESTER_STATUS_TESTING = "Testing";
 
-  public static final String PARAM_TESTER_ACTION_STOP = "Stop";
-  public static final String PARAM_TESTER_ACTION_START = "Start";
   public static final String PARAM_TESTER_ACTION_RUN = "Run";
 
   public static final String OPTION_AUTO_TEST_NAME_SELECT = "--autoTestNameSelect ";

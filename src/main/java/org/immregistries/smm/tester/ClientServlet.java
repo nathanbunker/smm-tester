@@ -4,7 +4,6 @@
  */
 package org.immregistries.smm.tester;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
@@ -14,12 +13,12 @@ import javax.servlet.http.HttpSession;
 
 import org.immregistries.smm.SoftwareVersion;
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.profile.ProfileManager;
 
 /**
  * 
  * @author nathan
  */
+@SuppressWarnings("serial")
 public class ClientServlet extends HttpServlet {
 
   protected static final String MENU_HEADER_HOME = "Home";
@@ -28,15 +27,6 @@ public class ClientServlet extends HttpServlet {
   protected static final String MENU_HEADER_EDIT = "Edit Test Case";
   protected static final String MENU_HEADER_SEND = "Send Message";
   protected static final String MENU_HEADER_TEST = "Test";
-
-  protected static ProfileManager profileManager = null;
-
-  public static ProfileManager initProfileManager(boolean forceRefresh) throws IOException {
-    if ((forceRefresh || profileManager == null)) {
-      profileManager = new ProfileManager();
-    }
-    return profileManager;
-  }
 
   protected static void printHtmlHead(PrintWriter out, String title, HttpServletRequest request) {
     out.println("<html>");
