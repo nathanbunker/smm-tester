@@ -158,9 +158,10 @@ public class SendData extends Thread {
     logShutdown();
   }
 
-  private static final String HL7_RBU_QUERY = "MSH|^~\\&|DBO^QSInsight^L|QS4444|5.0^QSInsight^L||20030828104856+0000||VXQ^V01|QS444437861000000042|P|2.3.1|||NE|AL|\r"
-      + "QRD|20030828104856+0000|R|I|QueryID01|||200.000000|000000001^Bucket^Hyacinth^^^^^^^^^^MR|VXI|SIIS|\r"
-      + "QRF|QS4444|20030828104856+0000|20030828104856+0000||100000001~19460401~~~~~~~~~~111 East Lansing Bouldvard^Indianapolis^IN~10000|\r";
+  private static final String HL7_RBU_QUERY =
+      "MSH|^~\\&|DBO^QSInsight^L|QS4444|5.0^QSInsight^L||20030828104856+0000||VXQ^V01|QS444437861000000042|P|2.3.1|||NE|AL|\r"
+          + "QRD|20030828104856+0000|R|I|QueryID01|||200.000000|000000001^Bucket^Hyacinth^^^^^^^^^^MR|VXI|SIIS|\r"
+          + "QRF|QS4444|20030828104856+0000|20030828104856+0000||100000001~19460401~~~~~~~~~~111 East Lansing Bouldvard^Indianapolis^IN~10000|\r";
 
   private void setupReciprocalBatchRequest() {
     if (connector.getTransferType() == Connector.TransferType.RECIPROCAL_BATCH_UPDATE) {
@@ -183,29 +184,35 @@ public class SendData extends Thread {
   }
 
   private boolean notDisabled() {
-    statusLogger.logInfo("Checking to see if connection can be enabled for the current time of day");
-    if (connector.getEnableTimeEnd().indexOf(":") == -1 || connector.getEnableTimeStart().indexOf(":") == -1) {
-      statusLogger.logInfo("No restrictions for enabling the connection, will send data any time of day");
+    statusLogger
+        .logInfo("Checking to see if connection can be enabled for the current time of day");
+    if (connector.getEnableTimeEnd().indexOf(":") == -1
+        || connector.getEnableTimeStart().indexOf(":") == -1) {
+      statusLogger
+          .logInfo("No restrictions for enabling the connection, will send data any time of day");
       return true;
     }
     Date startTime = makeDate(connector.getEnableTimeStart());
     Date endTime = makeDate(connector.getEnableTimeEnd());
     if (startTime != null && endTime != null) {
       if (startTime.after(endTime)) {
-        statusLogger.logWarn("Connector start enable time is after the end time so the connection is never enabled");
+        statusLogger.logWarn(
+            "Connector start enable time is after the end time so the connection is never enabled");
         return false;
       }
       Date now = new Date();
       if (now.after(startTime) && now.before(endTime)) {
         return true;
       } else {
-        statusLogger.logInfo("Logger is currently configured to be disabled between " + connector.getEnableTimeStart() + " and "
-            + connector.getEnableTimeEnd());
+        statusLogger.logInfo("Logger is currently configured to be disabled between "
+            + connector.getEnableTimeStart() + " and " + connector.getEnableTimeEnd());
         return false;
       }
     } else {
-      statusLogger.logWarn("Connection has not be configured properly to be disabled for certain hours of the day");
-      statusLogger.logInfo("To configure time of day restrictions, please use HH:MM format and a 24 hour clock");
+      statusLogger.logWarn(
+          "Connection has not be configured properly to be disabled for certain hours of the day");
+      statusLogger.logInfo(
+          "To configure time of day restrictions, please use HH:MM format and a 24 hour clock");
     }
     return false;
   }
@@ -354,8 +361,8 @@ public class SendData extends Thread {
   private static final long MIN = 60 * SEC;
   private static final long HOUR = 60 * MIN;
   private static final long DAY = 24 * HOUR;
-  private static final long[] retryWait = { 30 * SEC, 1 * MIN, 2 * MIN, 4 * MIN, 8 * MIN, 16 * MIN, 30 * MIN, HOUR, 2 * HOUR, 4 * HOUR, 8 * HOUR,
-      12 * HOUR, DAY };
+  private static final long[] retryWait = {30 * SEC, 1 * MIN, 2 * MIN, 4 * MIN, 8 * MIN, 16 * MIN,
+      30 * MIN, HOUR, 2 * HOUR, 4 * HOUR, 8 * HOUR, 12 * HOUR, DAY};
   private Transformer transformer = null;
   private Map<Connector, Transformer> transformerMapForRxaFilter = null;
 
@@ -417,12 +424,14 @@ public class SendData extends Thread {
       statusLogger.logInfo("Custom transformations are defined, setting up transformer");
     }
     if (connectorListForRxaFilter != null) {
-      statusLogger.logInfo("Will be splitting data in messages and filtering RXA segments by the value in RXA-11.4");
+      statusLogger.logInfo(
+          "Will be splitting data in messages and filtering RXA segments by the value in RXA-11.4");
       transformerMapForRxaFilter = new HashMap<Connector, Transformer>();
       for (Connector c : connectorListForRxaFilter) {
         if (!c.getCustomTransformations().equals("")) {
           transformerMapForRxaFilter.put(c, new Transformer());
-          statusLogger.logInfo("Custom transformations are defined for " + c.getLabel() + ", setting up transformer");
+          statusLogger.logInfo("Custom transformations are defined for " + c.getLabel()
+              + ", setting up transformer");
         }
       }
     }
@@ -561,8 +570,10 @@ public class SendData extends Thread {
     if (!lastOriginalFilename.equals("") && !lastOriginalFilename.equals(originalFilename)) {
       File fileToDelete = new File(requestDir, lastOriginalFilename);
       if (fileToDelete.exists()) {
-        statusLogger.logFile(fileToDelete.getName(), ScanStatus.SENT, fileSentCount, fileErrorCount);
-        String message = "File sent: " + fileToDelete.getName() + " Message count: " + fileSentCount;
+        statusLogger.logFile(fileToDelete.getName(), ScanStatus.SENT, fileSentCount,
+            fileErrorCount);
+        String message =
+            "File sent: " + fileToDelete.getName() + " Message count: " + fileSentCount;
         if (fileErrorCount > 0) {
           message += " Error count: " + fileErrorCount;
         }
@@ -608,7 +619,8 @@ public class SendData extends Thread {
       responseMessage.append(line);
       responseMessage.append("\r");
     }
-    if (ackMessage == null && (responseMessageType.startsWith(HL7.ACK) || responseMessageType.equalsIgnoreCase(HL7.ACK))) {
+    if (ackMessage == null && (responseMessageType.startsWith(HL7.ACK)
+        || responseMessageType.equalsIgnoreCase(HL7.ACK))) {
       ackMessage = responseMessage.toString();
     }
     handleResponse(responseMessage, responseMessageType);
@@ -645,7 +657,8 @@ public class SendData extends Thread {
 
   }
 
-  private void handleResponse(StringBuilder responseMessage, String responseMessageType) throws IOException {
+  private void handleResponse(StringBuilder responseMessage, String responseMessageType)
+      throws IOException {
     if (responseMessage.length() > 0) {
       if (responseMessageType.startsWith(HL7.ACK)) {
         responseFileOut.print(responseMessage.toString());
@@ -672,7 +685,8 @@ public class SendData extends Thread {
         prepareFile();
       } catch (Throwable t) {
         statusLogger.logError("Unable to send data for file: " + requestFile.getName(), t);
-        problemFileOut = new FileOut(new File(filenameStart + "." + PROBLEM_NAME + "." + filenameEnd), false);
+        problemFileOut =
+            new FileOut(new File(filenameStart + "." + PROBLEM_NAME + "." + filenameEnd), false);
         problemFileOut.println("Unable to send the data: " + t.getMessage());
         problemFileOut.print(t);
         break;
@@ -682,7 +696,8 @@ public class SendData extends Thread {
     }
   }
 
-  private void prepareFile() throws FileNotFoundException, IOException, Exception, TransmissionException {
+  private void prepareFile()
+      throws FileNotFoundException, IOException, Exception, TransmissionException {
     backupFileOut = new FileOut(new File(backupDir, filename), false);
     messageNumber = 0;
     StringBuilder message = new StringBuilder();
@@ -690,7 +705,8 @@ public class SendData extends Thread {
     String line = readRealFirstLine(in);
     String messageType = null;
     boolean first = true;
-    if (line != null && (line.startsWith(HL7.MSH) || line.startsWith(HL7.FHS) || line.startsWith(HL7.BHS))) {
+    if (line != null
+        && (line.startsWith(HL7.MSH) || line.startsWith(HL7.FHS) || line.startsWith(HL7.BHS))) {
       do {
         if (!first) {
           backupFileOut.print(line);
@@ -706,7 +722,8 @@ public class SendData extends Thread {
           moveMessageToWorking(message, messageType);
           message.setLength(0);
           messageType = HL7.readField(line, 9);
-        } else if (line.startsWith(HL7.FHS) || line.startsWith(HL7.BHS) || line.startsWith(HL7.BTS) || line.startsWith(HL7.FTS)) {
+        } else if (line.startsWith(HL7.FHS) || line.startsWith(HL7.BHS) || line.startsWith(HL7.BTS)
+            || line.startsWith(HL7.FTS)) {
           continue;
         }
         message.append(line);
@@ -715,7 +732,8 @@ public class SendData extends Thread {
     }
     moveMessageToWorking(message, messageType);
     statusLogger.logFile(requestFile.getName(), ScanStatus.WAITING, messageNumber);
-    statusLogger.logDebug("File prepared: " + requestFile.getName() + " Message count: " + messageNumber);
+    statusLogger
+        .logDebug("File prepared: " + requestFile.getName() + " Message count: " + messageNumber);
     in.close();
     backupFileOut.close();
     backupFileOut = null;
@@ -747,7 +765,8 @@ public class SendData extends Thread {
     }
     for (int i = 1; i < connectors.size(); i++) {
       Connector c = connectors.get(i);
-      if (!c.getPurpose().equals("") && !connector.getOtherConnectorMap().containsKey(c.getPurpose())) {
+      if (!c.getPurpose().equals("")
+          && !connector.getOtherConnectorMap().containsKey(c.getPurpose())) {
         connector.getOtherConnectorMap().put(c.getPurpose(), c);
       } else if (connectorListForRxaFilter != null && c.isRxaFilter()) {
         connectorListForRxaFilter.add(c);
@@ -843,13 +862,15 @@ public class SendData extends Thread {
   }
 
   private void openSendingMessageInputs() {
-    errorFileOut = new FileOut(new File(requestDir, filenameStart + "." + REJECTED_NAME + "." + filenameEnd), true);
+    errorFileOut = new FileOut(
+        new File(requestDir, filenameStart + "." + REJECTED_NAME + "." + filenameEnd), true);
     sentFileOut = new FileOut(new File(sentDir, filename), true);
     responseFileOut = new FileOut(new File(responseDir, filename), true);
     updateFileOut = new FileOut(new File(updateDir, filename), true);
   }
 
-  private void moveMessageToWorking(StringBuilder message, String messageType) throws Exception, FileNotFoundException, TransmissionException {
+  private void moveMessageToWorking(StringBuilder message, String messageType)
+      throws Exception, FileNotFoundException, TransmissionException {
     if (messageType != null && !messageType.startsWith(HL7.ACK) && message.length() > 0) {
       String messageText = message.toString();
       if (connectorListForRxaFilter == null) {
@@ -864,7 +885,8 @@ public class SendData extends Thread {
         out.close();
       } else {
         RxaFilter rxaFilter = new RxaFilter();
-        Map<Connector, String> connectorMap = rxaFilter.filter(messageText, connectorListForRxaFilter);
+        Map<Connector, String> connectorMap =
+            rxaFilter.filter(messageText, connectorListForRxaFilter);
         for (Connector c : connectorListForRxaFilter) {
           messageText = connectorMap.get(c);
           if (messageText != null) {
@@ -939,8 +961,9 @@ public class SendData extends Thread {
     sentDir = createDir(rootDir, SENT_FOLDER);
 
     if (configFileModified && workDir.exists()) {
-      statusLogger.logInfo("Config file has been modified since the last run (or this sender has just started) "
-          + "looking to delete working files that were generated under previous configurations");
+      statusLogger.logInfo(
+          "Config file has been modified since the last run (or this sender has just started) "
+              + "looking to delete working files that were generated under previous configurations");
       File[] files = workDir.listFiles(new FilenameFilter() {
 
         public boolean accept(File file, String arg1) {
@@ -997,59 +1020,34 @@ public class SendData extends Thread {
   }
 
   public boolean readKeyStore() {
-    if (false) {
-      File keyStoreFile = new File(rootDir, KEYSTORE_FILE_NAME_NEW);
-      if (keyStoreFile.exists() && keyStoreFile.isFile()) {
-        String keyStorePassword = connector.getKeyStorePassword();
-        if (keyStorePassword.equals("")) {
-          keyStorePassword = "changeit";
-        }
-        try {
-          KeyStore keyStore = KeyStore.getInstance("PKCS12");
-          FileInputStream instream = new FileInputStream(keyStoreFile);
-          try {
-            keyStore.load(instream, keyStorePassword.toCharArray());
-          } finally {
-            instream.close();
-          }
-          connector.setKeyStore(keyStore);
-        } catch (Exception e) {
-          System.out.println("Unable to read key store with password " + keyStorePassword);
-          e.printStackTrace();
-          if (statusLogger != null) {
-            statusLogger.logError("Unable to load key store file with password '" + keyStorePassword + "'", e);
-          }
-          return false;
-        }
+
+    File keyStoreFile = new File(rootDir, KEYSTORE_FILE_NAME);
+    if (keyStoreFile.exists() && keyStoreFile.isFile()) {
+      String keyStorePassword = connector.getKeyStorePassword();
+      if (keyStorePassword.equals("")) {
+        keyStorePassword = "changeit";
       }
-      return true;
-    } else {
-      File keyStoreFile = new File(rootDir, KEYSTORE_FILE_NAME);
-      if (keyStoreFile.exists() && keyStoreFile.isFile()) {
-        String keyStorePassword = connector.getKeyStorePassword();
-        if (keyStorePassword.equals("")) {
-          keyStorePassword = "changeit";
-        }
+      try {
+        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        FileInputStream instream = new FileInputStream(keyStoreFile);
         try {
-          KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-          FileInputStream instream = new FileInputStream(keyStoreFile);
-          try {
-            keyStore.load(instream, keyStorePassword.toCharArray());
-          } finally {
-            instream.close();
-          }
-          connector.setKeyStore(keyStore);
-        } catch (Exception e) {
-          System.out.println("Unable to read key store " + keyStoreFile.getAbsolutePath() + " with password " + keyStorePassword);
-          e.printStackTrace();
-          if (statusLogger != null) {
-            statusLogger.logError("Unable to load key store " + keyStoreFile.getAbsolutePath() + " with password '" + keyStorePassword + "'", e);
-          }
-          return false;
+          keyStore.load(instream, keyStorePassword.toCharArray());
+        } finally {
+          instream.close();
         }
+        connector.setKeyStore(keyStore);
+      } catch (Exception e) {
+        System.out.println("Unable to read key store " + keyStoreFile.getAbsolutePath()
+            + " with password " + keyStorePassword);
+        e.printStackTrace();
+        if (statusLogger != null) {
+          statusLogger.logError("Unable to load key store " + keyStoreFile.getAbsolutePath()
+              + " with password '" + keyStorePassword + "'", e);
+        }
+        return false;
       }
-      return true;
     }
+    return true;
   }
 
   private void createWorkingFiles() {
@@ -1060,7 +1058,8 @@ public class SendData extends Thread {
     File responseFile = new File(responseDir, filename);
     File updateFile = new File(updateDir, filename);
     int count = 1;
-    while (sentFile.exists() || responseFile.exists() || updateFile.exists() || (newRequestFile != null && newRequestFile.exists())) {
+    while (sentFile.exists() || responseFile.exists() || updateFile.exists()
+        || (newRequestFile != null && newRequestFile.exists())) {
       count++;
       newFilename = filenameStart + "(" + count + ")." + filenameEnd;
       newRequestFile = new File(requestDir, newFilename);
@@ -1139,7 +1138,8 @@ public class SendData extends Thread {
         statusLogger.logError("Not allowed to read file: " + fileToRead.getName());
       } else if (fileChangeTimeout > 0 && timeSinceLastChange < fileChangeTimeout) {
         statusLogger.logFile(fileToRead.getName(), ScanStatus.WAITING, 0);
-        statusLogger.logInfo("File was recently modified, not processing yet: " + fileToRead.getName());
+        statusLogger
+            .logInfo("File was recently modified, not processing yet: " + fileToRead.getName());
       } else if (!fileContainsHL7(fileToRead)) {
         statusLogger.logFile(fileToRead.getName(), ScanStatus.PROBLEM, 0);
         statusLogger.logError("File does not contain HL7, not processing: " + fileToRead.getName());
@@ -1159,14 +1159,12 @@ public class SendData extends Thread {
   }
 
   /**
-   * Read the file before processing and ensure it looks like what we expect.
-   * First non blank line should be file header segment or message header
-   * segment. In addition if there is a file header segment then the last non
-   * blank line is expected to be the trailing segment. Otherwise the file is
-   * assumed to contain HL7 messages. It is important to note that this check
-   * does not validate HL7 format, but is built to ensure that the entire file
-   * has been transmitted when batch header/footers are sent and that the file
-   * doesn't contain obvious non-HL7 content.
+   * Read the file before processing and ensure it looks like what we expect. First non blank line
+   * should be file header segment or message header segment. In addition if there is a file header
+   * segment then the last non blank line is expected to be the trailing segment. Otherwise the file
+   * is assumed to contain HL7 messages. It is important to note that this check does not validate
+   * HL7 format, but is built to ensure that the entire file has been transmitted when batch
+   * header/footers are sent and that the file doesn't contain obvious non-HL7 content.
    * 
    * @param inFile
    * @return
@@ -1195,7 +1193,8 @@ public class SendData extends Thread {
         okay = lastLine.startsWith(HL7.FTS);
         if (!okay) {
           statusLogger.logFile(inFile.getName(), ScanStatus.PROBLEM, 0);
-          statusLogger.logWarn("File does not end with FTS segment as expected, not processing: " + inFile.getName());
+          statusLogger.logWarn("File does not end with FTS segment as expected, not processing: "
+              + inFile.getName());
         }
         if (!hasMsh) {
           okay = false;
@@ -1203,12 +1202,15 @@ public class SendData extends Thread {
           statusLogger.logWarn("File is empty, not processing: " + inFile.getName());
         }
       } else if (line.startsWith(HL7.MSH)) {
-        statusLogger.logDebug("File does not start with FHS segment as expected: " + inFile.getName());
+        statusLogger
+            .logDebug("File does not start with FHS segment as expected: " + inFile.getName());
         okay = true;
       } else {
         okay = false;
         statusLogger.logFile(inFile.getName(), ScanStatus.PROBLEM, 0);
-        statusLogger.logWarn("File does not appear to contain HL7 (Must start with FHS or MSH segment): " + inFile.getName());
+        statusLogger
+            .logWarn("File does not appear to contain HL7 (Must start with FHS or MSH segment): "
+                + inFile.getName());
       }
     } finally {
       in.close();
@@ -1240,9 +1242,8 @@ public class SendData extends Thread {
   }
 
   /**
-   * Reads the first lines of the file until it comes to a non empty line. This
-   * is to handle situations where the first few lines are empty and the HL7
-   * message does not immediately start.
+   * Reads the first lines of the file until it comes to a non empty line. This is to handle
+   * situations where the first few lines are empty and the HL7 message does not immediately start.
    * 
    * @param in
    * @return

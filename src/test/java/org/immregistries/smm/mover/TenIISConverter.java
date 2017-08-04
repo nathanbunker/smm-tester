@@ -32,6 +32,7 @@ public class TenIISConverter {
         count++;
       }
     }
+    in.close();
     out.close();
     System.out.println("Done, processed " + count + " message" + (count == 1 ? "" : "s"));
   }

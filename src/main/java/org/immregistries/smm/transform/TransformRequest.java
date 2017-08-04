@@ -8,8 +8,7 @@ import java.util.Map;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.transform.Patient;
 
-public class TransformRequest
-{
+public class TransformRequest {
   private PatientType patientType = null;
   private Connector connector = null;
   private String transformText = null;
@@ -38,19 +37,19 @@ public class TransformRequest
   public String getThreeDaysAgo() {
     return threeDaysAgo;
   }
-  
+
   public void setThreeDaysAgo(String threeDaysAgo) {
     this.threeDaysAgo = threeDaysAgo;
   }
-  
+
   public String getDayBeforeYesterday() {
     return dayBeforeYesterday;
   }
-  
+
   public void setDayBeforeYesterday(String dayBeforeYesterday) {
     this.dayBeforeYesterday = dayBeforeYesterday;
   }
-  
+
   public String getTransformText() {
     return transformText;
   }

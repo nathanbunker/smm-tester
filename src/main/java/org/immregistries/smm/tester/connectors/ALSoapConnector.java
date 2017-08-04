@@ -4,8 +4,7 @@ import java.io.IOException;
 
 import org.immregistries.smm.tester.connectors.al.Test_adphhieStub;
 
-public class ALSoapConnector extends HttpConnector
-{
+public class ALSoapConnector extends HttpConnector {
   public ALSoapConnector(String label, String url) throws Exception {
     super(label, url, ConnectorFactory.TYPE_AL_SOAP);
   }
@@ -17,7 +16,8 @@ public class ALSoapConnector extends HttpConnector
   }
 
   @Override
-  public String sendRequest(String request, ClientConnection conn, boolean debug) throws IOException {
+  public String sendRequest(String request, ClientConnection conn, boolean debug)
+      throws IOException {
     try {
       Test_adphhieStub.Aliiashl7Response response = null;
       Test_adphhieStub stub = new Test_adphhieStub(conn.getUrl());

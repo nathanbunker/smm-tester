@@ -2,8 +2,7 @@ package org.immregistries.smm.cdc;
 
 import java.io.PrintWriter;
 
-public class ProcessorMistakes extends Processor
-{
+public class ProcessorMistakes extends Processor {
 
   public ProcessorMistakes(CDCWSDLServer server) {
     super(server);
@@ -11,7 +10,8 @@ public class ProcessorMistakes extends Processor
 
   public static void printExplanation(PrintWriter out, String processorName) {
     out.println("<h3>Mistakes</h3>");
-    out.println("<p>This responds with properly formed XML but with problems with which tags are being used.  </p>");
+    out.println(
+        "<p>This responds with properly formed XML but with problems with which tags are being used.  </p>");
   }
 
   public void doProcessMessage(PrintWriter out, SubmitSingleMessage ssm) throws Fault {
@@ -54,7 +54,8 @@ public class ProcessorMistakes extends Processor
 
   public void doPrintException(PrintWriter out, MessageTooLargeFault messageTooLargeFault) {
     out.println("<?xml version='1.0' encoding='UTF-8'?>");
-    out.println("<Envelope xmlns=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:junk=\"urn:foo:bar\">");
+    out.println(
+        "<Envelope xmlns=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:junk=\"urn:foo:bar\">");
     out.println("  <Body>");
     out.println("    <Fault>");
     out.println("    </Fault>");
@@ -62,13 +63,15 @@ public class ProcessorMistakes extends Processor
     out.println("</Envelope>");
   }
 
-  public void doPrintException(PrintWriter out, UnsupportedOperationFault unsupportedOperationFault) {
+  public void doPrintException(PrintWriter out,
+      UnsupportedOperationFault unsupportedOperationFault) {
     out.println("<?xml version='1.0' encoding='UTF-8'?>");
     out.println("<Envelope xmlns=\"http://www.w3.org/2003/05/soap-envelope\">");
     out.println("   <Body>");
     out.println("      <Fault xmlns:ns4=\"http://schemas.xmlsoap.org/soap/envelope/\">");
     out.println("         <Reason>");
-    out.println("            <Text xml:lang=\"en\">" + unsupportedOperationFault.getFaultReasonText() + "</Text>");
+    out.println("            <Text xml:lang=\"en\">"
+        + unsupportedOperationFault.getFaultReasonText() + "</Text>");
     out.println("         </Reason>");
     out.println("      </Fault>");
     out.println("   </Body>");

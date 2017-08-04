@@ -1,9 +1,7 @@
 package org.immregistries.smm.transform;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import org.immregistries.smm.transform.ModifyMessageRequest;
-import org.immregistries.smm.transform.ModifyMessageService;
 import org.junit.Test;
 
 public class ModifyMessageServiceTest

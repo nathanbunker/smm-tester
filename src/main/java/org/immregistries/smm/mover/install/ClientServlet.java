@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.mover.install;
 
@@ -15,6 +14,7 @@ import org.immregistries.smm.SoftwareVersion;
  * 
  * @author nathan
  */
+@SuppressWarnings("serial")
 public class ClientServlet extends HttpServlet {
 
   protected static SoftwareType getSoftwareType(HttpServletRequest request) {
@@ -27,7 +27,8 @@ public class ClientServlet extends HttpServlet {
     return SoftwareType.SMM;
   }
 
-  protected static void printHtmlHead(PrintWriter out, SoftwareType softwareType, String title, HttpServletRequest request) {
+  protected static void printHtmlHead(PrintWriter out, SoftwareType softwareType, String title,
+      HttpServletRequest request) {
     out.println("<html>");
     out.println("  <head>");
     out.println("    <title>" + title + "</title>");
@@ -43,9 +44,12 @@ public class ClientServlet extends HttpServlet {
     out.println("        else if (document.layers) ");
     out.println("          elem = document.layers[whichLayer]");
     out.println("        vis = elem.style;");
-    out.println("        if (vis.display == '' && elem.offsetWidth != undefined && elem.offsetHeight != undefined) ");
-    out.println("          vis.display = (elem.offsetWidth != 0 && elem.offsetHeight != 0) ? 'block' : 'none';");
-    out.println("        vis.display = (vis.display == '' || vis.display == 'block') ? 'none' : 'block';");
+    out.println(
+        "        if (vis.display == '' && elem.offsetWidth != undefined && elem.offsetHeight != undefined) ");
+    out.println(
+        "          vis.display = (elem.offsetWidth != 0 && elem.offsetHeight != 0) ? 'block' : 'none';");
+    out.println(
+        "        vis.display = (vis.display == '' || vis.display == 'block') ? 'none' : 'block';");
     out.println("      }");
     out.println("    </script>");
     out.println("  </head>");
@@ -62,14 +66,18 @@ public class ClientServlet extends HttpServlet {
     return makeMenu(request, "&nbsp;", softwareType);
   }
 
-  private static final String[][] MENU_SMM = { { "index.html", "Simple Message Mover" }, { "PrepareServlet", "1. Prepare" },
-      { "ConfigureServlet", "2. Configure" }, { "InstallServlet", "3. Install" }, { "DownloadServlet", "4. Download SMM" } };
+  private static final String[][] MENU_SMM = {{"index.html", "Simple Message Mover"},
+      {"PrepareServlet", "1. Prepare"}, {"ConfigureServlet", "2. Configure"},
+      {"InstallServlet", "3. Install"}, {"DownloadServlet", "4. Download SMM"}};
 
-  private static final String[][] MENU_TESTER = { { "indexTester.html?", "IIS HL7 Tester" }, { "PrepareServlet?softwareType=Tester", "1. Prepare" },
-      { "ConfigureServlet?softwareType=Tester", "2. Configure" }, { "InstallServlet?softwareType=Tester", "3. Install" },
-      { "DownloadServlet?softwareType=Tester", "4. Download Tester" } };
+  private static final String[][] MENU_TESTER = {{"indexTester.html?", "IIS HL7 Tester"},
+      {"PrepareServlet?softwareType=Tester", "1. Prepare"},
+      {"ConfigureServlet?softwareType=Tester", "2. Configure"},
+      {"InstallServlet?softwareType=Tester", "3. Install"},
+      {"DownloadServlet?softwareType=Tester", "4. Download Tester"}};
 
-  public static String makeMenu(HttpServletRequest request, String title, SoftwareType softwareType) {
+  public static String makeMenu(HttpServletRequest request, String title,
+      SoftwareType softwareType) {
     StringBuilder result = new StringBuilder();
     result.append("    <table class=\"menu\"><tr><td>");
     String[][] menu = softwareType == SoftwareType.TESTER ? MENU_TESTER : MENU_SMM;
@@ -99,8 +107,9 @@ public class ClientServlet extends HttpServlet {
   }
 
   public static void printFooter(PrintWriter out) {
-    out.println("    <p>American Immunization Registry Association - IIS HL7 Tester &amp; Simple Message Mover - Version " + SoftwareVersion.VERSION
-        + "</p>");
+    out.println(
+        "    <p>American Immunization Registry Association - IIS HL7 Tester &amp; Simple Message Mover - Version "
+            + SoftwareVersion.VERSION + "</p>");
 
   }
 

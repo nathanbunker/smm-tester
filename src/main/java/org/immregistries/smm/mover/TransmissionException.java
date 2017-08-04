@@ -1,7 +1,6 @@
 package org.immregistries.smm.mover;
 
-public class TransmissionException extends Exception
-{
+public class TransmissionException extends Exception {
 
   /**
    * 
@@ -23,5 +22,5 @@ public class TransmissionException extends Exception
   public TransmissionException(Throwable cause) {
     super(cause);
   }
-  
+
 }

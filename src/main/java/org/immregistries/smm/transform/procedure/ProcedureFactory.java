@@ -4,7 +4,8 @@ import org.immregistries.smm.transform.Transformer;
 
 public class ProcedureFactory {
   public static final String REMOVE_VACCINATION_GROUPS = "REMOVE_VACCINATION_GROUPS";
-  public static final String ADD_FUNDING_ELGIBILITY_TO_ALL_RXA = "ADD_FUNDING_ELGIBILITY_TO_ALL_RXA";
+  public static final String ADD_FUNDING_ELGIBILITY_TO_ALL_RXA =
+      "ADD_FUNDING_ELGIBILITY_TO_ALL_RXA";
   public static final String ANONYMIZE_AND_UPDATE_RECORD = "ANONYMIZE_AND_UPDATE_RECORD";
 
   public static ProcedureInterface getProcedure(String procedureName, Transformer transformer) {

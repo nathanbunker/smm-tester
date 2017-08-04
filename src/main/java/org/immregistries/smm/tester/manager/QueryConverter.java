@@ -5,8 +5,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class QueryConverter
-{
+public class QueryConverter {
 
   private static final int MAX_FIELDS_IN_SEGMENT = 50;
 
@@ -131,7 +130,7 @@ public class QueryConverter
         sb.append("|");
         sb.append('\r');
       }
-     
+
       sb.append('\r');
 
     } catch (Exception e) {
@@ -276,9 +275,9 @@ public class QueryConverter
     return sb.toString();
   }
 
-  
+
   public static String convertVXUtoQBPZ44(String message) {
-    
+
     StringBuilder sb = new StringBuilder();
     List<String> mshFields = new ArrayList<String>();
     List<String> pidFields = new ArrayList<String>();

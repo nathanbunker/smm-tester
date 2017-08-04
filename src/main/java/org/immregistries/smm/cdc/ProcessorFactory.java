@@ -2,8 +2,7 @@ package org.immregistries.smm.cdc;
 
 import java.io.PrintWriter;
 
-public class ProcessorFactory
-{
+public class ProcessorFactory {
   public static final String PROCESSOR_DEFAULT = "default";
   public static final String PROCESSOR_NO_WHITESPACE = "nowhitespace";
   public static final String PROCESSOR_MISTAKES = "mistakes";
@@ -16,23 +15,17 @@ public class ProcessorFactory
   public static Processor createProcessor(String processorName, CDCWSDLServer server) {
     if (processorName.equals(PROCESSOR_NO_WHITESPACE)) {
       return new ProcessorNoWhitespace(server);
-    }
-    else if (processorName.equals(PROCESSOR_MISTAKES)) {
+    } else if (processorName.equals(PROCESSOR_MISTAKES)) {
       return new ProcessorMistakes(server);
-    }
-    else if (processorName.equals(PROCESSOR_BAD_XML)) {
+    } else if (processorName.equals(PROCESSOR_BAD_XML)) {
       return new ProcessorBadXml(server);
-    }
-    else if (processorName.equals(PROCESSOR_BASE_64)) {
+    } else if (processorName.equals(PROCESSOR_BASE_64)) {
       return new ProcessorBase64(server);
-    }
-    else if (processorName.equals(PROCESSOR_INCORRECT_IMPLEMENTATION)) {
+    } else if (processorName.equals(PROCESSOR_INCORRECT_IMPLEMENTATION)) {
       return new ProcessorIncorrectImplementation(server);
-    }
-    else if (processorName.equals(PROCESSOR_URL_ENCODED)) {
+    } else if (processorName.equals(PROCESSOR_URL_ENCODED)) {
       return new ProcessorUrlEncoded(server);
-    }
-    else if (processorName.equals(PROCESSOR_ADDITIONAL_TAG)) {
+    } else if (processorName.equals(PROCESSOR_ADDITIONAL_TAG)) {
       return new ProcessorAdditionalTag(server);
     }
     return new Processor(server);

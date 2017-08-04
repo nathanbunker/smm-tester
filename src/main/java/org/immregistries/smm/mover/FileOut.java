@@ -7,84 +7,68 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 
-public class FileOut
-{
+public class FileOut {
   private File file = null;
   private PrintWriter out = null;
   private boolean append = false;
-  
-  private void init() throws IOException
-  {
-    if (out == null)
-    {
+
+  private void init() throws IOException {
+    if (out == null) {
       out = new PrintWriter(new FileWriter(file, append));
     }
   }
-  
-  public FileOut(File file, boolean append)
-  {
+
+  public FileOut(File file, boolean append) {
     this.file = file;
     this.append = append;
   }
-  
-  public boolean exists()
-  {
+
+  public boolean exists() {
     return file.exists();
   }
-  
-  
-  public void print(String string) throws IOException
-  {
+
+
+  public void print(String string) throws IOException {
     init();
     out.print(string);
   }
-  
-  public void printCommentLn(String string) throws IOException
-  {
+
+  public void printCommentLn(String string) throws IOException {
     init();
     out.print("--- ");
     out.print(string);
     out.print('\r');
   }
-  
-  public void printCommentLnMultiple(String s)
-  {
+
+  public void printCommentLnMultiple(String s) {
     BufferedReader in = new BufferedReader(new StringReader(s));
     String line;
-    try
-    {
-      while ((line = in.readLine()) != null)
-      {
+    try {
+      while ((line = in.readLine()) != null) {
         printCommentLn(line);
       }
-    } catch (IOException ioe)
-    {
+    } catch (IOException ioe) {
       ioe.printStackTrace();
     }
   }
-  
-  public void println() throws IOException
-  {
+
+  public void println() throws IOException {
     init();
     out.println();
   }
-  
-  public void println(String string) throws IOException
-  {
+
+  public void println(String string) throws IOException {
     init();
     out.println(string);
   }
-  
-  public void print(Throwable t) throws IOException
-  {
+
+  public void print(Throwable t) throws IOException {
     init();
     t.printStackTrace(out);
   }
-  
-  public void close()
-  {
-    if (out != null)
-    {
+
+  public void close() {
+    if (out != null) {
       out.close();
     }
   }

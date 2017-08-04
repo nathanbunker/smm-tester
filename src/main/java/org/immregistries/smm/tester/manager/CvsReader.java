@@ -11,8 +11,7 @@ public class CvsReader {
     char prev = 0;
     for (int i = 0; i < line.length(); i++) {
       char curr = line.charAt(i);
-      if (prev == ',' && curr == ' ')
-      {
+      if (prev == ',' && curr == ' ') {
         continue;
       }
       char peak = (i + 1) < line.length() ? line.charAt(i + 1) : 0;

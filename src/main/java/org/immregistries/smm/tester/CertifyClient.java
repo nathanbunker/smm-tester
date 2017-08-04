@@ -94,8 +94,7 @@ public class CertifyClient {
       try {
 
         String aartAction = null;
-        String autoTestNameSelect = null;
-         {
+        {
           aartAction = CertifyRunner.reportStatus(aartName,
               RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_READY, null);
           if (aartAction.equals("")) {
@@ -159,7 +158,7 @@ public class CertifyClient {
               }
             }
           }
-        } 
+        }
 
         if (aartAction == null
             || !aartAction.startsWith(RecordServletInterface.PARAM_TESTER_ACTION_RUN)) {
@@ -178,7 +177,7 @@ public class CertifyClient {
     }
   }
 
- 
+
   public static void initManagerServlet(String[] args) throws FileNotFoundException, IOException {
     ConnectionManager connectionManager = new ConnectionManager();
     BufferedReader in = new BufferedReader(new FileReader(args[0]));

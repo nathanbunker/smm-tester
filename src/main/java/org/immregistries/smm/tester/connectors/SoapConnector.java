@@ -1,11 +1,9 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester.connectors;
 
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.List;
 
 import org.immregistries.smm.tester.connectors.tlep.Client_Service;
@@ -21,8 +19,7 @@ import org.immregistries.smm.tester.connectors.tlep.SubmitSingleMessageResponse;
  * 
  * @author nathan
  */
-public class SoapConnector extends HttpConnector
-{
+public class SoapConnector extends HttpConnector {
 
   private Client_Service clientService = null;
 
@@ -43,7 +40,7 @@ public class SoapConnector extends HttpConnector
     SubmitSingleMessageResponse response = clientService.submitSingleMessage(submitSingleMessage);
     String responseMessage =
 
-    response.getSubmitSingleMessageResponse().get_return();
+        response.getSubmitSingleMessageResponse().get_return();
     if (responseMessage != null && responseMessage.startsWith("MSH%7C")) {
       responseMessage = URLDecoder.decode(responseMessage, "UTF-8");
     }

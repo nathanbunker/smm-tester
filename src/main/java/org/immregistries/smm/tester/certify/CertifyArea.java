@@ -23,7 +23,7 @@ public abstract class CertifyArea implements RecordServletInterface {
   protected Map<String, TestCaseMessage> updateMap = new HashMap<String, TestCaseMessage>();
   protected boolean doSafeQuery = true;
 
- 
+
   protected List<ForecastTestPanel> forecastTestPanelList = new ArrayList<ForecastTestPanel>();
 
   public int[] getAreaProgressCount() {
@@ -134,12 +134,9 @@ public abstract class CertifyArea implements RecordServletInterface {
 
 
 
-
   public abstract void prepareQueries();
 
   public abstract void sendQueries();
-
-
 
 
 

@@ -4,8 +4,7 @@ import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 
-public class LA_LINKS_Template extends ConnectionTemplate
-{
+public class LA_LINKS_Template extends ConnectionTemplate {
   public LA_LINKS_Template() {
     super("LA LINKS");
   }

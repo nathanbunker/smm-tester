@@ -11,8 +11,7 @@ import java.util.Set;
 
 import org.immregistries.smm.tester.connectors.Connector;
 
-public class RxaFilter
-{
+public class RxaFilter {
   public Map<Connector, String> filter(String message, List<Connector> connectorList) {
     Set<String> rxa11Set = discoverRxa11(message, connectorList);
     Map<String, StringBuilder> messageTextMap = new HashMap<String, StringBuilder>();
@@ -63,13 +62,15 @@ public class RxaFilter
     Map<Connector, String> connectorMap = new HashMap<Connector, String>();
     for (Connector connector : connectorList) {
       if (messageTextMap.containsKey(connector.getRxaFilterFacilityId())) {
-        connectorMap.put(connector, messageTextMap.get(connector.getRxaFilterFacilityId()).toString());
+        connectorMap.put(connector,
+            messageTextMap.get(connector.getRxaFilterFacilityId()).toString());
       }
     }
     return connectorMap;
   }
 
-  public void addRxaPart(Map<String, StringBuilder> messageTextMap, StringBuilder rxaPart, String rxa11, String rxa9) {
+  public void addRxaPart(Map<String, StringBuilder> messageTextMap, StringBuilder rxaPart,
+      String rxa11, String rxa9) {
     if (rxaPart.length() > 0) {
       if (rxa9.equals("00") && messageTextMap.containsKey(rxa11)) {
         StringBuilder sb = messageTextMap.get(rxa11);
@@ -85,7 +86,6 @@ public class RxaFilter
   public Set<String> discoverRxa11(String message, List<Connector> connectorList) {
     Set<String> rxa11Set = new HashSet<String>();
     BufferedReader in = new BufferedReader(new StringReader(message));
-    Map<String, StringBuilder> messageTextMap = new HashMap<String, StringBuilder>();
     String line;
     try {
       while ((line = in.readLine()) != null) {

@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester;
 
@@ -20,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.immregistries.smm.tester.certify.CertifyRunner;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.manager.TestCaseMessageManager;
 import org.immregistries.smm.tester.run.TestRunner;
@@ -30,8 +28,8 @@ import org.immregistries.smm.transform.TestCaseMessage;
  * 
  * @author nathan
  */
-public class TestCaseServlet extends ClientServlet
-{
+@SuppressWarnings("serial")
+public class TestCaseServlet extends ClientServlet {
 
   @Override
   public void init() throws ServletException {
@@ -40,19 +38,15 @@ public class TestCaseServlet extends ClientServlet
   }
 
   /**
-   * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-   * methods.
+   * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
@@ -84,8 +78,8 @@ public class TestCaseServlet extends ClientServlet
         String testCase = request.getParameter("source");
         List<TestCaseMessage> testCaseMessageList = parseAndAddTestCases(testCase);
 
-        Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(null,
-            CreateTestCaseServlet.getTestCaseMessageMapMap(session));
+        Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet
+            .getTestCaseMessageMap(null, CreateTestCaseServlet.getTestCaseMessageMapMap(session));
         for (String testCaseNumber : testCaseNumberSelectedSet) {
           TestCaseMessage tcm = testCaseMessageMap.get(testCaseNumber);
           if (tcm != null) {
@@ -135,10 +129,12 @@ public class TestCaseServlet extends ClientServlet
 
             out.println("</td>");
             out.println("<td width=\"30%\" align=\"center\">");
-            out.println("  <div class=\"submenu\"><a class=\"menuLink\" href=\"javascript:toggleLayer('"
-                + testCaseMessage.getTestCaseNumber()
-                + "');\" title=\"Show/Hide\">Close/Open</a> &bull; <a class=\"menuLink\" href=\"CreateTestCaseServlet?testCase="
-                + URLEncoder.encode(testCaseMessage.getTestCaseNumber(), "UTF-8") + "\">Edit</a></div>");
+            out.println(
+                "  <div class=\"submenu\"><a class=\"menuLink\" href=\"javascript:toggleLayer('"
+                    + testCaseMessage.getTestCaseNumber()
+                    + "');\" title=\"Show/Hide\">Close/Open</a> &bull; <a class=\"menuLink\" href=\"CreateTestCaseServlet?testCase="
+                    + URLEncoder.encode(testCaseMessage.getTestCaseNumber(), "UTF-8")
+                    + "\">Edit</a></div>");
             out.println("</td>");
             out.println("</tr>");
             out.println("</table>");
@@ -166,8 +162,9 @@ public class TestCaseServlet extends ClientServlet
             }
             if (!testCaseMessage.getAdditionalTransformations().equals("")) {
               out.println("<tr>");
-              out.println("<th nowrap align=\"left\" valign=\"top\">Additional Changes</th><td><pre>"
-                  + testCaseMessage.getAdditionalTransformations() + "</pre></td>");
+              out.println(
+                  "<th nowrap align=\"left\" valign=\"top\">Additional Changes</th><td><pre>"
+                      + testCaseMessage.getAdditionalTransformations() + "</pre></td>");
               out.println("</tr>");
             }
             if (!testCaseMessage.getCauseIssues().equals("")) {
@@ -182,8 +179,8 @@ public class TestCaseServlet extends ClientServlet
               out.println("<table width=\"700\">");
               for (TestCaseMessage.Comment comment : testCaseMessage.getComments()) {
                 out.println("<tr>");
-                out.println("<th nowrap align=\"left\" valign=\"top\">" + comment.getName() + "</th><td>"
-                    + comment.getText() + "</td>");
+                out.println("<th nowrap align=\"left\" valign=\"top\">" + comment.getName()
+                    + "</th><td>" + comment.getText() + "</td>");
                 out.println("</tr>");
               }
               out.println("</table>");
@@ -241,7 +238,8 @@ public class TestCaseServlet extends ClientServlet
         }
         out.println("</table>");
         out.println("</div>");
-        out.println("<h2>Test Script <a href=\"javascript:toggleLayer('script');\" title=\"Show/Hide\">+/-</a></h2>");
+        out.println(
+            "<h2>Test Script <a href=\"javascript:toggleLayer('script');\" title=\"Show/Hide\">+/-</a></h2>");
         out.println("<div id=\"script\" style=\"display:none\">");
         out.println("<pre>");
         for (TestCaseMessage testCaseMessage : testCaseMessageList) {
@@ -267,7 +265,8 @@ public class TestCaseServlet extends ClientServlet
     }
   }
 
-  protected static Set<String> setTestCaseNumberSelectedSet(HttpServletRequest request, HttpSession session) {
+  protected static Set<String> setTestCaseNumberSelectedSet(HttpServletRequest request,
+      HttpSession session) {
     Set<String> testCaseNumberSelectedSet = new HashSet<String>();
     String[] testCaseNumberSelected = request.getParameterValues("testCaseNumber");
     if (testCaseNumberSelected != null) {
@@ -307,9 +306,12 @@ public class TestCaseServlet extends ClientServlet
     out.println("        else if (document.layers) ");
     out.println("          elem = document.layers[whichLayer]");
     out.println("        vis = elem.style;");
-    out.println("        if (vis.display == '' && elem.offsetWidth != undefined && elem.offsetHeight != undefined) ");
-    out.println("          vis.display = (elem.offsetWidth != 0 && elem.offsetHeight != 0) ? 'block' : 'none';");
-    out.println("        vis.display = (vis.display == '' || vis.display == 'block') ? 'none' : 'block';");
+    out.println(
+        "        if (vis.display == '' && elem.offsetWidth != undefined && elem.offsetHeight != undefined) ");
+    out.println(
+        "          vis.display = (elem.offsetWidth != 0 && elem.offsetHeight != 0) ? 'block' : 'none';");
+    out.println(
+        "        vis.display = (vis.display == '' || vis.display == 'block') ? 'none' : 'block';");
     out.println("      }");
     out.println("    </script>");
   }
@@ -330,17 +332,14 @@ public class TestCaseServlet extends ClientServlet
   /**
    * Handles the HTTP <code>GET</code> method.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
@@ -378,10 +377,11 @@ public class TestCaseServlet extends ClientServlet
           for (Connector connector : connectors) {
             i++;
             if (id == i) {
-              out.println("              <option value=\"" + i + "\" selected=\"true\">" + connector.getLabelDisplay()
-                  + "</option>");
+              out.println("              <option value=\"" + i + "\" selected=\"true\">"
+                  + connector.getLabelDisplay() + "</option>");
             } else {
-              out.println("              <option value=\"" + i + "\">" + connector.getLabelDisplay() + "</option>");
+              out.println("              <option value=\"" + i + "\">" + connector.getLabelDisplay()
+                  + "</option>");
             }
           }
           out.println("            </select>");
@@ -402,10 +402,11 @@ public class TestCaseServlet extends ClientServlet
         out.println("    </form>");
         out.println("  <h2>How To Use This Page</h2>");
         out.println("  <div class=\"help\">");
-        out.println("  <p>Enter in the user authentication parameters supplied by the target system and "
-            + "then select the target system service. (For more information please see Test Transport "
-            + "section, this page works the same way.) Then enter one or more test case descriptions "
-            + "into the test area. " + "</p>");
+        out.println(
+            "  <p>Enter in the user authentication parameters supplied by the target system and "
+                + "then select the target system service. (For more information please see Test Transport "
+                + "section, this page works the same way.) Then enter one or more test case descriptions "
+                + "into the test area. " + "</p>");
         out.println("    <p>After submitting you will see the results for each test case. "
             + "If there are more than one test cases listed then the results "
             + "will be collapsed so that only the Test Case id and "

@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 
 package org.immregistries.smm.tester.connectors;
@@ -19,8 +18,7 @@ import java.util.List;
  * 
  * @author nathan
  */
-public class SimpleSoapConnector extends Connector
-{
+public class SimpleSoapConnector extends Connector {
 
   public SimpleSoapConnector(String label, String url) {
     super(label, "SIMPLE SOAP");
@@ -28,47 +26,38 @@ public class SimpleSoapConnector extends Connector
   }
 
   @Override
-  public String submitMessage(String message, boolean debug) throws Exception
-  {
+  public String submitMessage(String message, boolean debug) throws Exception {
     ClientConnection cc = new ClientConnection();
     cc.setUserId(userid);
     cc.setPassword(password);
     cc.setFacilityId(facilityid);
     cc.setUrl(url);
     String result = "";
-    try
-    {
+    try {
 
       result = sendRequest(message, cc);
-    } catch (Exception e)
-    {
+    } catch (Exception e) {
       return "Unable to relay message, received this error: " + e.getMessage();
     }
 
     StringBuffer sbuf = new StringBuffer(result.length());
     boolean inTag = false;
-    for (char c : result.toCharArray())
-    {
-      if (c == '<')
-      {
+    for (char c : result.toCharArray()) {
+      if (c == '<') {
         inTag = true;
-      } else if (c == '>')
-      {
+      } else if (c == '>') {
         inTag = false;
-      } else if (!inTag)
-      {
+      } else if (!inTag) {
         sbuf.append(c);
       }
     }
-    if (sbuf.length() > 0)
-    {
+    if (sbuf.length() > 0) {
       result = sbuf.toString();
     }
     return result;
   }
 
-  public String sendRequest(String request, ClientConnection conn) throws IOException
-  {
+  public String sendRequest(String request, ClientConnection conn) throws IOException {
     URLConnection urlConn;
     DataOutputStream printout;
     InputStreamReader input = null;
@@ -83,7 +72,8 @@ public class SimpleSoapConnector extends Connector
     StringWriter stringWriter = new StringWriter();
     PrintWriter out = new PrintWriter(stringWriter);
     out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-    out.println("<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
+    out.println(
+        "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
     out.println("  <soap:Body>");
     out.println("    <ExecuteHL7Message xmlns=\"http://tempuri.org/\">");
     out.println("      <userName>" + conn.getUserId() + "</userName>");
@@ -99,8 +89,7 @@ public class SimpleSoapConnector extends Connector
     StringBuilder response = new StringBuilder();
     BufferedReader in = new BufferedReader(input);
     String line;
-    while ((line = in.readLine()) != null)
-    {
+    while ((line = in.readLine()) != null) {
       response.append(line);
       response.append('\r');
     }
@@ -109,21 +98,18 @@ public class SimpleSoapConnector extends Connector
   }
 
   @Override
-  public String connectivityTest(String message) throws Exception
-  {
+  public String connectivityTest(String message) throws Exception {
     return "Connectivity test not supported for HTTPS POST connections";
   }
 
 
   @Override
-  protected void makeScriptAdditions(StringBuilder sb)
-  {
+  protected void makeScriptAdditions(StringBuilder sb) {
     // do nothing
   }
 
   @Override
-  protected void setupFields(List<String> fields)
-  {
+  protected void setupFields(List<String> fields) {
     // do nothing
   }
 }

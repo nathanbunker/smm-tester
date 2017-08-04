@@ -9,8 +9,7 @@ import java.util.List;
 import org.immregistries.smm.tester.manager.HL7Reader;
 import org.immregistries.smm.transform.TestCaseMessage;
 
-public class AckAnalyzer
-{
+public class AckAnalyzer {
 
   public static enum ErrorType {
     UNKNOWN, AUTHENTICATION, SENDER_PROBLEM, RECEIVER_PROBLEM
@@ -32,23 +31,31 @@ public class AckAnalyzer
   };
 
   static {
-    AckType.NMSIIS.description = "The NMSIIS interface is first assumed to have a setup problem if any one of three conditions occurs: \n"
-        + " + Message is shorter than 240 characters\n" + " + Message contains phrase |BAD MESSAGE|\n"
-        + " + Message contains phrase FILE REJECTED\n\n" + "Transmission will stop if a setup problem is detected\n\n"
-        + "A message is considered accepted if the following phrases are not found in the message: \n"
-        + " + RECORD REJECTED\n" + " + MESSAGE REJECTED\n" + " + WARNING:  RXA #[n] IGNORED - REQUIRED FIELD RXA-\n\n";
+    AckType.NMSIIS.description =
+        "The NMSIIS interface is first assumed to have a setup problem if any one of three conditions occurs: \n"
+            + " + Message is shorter than 240 characters\n"
+            + " + Message contains phrase |BAD MESSAGE|\n"
+            + " + Message contains phrase FILE REJECTED\n\n"
+            + "Transmission will stop if a setup problem is detected\n\n"
+            + "A message is considered accepted if the following phrases are not found in the message: \n"
+            + " + RECORD REJECTED\n" + " + MESSAGE REJECTED\n"
+            + " + WARNING:  RXA #[n] IGNORED - REQUIRED FIELD RXA-\n\n";
 
-    AckType.IRIS_ID.description = "The Idaho IRIS acknowledgement is considered accepted if it does not contain the phrase 'MESSAGE REJECTED'. \n\n"
-        + "In addition special steps were taken to handle fact that some ACK messages are incorrectly labeled as VXU messages. "
-        + "In the case where the ACK message is labeled as a VXU the responses is assumed to be an acknowledgement and read as such. \n";
+    AckType.IRIS_ID.description =
+        "The Idaho IRIS acknowledgement is considered accepted if it does not contain the phrase 'MESSAGE REJECTED'. \n\n"
+            + "In addition special steps were taken to handle fact that some ACK messages are incorrectly labeled as VXU messages. "
+            + "In the case where the ACK message is labeled as a VXU the responses is assumed to be an acknowledgement and read as such. \n";
 
-    AckType.ALERT.description = "Follows the CDC/AIRA standard except if the message contains the phrase \"Record Rejected\" or \"RXA #[n] IGNORED\" "
-        + "then this is an error even if it's not a E. ";
-    
-    AckType.ALERT.description = "If MSA-1 is AR then the message was rejected, otherwise it was accepted.";
-    
-    AckType.HP_WIR_DEFAULT.description = "If the phrase \"REJECTED\" or \"PID #1 IGNORED\" or \"RXA #[n] IGNORED\" "
-        + "is found in the response message then the message is considered to not be completely accepted. ";
+    AckType.ALERT.description =
+        "Follows the CDC/AIRA standard except if the message contains the phrase \"Record Rejected\" or \"RXA #[n] IGNORED\" "
+            + "then this is an error even if it's not a E. ";
+
+    AckType.ALERT.description =
+        "If MSA-1 is AR then the message was rejected, otherwise it was accepted.";
+
+    AckType.HP_WIR_DEFAULT.description =
+        "If the phrase \"REJECTED\" or \"PID #1 IGNORED\" or \"RXA #[n] IGNORED\" "
+            + "is found in the response message then the message is considered to not be completely accepted. ";
   }
 
   public static HL7Reader getMessageReader(String ackMessageText, AckType ackType) {
@@ -78,8 +85,6 @@ public class AckAnalyzer
   private boolean temporarilyUnavailable = false;
   private boolean setupProblem = false;
   private String setupProblemDescription = "";
-  private AckType ackType = null;
-  private List<String> errorMessages = new ArrayList<String>();
   private List<String> segments;
   private FileOut errorFileOut = null;
   private TestCaseMessage testCaseMessage = null;
@@ -92,8 +97,7 @@ public class AckAnalyzer
         ioe.printStackTrace();
       }
     }
-    if (testCaseMessage != null)
-    {
+    if (testCaseMessage != null) {
       testCaseMessage.log(s);
     }
   }
@@ -159,14 +163,16 @@ public class AckAnalyzer
   public AckAnalyzer(String ack, AckType ackType) {
     this(ack, ackType, null, null);
   }
+
   public AckAnalyzer(String ack, AckType ackType, FileOut errorFileOut) {
     this(ack, ackType, errorFileOut, null);
   }
-  public AckAnalyzer(String ack, AckType ackType, FileOut errorFileOut, TestCaseMessage testCaseMessage) {
+
+  public AckAnalyzer(String ack, AckType ackType, FileOut errorFileOut,
+      TestCaseMessage testCaseMessage) {
     while (ack != null && ack.length() > 0 && ack.charAt(0) <= ' ') {
       ack = ack.substring(1);
     }
-    this.ackType = ackType;
     this.errorFileOut = errorFileOut;
     this.testCaseMessage = testCaseMessage;
     log("  Ack Type = " + ackType);
@@ -183,8 +189,8 @@ public class AckAnalyzer
       log("Returned result is not an acknowledgement message: first line does not start with MSH|");
     } else if (!getFieldValue("MSH", 9).equals("ACK")) {
       isNotAck = true;
-      log("Returned result is not an acknowledgement message: MSH-9 is not ACK, it is '" + getFieldValue("MSH", 9)
-          + "'");
+      log("Returned result is not an acknowledgement message: MSH-9 is not ACK, it is '"
+          + getFieldValue("MSH", 9) + "'");
     }
     if (isNotAck) {
       if (ackType.equals(AckType.IRIS_ID)) {
@@ -234,7 +240,8 @@ public class AckAnalyzer
       }
 
       if (ackType.equals(AckType.NMSIIS)) {
-        setupProblem = ackUpperCase.indexOf("|BAD MESSAGE|") != -1 || ackUpperCase.indexOf("FILE REJECTED") != -1;
+        setupProblem = ackUpperCase.indexOf("|BAD MESSAGE|") != -1
+            || ackUpperCase.indexOf("FILE REJECTED") != -1;
         if (setupProblem) {
           log("Setup problem found, message contains phrase |BAD MESSAGE| or File Rejected.");
         }
@@ -245,7 +252,8 @@ public class AckAnalyzer
         if (warningRxaPos1 > -1) {
           warningRxaPos2 = ackUpperCase.indexOf(" IGNORED - REQUIRED FIELD RXA-");
         }
-        boolean recordNotRejected = recordRejectedPos == -1 && messageRejectedPos == -1 && warningRxaPos2 == -1;
+        boolean recordNotRejected =
+            recordRejectedPos == -1 && messageRejectedPos == -1 && warningRxaPos2 == -1;
         if (!recordNotRejected) {
           log("Record was rejected, message contains phrase Record Rejected");
         }
@@ -254,7 +262,8 @@ public class AckAnalyzer
         int recordRejectedPos = ackUpperCase.indexOf("REJECTED");
         int pidRejectedPos = ackUpperCase.indexOf("PID #1 IGNORED");
         boolean arMSA = getFieldValue("MSA", 1).equals("AR");
-        positive = ackUpperCase.startsWith("MSH|^~\\&|") && recordRejectedPos == -1 && pidRejectedPos == -1 && !arMSA;
+        positive = ackUpperCase.startsWith("MSH|^~\\&|") && recordRejectedPos == -1
+            && pidRejectedPos == -1 && !arMSA;
         if (positive) {
           int rxaRejectedPos = ackUpperCase.indexOf("RXA #");
           if (rxaRejectedPos != -1) {
@@ -271,7 +280,8 @@ public class AckAnalyzer
         int recordRejectedPos = ackUpperCase.indexOf("REJECTED");
         int pidRejectedPos = ackUpperCase.indexOf("PID #1 IGNORED");
         boolean arMSA = getFieldValue("MSA", 1).equals("AR");
-        positive = ackUpperCase.startsWith("MSH|^~\\&|") && recordRejectedPos == -1 && pidRejectedPos == -1 && !arMSA;
+        positive = ackUpperCase.startsWith("MSH|^~\\&|") && recordRejectedPos == -1
+            && pidRejectedPos == -1 && !arMSA;
         if (positive) {
           int rxaRejectedPos = ackUpperCase.indexOf("RXA #");
           if (rxaRejectedPos != -1) {
@@ -285,8 +295,8 @@ public class AckAnalyzer
           log("The word rejected appeared in the message so the message was rejected");
         }
       } else if (ackType.equals(AckType.VIIS)) {
-        String[] rejectPhrases = { "Unsupported HL7 version or trigger".toUpperCase(), "REJECTED", "PID #1 IGNORED",
-            "BAD MESSAGE" };
+        String[] rejectPhrases = {"Unsupported HL7 version or trigger".toUpperCase(), "REJECTED",
+            "PID #1 IGNORED", "BAD MESSAGE"};
 
         positive = ackUpperCase.startsWith("MSH|^~\\&|");
         for (String rejectPhrase : rejectPhrases) {
@@ -313,7 +323,8 @@ public class AckAnalyzer
         // Critical
         int recordRejectedPos = ackUpperCase.indexOf("REJECTED");
         int pidRejectedPos = ackUpperCase.indexOf("PID #1 IGNORED");
-        positive = ackUpperCase.startsWith("MSH|^~\\&|") && recordRejectedPos == -1 && pidRejectedPos == -1;
+        positive = ackUpperCase.startsWith("MSH|^~\\&|") && recordRejectedPos == -1
+            && pidRejectedPos == -1;
         if (positive) {
           int rxaRejectedPos = ackUpperCase.indexOf("RXA #");
           if (rxaRejectedPos != -1) {
@@ -349,7 +360,7 @@ public class AckAnalyzer
         } else {
           positive = false;
         }
-      } else if (ackType.equals(AckType.NESIIS)){
+      } else if (ackType.equals(AckType.NESIIS)) {
         if (ackCode.equals("AA") || ackCode.equals("AE")) {
           positive = true;
         } else if (ackCode.equals("AR")) {
@@ -394,7 +405,8 @@ public class AckAnalyzer
       String line;
       try {
         while ((line = in.readLine()) != null) {
-          if (line.startsWith("FHS") || line.startsWith("BHS") || line.startsWith("BTS") || line.startsWith("FTS")) {
+          if (line.startsWith("FHS") || line.startsWith("BHS") || line.startsWith("BTS")
+              || line.startsWith("FTS")) {
             // ignore these lines
           } else {
             segments.add(line);
@@ -407,15 +419,6 @@ public class AckAnalyzer
       }
     }
     return ackActual.toString();
-  }
-
-  private boolean hasSegment(String segmentName) {
-    for (String segment : segments) {
-      if (segment.startsWith(segmentName + "|")) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private String getFieldValue(String segmentName, int pos) {

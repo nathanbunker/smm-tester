@@ -25,10 +25,9 @@ import javax.servlet.http.HttpSession;
 
 import org.immregistries.smm.SoftwareVersion;
 import org.immregistries.smm.mover.ConnectionManager;
-import org.immregistries.smm.mover.ManagerServlet;
 
-public class DownloadServlet extends ClientServlet
-{
+@SuppressWarnings("serial")
+public class DownloadServlet extends ClientServlet {
 
   private static final String FIELD_VERSION = "version";
   private static final String FIELD_DATA_DIR = "dataDir";
@@ -39,15 +38,16 @@ public class DownloadServlet extends ClientServlet
 
   public static final boolean ENABLE_SUPPORT_CENTER = false;
 
-  private static final String[][] SUPPORT_CENTER_CODE = { { "general", "General" },
-      { "IHS", "Indian Health Service" } };
-  private static final String[][] SUPPORT_CENTER_LOCATION = { { "http://ois-dqa.net/dqa/remote", "OIS" },
-      { "none", "none" } };
+  private static final String[][] SUPPORT_CENTER_CODE =
+      {{"general", "General"}, {"IHS", "Indian Health Service"}};
+  private static final String[][] SUPPORT_CENTER_LOCATION =
+      {{"http://ois-dqa.net/dqa/remote", "OIS"}, {"none", "none"}};
 
   private static Random random = new Random();
 
   @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+      throws ServletException, IOException {
     HttpSession session = req.getSession(true);
     String folderName = (String) session.getAttribute(PrepareServlet.BASE_DIR);
     if (folderName == null) {
@@ -79,8 +79,7 @@ public class DownloadServlet extends ClientServlet
       if (adminPassword == null) {
         adminPassword = "";
       }
-      if (!ENABLE_SUPPORT_CENTER)
-      {
+      if (!ENABLE_SUPPORT_CENTER) {
         scLocation = "none";
         scCode = "";
       }
@@ -108,7 +107,8 @@ public class DownloadServlet extends ClientServlet
         File versionWar = new File(rootDir, "tester-" + version + ".war");
         File expandDir = null;
         while (expandDir == null) {
-          String uniqueId = String.valueOf(Math.abs(session.hashCode())) + String.valueOf(random.nextInt(100));
+          String uniqueId =
+              String.valueOf(Math.abs(session.hashCode())) + String.valueOf(random.nextInt(100));
           expandDir = new File(rootDir, "tester-" + uniqueId);
           if (expandDir.exists()) {
             expandDir = null;
@@ -133,10 +133,10 @@ public class DownloadServlet extends ClientServlet
                 final String paramValueTagStart = "<param-value>";
                 final String paramVAlueTagEnd = "</param-value>";
                 final String[] p = ENABLE_SUPPORT_CENTER
-                    ? new String[] { "scan.start.folder", "support_center.code", "support_center.url", "software.dir",
-                        "admin.username", "admin.password" }
-                    : new String[] { "scan.start.folder", "software.dir", "admin.username", "admin.password" };
-                @SuppressWarnings("resource")
+                    ? new String[] {"scan.start.folder", "support_center.code",
+                        "support_center.url", "software.dir", "admin.username", "admin.password"}
+                    : new String[] {"scan.start.folder", "software.dir", "admin.username",
+                        "admin.password"};
                 BufferedReader br = new BufferedReader(new InputStreamReader(zis));
                 PrintWriter out = new PrintWriter(newFile);
                 String line;
@@ -240,7 +240,8 @@ public class DownloadServlet extends ClientServlet
         });
         for (File warFile : warFiles) {
           String filename = warFile.getName();
-          versionList.add(filename.substring("tester-".length(), filename.length() - ".war".length()));
+          versionList
+              .add(filename.substring("tester-".length(), filename.length() - ".war".length()));
         }
       }
     }
@@ -262,8 +263,9 @@ public class DownloadServlet extends ClientServlet
         out.println("        <option value=\"\">select</option>");
         for (String option : versionList) {
           out.println("        <option value=\"" + option + "\""
-              + (SoftwareVersion.VERSION_FOR_TESTER_DOWNLOAD.equals(option) ? " selected=\"true\"" : "") + ">" + option
-              + "</option>");
+              + (SoftwareVersion.VERSION_FOR_TESTER_DOWNLOAD.equals(option) ? " selected=\"true\""
+                  : "")
+              + ">" + option + "</option>");
         }
         out.println("      </select>");
         out.println("    </td>");
@@ -271,8 +273,8 @@ public class DownloadServlet extends ClientServlet
         out.println("  </tr>");
         out.println("  <tr class=\"boxed\">");
         out.println("    <th class=\"boxed\">Root Data Folder</th>");
-        out.println("    <td class=\"boxed\"><input type=\"text\" name=\"" + FIELD_DATA_DIR + "\" size=\"40\" value=\""
-            + folderName + "\"></td>");
+        out.println("    <td class=\"boxed\"><input type=\"text\" name=\"" + FIELD_DATA_DIR
+            + "\" size=\"40\" value=\"" + folderName + "\"></td>");
         out.println(
             "    <td class=\"boxed\">A local data folder that has been created to hold data, sent messages, and test results.</td>");
         out.println("  </tr>");
@@ -290,7 +292,8 @@ public class DownloadServlet extends ClientServlet
         out.println("  </tr>");
         out.println("  <tr class=\"boxed\">");
         out.println("    <th class=\"boxed\">&nbsp;</th>");
-        out.println("    <td class=\"boxed\"><input type=\"submit\" name=\"action\" value=\"Download\"></td>");
+        out.println(
+            "    <td class=\"boxed\"><input type=\"submit\" name=\"action\" value=\"Download\"></td>");
         if (tomcatHome == null) {
           out.println(
               "    <td class=\"boxed\">Download and save as <code>tester.war</code> in the <code>webapps</code> folder"
@@ -298,7 +301,8 @@ public class DownloadServlet extends ClientServlet
         } else {
           out.println(
               "    <td class=\"boxed\">Download and save as <code>tester.war</code> in the <code>webapps</code> folder"
-                  + "<br/> located in your Tomcat installation directory, <code>" + tomcatHome + "</code>.</td>");
+                  + "<br/> located in your Tomcat installation directory, <code>" + tomcatHome
+                  + "</code>.</td>");
         }
         out.println("  </tr>");
         out.println("</table>");
@@ -316,8 +320,9 @@ public class DownloadServlet extends ClientServlet
         out.println("        <option value=\"\">select</option>");
         for (String option : versionList) {
           out.println("        <option value=\"" + option + "\""
-              + (SoftwareVersion.VERSION_FOR_SMM_DOWNLOAD.equals(option) ? " selected=\"true\"" : "") + ">" + option
-              + "</option>");
+              + (SoftwareVersion.VERSION_FOR_SMM_DOWNLOAD.equals(option) ? " selected=\"true\""
+                  : "")
+              + ">" + option + "</option>");
         }
         out.println("      </select>");
         out.println("    </td>");
@@ -325,9 +330,10 @@ public class DownloadServlet extends ClientServlet
         out.println("  </tr>");
         out.println("  <tr class=\"boxed\">");
         out.println("    <th class=\"boxed\">SMM Root Folder</th>");
-        out.println("    <td class=\"boxed\"><input type=\"text\" name=\"" + FIELD_DATA_DIR + "\" size=\"20\" value=\""
-            + folderName + "\"></td>");
-        out.println("    <td class=\"boxed\">The root folder for the SMM data and configuration.</td>");
+        out.println("    <td class=\"boxed\"><input type=\"text\" name=\"" + FIELD_DATA_DIR
+            + "\" size=\"20\" value=\"" + folderName + "\"></td>");
+        out.println(
+            "    <td class=\"boxed\">The root folder for the SMM data and configuration.</td>");
         out.println("  </tr>");
         if (ENABLE_SUPPORT_CENTER) {
           out.println("  <tr class=\"boxed\">");
@@ -354,12 +360,14 @@ public class DownloadServlet extends ClientServlet
           }
           out.println("      </select>");
           out.println("    </td>");
-          out.println("    <td class=\"boxed\">The code assigned by the support center to prioritize assistance.</td>");
+          out.println(
+              "    <td class=\"boxed\">The code assigned by the support center to prioritize assistance.</td>");
           out.println("  </tr>");
         }
         out.println("  <tr class=\"boxed\">");
         out.println("    <th class=\"boxed\">&nbsp;</th>");
-        out.println("    <td class=\"boxed\"><input type=\"submit\" name=\"action\" value=\"Download\"></td>");
+        out.println(
+            "    <td class=\"boxed\"><input type=\"submit\" name=\"action\" value=\"Download\"></td>");
         if (tomcatHome == null) {
           out.println(
               "    <td class=\"boxed\">Download and save as <code>smm.war</code> in the <code>webapps</code> folder"
@@ -367,7 +375,8 @@ public class DownloadServlet extends ClientServlet
         } else {
           out.println(
               "    <td class=\"boxed\">Download and save as <code>smm.war</code> in the <code>webapps</code> folder"
-                  + "<br/> located in your Tomcat installation directory, <code>" + tomcatHome + "</code>.</td>");
+                  + "<br/> located in your Tomcat installation directory, <code>" + tomcatHome
+                  + "</code>.</td>");
         }
         out.println("  </tr>");
         out.println("</table>");

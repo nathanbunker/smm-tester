@@ -3,13 +3,11 @@ package org.immregistries.smm.mover.install.templates;
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.connectors.ConnectorFactory;
-import org.immregistries.smm.tester.connectors.EnvisionConnector;
-import org.immregistries.smm.tester.connectors.ORConnector;
 import org.immregistries.smm.tester.connectors.Connector.TransferType;
+import org.immregistries.smm.tester.connectors.ConnectorFactory;
+import org.immregistries.smm.tester.connectors.ORConnector;
 
-public class OR_ALERT_Template extends ConnectionTemplate
-{
+public class OR_ALERT_Template extends ConnectionTemplate {
   public OR_ALERT_Template() {
     super("OR ALERT");
   }
@@ -45,6 +43,7 @@ public class OR_ALERT_Template extends ConnectionTemplate
   public void setupConnection(String templateName, Connector connector) {
     ORConnector con = (ORConnector) connector;
     con.setAckType(AckAnalyzer.AckType.ALERT);
-    con.setTransferType(TransferType.NEAR_REAL_TIME_LINK);  }
+    con.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
+  }
 
 }

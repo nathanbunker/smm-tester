@@ -5,8 +5,7 @@ import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 import org.immregistries.smm.tester.connectors.HttpConnector;
 
-public class AZ_ASIIS_Template extends ConnectionTemplate
-{
+public class AZ_ASIIS_Template extends ConnectionTemplate {
   public AZ_ASIIS_Template() {
     super("AZ ASIIS");
   }
@@ -44,8 +43,8 @@ public class AZ_ASIIS_Template extends ConnectionTemplate
   @Override
   public void setupConnection(String templateName, Connector connector) {
     HttpConnector httpConnector = (HttpConnector) connector;
-    httpConnector.setCustomTransformations(
-        "MSH-3=RPMS\n" + "MSH-4=[FACILITYID]\n" + "MSH-5=ASIIS\n" + "PV1-10=\n" + "fix ampersand\n");
+    httpConnector.setCustomTransformations("MSH-3=RPMS\n" + "MSH-4=[FACILITYID]\n" + "MSH-5=ASIIS\n"
+        + "PV1-10=\n" + "fix ampersand\n");
   }
 
 }

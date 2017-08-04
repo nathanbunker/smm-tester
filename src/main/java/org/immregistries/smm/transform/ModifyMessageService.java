@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.transform;
 
@@ -14,8 +13,7 @@ import java.util.Arrays;
  * 
  * @author nathan
  */
-public class ModifyMessageService
-{
+public class ModifyMessageService {
 
   private static final String COMMAND_QUICK_TRANSFORMS = "QUICK TRANSFORMS";
   private static final String COMMAND_QUICK_TRANSFORM = "QUICK TRANSFORM";
@@ -54,8 +52,8 @@ public class ModifyMessageService
           if (lineUpper.startsWith(COMMAND_SET_CONTEXT)) {
             // ignore for now, immunization by default
           } else if (lineUpper.startsWith(COMMAND_SET_PATIENT_TYPE)) {
-            PatientType patientType = PatientType.valueOf(lineUpper.substring(
-                COMMAND_SET_PATIENT_TYPE.length()).trim());
+            PatientType patientType =
+                PatientType.valueOf(lineUpper.substring(COMMAND_SET_PATIENT_TYPE.length()).trim());
             testCaseMessage.setPatientType(patientType);
           }
         } else if (lineUpper.startsWith(COMMAND_ADD)) {
@@ -70,7 +68,7 @@ public class ModifyMessageService
             quickTransform = COMMAND_QUICK_TRANFORMS;
           } else if (lineUpper.startsWith(COMMAND_QUICK_TRANFORM)) {
             quickTransform = COMMAND_QUICK_TRANFORM;
-          }  
+          }
           if (quickTransform != null) {
             String[] qt;
             String[] qtOriginal = testCaseMessage.getQuickTransformations();

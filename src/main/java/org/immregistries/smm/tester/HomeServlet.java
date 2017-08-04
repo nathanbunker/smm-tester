@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester;
 
@@ -12,30 +11,23 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.immregistries.smm.transform.ScenarioManager;
-
 /**
  * 
  * @author nathan
  */
-public class HomeServlet extends ClientServlet
-{
+@SuppressWarnings("serial")
+public class HomeServlet extends ClientServlet {
 
   /**
-   * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-   * methods.
+   * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
-  protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException,
-      IOException {
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
@@ -73,7 +65,8 @@ public class HomeServlet extends ClientServlet
         out.println("<table border=\"1\" cellspacing=\"0\">");
         out.println("  <tr>");
         out.println("    <td><a href=\"StressTestServlet\">Stress Test</a></td>");
-        out.println("    <td>Send multiple messages to an IIS to verify it's ability to handle many different requests at the same time. </td>");
+        out.println(
+            "    <td>Send multiple messages to an IIS to verify it's ability to handle many different requests at the same time. </td>");
         out.println("  </tr>");
         Authenticate.User user = (Authenticate.User) session.getAttribute("user");
         if (user.hasSendData()) {
@@ -81,23 +74,16 @@ public class HomeServlet extends ClientServlet
           out.println("    <td><a href=\"InstallCertServlet\">Install Cert</a></td>");
           out.println("    <td>Install certificate for use on a particular connection.</td>");
           out.println("  </tr>");
-           
+
         }
         out.println("  <tr>");
         out.println("    <td><a href=\"GenerateDataServlet\">Generate Data</a></td>");
         out.println("    <td>Create sample messages </td>");
         out.println("  </tr>");
         out.println("  <tr>");
-        out.println("    <td><a href=\"ConformanceServlet\">Conformance</a></td>");
-        out.println("    <td>Verify HL7 Message, Segment or Field for conformance </td>");
-        out.println("  </tr>");
-        out.println("  <tr>");
-        out.println("    <td><a href=\"DocumentServlet\">Document</a></td>");
-        out.println("    <td>Details on structure of HL7 Message, Segment or Field </td>");
-        out.println("  </tr>");
-        out.println("  <tr>");
         out.println("    <td><a href=\"testCase\">Run Tests</a></td>");
-        out.println("    <td>This is a deprecated function that is now covered by the Test IIS. </td>");
+        out.println(
+            "    <td>This is a deprecated function that is now covered by the Test IIS. </td>");
         out.println("  </tr>");
         out.println("  <tr>");
         out.println("    <td><a href=\"ProfileServlet\">View Profile</a></td>");
@@ -105,11 +91,8 @@ public class HomeServlet extends ClientServlet
         out.println("  </tr>");
         out.println("  <tr>");
         out.println("    <td><a href=\"interfaceProfile\">Profile Interface</a></td>");
-        out.println("    <td>This is a deprecated function that is now covered by the Test IIS. </td>");
-        out.println("  </tr>");
-        out.println("  <tr>");
-        out.println("    <td><a href=\"VerifyServlet\">Verify Message</a></td>");
-        out.println("    <td>This is a real time interface for verifying a message. It will produce an ACK for a given VXU or QBP.  </td>");
+        out.println(
+            "    <td>This is a deprecated function that is now covered by the Test IIS. </td>");
         out.println("  </tr>");
         if (user.isAdmin()) {
           out.println("  <tr>");
@@ -132,34 +115,28 @@ public class HomeServlet extends ClientServlet
   /**
    * Handles the HTTP <code>GET</code> method.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     processRequest(request, response);
   }
 
   /**
    * Handles the HTTP <code>POST</code> method.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
   @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     processRequest(request, response);
   }
 

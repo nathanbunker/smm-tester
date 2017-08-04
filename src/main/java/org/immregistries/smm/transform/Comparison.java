@@ -5,8 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class Comparison
-{
+public class Comparison {
   public static final int PRIORITY_LEVEL_REQUIRED = 0;
   public static final int PRIORITY_LEVEL_OPTIONAL = 1;
   public static final int PRIORITY_LEVEL_EXTRA = 2;
@@ -88,8 +87,8 @@ public class Comparison
         ov = originalValue.toUpperCase().replace('0', 'O');
         rv = returnedValue.toUpperCase().replace('0', 'O');
       }
-      if (equivalents.size() > 0 && originalValue != null && returnedValue != null && !originalValue.equals("")
-          && !returnedValue.equals("")) {
+      if (equivalents.size() > 0 && originalValue != null && returnedValue != null
+          && !originalValue.equals("") && !returnedValue.equals("")) {
         if (ov.equalsIgnoreCase(rv)) {
           pass = true;
         } else {
@@ -104,7 +103,8 @@ public class Comparison
             if (otherValue != null && ov.equals(otherValue)) {
               pass = true;
             } else {
-              if (otherValue != null && !allowedValuesMask.contains(originalValue) && otherValue.equals("")) {
+              if (otherValue != null && !allowedValuesMask.contains(originalValue)
+                  && otherValue.equals("")) {
                 // if original value is non standard then don't expect the
                 // non-standard value to come back
                 pass = true;
@@ -115,7 +115,8 @@ public class Comparison
           }
         }
       } else {
-        if (allowedValuesMask.size() > 0 && returnedValue.equals("") && !allowedValuesMask.contains(originalValue)) {
+        if (allowedValuesMask.size() > 0 && returnedValue.equals("")
+            && !allowedValuesMask.contains(originalValue)) {
           // if original value is non standard then don't expect the
           // non-standard value to come back
           pass = true;

@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester.connectors;
 
@@ -71,7 +70,8 @@ public class WIConnector extends HttpConnector {
 
   }
 
-  public String sendRequest(String request, ClientConnection conn, boolean debug) throws IOException {
+  public String sendRequest(String request, ClientConnection conn, boolean debug)
+      throws IOException {
     StringBuilder debugLog = null;
     URLConnection urlConn = null;
     if (debug) {
@@ -92,14 +92,16 @@ public class WIConnector extends HttpConnector {
 
       ((HttpURLConnection) urlConn).setRequestMethod("POST");
 
-      urlConn.setRequestProperty("Content-Type", "application/soap+xml;charset=UTF-8;action=\"urn:cdc:iisb:2011:submitSingleMessage\"");
+      urlConn.setRequestProperty("Content-Type",
+          "application/soap+xml;charset=UTF-8;action=\"urn:cdc:iisb:2011:submitSingleMessage\"");
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       urlConn.setUseCaches(false);
       String content;
 
       StringBuilder sb = new StringBuilder();
-      sb.append("<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:urn=\"urn:cdc:iisb:2011\">");
+      sb.append(
+          "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:urn=\"urn:cdc:iisb:2011\">");
       sb.append("  <soap:Header/>");
       sb.append("  <soap:Body>");
       sb.append("   <urn:submitSingleMessage>");
@@ -140,7 +142,8 @@ public class WIConnector extends HttpConnector {
       e.printStackTrace(System.out);
       if (urlConn != null) {
         try {
-          InputStreamReader input = new InputStreamReader(((HttpURLConnection) urlConn).getErrorStream());
+          InputStreamReader input =
+              new InputStreamReader(((HttpURLConnection) urlConn).getErrorStream());
           BufferedReader in = new BufferedReader(input);
           String line;
           while ((line = in.readLine()) != null) {
@@ -183,14 +186,16 @@ public class WIConnector extends HttpConnector {
 
       ((HttpURLConnection) urlConn).setRequestMethod("POST");
 
-      urlConn.setRequestProperty("Content-Type", "application/soap+xml;charset=UTF-8;action=\"urn:cdc:iisb:2011:connectivityTest\"");
+      urlConn.setRequestProperty("Content-Type",
+          "application/soap+xml;charset=UTF-8;action=\"urn:cdc:iisb:2011:connectivityTest\"");
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       urlConn.setUseCaches(false);
       String content;
 
       StringBuilder sb = new StringBuilder();
-      sb.append("<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:urn=\"urn:cdc:iisb:2011\">");
+      sb.append(
+          "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:urn=\"urn:cdc:iisb:2011\">");
       sb.append("  <soap:Header/>");
       sb.append("    <soap:Body>");
       sb.append("      <urn:connectivityTest>");
@@ -219,8 +224,8 @@ public class WIConnector extends HttpConnector {
       e.printStackTrace(System.err);
       if (urlConn != null) {
         try {
-          InputStreamReader input = new InputStreamReader(((HttpURLConnection) urlConn).getErrorStream());
-          StringBuilder response = new StringBuilder();
+          InputStreamReader input =
+              new InputStreamReader(((HttpURLConnection) urlConn).getErrorStream());
           BufferedReader in = new BufferedReader(input);
           String line;
           while ((line = in.readLine()) != null) {
@@ -251,33 +256,12 @@ public class WIConnector extends HttpConnector {
 
   @Override
   protected void setupFields(List<String> fields) {
-    for (String field : fields) {
       // nothing to do
-    }
-
   }
 
   @Override
   protected void makeScriptAdditions(StringBuilder sb) {
     // nothing to do
-    // if (deduplicate) {
-    // sb.append("Deduplicate: true\n");
-    // }
-
   }
 
-  Random random = new Random();
-
-  private String randomHex(int length) {
-    String s = "";
-    for (int i = 0; i < length; i++) {
-      int v = random.nextInt(16);
-      if (v < 10) {
-        s += v;
-      } else {
-        s += (char) (((int) 'A') + (v - 10));
-      }
-    }
-    return s;
-  }
 }

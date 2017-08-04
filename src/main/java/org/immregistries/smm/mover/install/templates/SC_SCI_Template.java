@@ -3,12 +3,11 @@ package org.immregistries.smm.mover.install.templates;
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
+import org.immregistries.smm.tester.connectors.Connector.TransferType;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 import org.immregistries.smm.tester.connectors.SCSoapConnector;
-import org.immregistries.smm.tester.connectors.Connector.TransferType;
 
-public class SC_SCI_Template extends ConnectionTemplate
-{
+public class SC_SCI_Template extends ConnectionTemplate {
   public SC_SCI_Template() {
     super("SC SCI");
   }

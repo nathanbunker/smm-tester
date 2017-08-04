@@ -7,13 +7,13 @@ import java.security.cert.X509Certificate;
 
 import javax.net.ssl.X509KeyManager;
 
-public class FilteredKeyManager implements X509KeyManager
-{
+public class FilteredKeyManager implements X509KeyManager {
 
   private final X509KeyManager originatingKeyManager;
   private final X509Certificate[] x509Certificates;
 
-  public FilteredKeyManager(X509KeyManager originatingKeyManager, X509Certificate[] x509Certificates) {
+  public FilteredKeyManager(X509KeyManager originatingKeyManager,
+      X509Certificate[] x509Certificates) {
     this.originatingKeyManager = originatingKeyManager;
     this.x509Certificates = x509Certificates;
   }
@@ -23,7 +23,7 @@ public class FilteredKeyManager implements X509KeyManager
   }
 
   public String[] getClientAliases(String keyType, Principal[] issuers) {
-    return new String[] { "ihs" };
+    return new String[] {"ihs"};
   }
 
   public String chooseClientAlias(String[] arg0, Principal[] arg1, Socket arg2) {

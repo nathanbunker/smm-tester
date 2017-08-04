@@ -15,11 +15,12 @@ import org.immregistries.smm.mover.install.templates.ConnectionTemplateFactory;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 
-public class ConfigureServlet extends ClientServlet
-{
+@SuppressWarnings("serial")
+public class ConfigureServlet extends ClientServlet {
 
   @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+      throws ServletException, IOException {
 
     SoftwareType softwareType = getSoftwareType(req);
 
@@ -67,7 +68,8 @@ public class ConfigureServlet extends ClientServlet
 
         if (message == null) {
           try {
-            Connector connector = ConnectorFactory.getConnector(cc.getType(), cc.getLabel(), cc.getUrl());
+            Connector connector =
+                ConnectorFactory.getConnector(cc.getType(), cc.getLabel(), cc.getUrl());
 
             if (connector == null) {
               message = "Unrecognized connection type: " + cc.getType();
@@ -76,22 +78,26 @@ public class ConfigureServlet extends ClientServlet
               cc.setPassword(req.getParameter(ConnectionConfiguration.FIELD_PASSWORD));
               cc.setUserid(req.getParameter(ConnectionConfiguration.FIELD_USERID));
               cc.setOtherid(req.getParameter(ConnectionConfiguration.FIELD_OTHERID));
-              cc.setKeyStorePassword(req.getParameter(ConnectionConfiguration.FIELD_KEY_STORE_PASSWORD));
+              cc.setKeyStorePassword(
+                  req.getParameter(ConnectionConfiguration.FIELD_KEY_STORE_PASSWORD));
 
               connector.setUserid(cc.getUserid());
               connector.setOtherid(cc.getOtherid());
               connector.setPassword(cc.getPassword());
               connector.setFacilityid(cc.getFacilityid());
               connector.setKeyStorePassword(cc.getKeyStorePassword());
-              connector.setEnableTimeStart(safe(req.getParameter(ConnectionConfiguration.FIELD_ENABLE_TIME_START)));
-              connector.setEnableTimeEnd(safe(req.getParameter(ConnectionConfiguration.FIELD_ENABLE_TIME_END)));
+              connector.setEnableTimeStart(
+                  safe(req.getParameter(ConnectionConfiguration.FIELD_ENABLE_TIME_START)));
+              connector.setEnableTimeEnd(
+                  safe(req.getParameter(ConnectionConfiguration.FIELD_ENABLE_TIME_END)));
               if (cc.isUseridRequired() && connector.getUserid().equals("")) {
                 message = "You must indicate a " + cc.getUseridLabel();
               } else if (cc.isPasswordRequired() && connector.getPassword().equals("")) {
                 message = "You must indicate a " + cc.getPasswordLabel();
               } else if (cc.isFacilityidRequired() && connector.getFacilityid().equals("")) {
                 message = "You must indicate a " + cc.getFacilityidLabel();
-              } else if (cc.isKeyStorePasswordRequired() && connector.getKeyStorePassword().equals("")) {
+              } else if (cc.isKeyStorePasswordRequired()
+                  && connector.getKeyStorePassword().equals("")) {
                 message = "You must indicate a " + cc.getKeyStorePasswordLabel();
               }
 
@@ -100,7 +106,8 @@ public class ConfigureServlet extends ClientServlet
                   message = "You must indicate a SMM enabled end time";
                 } else {
                   if (SendData.makeDate(connector.getEnableTimeEnd()) == null) {
-                    message = "The SMM enabled end time is invalid format, please use HH:MM with the HH indicating a value between 0 and 23";
+                    message =
+                        "The SMM enabled end time is invalid format, please use HH:MM with the HH indicating a value between 0 and 23";
                   }
 
                 }
@@ -108,7 +115,8 @@ public class ConfigureServlet extends ClientServlet
                   message = "You must indicate a SMM enabled start time";
                 } else {
                   if (SendData.makeDate(connector.getEnableTimeStart()) == null) {
-                    message = "The SMM enabled start time is invalid format, please use HH:MM with the HH indicating a value between 0 and 23";
+                    message =
+                        "The SMM enabled start time is invalid format, please use HH:MM with the HH indicating a value between 0 and 23";
                   }
                 }
               }
@@ -116,8 +124,8 @@ public class ConfigureServlet extends ClientServlet
               if (message == null) {
                 setupConnection(templateName, connector);
                 resp.setContentType("text/plain;charset=UTF-8");
-                resp.setHeader("Content-Disposition",
-                    "attachment; filename=\"" + URLEncoder.encode("smm.config.txt", "UTF-8") + "\"");
+                resp.setHeader("Content-Disposition", "attachment; filename=\""
+                    + URLEncoder.encode("smm.config.txt", "UTF-8") + "\"");
                 PrintWriter out = new PrintWriter(resp.getOutputStream());
                 out.print(connector.getScript());
                 out.close();
@@ -152,7 +160,8 @@ public class ConfigureServlet extends ClientServlet
       if (softwareType == SoftwareType.TESTER) {
         out.println("  <input type=\"hidden\" name=\"softwareType\" value=\"Tester\">");
       }
-      out.println("    <p>After you have saved <code>smm.config.txt</code> you are ready for <input type=\"submit\" value=\"Step 3: Install\" name=\"action\"></p>");
+      out.println(
+          "    <p>After you have saved <code>smm.config.txt</code> you are ready for <input type=\"submit\" value=\"Step 3: Install\" name=\"action\"></p>");
       out.println("</form>");
 
       printHtmlFoot(out);
@@ -168,9 +177,9 @@ public class ConfigureServlet extends ClientServlet
 
   private void setupConnection(String templateName, Connector connector) {
     if (templateName != null) {
-      ConnectionTemplate connectionTemplate = ConnectionTemplateFactory.getConnectionTemplate(templateName);
-      if (connectionTemplate != null)
-      {
+      ConnectionTemplate connectionTemplate =
+          ConnectionTemplateFactory.getConnectionTemplate(templateName);
+      if (connectionTemplate != null) {
         connectionTemplate.setupConnection(templateName, connector);
       }
     }
@@ -179,13 +188,14 @@ public class ConfigureServlet extends ClientServlet
   private void setupConfiguration(String templateName, ConnectionConfiguration cc) {
     if (templateName != null) {
       cc.setLabel(templateName);
-      ConnectionTemplate connectionTemplate = ConnectionTemplateFactory.getConnectionTemplate(templateName);
-      if (connectionTemplate != null)
-      {
+      ConnectionTemplate connectionTemplate =
+          ConnectionTemplateFactory.getConnectionTemplate(templateName);
+      if (connectionTemplate != null) {
         connectionTemplate.setupConfiguration(templateName, cc);
       }
     } else {
-      cc.setInstructions("This is the default configuration with no preset values. If you would like specific instruction based on the system you are working to connect with, please return to Step 1: Prepare and follow the instructions. ");
+      cc.setInstructions(
+          "This is the default configuration with no preset values. If you would like specific instruction based on the system you are working to connect with, please return to Step 1: Prepare and follow the instructions. ");
     }
   }
 

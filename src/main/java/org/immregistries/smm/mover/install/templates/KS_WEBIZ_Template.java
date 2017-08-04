@@ -3,13 +3,11 @@ package org.immregistries.smm.mover.install.templates;
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.connectors.ConnectorFactory;
-import org.immregistries.smm.tester.connectors.EnvisionConnector;
-import org.immregistries.smm.tester.connectors.KSSoapConnector;
 import org.immregistries.smm.tester.connectors.Connector.TransferType;
+import org.immregistries.smm.tester.connectors.ConnectorFactory;
+import org.immregistries.smm.tester.connectors.KSSoapConnector;
 
-public class KS_WEBIZ_Template extends ConnectionTemplate
-{
+public class KS_WEBIZ_Template extends ConnectionTemplate {
   public KS_WEBIZ_Template() {
     super("KS WebIZ");
   }
@@ -40,7 +38,8 @@ public class KS_WEBIZ_Template extends ConnectionTemplate
     // Password
     cc.setPasswordShow(true);
     cc.setPasswordRequired(true);
-    cc.setInstructions("");  }
+    cc.setInstructions("");
+  }
 
   @Override
   public void setupConnection(String templateName, Connector connector) {

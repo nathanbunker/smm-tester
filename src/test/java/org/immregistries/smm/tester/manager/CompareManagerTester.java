@@ -1,8 +1,8 @@
 package org.immregistries.smm.tester.manager;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import org.immregistries.smm.tester.manager.CompareManager;
 import org.junit.Test;
 
 public class CompareManagerTester

@@ -1,6 +1,5 @@
 package org.immregistries.smm.mover;
 
-public class Temp
-{
+public class Temp {
 
 }

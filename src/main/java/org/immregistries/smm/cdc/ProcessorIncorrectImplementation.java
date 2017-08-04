@@ -3,8 +3,7 @@ package org.immregistries.smm.cdc;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-public class ProcessorIncorrectImplementation extends Processor
-{
+public class ProcessorIncorrectImplementation extends Processor {
 
   public ProcessorIncorrectImplementation(CDCWSDLServer server) {
     super(server);
@@ -12,9 +11,12 @@ public class ProcessorIncorrectImplementation extends Processor
 
   public static void printExplanation(PrintWriter out, String processorName) {
     out.println("<h3>Incorrect Implementation</h3>");
-    out.println("<p>This responds with the correct XML but has not properly implemented the methods and the contents are not correct.  </p>");
-    out.println("<p><b>submitSingleMessage</b>: Returns a human readable message instead of an acknowledgement. </p>");
-    out.println("<p><b>connectivityTestResponse</b>: Sends back message but it does not contain original text sent in. </p>");
+    out.println(
+        "<p>This responds with the correct XML but has not properly implemented the methods and the contents are not correct.  </p>");
+    out.println(
+        "<p><b>submitSingleMessage</b>: Returns a human readable message instead of an acknowledgement. </p>");
+    out.println(
+        "<p><b>connectivityTestResponse</b>: Sends back message but it does not contain original text sent in. </p>");
   }
 
   public void doProcessMessage(PrintWriter out, SubmitSingleMessage ssm) throws Fault {
@@ -28,7 +30,8 @@ public class ProcessorIncorrectImplementation extends Processor
     PrintWriter outIgnore = new PrintWriter(sw);
     server.process(ssm, outIgnore);
     outIgnore.close();
-    out.println("Thank you for submitting your message, we will process it shortly. Please check IIS for processing status.");
+    out.println(
+        "Thank you for submitting your message, we will process it shortly. Please check IIS for processing status.");
     out.println("</return>");
     out.println("      </submitSingleMessageResponse>");
     out.println("  </Body>");
@@ -56,7 +59,8 @@ public class ProcessorIncorrectImplementation extends Processor
     out.println("            <Value>" + unknownFault.getFaultCodeValue() + "</Value>");
     out.println("         </Code>");
     out.println("         <Reason>");
-    out.println("            <Text xml:lang=\"en\">" + unknownFault.getFaultReasonText() + "</Text>");
+    out.println(
+        "            <Text xml:lang=\"en\">" + unknownFault.getFaultReasonText() + "</Text>");
     out.println("         </Reason>");
     out.println("         <Detail>");
     out.println("            <fault xmlns=\"urn:cdc:iisb:2011\">");
@@ -74,14 +78,16 @@ public class ProcessorIncorrectImplementation extends Processor
 
   public void doPrintException(PrintWriter out, MessageTooLargeFault messageTooLargeFault) {
     out.println("<?xml version='1.0' encoding='UTF-8'?>");
-    out.println("<Envelope xmlns=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:junk=\"urn:foo:bar\">");
+    out.println(
+        "<Envelope xmlns=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:junk=\"urn:foo:bar\">");
     out.println("  <Body>");
     out.println("    <Fault>");
     out.println("      <Code>");
     out.println("        <Value>" + messageTooLargeFault.getFaultCodeValue() + "</Value>");
     out.println("      </Code>");
     out.println("      <Reason>");
-    out.println("        <Text xml:lang=\"en\">" + messageTooLargeFault.getFaultReasonText() + "</Text>");
+    out.println(
+        "        <Text xml:lang=\"en\">" + messageTooLargeFault.getFaultReasonText() + "</Text>");
     out.println("      </Reason>");
     out.println("      <Detail>");
     out.println("        <MessageTooLargeFault xmlns=\"urn:cdc:iisb:2011\">");
@@ -97,7 +103,8 @@ public class ProcessorIncorrectImplementation extends Processor
     out.println("</Envelope>");
   }
 
-  public void doPrintException(PrintWriter out, UnsupportedOperationFault unsupportedOperationFault) {
+  public void doPrintException(PrintWriter out,
+      UnsupportedOperationFault unsupportedOperationFault) {
     out.println("<?xml version='1.0' encoding='UTF-8'?>");
     out.println("<Envelope xmlns=\"http://www.w3.org/2003/05/soap-envelope\">");
     out.println("   <Body>");
@@ -106,7 +113,8 @@ public class ProcessorIncorrectImplementation extends Processor
     out.println("            <Value>" + unsupportedOperationFault.getFaultCodeValue() + "</Value>");
     out.println("         </Code>");
     out.println("         <Reason>");
-    out.println("            <Text xml:lang=\"en\">" + unsupportedOperationFault.getFaultReasonText() + "</Text>");
+    out.println("            <Text xml:lang=\"en\">"
+        + unsupportedOperationFault.getFaultReasonText() + "</Text>");
     out.println("         </Reason>");
     out.println("         <Detail>");
     out.println("            <UnsupportedOperationFault xmlns=\"urn:cdc:iisb:2011\">");
@@ -114,7 +122,8 @@ public class ProcessorIncorrectImplementation extends Processor
     out.println(
         "               <Reason xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">"
             + unsupportedOperationFault.getDetailReason() + "</Reason>");
-    out.println("               <Detail>" + unsupportedOperationFault.getDetailDetail() + "</Detail>");
+    out.println(
+        "               <Detail>" + unsupportedOperationFault.getDetailDetail() + "</Detail>");
     out.println("            </UnsupportedOperationFault>");
     out.println("         </Detail>");
     out.println("      </Fault>");
@@ -122,7 +131,7 @@ public class ProcessorIncorrectImplementation extends Processor
     out.println("</Envelope>");
   }
 
-  
+
   public void doPrintException(PrintWriter out, SecurityFault securityFault) {
     out.println("<?xml version='1.0' encoding='UTF-8'?>");
     out.println("<Envelope xmlns=\"http://www.w3.org/2003/05/soap-envelope\">");
@@ -132,12 +141,14 @@ public class ProcessorIncorrectImplementation extends Processor
     out.println("            <Value>" + securityFault.getFaultCodeValue() + "</Value>");
     out.println("         </Code>");
     out.println("         <Reason>");
-    out.println("            <Text xml:lang=\"en\">" + securityFault.getFaultReasonText() + "</Text>");
+    out.println(
+        "            <Text xml:lang=\"en\">" + securityFault.getFaultReasonText() + "</Text>");
     out.println("         </Reason>");
     out.println("         <Detail>");
     out.println("            <SecurityFault xmlns=\"urn:cdc:iisb:2011\">");
     out.println("               <Code>" + securityFault.getDetailCode() + "</Code>");
-    out.println("               <Reason xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">"
+    out.println(
+        "               <Reason xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">"
             + securityFault.getDetailReason() + "</Reason>");
     out.println("               <Detail>" + securityFault.getDetailDetail() + "</Detail>");
     out.println("            </SecurityFault>");

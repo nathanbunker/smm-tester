@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester.run;
 
@@ -32,7 +31,7 @@ public class TestRunner {
   public static final String ASSERT_RESULT_ACCEPT_ACCEPT_AND_WARN = "Accept and Warn";
   public static final String ASSERT_RESULT_ACCEPT = "Accept";
   public static final String ASSERT_RESULT_ERROR_LOCATION_IS_ = "Error Location is ";
-  public static final String ASSERT_RESULT_ERROR_INDICATED ="Error Indicated";
+  public static final String ASSERT_RESULT_ERROR_INDICATED = "Error Indicated";
 
   public static final String ACTUAL_RESULT_STATUS_FAIL = "FAIL";
   public static final String ACTUAL_RESULT_STATUS_PASS = "PASS";
@@ -123,8 +122,8 @@ public class TestRunner {
     return runTest(connector, testCaseMessage, message);
   }
 
-  public TestCaseMessage runTestIfNew(Connector connector, TestCaseMessage testCaseMessage, Map<String, TestCaseMessage> testCaseMessageMap)
-      throws Exception {
+  public TestCaseMessage runTestIfNew(Connector connector, TestCaseMessage testCaseMessage,
+      Map<String, TestCaseMessage> testCaseMessageMap) throws Exception {
     wasRun = false;
     testCaseMessage.setActualResponseMessage("");
     testCaseMessage.setPassedTest(false);
@@ -138,7 +137,8 @@ public class TestRunner {
     return testCaseMessage;
   }
 
-  public boolean runTest(Connector connector, TestCaseMessage testCaseMessage, String message) throws Exception {
+  public boolean runTest(Connector connector, TestCaseMessage testCaseMessage, String message)
+      throws Exception {
     setupForRunTest(testCaseMessage, message);
     doRunTest(connector, testCaseMessage, message);
     evaluateRunTest(connector, testCaseMessage);
@@ -147,8 +147,9 @@ public class TestRunner {
     }
     return passedTest;
   }
-  
-  private static final int[][] ERROR_INDICATED_FIELDS_AND_COMPONENTS = new int[][] {{2,1}, {2,2}, {2,3}, {2,4}, {2,5}, {3,1}, {5,1}, {5,3}, {5,4}, {5,6}, {8,1}};
+
+  private static final int[][] ERROR_INDICATED_FIELDS_AND_COMPONENTS = new int[][] {{2, 1}, {2, 2},
+      {2, 3}, {2, 4}, {2, 5}, {3, 1}, {5, 1}, {5, 3}, {5, 4}, {5, 6}, {8, 1}};
 
   protected void evaluateRunTest(Connector connector, TestCaseMessage testCaseMessage) {
     testCaseMessage.log("EVALUATING TEST RUN");
@@ -156,17 +157,14 @@ public class TestRunner {
     String assertResult = testCaseMessage.getAssertResult();
     HL7Reader errorIndicatedReader = null;
     testCaseMessage.log("  + Assert Result = " + assertResult);
-    if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ERROR_INDICATED))
-    {
+    if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ERROR_INDICATED)) {
       String assertResultParameter = testCaseMessage.getAssertResultParameter();
       errorIndicatedReader = new HL7Reader(assertResultParameter);
-      if (!errorIndicatedReader.advanceToSegment("ERR"))
-      {
+      if (!errorIndicatedReader.advanceToSegment("ERR")) {
         errorIndicatedReader = null;
-      }
-      else
-      {
-        testCaseMessage.log("Will be looking for ERR segment that matches this one: " + assertResultParameter);
+      } else {
+        testCaseMessage
+            .log("Will be looking for ERR segment that matches this one: " + assertResultParameter);
       }
     }
     if (!assertResult.equalsIgnoreCase("")) {
@@ -178,12 +176,14 @@ public class TestRunner {
           passedTest = false;
         } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_SKIP)) {
           passedTest = false;
-        } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ERROR) || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_REJECT)) {
+        } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ERROR)
+            || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_REJECT)) {
           passedTest = true;
         } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_REJECT)
             || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_ERROR)) {
           passedTest = true;
-        } else if (assertResult.toUpperCase().startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
+        } else if (assertResult.toUpperCase()
+            .startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
           passedTest = false;
         }
         testCaseMessage.log("  + Passed Test = " + passedTest);
@@ -195,7 +195,8 @@ public class TestRunner {
         {
           if (ackMessageReader != null || !connector.getAckType().isInHL7Format()) {
             testCaseMessage.log("Analyzing acknowledgement");
-            AckAnalyzer ackAnalyzer = new AckAnalyzer(ackMessageText, connector.getAckType(), null, testCaseMessage);
+            AckAnalyzer ackAnalyzer =
+                new AckAnalyzer(ackMessageText, connector.getAckType(), null, testCaseMessage);
             testCaseMessage.setAccepted(ackAnalyzer.isPositive());
 
 
@@ -216,8 +217,10 @@ public class TestRunner {
 
               List<Transform> refList = null;
               boolean foundRef = false;
-              if (assertResult.toUpperCase().startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
-                String refString = assertResult.substring(ASSERT_RESULT_ERROR_LOCATION_IS_.length()).trim();
+              if (assertResult.toUpperCase()
+                  .startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
+                String refString =
+                    assertResult.substring(ASSERT_RESULT_ERROR_LOCATION_IS_.length()).trim();
                 refList = new ArrayList<Transform>();
                 String[] refs = refString.split("\\Qor\\E");
                 for (String r : refs) {
@@ -246,7 +249,8 @@ public class TestRunner {
                   String segmentName = ackMessageReader.getValue(2, 1);
                   String fieldPos = ackMessageReader.getValue(2, 3);
                   for (Transform ref : refList) {
-                    if (ref.getSegment().equalsIgnoreCase(segmentName) && fieldPos.equals("" + ref.getField())) {
+                    if (ref.getSegment().equalsIgnoreCase(segmentName)
+                        && fieldPos.equals("" + ref.getField())) {
                       foundRef = true;
                       break;
                     }
@@ -270,18 +274,16 @@ public class TestRunner {
                     int field = fieldAndComponent[0];
                     int component = fieldAndComponent[1];
                     boolean matches = checkMatches(errorIndicatedReader, field, component);
-                    if (!matches)
-                    {
+                    if (!matches) {
                       allMatches = false;
                       break;
                     }
                   }
-                  if (allMatches)
-                  {
+                  if (allMatches) {
                     passedTest = true;
                   }
                 }
-                
+
               }
               if (testCaseMessage.getActualResultAckType().equals("AE") && !rejected) {
                 if (severitySet) {
@@ -299,12 +301,14 @@ public class TestRunner {
                 passedTest = !rejected;
               } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_SKIP)) {
                 passedTest = !rejected;
-              } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ERROR) || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_REJECT)) {
+              } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ERROR)
+                  || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_REJECT)) {
                 passedTest = !ackAnalyzer.isPositive();
               } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_REJECT)
                   || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_ERROR)) {
                 passedTest = true;
-              } else if (assertResult.toUpperCase().startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
+              } else if (assertResult.toUpperCase()
+                  .startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
                 if (refList == null) {
                   passedTest = false;
                 } else {
@@ -343,7 +347,7 @@ public class TestRunner {
     testCaseMessage.setPassedTest(passedTest);
     testCaseMessage.setHasRun(true);
     wasRun = true;
-    
+
     System.out.println(testCaseMessage.getLog());
   }
 
@@ -351,14 +355,14 @@ public class TestRunner {
     boolean matches = false;
     String indicatedValue = errorIndicatedReader.getValue(field, component);
     String actualValue = ackMessageReader.getValue(field, component);
-    if (indicatedValue.equals("") || indicatedValue.equalsIgnoreCase(actualValue))
-    {
-            matches = true;
+    if (indicatedValue.equals("") || indicatedValue.equalsIgnoreCase(actualValue)) {
+      matches = true;
     }
     return matches;
   }
 
-  private void doRunTest(Connector connector, TestCaseMessage testCaseMessage, String message) throws Exception {
+  private void doRunTest(Connector connector, TestCaseMessage testCaseMessage, String message)
+      throws Exception {
     startTime = System.currentTimeMillis();
     ackMessageText = connector.submitMessage(message, false);
     endTime = System.currentTimeMillis();
@@ -374,16 +378,19 @@ public class TestRunner {
   public static void validateResponseWithNIST(TestCaseMessage testCaseMessage, String messageText) {
     ascertainValidationResource(testCaseMessage, messageText);
     if (testCaseMessage.getValidationResource() != null) {
-      ValidationReport validationReport = NISTValidator.validate(messageText, testCaseMessage.getValidationResource());
+      ValidationReport validationReport =
+          NISTValidator.validate(messageText, testCaseMessage.getValidationResource());
       testCaseMessage.setValidationReport(validationReport);
       if (validationReport != null) {
         testCaseMessage.setValidationReportPass(
-            validationReport.getHeaderReport().getValidationStatus().equals("Complete") && validationReport.getHeaderReport().getErrorCount() == 0);
+            validationReport.getHeaderReport().getValidationStatus().equals("Complete")
+                && validationReport.getHeaderReport().getErrorCount() == 0);
       }
     }
   }
 
-  public static void ascertainValidationResource(TestCaseMessage testCaseMessage, String messageText) {
+  public static void ascertainValidationResource(TestCaseMessage testCaseMessage,
+      String messageText) {
     ValidationResource validationResource = null;
     HL7Reader hl7Reader = new HL7Reader(messageText);
     if (hl7Reader.advanceToSegment("MSH")) {

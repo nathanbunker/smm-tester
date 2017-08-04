@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester.connectors;
 
@@ -12,7 +11,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -22,8 +20,7 @@ import javax.net.ssl.SSLSocketFactory;
  * 
  * @author nathan
  */
-public class EnvisionConnector extends HttpConnector
-{
+public class EnvisionConnector extends HttpConnector {
 
   private static final String HL7_REQUEST_RESULT_START_TAG = "<ExecuteHL7MessageResult>";
   private static final String HL7_REQUEST_RESULT_END_TAG = "</ExecuteHL7MessageResult>";
@@ -80,30 +77,8 @@ public class EnvisionConnector extends HttpConnector
 
   }
 
-  private static class CharSequence
-  {
-    int char1 = 0;
-    int char2 = 0;
-    int char3 = 0;
-    String replace = "";
-  }
-
-  private static List<CharSequence> charSequenceList = new ArrayList<EnvisionConnector.CharSequence>();
-
-  static {
-    CharSequence charSeq1 = new CharSequence();
-    charSeq1.char1 = 226;
-    charSeq1.char2 = 8364;
-    charSeq1.char3 = 65533;
-    charSequenceList.add(charSeq1);
-    CharSequence charSeq2 = new CharSequence();
-    charSeq2.char1 = 226;
-    charSeq2.char2 = 8364;
-    charSeq2.char3 = 339;
-    charSequenceList.add(charSeq2);
-  }
-
-  public String sendRequest(String request, ClientConnection conn, boolean debug) throws IOException {
+  public String sendRequest(String request, ClientConnection conn, boolean debug)
+      throws IOException {
     StringBuilder debugLog = null;
     if (debug) {
       debugLog = new StringBuilder();
@@ -179,7 +154,8 @@ public class EnvisionConnector extends HttpConnector
     int startPos = responseString.indexOf(HL7_REQUEST_RESULT_START_TAG);
     int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG);
     if (startPos > 0 && endPos > startPos) {
-      responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
+      responseString =
+          responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
       responseString = responseString.replaceAll("\\Q&amp;\\E", "&");
       response = new StringBuilder();
       boolean found226 = false;
@@ -216,7 +192,8 @@ public class EnvisionConnector extends HttpConnector
 
   }
 
-  public String sendConnectivityTest(String message, ClientConnection conn, boolean debug) throws IOException {
+  public String sendConnectivityTest(String message, ClientConnection conn, boolean debug)
+      throws IOException {
     if (useSoap11) {
       return "Not supported";
     }
@@ -273,7 +250,8 @@ public class EnvisionConnector extends HttpConnector
       int startPos = responseString.indexOf(HL7_CONNECTIVITY_RESULT_START_TAG);
       int endPos = responseString.indexOf(HL7_CONNECTIVITY_RESULT_END_TAG);
       if (startPos > 0 && endPos > startPos) {
-        responseString = responseString.substring(startPos + HL7_CONNECTIVITY_RESULT_START_TAG.length(), endPos);
+        responseString =
+            responseString.substring(startPos + HL7_CONNECTIVITY_RESULT_START_TAG.length(), endPos);
         response = new StringBuilder(responseString);
       }
       if (debug) {

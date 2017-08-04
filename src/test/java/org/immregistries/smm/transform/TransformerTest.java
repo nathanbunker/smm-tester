@@ -1,11 +1,5 @@
 package org.immregistries.smm.transform;
 
-import static org.junit.Assert.assertEquals;
-
-import org.immregistries.smm.tester.certify.CertifyRunner;
-import org.immregistries.smm.transform.TestCaseMessage;
-import org.immregistries.smm.transform.TransformRequest;
-import org.immregistries.smm.transform.Transformer;
 import org.junit.Test;
 
 import junit.framework.TestCase;

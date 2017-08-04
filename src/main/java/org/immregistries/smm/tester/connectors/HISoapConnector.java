@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester.connectors;
 
@@ -21,8 +20,7 @@ import org.immregistries.smm.tester.connectors.hi.SubmitSingleMessageResponse;
  * 
  * @author nathan
  */
-public class HISoapConnector extends HttpConnector
-{
+public class HISoapConnector extends HttpConnector {
 
   private Client_Service clientService = null;
 
@@ -34,10 +32,9 @@ public class HISoapConnector extends HttpConnector
   }
 
   @Override
-  public String submitMessage(String message, boolean debug) throws Exception
-  {
-    
-    
+  public String submitMessage(String message, boolean debug) throws Exception {
+
+
     SubmitSingleMessage submitSingleMessage = new SubmitSingleMessage();
     SubmitSingleMessageRequestType request = new SubmitSingleMessageRequestType();
     request.setFacilityID(this.facilityid);
@@ -51,8 +48,7 @@ public class HISoapConnector extends HttpConnector
   }
 
   @Override
-  public String connectivityTest(String message) throws Exception
-  {
+  public String connectivityTest(String message) throws Exception {
     ConnectivityTestRequestType request = new ConnectivityTestRequestType();
     request.setEchoBack(message);
     ConnectivityTest connectivityTest = new ConnectivityTest();
@@ -62,14 +58,12 @@ public class HISoapConnector extends HttpConnector
   }
 
   @Override
-  protected void makeScriptAdditions(StringBuilder sb)
-  {
+  protected void makeScriptAdditions(StringBuilder sb) {
     // do nothing
   }
 
   @Override
-  protected void setupFields(List<String> fields)
-  {
+  protected void setupFields(List<String> fields) {
     super.setupFields(fields);
 
   }

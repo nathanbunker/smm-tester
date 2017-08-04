@@ -1,7 +1,5 @@
 package org.immregistries.smm.tester.manager;
 
-import org.immregistries.smm.tester.manager.HL7Reader;
-
 import junit.framework.TestCase;
 
 public class TestHL7Reader extends TestCase

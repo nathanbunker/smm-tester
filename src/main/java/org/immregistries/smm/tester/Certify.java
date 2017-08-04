@@ -8,8 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Certify
-{
+public class Certify {
 
   public static final String FIELD_SEX = "SEX";
   public static final String FIELD_RACE = "RACE";
@@ -50,8 +49,7 @@ public class Certify
 
   private static Map<String, List<String[]>> conceptMap = null;
 
-  public static class CertifyItem
-  {
+  public static class CertifyItem {
     private String code = "";
     private String label = "";
     private String table = "";
@@ -85,7 +83,8 @@ public class Certify
   protected void init() {
     try {
       conceptMap = new HashMap<String, List<String[]>>();
-      BufferedReader in = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("certify.txt")));
+      BufferedReader in =
+          new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("certify.txt")));
       String line;
       while ((line = in.readLine()) != null) {
         int equals = line.indexOf("=");
@@ -124,11 +123,10 @@ public class Certify
 
     return certifyItemList;
   }
-  
+
   private String readValue(String[] values, int pos) {
     if (pos < values.length) {
-      if (values[pos] == null)
-      {
+      if (values[pos] == null) {
         return "";
       }
       return values[pos].trim();

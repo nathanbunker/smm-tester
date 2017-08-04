@@ -1,7 +1,6 @@
 package org.immregistries.smm.tester.manager.nist;
 
-public class Assertion
-{
+public class Assertion {
   private String type = "";
   private String result = "";
   private String severity = "";

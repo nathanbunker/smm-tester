@@ -4,8 +4,7 @@ import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 
-public class IN_CHIRP_Template extends ConnectionTemplate
-{
+public class IN_CHIRP_Template extends ConnectionTemplate {
   public IN_CHIRP_Template() {
     super("IN CHIRP");
   }

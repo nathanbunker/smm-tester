@@ -10,15 +10,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSocketFactory;
-
 import org.apache.commons.codec.binary.Base64;
 
-public class MAConnector extends HttpConnector
-{
+public class MAConnector extends HttpConnector {
 
-  private static final String HL7_REQUEST_RESULT_START_TAG = "<urn:return>"; // "<urn:submitSingleMessageResponse xmlns:urn=\"urn:cdc:iisb:2011\">";
+  private static final String HL7_REQUEST_RESULT_START_TAG = "<urn:return>"; // "<urn:submitSingleMessageResponse
+                                                                             // xmlns:urn=\"urn:cdc:iisb:2011\">";
   private static final String HL7_REQUEST_RESULT_END_TAG = "</urn:return>"; // "</urn:submitSingleMessageResponse>";
 
   protected MAConnector(String label, String url, String type) {
@@ -73,52 +70,53 @@ public class MAConnector extends HttpConnector
 
   }
 
-  public String sendRequest(String request, ClientConnection conn, boolean debug) throws IOException {
+  public String sendRequest(String request, ClientConnection conn, boolean debug)
+      throws IOException {
     StringBuilder debugLog = null;
     if (debug) {
       debugLog = new StringBuilder();
     }
     try {
-      //SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
-      SSLSocketFactory factory = null;
-
+      // SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
       HttpURLConnection urlConn;
       DataOutputStream printout;
       InputStreamReader input = null;
       URL url = new URL(conn.getUrl());
 
       urlConn = (HttpURLConnection) url.openConnection();
-      if (factory != null && urlConn instanceof HttpsURLConnection) {
-        ((HttpsURLConnection) urlConn).setSSLSocketFactory(factory);
-      }
 
       urlConn.setRequestMethod("POST");
 
-      urlConn.setRequestProperty("Content-Type",
-          "application/soap+xml; charset=utf-8");
+      urlConn.setRequestProperty("Content-Type", "application/soap+xml; charset=utf-8");
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       String content;
 
       StringBuilder sb = new StringBuilder();
       sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-      sb.append("<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:urn=\"urn:cdc:iisb:2011\">");
+      sb.append(
+          "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:urn=\"urn:cdc:iisb:2011\">");
       sb.append("  <soap:Header>");
-      sb.append("    <wsse:Security xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\">");
-      sb.append("      <wsse:UsernameToken wsu:Id=\"UsernameToken-100\" xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\">");
+      sb.append(
+          "    <wsse:Security xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\">");
+      sb.append(
+          "      <wsse:UsernameToken wsu:Id=\"UsernameToken-100\" xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\">");
       sb.append("        <wsse:Username>" + userid + "</wsse:Username>");
-      sb.append("        <wsse:Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText\">" + password + "</wsse:Password>");
+      sb.append(
+          "        <wsse:Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText\">"
+              + password + "</wsse:Password>");
       sb.append("      </wsse:UsernameToken>");
       sb.append("    </wsse:Security>");
       sb.append("  </soap:Header>");
       sb.append("  <soap:Body>");
       sb.append("    <urn:submitSingleMessage>");
       sb.append("      <urn:facilityID>" + facilityid + "</urn:facilityID> ");
-      sb.append("      <urn:hl7Message>" + new String(Base64.encodeBase64(request.getBytes())) + "</urn:hl7Message>");
+      sb.append("      <urn:hl7Message>" + new String(Base64.encodeBase64(request.getBytes()))
+          + "</urn:hl7Message>");
       sb.append("    </urn:submitSingleMessage>");
       sb.append("  </soap:Body>");
       sb.append("</soap:Envelope>");
-      
+
       content = sb.toString();
 
       printout = new DataOutputStream(urlConn.getOutputStream());
@@ -138,7 +136,8 @@ public class MAConnector extends HttpConnector
       int startPos = responseString.indexOf(HL7_REQUEST_RESULT_START_TAG);
       int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG);
       if (startPos > 0 && endPos > startPos) {
-        responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
+        responseString =
+            responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
         response = new StringBuilder(responseString);
       }
       response = new StringBuilder(new String(Base64.decodeBase64(response.toString().getBytes())));
@@ -149,18 +148,14 @@ public class MAConnector extends HttpConnector
       }
       return response.toString();
     } catch (IOException e) {
-      if (true) {
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter out = new PrintWriter(stringWriter);
-        out.println("Unable to complete request");
-        e.printStackTrace(out);
-        out.println("DEBUG LOG: \r");
-        out.println(debugLog);
-        out.close();
-        return stringWriter.toString();
-      } else {
-        throw e;
-      }
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter out = new PrintWriter(stringWriter);
+      out.println("Unable to complete request");
+      e.printStackTrace(out);
+      out.println("DEBUG LOG: \r");
+      out.println(debugLog);
+      out.close();
+      return stringWriter.toString();
     }
 
   }

@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester.connectors;
 
@@ -32,8 +31,7 @@ import javax.net.ssl.X509TrustManager;
  * 
  * @author nathan
  */
-public class HttpConnector extends Connector
-{
+public class HttpConnector extends Connector {
 
   public static enum AuthenticationMethod {
     FORM, HEADER, BASIC
@@ -52,7 +50,8 @@ public class HttpConnector extends Connector
   private boolean stripXML = false;
   private boolean deduplicate = false;
   private AuthenticationMethod authenticationMethod = AuthenticationMethod.FORM;
-  private String[] fieldNames = { FIELD_USERID, FIELD_PASSWORD, FIELD_FACILITYID, FIELD_MESSAGEDATA, FIELD_OTHERID };
+  private String[] fieldNames =
+      {FIELD_USERID, FIELD_PASSWORD, FIELD_FACILITYID, FIELD_MESSAGEDATA, FIELD_OTHERID};
 
   public AuthenticationMethod getAuthenticationMethod() {
     return authenticationMethod;
@@ -155,7 +154,8 @@ public class HttpConnector extends Connector
 
   }
 
-  public String sendRequest(String request, ClientConnection conn, boolean debug) throws IOException {
+  public String sendRequest(String request, ClientConnection conn, boolean debug)
+      throws IOException {
     StringBuilder debugLog = null;
     if (debug) {
       debugLog = new StringBuilder();
@@ -193,7 +193,8 @@ public class HttpConnector extends Connector
         urlConn.setRequestProperty(fieldNames[FACILITYID], conn.getFacilityId());
       } else if (authenticationMethod == AuthenticationMethod.BASIC) {
         if (debug) {
-          debugLog.append(">> Sending credentials using HTTP Basic Authentication to " + conn.getUrl() + "\r");
+          debugLog.append(
+              ">> Sending credentials using HTTP Basic Authentication to " + conn.getUrl() + "\r");
           debugLog.append(">> Username = '" + conn.getUserId() + "' \r");
           debugLog.append(">> Password = '" + conn.getPassword() + "' \r");
         }
@@ -202,7 +203,8 @@ public class HttpConnector extends Connector
         content = request;
       } else {
         if (debug) {
-          debugLog.append(">> Sending credentials using standard XML Encoded form to " + conn.getUrl() + "\r");
+          debugLog.append(
+              ">> Sending credentials using standard XML Encoded form to " + conn.getUrl() + "\r");
           debugLog.append(">> " + fieldNames[USERID] + " = '" + conn.getUserId() + "' \r");
           debugLog.append(">> " + fieldNames[PASSWORD] + " = '" + conn.getPassword() + "' \r");
           debugLog.append(">> " + fieldNames[FACILITYID] + " = '" + conn.getFacilityId() + "' \r");
@@ -293,7 +295,8 @@ public class HttpConnector extends Connector
 
         kmf.init(keyStore, getKeyStorePassword().toCharArray());
 
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        TrustManagerFactory tmf =
+            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         tmf.init(keyStore);
         X509TrustManager defaultTrustManager = (X509TrustManager) tmf.getTrustManagers()[0];
         if (debug) {
@@ -302,17 +305,17 @@ public class HttpConnector extends Connector
 
         TrustManager[] trustAllCerts = null;
         if (disableServerCertificateCheck) {
-          trustAllCerts = new TrustManager[] { new X509TrustManager() {
+          trustAllCerts = new TrustManager[] {new X509TrustManager() {
             public java.security.cert.X509Certificate[] getAcceptedIssuers() {
               return new X509Certificate[0];
             }
 
-            public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-            }
+            public void checkClientTrusted(java.security.cert.X509Certificate[] certs,
+                String authType) {}
 
-            public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-            }
-          } };
+            public void checkServerTrusted(java.security.cert.X509Certificate[] certs,
+                String authType) {}
+          }};
         }
 
         SSLContext context = SSLContext.getInstance("TLS");
@@ -335,14 +338,14 @@ public class HttpConnector extends Connector
     return factory;
   }
 
-  public void doDebug(StringBuilder debugLog, KeyStore keyStore, X509TrustManager defaultTrustManager)
-      throws KeyStoreException {
+  public void doDebug(StringBuilder debugLog, KeyStore keyStore,
+      X509TrustManager defaultTrustManager) throws KeyStoreException {
     debugLog.append("Trusted certificates: \r");
     for (X509Certificate cert : defaultTrustManager.getAcceptedIssuers()) {
       String certStr = "S:" + cert.getSubjectDN().getName() + " I:" + cert.getIssuerDN().getName();
       debugLog.append(" + " + certStr + " \r");
     }
-    Enumeration enumeration = keyStore.aliases();
+    Enumeration<String> enumeration = keyStore.aliases();
     while (enumeration.hasMoreElements()) {
       String alias = (String) enumeration.nextElement();
       debugLog.append(" - " + alias);

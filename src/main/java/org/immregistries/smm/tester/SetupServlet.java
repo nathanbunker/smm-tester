@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester;
 
@@ -26,21 +25,16 @@ import org.immregistries.smm.transform.TestCaseMessage;
  * 
  * @author nathan
  */
-public class SetupServlet extends ClientServlet
-{
+@SuppressWarnings("serial")
+public class SetupServlet extends ClientServlet {
 
   /**
-   * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-   * methods.
+   * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
   protected void processRequest(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
@@ -50,18 +44,19 @@ public class SetupServlet extends ClientServlet
     if (username == null) {
       response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
     } else {
-      
+
       String testSetSelected = request.getParameter("testSet");
       if (testSetSelected != null) {
         CreateTestCaseServlet.setTestSetSelected(testSetSelected, session);
       } else {
         testSetSelected = CreateTestCaseServlet.getTestSetSelected(session);
       }
-      
+
       String testScript = request.getParameter("testScript");
       List<TestCaseMessage> selectedTestCaseMessageList = null;
       if (testScript == null) {
-        selectedTestCaseMessageList = getSelectedTestCaseMessageList(testSetSelected, request, session);
+        selectedTestCaseMessageList =
+            getSelectedTestCaseMessageList(testSetSelected, request, session);
         if (selectedTestCaseMessageList != null) {
           TestCaseServlet.sortTestCaseMessageList(selectedTestCaseMessageList);
           session.setAttribute("selectedTestCaseMessageList", selectedTestCaseMessageList);
@@ -90,12 +85,13 @@ public class SetupServlet extends ClientServlet
       PrintWriter out = response.getWriter();
       try {
         printHtmlHead(out, MENU_HEADER_SETUP, request);
-       
-        Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(testSetSelected,
-            CreateTestCaseServlet.getTestCaseMessageMapMap(session));
+
+        Map<String, TestCaseMessage> testCaseMessageMap =
+            CreateTestCaseServlet.getTestCaseMessageMap(testSetSelected,
+                CreateTestCaseServlet.getTestCaseMessageMapMap(session));
         List<String> testCaseNumberList = new ArrayList<String>(testCaseMessageMap.keySet());
-        List<String> testCaseSetList = new ArrayList<String>(
-            CreateTestCaseServlet.getTestCaseMessageMapMap(session).keySet());
+        List<String> testCaseSetList =
+            new ArrayList<String>(CreateTestCaseServlet.getTestCaseMessageMapMap(session).keySet());
         if (testCaseNumberList.size() > 0 || testCaseSetList.size() > 1) {
           out.println("<h2>Test Cases Saved</h2>");
           out.println("<form action=\"SetupServlet\" method=\"POST\">");
@@ -106,15 +102,16 @@ public class SetupServlet extends ClientServlet
             out.println("    <td>");
             out.println("      <select name=\"testSet\" onChange=\"this.form.submit()\">");
             Collections.sort(testCaseSetList);
-            out.println("              <option value=\"\"" + (testSetSelected == null ? " selected=\"true\"" : "")
+            out.println("              <option value=\"\""
+                + (testSetSelected == null ? " selected=\"true\"" : "")
                 + ">-- Not Specified --</option>");
             for (String testCaseSet : testCaseSetList) {
               if (testCaseSet.equals("")) {
                 continue;
               }
               boolean selected = testSetSelected != null && testSetSelected.equals(testCaseSet);
-              out.println("              <option value=\"" + testCaseSet + "\"" + (selected ? " selected=\"true\"" : "")
-                  + ">" + testCaseSet + "</option>");
+              out.println("              <option value=\"" + testCaseSet + "\""
+                  + (selected ? " selected=\"true\"" : "") + ">" + testCaseSet + "</option>");
             }
             out.println("      </select>");
             out.println("    </td>");
@@ -127,7 +124,9 @@ public class SetupServlet extends ClientServlet
             if (testCaseNumberList.size() > 0) {
               out.println("      <select name=\"testCaseNumber\" multiple=\"true\" size=\"7\">");
               Collections.sort(testCaseNumberList);
-              Set<String> testCaseNumberSelectedSet = (Set<String>) session.getAttribute("testCaseNumberSelectedList");
+              @SuppressWarnings("unchecked")
+              Set<String> testCaseNumberSelectedSet =
+                  (Set<String>) session.getAttribute("testCaseNumberSelectedList");
               if (testCaseNumberSelectedSet == null) {
                 testCaseNumberSelectedSet = new HashSet<String>();
               }
@@ -152,7 +151,8 @@ public class SetupServlet extends ClientServlet
             out.println("      <input type=\"submit\" name=\"action\" value=\"Edit\">");
             out.println("      <input type=\"submit\" name=\"action\" value=\"Test\">");
             out.println("      <input type=\"submit\" name=\"action\" value=\"Download Script\">");
-            out.println("      <input type=\"submit\" name=\"action\" value=\"Download HL7 Only\">");
+            out.println(
+                "      <input type=\"submit\" name=\"action\" value=\"Download HL7 Only\">");
             out.println("    </td>");
             out.println("  </tr>");
           }
@@ -164,7 +164,8 @@ public class SetupServlet extends ClientServlet
         out.println("<table border=\"0\">");
         out.println("  <tr>");
         out.println("    <td valign=\"top\">Script</td>");
-        out.println("    <td><textarea name=\"testScript\" cols=\"60\" rows=\"7\" wrap=\"off\"></textarea></td>");
+        out.println(
+            "    <td><textarea name=\"testScript\" cols=\"60\" rows=\"7\" wrap=\"off\"></textarea></td>");
         out.println("  </tr>");
         out.println("  <tr>");
         out.println("    <td colspan=\"2\" align=\"right\">");
@@ -177,7 +178,8 @@ public class SetupServlet extends ClientServlet
         out.println("</table>");
 
         out.println("<h2>Create new Test Case</h2>");
-        out.println("<p>Create a sample test case based on a specific NIST certification test story. </p>");
+        out.println(
+            "<p>Create a sample test case based on a specific NIST certification test story. </p>");
         out.println("<form action=\"CreateTestCaseServlet\">");
         out.println("<table>");
         out.println("  <tr>");
@@ -201,11 +203,13 @@ public class SetupServlet extends ClientServlet
     }
   }
 
-  protected static List<TestCaseMessage> getSelectedTestCaseMessageList(String testCaseSet, HttpServletRequest request,
-      HttpSession session) {
+  protected static List<TestCaseMessage> getSelectedTestCaseMessageList(String testCaseSet,
+      HttpServletRequest request, HttpSession session) {
     List<TestCaseMessage> testCaseMessageList = new ArrayList<TestCaseMessage>();
-    Set<String> testCaseNumberSelectedSet = TestCaseServlet.setTestCaseNumberSelectedSet(request, session);
-    Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(testCaseSet, CreateTestCaseServlet.getTestCaseMessageMapMap(session));
+    Set<String> testCaseNumberSelectedSet =
+        TestCaseServlet.setTestCaseNumberSelectedSet(request, session);
+    Map<String, TestCaseMessage> testCaseMessageMap = CreateTestCaseServlet.getTestCaseMessageMap(
+        testCaseSet, CreateTestCaseServlet.getTestCaseMessageMapMap(session));
     for (String testCaseNumber : testCaseNumberSelectedSet) {
       TestCaseMessage tcm = testCaseMessageMap.get(testCaseNumber);
       if (testCaseNumberSelectedSet.contains(tcm.getTestCaseNumber())) {
@@ -221,7 +225,9 @@ public class SetupServlet extends ClientServlet
       List<TestCaseMessage> testCaseMessageList = TestCaseServlet.parseAndAddTestCases(testScript);
       for (TestCaseMessage testCaseMessage : testCaseMessageList) {
         if (!testCaseMessage.getTestCaseNumber().equals("")) {
-          CreateTestCaseServlet.getTestCaseMessageMap(testCaseMessage.getTestCaseSet(), CreateTestCaseServlet.getTestCaseMessageMapMap(session))
+          CreateTestCaseServlet
+              .getTestCaseMessageMap(testCaseMessage.getTestCaseSet(),
+                  CreateTestCaseServlet.getTestCaseMessageMapMap(session))
               .put(testCaseMessage.getTestCaseNumber(), testCaseMessage);
         }
       }
@@ -238,34 +244,28 @@ public class SetupServlet extends ClientServlet
   /**
    * Handles the HTTP <code>GET</code> method.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     processRequest(request, response);
   }
 
   /**
    * Handles the HTTP <code>POST</code> method.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
   @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     processRequest(request, response);
   }
 

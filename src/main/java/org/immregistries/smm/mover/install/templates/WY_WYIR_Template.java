@@ -4,8 +4,7 @@ import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 
-public class WY_WYIR_Template extends ConnectionTemplate
-{
+public class WY_WYIR_Template extends ConnectionTemplate {
   public WY_WYIR_Template() {
     super("WY WyIR");
   }

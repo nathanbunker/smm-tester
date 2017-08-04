@@ -1,13 +1,11 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester.connectors;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -18,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -48,11 +44,14 @@ public abstract class Connector {
 
   protected abstract void setupFields(List<String> fields);
 
-  protected static Connector addConnector(String label, String type, String url, String userid, String otherid, String facilityid, String password,
-      String keyStorePassword, String enableTimeStart, String enableTimeEnd, AckAnalyzer.AckType ackType, TransferType transferType,
-      List<String> fields, String customTransformations, String assesmentTransformations, List<Connector> connectors, String purpose,
-      int tchForecastTesterSoftwareId, int tchForecastTesterTaskGroupId, String rxaFilterFacilityId, Set<String> queryResponseFieldsNotReturnedSet,
-      Map<String, String> scenarioTransformationsMap, boolean disableServerCertificateCheck, String aartPublicIdCode, String aartAccessPasscode)
+  protected static Connector addConnector(String label, String type, String url, String userid,
+      String otherid, String facilityid, String password, String keyStorePassword,
+      String enableTimeStart, String enableTimeEnd, AckAnalyzer.AckType ackType,
+      TransferType transferType, List<String> fields, String customTransformations,
+      String assesmentTransformations, List<Connector> connectors, String purpose,
+      int tchForecastTesterSoftwareId, int tchForecastTesterTaskGroupId, String rxaFilterFacilityId,
+      Set<String> queryResponseFieldsNotReturnedSet, Map<String, String> scenarioTransformationsMap,
+      boolean disableServerCertificateCheck, String aartPublicIdCode, String aartAccessPasscode)
       throws Exception {
     if (!label.equals("") && !type.equals("")) {
       Connector connector = null;
@@ -458,10 +457,6 @@ public abstract class Connector {
     return label;
   }
 
-  public boolean isVerify() {
-    return url.indexOf("VerifyServlet") > 0;
-  }
-
   public Connector(String label, String type) {
     this.label = label;
     this.type = type;
@@ -587,9 +582,11 @@ public abstract class Connector {
     while ((line = in.readLine()) != null) {
       line = line.trim();
       if (line.startsWith("Connection")) {
-        addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart, enableTimeEnd, ackType, transferType,
-            fields, customTransformations, assesmentTransformations, connectors, purpose, tchForecastTesterSoftwareId, tchForecastTesterTaskGroupId,
-            rxaFilterFacilityId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap, disableServerCertificateCheck, aartPublicIdCode,
+        addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword,
+            enableTimeStart, enableTimeEnd, ackType, transferType, fields, customTransformations,
+            assesmentTransformations, connectors, purpose, tchForecastTesterSoftwareId,
+            tchForecastTesterTaskGroupId, rxaFilterFacilityId, queryResponseFieldsNotReturnedSet,
+            scenarioTransformationsMap, disableServerCertificateCheck, aartPublicIdCode,
             aartAccessPasscode);
         label = "";
         purpose = "";
@@ -640,7 +637,8 @@ public abstract class Connector {
         facilityid = readValue(line);
       } else if (line.startsWith("Disable Certificate Check:")) {
         String s = readValue(line);
-        disableServerCertificateCheck = s.equalsIgnoreCase("y") || s.equalsIgnoreCase("yes") || s.equalsIgnoreCase("true");
+        disableServerCertificateCheck =
+            s.equalsIgnoreCase("y") || s.equalsIgnoreCase("yes") || s.equalsIgnoreCase("true");
       } else if (line.startsWith("Key Store Password:")) {
         keyStorePassword = PasswordEncryptUtil.decrypt(readValue(line));
       } else if (line.startsWith("Cause Issues:")) {
@@ -700,9 +698,11 @@ public abstract class Connector {
       }
 
     }
-    addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword, enableTimeStart, enableTimeEnd, ackType, transferType,
-        fields, customTransformations, assesmentTransformations, connectors, purpose, tchForecastTesterSoftwareId, tchForecastTesterTaskGroupId,
-        rxaFilterFacilityId, queryResponseFieldsNotReturnedSet, scenarioTransformationsMap, disableServerCertificateCheck, aartPublicIdCode,
+    addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword,
+        enableTimeStart, enableTimeEnd, ackType, transferType, fields, customTransformations,
+        assesmentTransformations, connectors, purpose, tchForecastTesterSoftwareId,
+        tchForecastTesterTaskGroupId, rxaFilterFacilityId, queryResponseFieldsNotReturnedSet,
+        scenarioTransformationsMap, disableServerCertificateCheck, aartPublicIdCode,
         aartAccessPasscode);
     return connectors;
   }
@@ -715,53 +715,9 @@ public abstract class Connector {
     return line.substring(pos + 1).trim();
   }
 
-  // private SSLServerSocket createServerSocketFromKeyStore()
-  // {
-  // SSLServerSocketFactory ssf; // server socket factory
-  // SSLServerSocket skt; // server socket
-  //
-  // // LOAD EXTERNAL KEY STORE
-  // KeyStore mstkst;
-  // try
-  // {
-  // mstkst = KeyStore.getInstance("jks");
-  // mstkst.load(new FileInputStream(keyStoreFile),
-  // keyStorePassword.toCharArray());
-  // } catch (java.security.GeneralSecurityException thr)
-  // {
-  // throw new IOException("Cannot load keystore (" + thr + ")");
-  // }
-  //
-  // // CREATE EPHEMERAL KEYSTORE FOR THIS SOCKET USING DESIRED CERTIFICATE
-  // try
-  // {
-  // SSLContext ctx = SSLContext.getInstance("TLS");
-  // KeyManagerFactory kmf =
-  // KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-  // KeyStore sktkst;
-  // char[] blkpwd = new char[0];
-  //
-  // sktkst = KeyStore.getInstance("jks");
-  // sktkst.load(null, blkpwd);
-  // sktkst.setKeyEntry(svrctfals, mstkst.getKey(svrctfals, blkpwd), blkpwd,
-  // mstkst.getCertificateChain(svrctfals));
-  // kmf.init(sktkst, blkpwd);
-  // ctx.init(kmf.getKeyManagers(), null, null);
-  // ssf = ctx.getServerSocketFactory();
-  // } catch (java.security.GeneralSecurityException thr)
-  // {
-  // throw new IOException("Cannot create secure socket (" + thr + ")");
-  // }
-  //
-  // // CREATE AND INITIALIZE SERVER SOCKET
-  // skt = (SSLServerSocket) ssf.createServerSocket(prt, bcklog, adr);
-  // return skt;
-  // }
-
   protected static class SavingTrustManager implements X509TrustManager {
 
     private final X509TrustManager tm;
-    private X509Certificate[] chain;
 
     SavingTrustManager(X509TrustManager tm) {
       this.tm = tm;
@@ -771,44 +727,19 @@ public abstract class Connector {
       return tm.getAcceptedIssuers();
     }
 
-    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+    public void checkClientTrusted(X509Certificate[] chain, String authType)
+        throws CertificateException {
       throw new UnsupportedOperationException();
     }
 
-    public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-      this.chain = chain;
+    public void checkServerTrusted(X509Certificate[] chain, String authType)
+        throws CertificateException {
       tm.checkServerTrusted(chain, authType);
     }
 
   }
 
   protected static TrustManager[] trustAllCerts;
-
-  private static void installTrustAllCerts() {
-    if (trustAllCerts != null) {
-      trustAllCerts = new TrustManager[] { new X509TrustManager() {
-        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-          return null;
-        }
-
-        public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-        }
-
-        public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-        }
-      } };
-    }
-
-    // Install the all-trusting trust manager
-    try {
-      SSLContext sc = SSLContext.getInstance("SSL");
-      sc.init(null, trustAllCerts, new java.security.SecureRandom());
-      HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-    } catch (GeneralSecurityException e) {
-      // ignore
-    }
-
-  }
 
   protected static String replaceAmpersand(String s) {
     String s2 = "";

@@ -67,7 +67,8 @@ public class CompareManager {
     {
       String vxuMiddleName = vxuReader.getValue(5, 2);
       String rpsMiddleName = rspReader.getValue(5, 2);
-      if (!rpsMiddleName.equals("") && !vxuMiddleName.equals("") && !vxuMiddleName.equalsIgnoreCase(rpsMiddleName)) {
+      if (!rpsMiddleName.equals("") && !vxuMiddleName.equals("")
+          && !vxuMiddleName.equalsIgnoreCase(rpsMiddleName)) {
         return false;
       }
     }
@@ -81,7 +82,8 @@ public class CompareManager {
     while (vxuReader.advanceToSegment("RXA")) {
       String cvxCode = vxuReader.getValue(5);
       String adminDate = trunc(vxuReader.getValue(3), 8);
-      if (cvxCode.equals("") || adminDate.equals("") || cvxCode.equals("999") || cvxCode.equals("998")) {
+      if (cvxCode.equals("") || adminDate.equals("") || cvxCode.equals("999")
+          || cvxCode.equals("998")) {
         continue;
       }
       if (adminDate.length() > 8) {
@@ -154,28 +156,6 @@ public class CompareManager {
     comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 1, "MA", 5));
     comparison.setPriorityLevel(Comparison.PRIORITY_LEVEL_OPTIONAL);
     comparisonList.add(comparison);
-
-    if (false) {
-      comparison = new Comparison();
-      comparison.setHl7FieldName("PID-3.4");
-      comparison.setFieldLabel("MRN Assigning Authority");
-      comparison.setOriginalValue(vxuReader.getValueBySearchingRepeats(3, 4, "MR", 5));
-      if (comparison.getOriginalValue().equals("")) {
-        comparison.setOriginalValue(vxuReader.getValueBySearchingRepeats(3, 4, "PI", 5));
-        if (comparison.getOriginalValue().equals("")) {
-          comparison.setOriginalValue(vxuReader.getValueBySearchingRepeats(3, 4, "", 5));
-        }
-      }
-      comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 4, "MR", 5));
-      if (comparison.getReturnedValue().equals("")) {
-        comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 4, "PI", 5));
-        if (comparison.getReturnedValue().equals("")) {
-          comparison.setReturnedValue(rspReader.getValueBySearchingRepeats(3, 4, "", 5));
-        }
-      }
-      comparison.setPriorityLevel(Comparison.PRIORITY_LEVEL_OPTIONAL);
-      comparisonList.add(comparison);
-    }
 
     comparison = new Comparison();
     comparison.setHl7FieldName("PID-5.1");
@@ -693,8 +673,8 @@ public class CompareManager {
         comparisonList.add(comparison);
       }
 
-      rspReader.advanceToSegment("RXR", new String[] { "RXA", "OBX", "ORC" });
-      vxuReader.advanceToSegment("RXR", new String[] { "RXA", "OBX", "ORC" });
+      rspReader.advanceToSegment("RXR", new String[] {"RXA", "OBX", "ORC"});
+      vxuReader.advanceToSegment("RXR", new String[] {"RXA", "OBX", "ORC"});
 
       comparison = new Comparison();
       comparison.setHl7FieldName("RXR-2 #" + count);
@@ -708,7 +688,7 @@ public class CompareManager {
       String rspObsSubId = "";
       int obxCount = 0;
       int rspReaderSegmentPosition = rspReader.getSegmentPosition();
-      while (vxuReader.advanceToSegment("OBX", new String[] { "RXA", "ORC" })) {
+      while (vxuReader.advanceToSegment("OBX", new String[] {"RXA", "ORC"})) {
         obxCount++;
         String obsId = vxuReader.getValue(3);
 
@@ -720,7 +700,7 @@ public class CompareManager {
 
         if (obsId.equals("64994-7")) {
           rspReader.gotoSegmentPosition(rspReaderSegmentPosition);
-          while (rspReader.advanceToSegment("OBX", new String[] { "RXA", "ORC" })) {
+          while (rspReader.advanceToSegment("OBX", new String[] {"RXA", "ORC"})) {
             if (rspReader.getValue(3).equals(obsId)) {
               break;
             }
@@ -736,7 +716,7 @@ public class CompareManager {
 
         } else if (obsId.equals("30945-0")) {
           rspReader.gotoSegmentPosition(rspReaderSegmentPosition);
-          while (rspReader.advanceToSegment("OBX", new String[] { "RXA", "ORC" })) {
+          while (rspReader.advanceToSegment("OBX", new String[] {"RXA", "ORC"})) {
             if (rspReader.getValue(3).equals(obsId)) {
               break;
             }
@@ -760,7 +740,7 @@ public class CompareManager {
 
         } else if (obsId.equals("31044-1")) {
           rspReader.gotoSegmentPosition(rspReaderSegmentPosition);
-          while (rspReader.advanceToSegment("OBX", new String[] { "RXA", "ORC" })) {
+          while (rspReader.advanceToSegment("OBX", new String[] {"RXA", "ORC"})) {
             if (rspReader.getValue(3).equals(obsId)) {
               break;
             }
@@ -776,9 +756,10 @@ public class CompareManager {
 
         } else if (obsId.equals("30956-7")) {
           rspReader.gotoSegmentPosition(rspReaderSegmentPosition);
-          while (rspReader.advanceToSegment("OBX", new String[] { "RXA", "ORC" })) {
+          while (rspReader.advanceToSegment("OBX", new String[] {"RXA", "ORC"})) {
             String newRspObsSubId = rspReader.getValue(4);
-            if (rspReader.getValue(3).equals(obsId) && (rspObsSubId.equals("") || newRspObsSubId.equals(rspObsSubId))
+            if (rspReader.getValue(3).equals(obsId)
+                && (rspObsSubId.equals("") || newRspObsSubId.equals(rspObsSubId))
                 && rspReader.getValue(5).equals(vxuReader.getValue(5))) {
               break;
             }
@@ -795,9 +776,10 @@ public class CompareManager {
 
         } else if (obsId.equals("29768-9")) {
           rspReader.gotoSegmentPosition(rspReaderSegmentPosition);
-          while (rspReader.advanceToSegment("OBX", new String[] { "RXA", "ORC" })) {
+          while (rspReader.advanceToSegment("OBX", new String[] {"RXA", "ORC"})) {
             String newRspObsSubId = rspReader.getValue(4);
-            if (rspReader.getValue(3).equals(obsId) && (rspObsSubId.equals("") || newRspObsSubId.equals(rspObsSubId))) {
+            if (rspReader.getValue(3).equals(obsId)
+                && (rspObsSubId.equals("") || newRspObsSubId.equals(rspObsSubId))) {
               break;
             }
           }
@@ -813,9 +795,10 @@ public class CompareManager {
           rspObsSubId = rspReader.getValue(4);
         } else if (obsId.equals("29769-7")) {
           rspReader.gotoSegmentPosition(rspReaderSegmentPosition);
-          while (rspReader.advanceToSegment("OBX", new String[] { "RXA", "ORC" })) {
+          while (rspReader.advanceToSegment("OBX", new String[] {"RXA", "ORC"})) {
             String newRspObsSubId = rspReader.getValue(4);
-            if (rspReader.getValue(3).equals(obsId) && (rspObsSubId.equals("") || newRspObsSubId.equals(rspObsSubId))) {
+            if (rspReader.getValue(3).equals(obsId)
+                && (rspObsSubId.equals("") || newRspObsSubId.equals(rspObsSubId))) {
               break;
             }
           }
@@ -831,7 +814,7 @@ public class CompareManager {
 
         } else if (cvxCode.equals("998") && obsId.equals("59784-9")) {
           rspReader.gotoSegmentPosition(rspReaderSegmentPosition);
-          while (rspReader.advanceToSegment("OBX", new String[] { "RXA", "ORC" })) {
+          while (rspReader.advanceToSegment("OBX", new String[] {"RXA", "ORC"})) {
             if (rspReader.getValue(3).equals(obsId)) {
               break;
             }

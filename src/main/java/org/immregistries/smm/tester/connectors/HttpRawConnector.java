@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester.connectors;
 
@@ -45,8 +44,7 @@ public class HttpRawConnector extends Connector {
   }
 
   @Override
-  protected void setupFields(List<String> fields) {
-  }
+  protected void setupFields(List<String> fields) {}
 
   @Override
   public String submitMessage(String message, boolean debug) throws Exception {
@@ -74,7 +72,8 @@ public class HttpRawConnector extends Connector {
 
   }
 
-  public String sendRequest(String request, ClientConnection conn, boolean debug) throws IOException {
+  public String sendRequest(String request, ClientConnection conn, boolean debug)
+      throws IOException {
     StringBuilder debugLog = null;
     if (debug) {
       debugLog = new StringBuilder();
@@ -167,7 +166,8 @@ public class HttpRawConnector extends Connector {
 
         kmf.init(keyStore, getKeyStorePassword().toCharArray());
 
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        TrustManagerFactory tmf =
+            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         tmf.init(keyStore);
         X509TrustManager defaultTrustManager = (X509TrustManager) tmf.getTrustManagers()[0];
         if (debug) {
@@ -176,17 +176,17 @@ public class HttpRawConnector extends Connector {
 
         TrustManager[] trustAllCerts = null;
         if (disableServerCertificateCheck) {
-          trustAllCerts = new TrustManager[] { new X509TrustManager() {
+          trustAllCerts = new TrustManager[] {new X509TrustManager() {
             public java.security.cert.X509Certificate[] getAcceptedIssuers() {
               return new X509Certificate[0];
             }
 
-            public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-            }
+            public void checkClientTrusted(java.security.cert.X509Certificate[] certs,
+                String authType) {}
 
-            public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-            }
-          } };
+            public void checkServerTrusted(java.security.cert.X509Certificate[] certs,
+                String authType) {}
+          }};
         }
 
         SSLContext context = SSLContext.getInstance("TLS");
@@ -209,13 +209,14 @@ public class HttpRawConnector extends Connector {
     return factory;
   }
 
-  public void doDebug(StringBuilder debugLog, KeyStore keyStore, X509TrustManager defaultTrustManager) throws KeyStoreException {
+  public void doDebug(StringBuilder debugLog, KeyStore keyStore,
+      X509TrustManager defaultTrustManager) throws KeyStoreException {
     debugLog.append("Trusted certificates: \r");
     for (X509Certificate cert : defaultTrustManager.getAcceptedIssuers()) {
       String certStr = "S:" + cert.getSubjectDN().getName() + " I:" + cert.getIssuerDN().getName();
       debugLog.append(" + " + certStr + " \r");
     }
-    Enumeration enumeration = keyStore.aliases();
+    Enumeration<String> enumeration = keyStore.aliases();
     while (enumeration.hasMoreElements()) {
       String alias = (String) enumeration.nextElement();
       debugLog.append(" - " + alias);

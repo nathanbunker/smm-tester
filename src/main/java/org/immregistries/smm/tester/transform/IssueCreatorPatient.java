@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester.transform;
 
@@ -10,10 +9,10 @@ import org.immregistries.smm.transform.TestCaseMessage;
  * 
  * @author nathan/
  */
-public class IssueCreatorPatient extends IssueCreator
-{
+public class IssueCreatorPatient extends IssueCreator {
 
-  public static String createTransforms(TestCaseMessage testCaseMessage, Issue issue, String transforms, boolean not) {
+  public static String createTransforms(TestCaseMessage testCaseMessage, Issue issue,
+      String transforms, boolean not) {
     boolean is = !not;
     if (issue == Issue.PATIENT_ADDRESS_IS_MISSING) {
       if (is) {
@@ -50,7 +49,8 @@ public class IssueCreatorPatient extends IssueCreator
       }
     } else if (issue == Issue.PATIENT_ADDRESS_CITY_IS_TOO_LONG) {
       if (is) {
-        transforms += "PID-11.3=This name is way too long for a city so long that it might cause some systems to crash as the max number of chars is fifty\n";
+        transforms +=
+            "PID-11.3=This name is way too long for a city so long that it might cause some systems to crash as the max number of chars is fifty\n";
         testCaseMessage.setHasIssue(true);
       }
     } else if (issue == Issue.PATIENT_ADDRESS_COUNTRY_IS_DEPRECATED) {
@@ -143,8 +143,7 @@ public class IssueCreatorPatient extends IssueCreator
         transforms += "PID-11.5=\n";
       }
     } else if (issue == Issue.PATIENT_ALIAS_IS_MISSING) {
-      if (is)
-      {
+      if (is) {
         testCaseMessage.setHasIssue(true);
       }
     } else if (issue == Issue.PATIENT_BIRTH_DATE_IS_AFTER_SUBMISSION) {
@@ -485,7 +484,8 @@ public class IssueCreatorPatient extends IssueCreator
     } else if (issue == Issue.PATIENT_MIDDLE_NAME_IS_TOO_LONG) {
       if (is) {
         testCaseMessage.setHasIssue(true);
-        transforms += "PID-5.3=The middle name is much to long as the field is defined to have no more than thirty characters\n";
+        transforms +=
+            "PID-5.3=The middle name is much to long as the field is defined to have no more than thirty characters\n";
       }
     } else if (issue == Issue.PATIENT_NAME_LAST_IS_UNEXPECTEDLY_LONG) {
       if (is) {
@@ -495,7 +495,8 @@ public class IssueCreatorPatient extends IssueCreator
     } else if (issue == Issue.PATIENT_NAME_LAST_IS_TOO_LONG) {
       if (is) {
         testCaseMessage.setHasIssue(true);
-        transforms += "PID-5.3=The last name is much to long as the field is defined to have no more than fifty characters so this will probably be rejected or truncated\n";
+        transforms +=
+            "PID-5.3=The last name is much to long as the field is defined to have no more than fifty characters so this will probably be rejected or truncated\n";
       }
     } else if (issue == Issue.PATIENT_NAME_FIRST_IS_UNEXPECTEDLY_LONG) {
       if (is) {
@@ -505,7 +506,8 @@ public class IssueCreatorPatient extends IssueCreator
     } else if (issue == Issue.PATIENT_NAME_FIRST_IS_TOO_LONG) {
       if (is) {
         testCaseMessage.setHasIssue(true);
-        transforms += "PID-5.3=The first name is much to long as the field is defined to have no more than thirty characters so this will probably be rejected or truncated\n";
+        transforms +=
+            "PID-5.3=The first name is much to long as the field is defined to have no more than thirty characters so this will probably be rejected or truncated\n";
       }
     } else if (issue == Issue.PATIENT_MIDDLE_NAME_MAY_BE_INITIAL) {
       if (is) {
@@ -525,7 +527,8 @@ public class IssueCreatorPatient extends IssueCreator
     } else if (issue == Issue.PATIENT_MOTHERS_MAIDEN_NAME_IS_UNEXPECTEDLY_LONG) {
       if (is) {
         testCaseMessage.setHasIssue(true);
-        transforms += "PID-6=This mothers maiden name is much longer than expected and should be rejected or truncated on recieving systems as the maximum normative length in HL7 fifty characters\n";
+        transforms +=
+            "PID-6=This mothers maiden name is much longer than expected and should be rejected or truncated on recieving systems as the maximum normative length in HL7 fifty characters\n";
       }
     } else if (issue == Issue.PATIENT_NAME_MAY_BE_TEMPORARY_NEWBORN_NAME) {
       if (is) {
@@ -789,8 +792,7 @@ public class IssueCreatorPatient extends IssueCreator
         transforms += "PD1-16=A\n";
       }
     } else if (issue == Issue.PATIENT_SSN_IS_INVALID) {
-      if(is)
-      {
+      if (is) {
         testCaseMessage.setHasIssue(true);
         transforms += "PID-3.1#2=123456789\n";
         transforms += "PID-3.4#2=USA\n";

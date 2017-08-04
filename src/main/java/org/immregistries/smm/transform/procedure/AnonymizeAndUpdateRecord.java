@@ -60,7 +60,8 @@ public class AnonymizeAndUpdateRecord implements ProcedureInterface {
     }
   }
 
-  public void doProcedure(TransformRequest transformRequest, LinkedList<String> tokenList) throws IOException {
+  public void doProcedure(TransformRequest transformRequest, LinkedList<String> tokenList)
+      throws IOException {
     try {
       patient = transfomer.setupPatient(PatientType.BABY);
     } catch (Throwable e) {
@@ -80,7 +81,8 @@ public class AnonymizeAndUpdateRecord implements ProcedureInterface {
           isGirl = !readValue(fields, 8).equals("M");
           updateName(fields, 5, 1, patient.getLastName());
           updateName(fields, 5, 2, isGirl ? patient.getGirlName() : patient.getBoyName());
-          updateName(fields, 5, 3, isGirl ? patient.getMiddleNameGirl() : patient.getMiddleNameBoy());
+          updateName(fields, 5, 3,
+              isGirl ? patient.getMiddleNameGirl() : patient.getMiddleNameBoy());
           updateName(fields, 6, 1, patient.getMotherMaidenName());
           updateName(fields, 6, 2, patient.getMotherName());
           update(fields, 11, 1, patient.getStreet());
@@ -239,7 +241,8 @@ public class AnonymizeAndUpdateRecord implements ProcedureInterface {
           posEnd = posAmpersand;
         }
       }
-      fields[fieldPos] = originalValue.substring(0, posStart) + updateValue + originalValue.substring(posEnd);
+      fields[fieldPos] =
+          originalValue.substring(0, posStart) + updateValue + originalValue.substring(posEnd);
     }
   }
 
@@ -284,7 +287,8 @@ public class AnonymizeAndUpdateRecord implements ProcedureInterface {
   }
 
   private List<String[]> readMessage(TransformRequest transformRequest) throws IOException {
-    BufferedReader inResult = new BufferedReader(new StringReader(transformRequest.getResultText()));
+    BufferedReader inResult =
+        new BufferedReader(new StringReader(transformRequest.getResultText()));
     String lineResult;
     List<String[]> fieldsList = new ArrayList<String[]>();
     while ((lineResult = inResult.readLine()) != null) {
@@ -298,7 +302,8 @@ public class AnonymizeAndUpdateRecord implements ProcedureInterface {
     return fieldsList;
   }
 
-  private void putMessageBackTogether(TransformRequest transformRequest, List<String[]> fieldsList) {
+  private void putMessageBackTogether(TransformRequest transformRequest,
+      List<String[]> fieldsList) {
     String finalMessage = "";
     for (String[] fields : fieldsList) {
       if (fields[0].length() == 3) {

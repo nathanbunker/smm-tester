@@ -2,8 +2,7 @@ package org.immregistries.smm.cdc;
 
 import java.io.PrintWriter;
 
-public class ProcessorNoWhitespace extends Processor
-{
+public class ProcessorNoWhitespace extends Processor {
 
   public ProcessorNoWhitespace(CDCWSDLServer server) {
     super(server);
@@ -66,7 +65,8 @@ public class ProcessorNoWhitespace extends Processor
 
   public void doPrintException(PrintWriter out, MessageTooLargeFault messageTooLargeFault) {
     out.print("<?xml version='1.0' encoding='UTF-8'?>");
-    out.print("<Envelope xmlns=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:junk=\"urn:foo:bar\">");
+    out.print(
+        "<Envelope xmlns=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:junk=\"urn:foo:bar\">");
     out.print("<Body>");
     out.print("<Fault>");
     out.print("<Code>");
@@ -89,7 +89,8 @@ public class ProcessorNoWhitespace extends Processor
     out.print("</Envelope>");
   }
 
-  public void doPrintException(PrintWriter out, UnsupportedOperationFault unsupportedOperationFault) {
+  public void doPrintException(PrintWriter out,
+      UnsupportedOperationFault unsupportedOperationFault) {
     out.print("<?xml version='1.0' encoding='UTF-8'?>");
     out.print("<Envelope xmlns=\"http://www.w3.org/2003/05/soap-envelope\">");
     out.print("<Body>");
@@ -98,7 +99,8 @@ public class ProcessorNoWhitespace extends Processor
     out.print("<Value>" + unsupportedOperationFault.getFaultCodeValue() + "</Value>");
     out.print("</Code>");
     out.print("<Reason>");
-    out.print("<Text xml:lang=\"en\">" + unsupportedOperationFault.getFaultReasonText() + "</Text>");
+    out.print(
+        "<Text xml:lang=\"en\">" + unsupportedOperationFault.getFaultReasonText() + "</Text>");
     out.print("</Reason>");
     out.print("<Detail>");
     out.print("<UnsupportedOperationFault xmlns=\"urn:cdc:iisb:2011\">");

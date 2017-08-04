@@ -2,8 +2,7 @@ package org.immregistries.smm.transform;
 
 import org.immregistries.smm.tester.run.ErrorType;
 
-public class TestError
-{
+public class TestError {
   private ErrorType errorType = ErrorType.UNKNOWN;
   private String description = "";
 

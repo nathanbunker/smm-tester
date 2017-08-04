@@ -17,8 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class StatusReporter extends Thread implements RemoteConnectionReportingInterface
-{
+public class StatusReporter extends Thread implements RemoteConnectionReportingInterface {
   public static final int SEND_MAXIMUM_INTERVAL = 15 * 60 * 1000;
   public static final int SEND_MINIMUM_INTERVAL = 30 * 1000;
 
@@ -39,7 +38,8 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
 
   public StatusReporter(SendData sendData) throws MalformedURLException {
     this.sendData = sendData;
-    if (ConnectionManager.getSupportCenterUrl() != null && !ConnectionManager.getSupportCenterUrl().equals("none")
+    if (ConnectionManager.getSupportCenterUrl() != null
+        && !ConnectionManager.getSupportCenterUrl().equals("none")
         && !ConnectionManager.getSupportCenterUrl().equals("")) {
       supportCenterUrl = new URL(ConnectionManager.getSupportCenterUrl());
     }
@@ -74,8 +74,8 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
     }
   }
 
-  public void registerFile(String fileName, SendData.ScanStatus scanStatus, int messageCount, int sentCount,
-      int errorCount) {
+  public void registerFile(String fileName, SendData.ScanStatus scanStatus, int messageCount,
+      int sentCount, int errorCount) {
     synchronized (statusFileMap) {
       StatusFile statusFile = statusFileMap.get(fileName);
       if (statusFile == null) {
@@ -203,7 +203,8 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
         if (response == null) {
           exception = new IOException("Unexpected response from support center (null) ");
         } else if (response.equals("STOP")) {
-          exception = new IOException("Support center requested that all updates be STOPPED, stopping status reporter");
+          exception = new IOException(
+              "Support center requested that all updates be STOPPED, stopping status reporter");
           notStopped = false;
         } else if (response.equals("OK")) {
           lastUpdate = System.currentTimeMillis();
@@ -219,7 +220,8 @@ public class StatusReporter extends Thread implements RemoteConnectionReportingI
     return exception;
   }
 
-  private void append(String field, String value, StringBuilder content) throws UnsupportedEncodingException {
+  private void append(String field, String value, StringBuilder content)
+      throws UnsupportedEncodingException {
     content.append(field);
     content.append("=");
     content.append(URLEncoder.encode(value, "UTF-8"));

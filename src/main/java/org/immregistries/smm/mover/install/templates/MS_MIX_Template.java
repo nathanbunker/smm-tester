@@ -5,8 +5,7 @@ import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 import org.immregistries.smm.tester.connectors.HttpConnector;
 
-public class MS_MIX_Template extends ConnectionTemplate
-{
+public class MS_MIX_Template extends ConnectionTemplate {
   public MS_MIX_Template() {
     super("MS MIX");
   }

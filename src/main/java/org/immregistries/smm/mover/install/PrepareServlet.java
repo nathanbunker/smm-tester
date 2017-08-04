@@ -6,19 +6,18 @@ import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.immregistries.smm.mover.install.templates.ConnectionTemplateFactory;
 
-public class PrepareServlet extends ClientServlet
-{
+@SuppressWarnings("serial")
+public class PrepareServlet extends ClientServlet {
   protected static final String FOLDER_NAME = "folderName";
   protected static final String TEMPLATE_NAME = "templateName";
   protected static final String BASE_DIR = "baseDir";
 
   @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    HttpSession session = req.getSession(true);
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+      throws ServletException, IOException {
     resp.setContentType("text/html;charset=UTF-8");
     PrintWriter out = new PrintWriter(resp.getOutputStream());
     SoftwareType softwareType = getSoftwareType(req);
@@ -37,7 +36,8 @@ public class PrepareServlet extends ClientServlet
       if (softwareType == SoftwareType.TESTER) {
         out.println("      <td>Create or identify the Root Data Folder. </td>");
       } else {
-        out.println("      <td>Create or identify the <a href=\"https://openimmunizationsoftware.net/interfacing/smm/installation.html#SMMRootFolder\" target=\"blank\">SMM Root Folder</a>. </td>");
+        out.println(
+            "      <td>Create or identify the <a href=\"https://openimmunizationsoftware.net/interfacing/smm/installation.html#SMMRootFolder\" target=\"blank\">SMM Root Folder</a>. </td>");
       }
       out.println("    </tr>");
 
@@ -45,13 +45,14 @@ public class PrepareServlet extends ClientServlet
       out.println("      <td>&nbsp;</td>");
       out.println("      <td>&nbsp;</td>");
       String exampleBaseDir = softwareType == SoftwareType.TESTER ? "C:\\tester\\" : "C:\\smm\\";
-      out.println("      <td>Copy and paste full name of this folder: <input type=\"text\" name=\"" + BASE_DIR
-          + "\" size=\"30\" value=\"" + exampleBaseDir + "\"></td>");
+      out.println("      <td>Copy and paste full name of this folder: <input type=\"text\" name=\""
+          + BASE_DIR + "\" size=\"30\" value=\"" + exampleBaseDir + "\"></td>");
       out.println("    </tr>");
       out.println("    <tr>");
       out.println("      <td>B.</td>");
       out.println("      <td><input type=\"checkbox\" name=\"\"/></td>");
-      out.println("      <td>Create or identify the <a href=\"https://openimmunizationsoftware.net/interfacing/smm/installation.html#IISTransferFolder\" target=\"blank\">IIS Transfer Folder</a>.</td>");
+      out.println(
+          "      <td>Create or identify the <a href=\"https://openimmunizationsoftware.net/interfacing/smm/installation.html#IISTransferFolder\" target=\"blank\">IIS Transfer Folder</a>.</td>");
       out.println("    </tr>");
       out.println("    <tr>");
       out.println("      <td>&nbsp;</td>");
@@ -71,7 +72,8 @@ public class PrepareServlet extends ClientServlet
       out.println("      </td>");
       out.println("    </tr>");
       out.println("    <tr>");
-      out.println("      <td colspan=\"3\">You should now be ready for the next step: <input type=\"submit\" value=\"Step 2: Configure\"/></td>");
+      out.println(
+          "      <td colspan=\"3\">You should now be ready for the next step: <input type=\"submit\" value=\"Step 2: Configure\"/></td>");
       out.println("    </tr>");
       out.println("  </table>");
       out.println("</form>");

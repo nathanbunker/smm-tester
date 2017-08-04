@@ -1,8 +1,8 @@
 package org.immregistries.smm.tester.manager.nist;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import org.immregistries.smm.tester.manager.nist.Assertion;
 import org.immregistries.smm.tester.run.TestRunner;
 import org.immregistries.smm.transform.TestCaseMessage;
 import org.junit.Test;
@@ -61,19 +61,6 @@ public class NISTValidatorTest
 
   
   private static final String MN1 = "FHS|^~\\&|MIIC|MIIC||ATEST|20160222164438.919||1738749.response\r"+
-"BHS|^~\\&|MIIC|MIIC||ATEST|20160222164438.920\r"+
-"MSH|^~\\&|MIIC|MIIC||ATEST|20160222164438.920||ACK|V85I1.1Y3|P|2.5.1\r"+
-"MSA|AE|V85I1.1Y3\r"+
-"ERR||PV1^1^20|102^Data type error^HL70357|E||||NO CLIENT FINANCIAL CLASS VALUES SPECIFIED. PV1 SEGMENT IGNORED.\r"+
-"ERR||RXA^1^0|100^Segment sequence error^HL70357|E||||MISSING_OBX_FOR_RXA\r"+
-"ERR||RXA^2^0|100^Segment sequence error^HL70357|E||||MISSING_OBX_FOR_RXA\r"+
-"ERR||OBX^2^3^0|204^Unknown key identifier^HL70357|E||||INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\r"+
-"ERR||OBX^3^3^0|204^Unknown key identifier^HL70357|E||||INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\r"+
-"ERR||OBX^4^3^0|204^Unknown key identifier^HL70357|E||||INACCURATE OR MISSING OBSERVATION VALUE. NO VALUE STORED.\r"+
-"BTS|1\r"+
-"FTS|1\r";
-
-  private static final String MN2 = "FHS|^~\\&|MIIC|MIIC||ATEST|20160222164438.919||1738749.response\r"+
 "BHS|^~\\&|MIIC|MIIC||ATEST|20160222164438.920\r"+
 "MSH|^~\\&|MIIC|MIIC||ATEST|20160222164438.920||ACK|V85I1.1Y3|P|2.5.1\r"+
 "MSA|AE|V85I1.1Y3\r"+

@@ -1,7 +1,5 @@
 package org.immregistries.smm.tester;
 
-import org.immregistries.smm.tester.PasswordEncryptUtil;
-
 import junit.framework.TestCase;
 
 public class TestPasswordEncryptUtil extends TestCase

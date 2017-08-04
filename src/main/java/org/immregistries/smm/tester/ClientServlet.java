@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester;
 
@@ -44,9 +43,12 @@ public class ClientServlet extends HttpServlet {
     out.println("        else if (document.layers) ");
     out.println("          elem = document.layers[whichLayer]");
     out.println("        vis = elem.style;");
-    out.println("        if (vis.display == '' && elem.offsetWidth != undefined && elem.offsetHeight != undefined) ");
-    out.println("          vis.display = (elem.offsetWidth != 0 && elem.offsetHeight != 0) ? 'block' : 'none';");
-    out.println("        vis.display = (vis.display == '' || vis.display == 'block') ? 'none' : 'block';");
+    out.println(
+        "        if (vis.display == '' && elem.offsetWidth != undefined && elem.offsetHeight != undefined) ");
+    out.println(
+        "          vis.display = (elem.offsetWidth != 0 && elem.offsetHeight != 0) ? 'block' : 'none';");
+    out.println(
+        "        vis.display = (vis.display == '' || vis.display == 'block') ? 'none' : 'block';");
     out.println("      }");
     out.println("    </script>");
     out.println("  </head>");
@@ -63,10 +65,13 @@ public class ClientServlet extends HttpServlet {
     return makeMenu(request, "&nbsp;");
   }
 
-  private static final String[][] MENU_LOGGED_OUT = { { Authenticate.APP_DEFAULT_HOME, MENU_HEADER_HOME }, { "LoginServlet", "Login" } };
-  private static final String[][] MENU_LOGGED_IN = { { Authenticate.APP_DEFAULT_HOME, MENU_HEADER_HOME }, { "ConnectServlet", MENU_HEADER_CONNECT },
-      { "SetupServlet", MENU_HEADER_SETUP }, { "CreateTestCaseServlet", MENU_HEADER_EDIT }, { "SubmitServlet", MENU_HEADER_SEND },
-      { "CertifyServlet", MENU_HEADER_TEST }, { "LoginServlet?action=Logout", "Logout" } };
+  private static final String[][] MENU_LOGGED_OUT =
+      {{Authenticate.APP_DEFAULT_HOME, MENU_HEADER_HOME}, {"LoginServlet", "Login"}};
+  private static final String[][] MENU_LOGGED_IN =
+      {{Authenticate.APP_DEFAULT_HOME, MENU_HEADER_HOME}, {"ConnectServlet", MENU_HEADER_CONNECT},
+          {"SetupServlet", MENU_HEADER_SETUP}, {"CreateTestCaseServlet", MENU_HEADER_EDIT},
+          {"SubmitServlet", MENU_HEADER_SEND}, {"CertifyServlet", MENU_HEADER_TEST},
+          {"LoginServlet?action=Logout", "Logout"}};
 
   public static String makeMenu(HttpServletRequest request, String title) {
     boolean loggedIn = false;
@@ -113,8 +118,9 @@ public class ClientServlet extends HttpServlet {
   }
 
   public static void printFooter(PrintWriter out) {
-    out.println("    <p>American Immunization Registry Association - IIS HL7 Tester &amp; Simple Message Mover - Version " + SoftwareVersion.VERSION
-        + "</p>");
+    out.println(
+        "    <p>American Immunization Registry Association - IIS HL7 Tester &amp; Simple Message Mover - Version "
+            + SoftwareVersion.VERSION + "</p>");
 
   }
 
@@ -143,15 +149,18 @@ public class ClientServlet extends HttpServlet {
     out.println("       pre {background:#F7F3E8; padding:4px; margin: 2px; }");
     out.println("       a:link {  text-decoration:none; color: #2B3E42;}");
     out.println("       a:visited { text-decoration:none; color: #2B3E42;}");
-    out.println("       a:hover {  background: #FFFFFF; text-decoration:none; border-style: solid; border-color: #2B3E42; border-width: 1px; color: #2B3E42;}");
+    out.println(
+        "       a:hover {  background: #FFFFFF; text-decoration:none; border-style: solid; border-color: #2B3E42; border-width: 1px; color: #2B3E42;}");
     out.println("       a:active {text-decoration:none; color: #2B3E42; }");
-    out.println("       .boxLinks { margin-bottom: 2px; font-size: 12pt; font-weight: normal; align-content: flex-end; height: 50px; border-width: 1px; border-style: solid; background-color:#AAAAAA; color: #2B3E42; padding-left: 3px; padding-right: 3px; border-color: #222222;");
+    out.println(
+        "       .boxLinks { margin-bottom: 2px; font-size: 12pt; font-weight: normal; align-content: flex-end; height: 50px; border-width: 1px; border-style: solid; background-color:#AAAAAA; color: #2B3E42; padding-left: 3px; padding-right: 3px; border-color: #222222;");
     out.println("    </style>");
     out.println("  </head>");
     out.println("  <body>");
   }
 
-  public Connector printServiceSelector(HttpServletRequest request, HttpSession session, PrintWriter out) {
+  public Connector printServiceSelector(HttpServletRequest request, HttpSession session,
+      PrintWriter out) {
     Connector connectorSelected = null;
     int id = 0;
     if (request.getParameter("id") != null && !request.getParameter("id").equals("")) {
@@ -175,10 +184,12 @@ public class ClientServlet extends HttpServlet {
       for (Connector connector : connectors) {
         i++;
         if (id == i) {
-          out.println("              <option value=\"" + i + "\" selected=\"true\">" + connector.getLabelDisplay() + "</option>");
+          out.println("              <option value=\"" + i + "\" selected=\"true\">"
+              + connector.getLabelDisplay() + "</option>");
           connectorSelected = connector;
         } else {
-          out.println("              <option value=\"" + i + "\">" + connector.getLabelDisplay() + "</option>");
+          out.println("              <option value=\"" + i + "\">" + connector.getLabelDisplay()
+              + "</option>");
         }
       }
       out.println("            </select>");

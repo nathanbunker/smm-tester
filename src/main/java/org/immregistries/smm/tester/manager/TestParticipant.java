@@ -1,7 +1,6 @@
 package org.immregistries.smm.tester.manager;
 
-public class TestParticipant
-{
+public class TestParticipant {
   private String organizationName = "";
   private String folderName = "";
   private String queryType = "";
@@ -10,7 +9,7 @@ public class TestParticipant
   private String profileUsageId = "";
   private String transport = "";
   private String publicIdCode = "";
-  
+
   public String getPublicIdCode() {
     return publicIdCode;
   }

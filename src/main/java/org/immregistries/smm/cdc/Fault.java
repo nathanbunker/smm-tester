@@ -10,10 +10,9 @@ public class Fault extends Exception {
   private String detailCode = "";
   private String detailReason = "";
   private String detailDetail = "";
- 
-  
-  public Fault(String message, Throwable throwable, FaultDetail faultDetail)
-  {
+
+
+  public Fault(String message, Throwable throwable, FaultDetail faultDetail) {
     super(message, throwable);
     faultCodeValue = "Sender";
     faultReasonText = message;
@@ -26,9 +25,8 @@ public class Fault extends Exception {
     detailDetail = sw.toString();
   }
 
-  
-  public Fault(String message, FaultDetail faultDetail)
-  {
+
+  public Fault(String message, FaultDetail faultDetail) {
     super(message);
     faultCodeValue = "Sender";
     faultReasonText = message;
@@ -40,30 +38,39 @@ public class Fault extends Exception {
   public String getFaultCodeValue() {
     return faultCodeValue;
   }
+
   public void setFaultCodeValue(String faultCodeValue) {
     this.faultCodeValue = faultCodeValue;
   }
+
   public String getFaultReasonText() {
     return faultReasonText;
   }
+
   public void setFaultReasonText(String faultReasonText) {
     this.faultReasonText = faultReasonText;
   }
+
   public String getDetailCode() {
     return detailCode;
   }
+
   public void setDetailCode(String detailCode) {
     this.detailCode = detailCode;
   }
+
   public String getDetailReason() {
     return detailReason;
   }
+
   public void setDetailReason(String detailReason) {
     this.detailReason = detailReason;
   }
+
   public String getDetailDetail() {
     return detailDetail;
   }
+
   public void setDetailDetail(String detailDetail) {
     this.detailDetail = detailDetail;
   }

@@ -3,8 +3,7 @@ package org.immregistries.smm.mover.install.templates;
 import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
 
-public abstract class ConnectionTemplate
-{
+public abstract class ConnectionTemplate {
   protected static final String _PROD = " Prod";
   protected static final String _TEST = " Test";
 

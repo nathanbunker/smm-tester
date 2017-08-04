@@ -1,7 +1,6 @@
 package org.immregistries.smm.transform.forecast;
 
-public class ForecastTestEvent
-{
+public class ForecastTestEvent {
 
   private int testEventId = 0;
   private String label = "";

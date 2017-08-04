@@ -6,8 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ConnectionTemplateFactory
-{
+public class ConnectionTemplateFactory {
   private static Map<String, ConnectionTemplate> connectionTemplateMap = null;
 
   protected static void register(String name, ConnectionTemplate connectionTemplate) {
@@ -68,7 +67,8 @@ public class ConnectionTemplateFactory
 
   public static List<String> getConnectionTemplateNames() {
     init();
-    ArrayList<String> connectionTemplateNamesList = new ArrayList<String>(connectionTemplateMap.keySet());
+    ArrayList<String> connectionTemplateNamesList =
+        new ArrayList<String>(connectionTemplateMap.keySet());
     Collections.sort(connectionTemplateNamesList);
     return connectionTemplateNamesList;
   }

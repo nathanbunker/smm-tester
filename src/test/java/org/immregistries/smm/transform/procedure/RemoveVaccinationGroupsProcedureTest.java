@@ -1,10 +1,10 @@
 package org.immregistries.smm.transform.procedure;
 
-import junit.framework.TestCase;
-
 import org.immregistries.smm.transform.TestCaseMessage;
 import org.immregistries.smm.transform.Transformer;
 import org.junit.Test;
+
+import junit.framework.TestCase;
 
 public class RemoveVaccinationGroupsProcedureTest extends TestCase {
 

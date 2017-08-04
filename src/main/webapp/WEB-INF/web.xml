@@ -72,10 +72,6 @@
     <servlet-class>org.immregistries.smm.tester.CatchServlet</servlet-class>
   </servlet>
   <servlet>
-    <servlet-name>VerifyServlet</servlet-name>
-    <servlet-class>org.immregistries.smm.tester.VerifyServlet</servlet-class>
-  </servlet>
-  <servlet>
     <servlet-name>DashboardServlet</servlet-name>
     <servlet-class>org.immregistries.smm.tester.DashboardServlet</servlet-class>
   </servlet>
@@ -86,14 +82,6 @@
   <servlet>
     <servlet-name>ModifyMessageServlet</servlet-name>
     <servlet-class>org.immregistries.smm.tester.ModifyMessageServlet</servlet-class>
-  </servlet>
-  <servlet>
-    <servlet-name>DocumentServlet</servlet-name>
-    <servlet-class>org.immregistries.smm.tester.DocumentServlet</servlet-class>
-  </servlet>
-  <servlet>
-    <servlet-name>ConformanceServlet</servlet-name>
-    <servlet-class>org.immregistries.smm.tester.ConformanceServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>DownloadServlet</servlet-name>
@@ -168,20 +156,8 @@
     <url-pattern>/CreateTestCaseServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-    <servlet-name>VerifyServlet</servlet-name>
-    <url-pattern>/VerifyServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
     <servlet-name>GenerateDataServlet</servlet-name>
     <url-pattern>/GenerateDataServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>DocumentServlet</servlet-name>
-    <url-pattern>/DocumentServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>ConformanceServlet</servlet-name>
-    <url-pattern>/ConformanceServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>DownloadServlet</servlet-name>

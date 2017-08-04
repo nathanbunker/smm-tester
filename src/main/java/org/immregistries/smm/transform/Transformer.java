@@ -24,7 +24,6 @@ import org.immregistries.smm.tester.transform.IssueCreator;
 import org.immregistries.smm.tester.transform.Patient;
 import org.immregistries.smm.transform.procedure.ProcedureFactory;
 import org.immregistries.smm.transform.procedure.ProcedureInterface;
-import org.springframework.util.WeakReferenceMonitor.ReleaseListener;
 
 /**
  * 
@@ -1191,13 +1190,10 @@ public class Transformer {
     BufferedReader inResult = new BufferedReader(new StringReader(resultText));
     resultText = "";
     String lineResult;
-    int repeatCount = 0;
     while ((lineResult = inResult.readLine()) != null) {
       lineResult = lineResult.trim();
       if (lineResult.length() > 0) {
         String finalLine = "";
-        int writtenPos = 0;
-        String possibleLine = "";
 
         String headerStart = null;
         if (lineResult.startsWith("MSH|^~\\&|") || lineResult.startsWith("BHS|^~\\&|")
@@ -1385,7 +1381,6 @@ public class Transformer {
 
   public void doRunProcedure(TransformRequest transformRequest) throws IOException {
     String line = transformRequest.getLine();
-    String resultText = transformRequest.getResultText();
     line = line.substring(RUN_PROCEDURE.length()).trim();
     if (line.length() >= 3) {
       int nextSpace = line.indexOf(" ");
@@ -2431,18 +2426,6 @@ public class Transformer {
     return "";
   }
 
-  private boolean hasSegment(String segmentName, final String resultText) throws IOException {
-    BufferedReader inResult = new BufferedReader(new StringReader(resultText));
-    String lineResult;
-    while ((lineResult = inResult.readLine()) != null) {
-      lineResult = lineResult.trim();
-      if (lineResult.startsWith(segmentName)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   public static Transform readHL7Reference(String ref) {
     return readHL7Reference(ref, ref.length());
   }
@@ -2468,8 +2451,7 @@ public class Transformer {
         all = true;
       }
     }
-    if (!all)
-    {
+    if (!all) {
       int posStar = line.indexOf("*");
       if (posStar >= 0 && posStar < endOfInput) {
         line = line.substring(0, posStar) + line.substring(posStar + 1);
