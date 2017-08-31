@@ -168,10 +168,6 @@
     <url-pattern>/TestCaseMessageViewerServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-    <servlet-name>CompareServlet</servlet-name>
-    <url-pattern>/CompareServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
     <servlet-name>TestCaseServlet</servlet-name>
     <url-pattern>/testCase</url-pattern>
   </servlet-mapping>
