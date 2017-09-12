@@ -14,18 +14,19 @@ import javax.servlet.http.HttpSession;
 import org.immregistries.smm.mover.SendData;
 import org.immregistries.smm.tester.certify.CertifyRunner;
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.manager.TestParticipant;
 import org.immregistries.smm.tester.query.QueryRunner;
 
 public class QueryServlet extends ClientServlet {
 
   @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+      throws ServletException, IOException {
     this.doGet(req, resp);
   }
 
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
@@ -51,6 +52,10 @@ public class QueryServlet extends ClientServlet {
     }
     String userName = request.getParameter(QueryRunner.USER_NAME);
     String password = request.getParameter(QueryRunner.PASSWORD);
+    String transforms = request.getParameter(QueryRunner.TRANSFORMS);
+    if (request.getParameter("save") == null) {
+      transforms = null;
+    }
 
     QueryRunner queryRunner = (QueryRunner) session.getAttribute("queryRunner");
 
@@ -59,7 +64,8 @@ public class QueryServlet extends ClientServlet {
       if (action.equals("Start") && isReadyToStart(queryRunner)) {
         List<Connector> connectors = ConnectServlet.getConnectors(session);
         int id = Integer.parseInt(request.getParameter("id"));
-        queryRunner = new QueryRunner(connectors.get(id - 1), user.getSendData(), queryType, filenamesSelectedSet, userName, password);
+        queryRunner = new QueryRunner(connectors.get(id - 1), user.getSendData(), queryType,
+            filenamesSelectedSet, userName, password, transforms);
         queryRunner.start();
         session.setAttribute("queryRunner", queryRunner);
       } else if (action.equals("Stop") && queryRunner != null) {
@@ -77,16 +83,26 @@ public class QueryServlet extends ClientServlet {
       out.println("        <tr>");
       out.println("          <td>Query Type</td>");
       out.println("          <td>");
-      out.println("            <input type=\"radio\" name=\"queryType\" value=\"" + CertifyRunner.QUERY_TYPE_NONE + "\""
-          + (queryType.equals(CertifyRunner.QUERY_TYPE_NONE) ? " checked=\"true\"" : "") + "> " + CertifyRunner.QUERY_TYPE_NONE + "");
-      out.println("            <input type=\"radio\" name=\"queryType\" value=\"" + CertifyRunner.QUERY_TYPE_QBP_Z34 + "\""
-          + (queryType.equals(CertifyRunner.QUERY_TYPE_QBP_Z34) ? " checked=\"true\"" : "") + "> " + CertifyRunner.QUERY_TYPE_QBP_Z34);
-      out.println("            <input type=\"radio\" name=\"queryType\" value=\"" + CertifyRunner.QUERY_TYPE_QBP_Z34_Z44 + "\""
-          + (queryType.equals(CertifyRunner.QUERY_TYPE_QBP_Z34_Z44) ? " checked=\"true\"" : "") + "> " + CertifyRunner.QUERY_TYPE_QBP_Z34_Z44);
-      out.println("            <input type=\"radio\" name=\"queryType\" value=\"" + CertifyRunner.QUERY_TYPE_QBP_Z44 + "\""
-          + (queryType.equals(CertifyRunner.QUERY_TYPE_QBP_Z44) ? " checked=\"true\"" : "") + "> " + CertifyRunner.QUERY_TYPE_QBP_Z44);
-      out.println("            <input type=\"radio\" name=\"queryType\" value=\"" + CertifyRunner.QUERY_TYPE_VXQ + "\""
-          + (queryType.equals(CertifyRunner.QUERY_TYPE_VXQ) ? " checked=\"true\"" : "") + "> " + CertifyRunner.QUERY_TYPE_VXQ);
+      out.println("            <input type=\"radio\" name=\"queryType\" value=\""
+          + CertifyRunner.QUERY_TYPE_NONE + "\""
+          + (queryType.equals(CertifyRunner.QUERY_TYPE_NONE) ? " checked=\"true\"" : "") + "> "
+          + CertifyRunner.QUERY_TYPE_NONE + "");
+      out.println("            <input type=\"radio\" name=\"queryType\" value=\""
+          + CertifyRunner.QUERY_TYPE_QBP_Z34 + "\""
+          + (queryType.equals(CertifyRunner.QUERY_TYPE_QBP_Z34) ? " checked=\"true\"" : "") + "> "
+          + CertifyRunner.QUERY_TYPE_QBP_Z34);
+      out.println("            <input type=\"radio\" name=\"queryType\" value=\""
+          + CertifyRunner.QUERY_TYPE_QBP_Z34_Z44 + "\""
+          + (queryType.equals(CertifyRunner.QUERY_TYPE_QBP_Z34_Z44) ? " checked=\"true\"" : "")
+          + "> " + CertifyRunner.QUERY_TYPE_QBP_Z34_Z44);
+      out.println("            <input type=\"radio\" name=\"queryType\" value=\""
+          + CertifyRunner.QUERY_TYPE_QBP_Z44 + "\""
+          + (queryType.equals(CertifyRunner.QUERY_TYPE_QBP_Z44) ? " checked=\"true\"" : "") + "> "
+          + CertifyRunner.QUERY_TYPE_QBP_Z44);
+      out.println("            <input type=\"radio\" name=\"queryType\" value=\""
+          + CertifyRunner.QUERY_TYPE_VXQ + "\""
+          + (queryType.equals(CertifyRunner.QUERY_TYPE_VXQ) ? " checked=\"true\"" : "") + "> "
+          + CertifyRunner.QUERY_TYPE_VXQ);
       out.println("          </td>");
       out.println("        </tr>");
       out.println("    <tr>");
@@ -98,23 +114,36 @@ public class QueryServlet extends ClientServlet {
         if (sendData.getQueryDir().exists()) {
           String[] filenames = QueryRunner.getListOfFiles(sendData);
           for (String filename : filenames) {
-            out.println("      <input type=\"checkbox\" name=\"" + QueryRunner.FILE_NAME + "\" value=\"" + filename + "\""
-                + (filenamesSelectedSet.size() == 0 || filenamesSelectedSet.contains(filename) ? " checked=\"true\"" : "") + "/>" + filename);
+            out.println("      <input type=\"checkbox\" name=\"" + QueryRunner.FILE_NAME
+                + "\" value=\"" + filename + "\""
+                + (filenamesSelectedSet.size() == 0 || filenamesSelectedSet.contains(filename)
+                    ? " checked=\"true\"" : "")
+                + "/>" + filename);
           }
         }
         out.println("      </td>");
         out.println("    </tr>");
       }
       out.println("    <tr>");
-      out.println("      <td>TCH User Name</td>");
+      out.println("      <td>Save</td>");
+      out.println("      <td><input type=\"checkbox\" name=\"save\" value=\"T\"/></td>");
+      out.println("    </tr>");
+      out.println("    <tr>");
+      out.println("      <td>Transforms</td>");
       out.println(
-          "      <td><input type=\"text\" name=\"" + QueryRunner.USER_NAME + "\" value=\"" + (userName == null ? "" : userName) + "\"/></td>");
+          "      <td><textarea name=\"" + QueryRunner.TRANSFORMS + "\" cols=\"50\" rows=\"5\">"
+              + (transforms == null ? "" : userName) + "</textarea></td>");
+      out.println("    </tr>");
+      out.println("    <tr>");
+      out.println("      <td>TCH User Name</td>");
+      out.println("      <td><input type=\"text\" name=\"" + QueryRunner.USER_NAME + "\" value=\""
+          + (userName == null ? "" : userName) + "\"/></td>");
       out.println("    </tr>");
 
       out.println("    <tr>");
       out.println("      <td>TCH Password</td>");
-      out.println(
-          "      <td><input type=\"password\" name=\"" + QueryRunner.PASSWORD + "\" value=\"" + (password == null ? "" : password) + "\"/></td>");
+      out.println("      <td><input type=\"password\" name=\"" + QueryRunner.PASSWORD
+          + "\" value=\"" + (password == null ? "" : password) + "\"/></td>");
       out.println("    </tr>");
 
       out.println("    <tr>");
@@ -146,6 +175,7 @@ public class QueryServlet extends ClientServlet {
 
   private boolean isReadyToStart(QueryRunner queryRunner) {
     return queryRunner == null || queryRunner.getStatus().equals(QueryRunner.STATUS_COMPLETED)
-        || queryRunner.getStatus().equals(QueryRunner.STATUS_PROBLEM) || queryRunner.getStatus().equals(QueryRunner.STATUS_STOPPED);
+        || queryRunner.getStatus().equals(QueryRunner.STATUS_PROBLEM)
+        || queryRunner.getStatus().equals(QueryRunner.STATUS_STOPPED);
   }
 }

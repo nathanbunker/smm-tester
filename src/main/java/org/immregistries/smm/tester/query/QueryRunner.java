@@ -2,9 +2,12 @@ package org.immregistries.smm.tester.query;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -15,25 +18,25 @@ import org.immregistries.smm.tester.certify.CAForecast;
 import org.immregistries.smm.tester.certify.CertifyRunner;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.manager.CvsReader;
-import org.immregistries.smm.tester.manager.TestParticipant;
 import org.immregistries.smm.tester.manager.forecast.EvaluationActual;
 import org.immregistries.smm.tester.manager.forecast.ForecastActual;
 import org.immregistries.smm.tester.manager.forecast.ForecastTesterManager;
 import org.immregistries.smm.transform.TestCaseMessage;
 import org.immregistries.smm.transform.Transformer;
-import org.immregistries.smm.transform.forecast.ForecastTestCase;
 
 public class QueryRunner extends CertifyRunner {
 
   public static final String FILE_NAME = "fileName";
   public static final String USER_NAME = "userName";
   public static final String PASSWORD = "password";
+  public static final String TRANSFORMS = "transforms";
 
   private int taskGroupId = 0;
   private String testPanelLabel = "";
   private Set<String> filenamesSelectedSet = null;
-  private String userName = "";
-  private String password = "";
+  private String userName = null;
+  private String password = null;
+  private String transforms = null;
 
   public String getPassword() {
     return password;
@@ -60,14 +63,16 @@ public class QueryRunner extends CertifyRunner {
   }
 
   public QueryRunner(Connector connector, SendData sendData, String queryType,
-      Set<String> filenamesSelectedSet, String userName, String password) {
+      Set<String> filenamesSelectedSet, String userName, String password, String transforms) {
     super(connector, sendData, queryType);
     this.filenamesSelectedSet = filenamesSelectedSet;
     this.userName = userName;
     this.password = password;
+    this.transforms = transforms;
     sendData.setupQueryDir();
     if (!sendData.getQueryDir().exists()) {
-      switchStatus(STATUS_PROBLEM, "Query directory does not exist: " + sendData.getQueryDir().getName());
+      switchStatus(STATUS_PROBLEM,
+          "Query directory does not exist: " + sendData.getQueryDir().getName());
       return;
     }
     forecastTesterManager = new ForecastTesterManager(CAForecast.TCH_FORECAST_TESTER_URL);
@@ -90,7 +95,8 @@ public class QueryRunner extends CertifyRunner {
             }
           } catch (IOException ioe) {
             ioe.printStackTrace();
-            switchStatus(STATUS_PROBLEM, "Unable to read file " + file.getName() + ": " + ioe.getMessage());
+            switchStatus(STATUS_PROBLEM,
+                "Unable to read file " + file.getName() + ": " + ioe.getMessage());
             return;
           }
         }
@@ -118,24 +124,94 @@ public class QueryRunner extends CertifyRunner {
   private static final int POS_SEX = 7;
 
   private void readAndQuery(File queryFile) throws IOException {
+    PrintWriter saveOut = null;
+    if (transforms != null) {
+      String fn = queryFile.getName() + ".response.hl7";
+      File saveFile = new File(queryFile.getParentFile(), fn);
+      saveOut = new PrintWriter(new FileWriter(saveFile));
+    }
 
-    logStatusMessage("Reading from file: " + queryFile.getName());
-    BufferedReader in = new BufferedReader(new FileReader(queryFile));
-    String line; //  = in.readLine();
-    List<String> valueList; //  = CvsReader.readValuesFromCsv(line);
-    // ignore this first one, it's the header
+    String line;
+    BufferedReader in = setupReader(queryFile);
 
     int lineNumber = 0;
     while ((line = in.readLine()) != null && keepRunning) {
-      line = line.trim();
       lineNumber++;
-      if (line.length() < 1) {
-        continue;
+      TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
+
+      boolean goodToGo = readLine(queryFile, line, lineNumber, queryTestCaseMessage);
+      if (goodToGo) {
+        if (!queryTestCaseMessage.getActualResponseMessage().equals("")) {
+          if (userName != null && !userName.equals("")) {
+            ForecastTesterManager.readForecastActual(queryTestCaseMessage);
+            List<ForecastActual> forecastActualList = queryTestCaseMessage.getForecastActualList();
+            if (forecastActualList.size() == 0) {
+              logStatusMessage("    PROBLEM: No forecast results returned");
+            } else {
+              logStatusMessage("    GOOD     Forecast results returned");
+              queryTestCaseMessage.setTchForecastTesterTestPanelLabel(
+                  queryFile.getName().substring(0, queryFile.getName().length() - 4));
+              queryTestCaseMessage.setTchForecastTesterUserName(userName);
+              queryTestCaseMessage.setTchForecastTesterPassword(password);
+              if (CAForecast.REPORT_RESULTS) {
+                String result =
+                    forecastTesterManager.reportForecastResults(queryTestCaseMessage, connector);
+                logStatusMessage("             Reported to TCH: " + result);
+              }
+            }
+            for (EvaluationActual evaluationActual : queryTestCaseMessage
+                .getEvaluationActualList()) {
+              System.out.println("  + " + evaluationActual.getVaccineCvx() + " given "
+                  + evaluationActual.getVaccineDate());
+            }
+            for (ForecastActual forecastActual : forecastActualList) {
+              System.out.println(
+                  "  + " + forecastActual.getSeriesName() + " due " + forecastActual.getDueDate());
+            }
+          }
+          if (saveOut != null) {
+            String rspMessage = queryTestCaseMessage.getActualResponseMessage();
+            if (transforms != null) {
+              TestCaseMessage rspTCM = new TestCaseMessage();
+              rspTCM.appendOriginalMessage(rspMessage);
+              rspTCM.setCustomTransformations(transforms + "\n");
+              Transformer transformer = new Transformer();
+              transformer.transform(rspTCM);
+              rspMessage = rspTCM.getMessageText();
+            }
+            saveOut.print(rspMessage);
+          }
+        } else {
+          logStatusMessage("    PROBLEM: No message returned");
+        }
       }
+    }
+    in.close();
+    if (saveOut != null) {
+      saveOut.close();
+    }
+  }
+
+  private BufferedReader setupReader(File queryFile) throws FileNotFoundException {
+    logStatusMessage("Reading from file: " + queryFile.getName());
+    BufferedReader in = new BufferedReader(new FileReader(queryFile));
+    return in;
+  }
+
+  private boolean readLine(File queryFile, String line, int lineNumber,
+      TestCaseMessage queryTestCaseMessage) {
+    List<String> valueList;
+    line = line.trim();
+    boolean goodToGo = true;
+    if (line.length() < 1) {
+      goodToGo = false;
+    } else {
       String tchForecastTesterTestCaseNumber;
       {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-        tchForecastTesterTestCaseNumber = sdf.format(new Date(queryFile.lastModified())) + "-" + lineNumber;
+        tchForecastTesterTestCaseNumber =
+            sdf.format(new Date(queryFile.lastModified())) + "-" + lineNumber;
+        queryTestCaseMessage.setTchForecastTesterTestCaseNumber(tchForecastTesterTestCaseNumber);
       }
       valueList = CvsReader.readValuesFromCsv(line);
       String id = CvsReader.readValue(POS_ID, valueList);
@@ -147,68 +223,43 @@ public class QueryRunner extends CertifyRunner {
       String dob = CvsReader.readValue(POS_DOB, valueList);
       String sex = CvsReader.readValue(POS_SEX, valueList);
       if (id.equals("")) {
-        continue;
-      }
-
-      logStatusMessage("  + Sending " + id);
-
-      TestCaseMessage vxuTCM;
-      vxuTCM = new TestCaseMessage();
-      StringBuilder sb = new StringBuilder();
-      sb.append("MSH|\nPID|\n");
-      vxuTCM.appendOriginalMessage(sb.toString());
-      vxuTCM.setQuickTransformations(new String[] { "2.5.1", (sex.equals("M") ? "BOY" : "GIRL") });
-      vxuTCM.appendCustomTransformation("clear PID-3");
-      vxuTCM.appendCustomTransformation("PID-3.1=" + id);
-      vxuTCM.appendCustomTransformation("PID-3.4=" + idAa);
-      vxuTCM.appendCustomTransformation("PID-3.5=" + idType);
-      vxuTCM.appendCustomTransformation("PID-5.1=" + lastName);
-      vxuTCM.appendCustomTransformation("PID-5.2=" + firstName);
-      vxuTCM.appendCustomTransformation("PID-5.3=" + middleName);
-      vxuTCM.appendCustomTransformation("PID-7=" + dob);
-      Transformer transformer = new Transformer();
-      transformer.transform(vxuTCM);
-
-      TestCaseMessage queryTestCaseMessage = new TestCaseMessage();
-      queryTestCaseMessage.setMessageText(convertToQuery(vxuTCM));
-      String message = Transformer.transform(connector, queryTestCaseMessage);
-      System.out.println("--- REQUEST ---");
-      System.out.println(message);
-      try {
-        String response = connector.submitMessage(message, false);
-        System.out.println("--- RESPONSE ---");
-        System.out.println(response);
-        queryTestCaseMessage.setActualResponseMessage(response);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-      if (!queryTestCaseMessage.getActualResponseMessage().equals("")) {
-        ForecastTesterManager.readForecastActual(queryTestCaseMessage);
-        List<ForecastActual> forecastActualList = queryTestCaseMessage.getForecastActualList();
-        if (forecastActualList.size() == 0) {
-          logStatusMessage("    PROBLEM: No forecast results returned");
-        } else {
-          logStatusMessage("    GOOD     Forecast results returned");
-          queryTestCaseMessage.setTchForecastTesterTestCaseNumber(tchForecastTesterTestCaseNumber);
-          queryTestCaseMessage.setTchForecastTesterTestPanelLabel(queryFile.getName().substring(0, queryFile.getName().length() - 4));
-          queryTestCaseMessage.setTchForecastTesterUserName(userName);
-          queryTestCaseMessage.setTchForecastTesterPassword(password);
-          if (CAForecast.REPORT_RESULTS) {
-            String result = forecastTesterManager.reportForecastResults(queryTestCaseMessage, connector);
-            logStatusMessage("             Reported to TCH: " + result);
-          }
-        }
-        for (EvaluationActual evaluationActual : queryTestCaseMessage.getEvaluationActualList()) {
-          System.out.println("  + " + evaluationActual.getVaccineCvx() + " given " + evaluationActual.getVaccineDate());
-        }
-        for (ForecastActual forecastActual : forecastActualList) {
-          System.out.println("  + " + forecastActual.getSeriesName() + " due " + forecastActual.getDueDate());
-        }
+        goodToGo = false;
       } else {
-        logStatusMessage("    PROBLEM: No message returned");
+
+        logStatusMessage("  + Sending " + id);
+
+        TestCaseMessage vxuTCM = new TestCaseMessage();
+        StringBuilder sb = new StringBuilder();
+        sb.append("MSH|\nPID|\n");
+        vxuTCM.appendOriginalMessage(sb.toString());
+        vxuTCM.setQuickTransformations(new String[] {"2.5.1", (sex.equals("M") ? "BOY" : "GIRL")});
+        vxuTCM.appendCustomTransformation("clear PID-3");
+        vxuTCM.appendCustomTransformation("PID-3.1=" + id);
+        vxuTCM.appendCustomTransformation("PID-3.4=" + idAa);
+        vxuTCM.appendCustomTransformation("PID-3.5=" + idType);
+        vxuTCM.appendCustomTransformation("PID-5.1=" + lastName);
+        vxuTCM.appendCustomTransformation("PID-5.2=" + firstName);
+        vxuTCM.appendCustomTransformation("PID-5.3=" + middleName);
+        vxuTCM.appendCustomTransformation("PID-7=" + dob);
+        Transformer transformer = new Transformer();
+        transformer.transform(vxuTCM);
+
+
+        queryTestCaseMessage.setMessageText(convertToQuery(vxuTCM));
+        String message = Transformer.transform(connector, queryTestCaseMessage);
+        System.out.println("--- REQUEST ---");
+        System.out.println(message);
+        try {
+          String response = connector.submitMessage(message, false);
+          System.out.println("--- RESPONSE ---");
+          System.out.println(response);
+          queryTestCaseMessage.setActualResponseMessage(response);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
       }
     }
-    in.close();
+    return goodToGo;
   }
 
 }
