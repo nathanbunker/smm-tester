@@ -20,7 +20,6 @@ import org.immregistries.smm.tester.certify.CertifyRunner;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 import org.immregistries.smm.tester.profile.ProfileManager;
-import org.immregistries.smm.tester.profile.ProfileUsage;
 import org.immregistries.smm.transform.TestCaseMessage;
 
 /**
