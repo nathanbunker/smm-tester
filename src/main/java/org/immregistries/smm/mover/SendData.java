@@ -159,7 +159,6 @@ public class SendData extends Thread {
       }
     }
     logShutdown();
-    connectorShutdown();
   }
 
   private static final String HL7_RBU_QUERY = "MSH|^~\\&|DBO^QSInsight^L|QS4444|5.0^QSInsight^L||20030828104856+0000||VXQ^V01|QS444437861000000042|P|2.3.1|||NE|AL|\r"
