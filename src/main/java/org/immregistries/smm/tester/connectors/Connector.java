@@ -196,6 +196,10 @@ public abstract class Connector {
   public boolean isRxaFilter() {
     return rxaFilterFacilityId != null && !rxaFilterFacilityId.equals("");
   }
+  
+  public void shutdown() {
+	  System.out.println("Shutting down " + label);
+  }
 
   public Connector(Connector copy) {
     this.label = copy.label;

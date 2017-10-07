@@ -106,6 +106,9 @@ public class SendData extends Thread {
       statusLogger.close();
       statusLogger = null;
     }
+    if (connector != null) {
+    	connector.shutdown();
+    }
   }
 
   @Override
@@ -156,6 +159,7 @@ public class SendData extends Thread {
       }
     }
     logShutdown();
+    connectorShutdown();
   }
 
   private static final String HL7_RBU_QUERY = "MSH|^~\\&|DBO^QSInsight^L|QS4444|5.0^QSInsight^L||20030828104856+0000||VXQ^V01|QS444437861000000042|P|2.3.1|||NE|AL|\r"
@@ -252,6 +256,14 @@ public class SendData extends Thread {
       t.printStackTrace();
     }
   }
+  
+  private void connectorShutdown() {
+	    try {
+	      this.connector.shutdown();
+	    } catch (Throwable t) {
+	      t.printStackTrace();
+	    }
+	  }
 
   private ScanStatus scanStatus = ScanStatus.STARTING;
 
@@ -548,6 +560,7 @@ public class SendData extends Thread {
       }
       deleteRequestFile(lastRequestFilename, "");
     }
+    connector.shutdown();
   }
 
   public void send(String messageText, Connector c) throws Exception, IOException {
