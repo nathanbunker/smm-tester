@@ -157,191 +157,195 @@ public class TestRunner {
     String assertResult = testCaseMessage.getAssertResult();
     HL7Reader errorIndicatedReader = null;
     testCaseMessage.log("  + Assert Result = " + assertResult);
-    if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ERROR_INDICATED)) {
-      String assertResultParameter = testCaseMessage.getAssertResultParameter();
-      errorIndicatedReader = new HL7Reader(assertResultParameter);
-      if (!errorIndicatedReader.advanceToSegment("ERR")) {
-        errorIndicatedReader = null;
-      } else {
-        testCaseMessage
-            .log("Will be looking for ERR segment that matches this one: " + assertResultParameter);
-      }
-    }
-    if (!assertResult.equalsIgnoreCase("")) {
-      if (ackMessageText == null || ackMessageText.equals("")) {
-        testCaseMessage.log("No acknowledgment was returned");
-        if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT)) {
-          passedTest = false;
-        } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_WARN)) {
-          passedTest = false;
-        } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_SKIP)) {
-          passedTest = false;
-        } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ERROR)
-            || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_REJECT)) {
-          passedTest = true;
-        } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_REJECT)
-            || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_ERROR)) {
-          passedTest = true;
-        } else if (assertResult.toUpperCase()
-            .startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
-          passedTest = false;
-        }
-        testCaseMessage.log("  + Passed Test = " + passedTest);
-      } else {
-        ackMessageReader = AckAnalyzer.getMessageReader(ackMessageText, connector.getAckType());
-        if (ackMessageReader != null) {
-          testCaseMessage.setActualMessageResponseType(ackMessageReader.getValue(9));
-        }
-        {
-          if (ackMessageReader != null || !connector.getAckType().isInHL7Format()) {
-            testCaseMessage.log("Analyzing acknowledgement");
-            AckAnalyzer ackAnalyzer =
-                new AckAnalyzer(ackMessageText, connector.getAckType(), null, testCaseMessage);
-            testCaseMessage.setAccepted(ackAnalyzer.isPositive());
-
-
-            if (ackMessageReader != null && ackMessageReader.advanceToSegment("MSA")) {
-              passedTest = false;
-              testCaseMessage.setActualResultAckType(ackMessageReader.getValue(1));
-              testCaseMessage.setActualResultAckMessage(ackMessageReader.getValue(2));
-              boolean accepted = false;
-              boolean rejected = false;
-              boolean severitySet = false;
-              errorType = ErrorType.UNKNOWN;
-
-              if (testCaseMessage.getActualResultAckType().equals("AA")) {
-                accepted = true;
-              } else if (testCaseMessage.getActualResultAckType().equals("AR")) {
-                rejected = true;
-              }
-
-              List<Transform> refList = null;
-              boolean foundRef = false;
-              if (assertResult.toUpperCase()
-                  .startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
-                String refString =
-                    assertResult.substring(ASSERT_RESULT_ERROR_LOCATION_IS_.length()).trim();
-                refList = new ArrayList<Transform>();
-                String[] refs = refString.split("\\Qor\\E");
-                for (String r : refs) {
-                  Transform ref = null;
-                  ref = Transformer.readHL7Reference(r.trim());
-                  if (ref.getSegment().equals("") || ref.getField() <= 0) {
-                    ref = null;
-                  }
-                  if (ref != null) {
-                    refList.add(ref);
-                  }
-                }
-              }
-
-              while (ackMessageReader.advanceToSegment("ERR")) {
-                String severity = ackMessageReader.getValue(4);
-                String userMessage = ackMessageReader.getValue(8);
-                TestError error = new TestError();
-                errorList.add(error);
-
-                if (!severity.equals("")) {
-                  severitySet = true;
-                }
-
-                if (refList != null) {
-                  String segmentName = ackMessageReader.getValue(2, 1);
-                  String fieldPos = ackMessageReader.getValue(2, 3);
-                  for (Transform ref : refList) {
-                    if (ref.getSegment().equalsIgnoreCase(segmentName)
-                        && fieldPos.equals("" + ref.getField())) {
-                      foundRef = true;
-                      break;
-                    }
-                  }
-                }
-
-                if (severity.equals("E")) {
-                  rejected = true;
-                  error.setErrorType(ErrorType.ERROR);
-                } else if (severity.equals("W")) {
-                  error.setErrorType(ErrorType.WARNING);
-                } else if (severity.equals("I")) {
-                  error.setErrorType(ErrorType.INFORMATION);
-                } else {
-                  error.setErrorType(ErrorType.UNKNOWN);
-                }
-                error.setDescription(userMessage);
-                if (errorIndicatedReader != null) {
-                  boolean allMatches = true;
-                  for (int[] fieldAndComponent : ERROR_INDICATED_FIELDS_AND_COMPONENTS) {
-                    int field = fieldAndComponent[0];
-                    int component = fieldAndComponent[1];
-                    boolean matches = checkMatches(errorIndicatedReader, field, component);
-                    if (!matches) {
-                      allMatches = false;
-                      break;
-                    }
-                  }
-                  if (allMatches) {
-                    passedTest = true;
-                  }
-                }
-
-              }
-              if (testCaseMessage.getActualResultAckType().equals("AE") && !rejected) {
-                if (severitySet) {
-                  accepted = true;
-                  rejected = false;
-                } else {
-                  accepted = false;
-                  rejected = true;
-                }
-              }
-
-              if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT)) {
-                passedTest = ackAnalyzer.isPositive();
-              } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_WARN)) {
-                passedTest = !rejected;
-              } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_SKIP)) {
-                passedTest = !rejected;
-              } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ERROR)
-                  || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_REJECT)) {
-                passedTest = !ackAnalyzer.isPositive();
-              } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_REJECT)
-                  || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_ERROR)) {
-                passedTest = true;
-              } else if (assertResult.toUpperCase()
-                  .startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
-                if (refList == null) {
-                  passedTest = false;
-                } else {
-                  passedTest = foundRef;
-                }
-              }
-              if (errorType == ErrorType.UNKNOWN) {
-                if (accepted) {
-                  errorType = ErrorType.ACCEPT;
-                } else if (rejected) {
-                  errorType = ErrorType.ERROR;
-                }
-              }
-            }
-          }
-        }
-
-        if (passedTest) {
-          status = "A";
-          testCaseMessage.setActualResultStatus(ACTUAL_RESULT_STATUS_PASS);
-          for (TestError error : errorList) {
-            if (status.equals("A") && error.getErrorType() == ErrorType.WARNING) {
-              // ignore skip warnings
-              if (error.getErrorType() != ErrorType.INFORMATION) {
-                status = "W";
-              }
-            }
-          }
+    if (testCaseMessage.getTestType().equals("")) {
+      if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ERROR_INDICATED)) {
+        String assertResultParameter = testCaseMessage.getAssertResultParameter();
+        errorIndicatedReader = new HL7Reader(assertResultParameter);
+        if (!errorIndicatedReader.advanceToSegment("ERR")) {
+          errorIndicatedReader = null;
         } else {
-          testCaseMessage.setActualResultStatus(ACTUAL_RESULT_STATUS_FAIL);
-          status = "E";
+          testCaseMessage.log(
+              "Will be looking for ERR segment that matches this one: " + assertResultParameter);
         }
       }
+      if (!assertResult.equalsIgnoreCase("")) {
+        if (ackMessageText == null || ackMessageText.equals("")) {
+          testCaseMessage.log("No acknowledgment was returned");
+          if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT)) {
+            passedTest = false;
+          } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_WARN)) {
+            passedTest = false;
+          } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_SKIP)) {
+            passedTest = false;
+          } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ERROR)
+              || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_REJECT)) {
+            passedTest = true;
+          } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_REJECT)
+              || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_ERROR)) {
+            passedTest = true;
+          } else if (assertResult.toUpperCase()
+              .startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
+            passedTest = false;
+          }
+          testCaseMessage.log("  + Passed Test = " + passedTest);
+        } else {
+          ackMessageReader = AckAnalyzer.getMessageReader(ackMessageText, connector.getAckType());
+          if (ackMessageReader != null) {
+            testCaseMessage.setActualMessageResponseType(ackMessageReader.getValue(9));
+          }
+          {
+            if (ackMessageReader != null || !connector.getAckType().isInHL7Format()) {
+              testCaseMessage.log("Analyzing acknowledgement");
+              AckAnalyzer ackAnalyzer =
+                  new AckAnalyzer(ackMessageText, connector.getAckType(), null, testCaseMessage);
+              testCaseMessage.setAccepted(ackAnalyzer.isPositive());
+
+
+              if (ackMessageReader != null && ackMessageReader.advanceToSegment("MSA")) {
+                passedTest = false;
+                testCaseMessage.setActualResultAckType(ackMessageReader.getValue(1));
+                testCaseMessage.setActualResultAckMessage(ackMessageReader.getValue(2));
+                boolean accepted = false;
+                boolean rejected = false;
+                boolean severitySet = false;
+                errorType = ErrorType.UNKNOWN;
+
+                if (testCaseMessage.getActualResultAckType().equals("AA")) {
+                  accepted = true;
+                } else if (testCaseMessage.getActualResultAckType().equals("AR")) {
+                  rejected = true;
+                }
+
+                List<Transform> refList = null;
+                boolean foundRef = false;
+                if (assertResult.toUpperCase()
+                    .startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
+                  String refString =
+                      assertResult.substring(ASSERT_RESULT_ERROR_LOCATION_IS_.length()).trim();
+                  refList = new ArrayList<Transform>();
+                  String[] refs = refString.split("\\Qor\\E");
+                  for (String r : refs) {
+                    Transform ref = null;
+                    ref = Transformer.readHL7Reference(r.trim());
+                    if (ref.getSegment().equals("") || ref.getField() <= 0) {
+                      ref = null;
+                    }
+                    if (ref != null) {
+                      refList.add(ref);
+                    }
+                  }
+                }
+
+                while (ackMessageReader.advanceToSegment("ERR")) {
+                  String severity = ackMessageReader.getValue(4);
+                  String userMessage = ackMessageReader.getValue(8);
+                  TestError error = new TestError();
+                  errorList.add(error);
+
+                  if (!severity.equals("")) {
+                    severitySet = true;
+                  }
+
+                  if (refList != null) {
+                    String segmentName = ackMessageReader.getValue(2, 1);
+                    String fieldPos = ackMessageReader.getValue(2, 3);
+                    for (Transform ref : refList) {
+                      if (ref.getSegment().equalsIgnoreCase(segmentName)
+                          && fieldPos.equals("" + ref.getField())) {
+                        foundRef = true;
+                        break;
+                      }
+                    }
+                  }
+
+                  if (severity.equals("E")) {
+                    rejected = true;
+                    error.setErrorType(ErrorType.ERROR);
+                  } else if (severity.equals("W")) {
+                    error.setErrorType(ErrorType.WARNING);
+                  } else if (severity.equals("I")) {
+                    error.setErrorType(ErrorType.INFORMATION);
+                  } else {
+                    error.setErrorType(ErrorType.UNKNOWN);
+                  }
+                  error.setDescription(userMessage);
+                  if (errorIndicatedReader != null) {
+                    boolean allMatches = true;
+                    for (int[] fieldAndComponent : ERROR_INDICATED_FIELDS_AND_COMPONENTS) {
+                      int field = fieldAndComponent[0];
+                      int component = fieldAndComponent[1];
+                      boolean matches = checkMatches(errorIndicatedReader, field, component);
+                      if (!matches) {
+                        allMatches = false;
+                        break;
+                      }
+                    }
+                    if (allMatches) {
+                      passedTest = true;
+                    }
+                  }
+
+                }
+                if (testCaseMessage.getActualResultAckType().equals("AE") && !rejected) {
+                  if (severitySet) {
+                    accepted = true;
+                    rejected = false;
+                  } else {
+                    accepted = false;
+                    rejected = true;
+                  }
+                }
+
+                if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT)) {
+                  passedTest = ackAnalyzer.isPositive();
+                } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_WARN)) {
+                  passedTest = !rejected;
+                } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_SKIP)) {
+                  passedTest = !rejected;
+                } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ERROR)
+                    || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_REJECT)) {
+                  passedTest = !ackAnalyzer.isPositive();
+                } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_REJECT)
+                    || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_ERROR)) {
+                  passedTest = true;
+                } else if (assertResult.toUpperCase()
+                    .startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
+                  if (refList == null) {
+                    passedTest = false;
+                  } else {
+                    passedTest = foundRef;
+                  }
+                }
+                if (errorType == ErrorType.UNKNOWN) {
+                  if (accepted) {
+                    errorType = ErrorType.ACCEPT;
+                  } else if (rejected) {
+                    errorType = ErrorType.ERROR;
+                  }
+                }
+              }
+            }
+          }
+
+          if (passedTest) {
+            status = "A";
+            testCaseMessage.setActualResultStatus(ACTUAL_RESULT_STATUS_PASS);
+            for (TestError error : errorList) {
+              if (status.equals("A") && error.getErrorType() == ErrorType.WARNING) {
+                // ignore skip warnings
+                if (error.getErrorType() != ErrorType.INFORMATION) {
+                  status = "W";
+                }
+              }
+            }
+          } else {
+            testCaseMessage.setActualResultStatus(ACTUAL_RESULT_STATUS_FAIL);
+            status = "E";
+          }
+        }
+      }
+    } else if (testCaseMessage.getTestType().equals("QBP")) {
+
     }
     testCaseMessage.setActualResponseMessage(ackMessageText);
     testCaseMessage.setPassedTest(passedTest);
