@@ -131,7 +131,7 @@ public class CreateTestCaseServlet extends ClientServlet {
             String description = request.getParameter("description");
             String expectedResult = request.getParameter("expectedResult");
             String assertResult = request.getParameter("assertResult");
-            String messageType = request.getParameter("messageType");
+            String testType = request.getParameter("messageType");
             String derivedFromTestCaseNumber = request.getParameter("derivedFromTestCaseNumber");
             if (derivedFromTestCaseNumber == null) {
               derivedFromTestCaseNumber = "";
@@ -190,14 +190,14 @@ public class CreateTestCaseServlet extends ClientServlet {
             if (assertResult == null && testCaseMessage != null) {
               assertResult = testCaseMessage.getAssertResult();
             }
-            if (messageType == null && testCaseMessage != null) {
-              messageType = testCaseMessage.getMessageType();
+            if (testType == null && testCaseMessage != null) {
+              testType = testCaseMessage.getTestType();
             }
             if (assertResult == null) {
               assertResult = "Accept";
             }
-            if (messageType == null) {
-              messageType = "VXU";
+            if (testType == null) {
+              testType = "VXU";
             }
             if (testCaseMessage == null) {
               testCaseMessage = new TestCaseMessage();
@@ -213,7 +213,7 @@ public class CreateTestCaseServlet extends ClientServlet {
             testCaseMessage.setTestCaseNumber(testCaseNumber);
             testCaseMessage.setTestCaseSet(testCaseSet);
             testCaseMessage.setAssertResult(assertResult);
-            testCaseMessage.setMessageType(messageType);
+            testCaseMessage.setTestType(testType);
             testCaseMessage.setDerivedFromTestCaseNumber(derivedFromTestCaseNumber);
             testCaseMessage.setCustomTransformations(customTransformations);
             testCaseMessage.setAdditionalTransformations(additionalTransforms);
@@ -354,10 +354,10 @@ public class CreateTestCaseServlet extends ClientServlet {
         out.println("            <select name=\"messageType\">");
         out.println("              <option value=\"\">select</option>");
         out.println("              <option value=\"VXU\""
-            + (testCaseMessage.getMessageType().equals("VXU") ? " selected=\"true\"" : "")
+            + (testCaseMessage.getTestType().equals("VXU") ? " selected=\"true\"" : "")
             + ">VXU</option>");
         out.println("              <option value=\"QBP\""
-            + (testCaseMessage.getMessageType().equals("QBP") ? " selected=\"true\"" : "")
+            + (testCaseMessage.getTestType().equals("QBP") ? " selected=\"true\"" : "")
             + ">QBP</option>");
         out.println("            </select>");
         out.println("          </td>");

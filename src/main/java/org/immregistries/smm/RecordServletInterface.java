@@ -113,7 +113,6 @@ public interface RecordServletInterface {
   public static final String PARAM_TM_RESULT_ACK_TYPE = "tm_resultAckType";
   public static final String PARAM_TM_RESULT_ACK_CONFORMANCE = "tm_resultAckConformance";
   public static final String PARAM_TM_RESULT_QUERY_TYPE = "tm_resultQueryType";
-  public static final String PARAM_TM_RESULT_ACK_STORE_STATUS = "tm_resultStoreStatus";
   public static final String PARAM_TM_RESULT_FORECAST_STATUS = "tm_resultForecastStatus";
   public static final String PARAM_TM_FORECAST_TEST_PANEL_CASE_ID = "tm_forecastTestPanelCaseId";
   public static final String PARAM_TM_FORECAST_TEST_PANEL_ID = "tm_forecastTestPanelId";

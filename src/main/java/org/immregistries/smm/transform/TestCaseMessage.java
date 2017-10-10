@@ -46,6 +46,7 @@ public class TestCaseMessage {
   public static final String COMMENT = "Comment:";
   public static final String PATIENT_TYPE = "Patient Type:";
   public static final String SCENARIO = "Scenario:";
+  public static final String TEST_TYPE = "Test Type:";
 
   public static void main(String[] args) {
     for (int i = 0; i < args.length; i++) {
@@ -114,7 +115,6 @@ public class TestCaseMessage {
   private String messageTextSent = "";
   private String assertResult = "";
   private String assertResultParameter = "";
-  private String messageType = "";
   private String derivedFromTestCaseNumber = "";
   private String fieldName = "";
   private String originalMessage = "";
@@ -158,7 +158,6 @@ public class TestCaseMessage {
   private String validationProblem = "";
   private ValidationResource validationResource = null;
   private boolean validationReportPass = false;
-  private String resultStoreStatus = "";
   private boolean originalAccepted = false;
   private String resultForecastStatus = "";
   private TestCaseMessage updateTestCaseMessage = null;
@@ -172,7 +171,7 @@ public class TestCaseMessage {
   private String patientDob = null;
   private String patientSex = null;
   private TestCaseMode testCaseMode = TestCaseMode.DEFAULT;
-  private transient Map<String, TestCaseMessage> testCaseMessageMap = null;
+  private Map<String, TestCaseMessage> testCaseMessageMap = null;
   private long totalRunTime = 0;
   private StringBuilder log = new StringBuilder();
 
@@ -215,14 +214,6 @@ public class TestCaseMessage {
 
   public void setDerivedFromTestCaseNumber(String derivedFromTestCaseNumber) {
     this.derivedFromTestCaseNumber = derivedFromTestCaseNumber;
-  }
-
-  public String getMessageType() {
-    return messageType;
-  }
-
-  public void setMessageType(String messageType) {
-    this.messageType = messageType;
   }
 
   public Map<String, TestCaseMessage> getTestCaseMessageMap() {
@@ -382,14 +373,6 @@ public class TestCaseMessage {
 
   public void setOriginalMessageResponse(String originalMessageAck) {
     this.originalMessageResponse = originalMessageAck;
-  }
-
-  public String getResultStoreStatus() {
-    return resultStoreStatus;
-  }
-
-  public void setResultStoreStatus(String resultStoreStatus) {
-    this.resultStoreStatus = resultStoreStatus;
   }
 
   public boolean isValidationReportPass() {
@@ -638,7 +621,6 @@ public class TestCaseMessage {
     this.messageText = copy.messageText;
     this.assertResult = copy.assertResult;
     this.assertResultParameter = copy.assertResultParameter;
-    this.messageType = copy.messageType;
     this.originalMessage = copy.originalMessage;
     this.quickTransformations = new String[copy.quickTransformations.length];
     System.arraycopy(copy.quickTransformations, 0, this.quickTransformations, 0,
@@ -656,6 +638,7 @@ public class TestCaseMessage {
     this.patientType = copy.patientType;
     this.actualResponseMessage = copy.actualResponseMessage;
     this.scenario = copy.scenario;
+    this.testType = copy.testType;
   }
 
   public void merge(TestCaseMessage updated) {
@@ -710,6 +693,9 @@ public class TestCaseMessage {
     }
     if (!updated.getScenario().equals("")) {
       scenario = updated.getScenario();
+    }
+    if (!updated.getTestType().equals("")) {
+      testType = updated.getTestType();
     }
   }
 
@@ -923,9 +909,6 @@ public class TestCaseMessage {
       if (!assertResultParameter.equals("")) {
         stringOut.println(ASSERT_RESULT_PARAMETER + " " + assertResultParameter);
       }
-      if (!messageType.equals("")) {
-        stringOut.println(MESSAGE_TYPE + " " + messageType);
-      }
       if (!derivedFromTestCaseNumber.equals("")) {
         stringOut.println(DERIVED_FROM_TEST_CASE_NUMBER + " " + derivedFromTestCaseNumber);
       }
@@ -995,6 +978,10 @@ public class TestCaseMessage {
       stringOut.println(PATIENT_TYPE + " " + patientType);
       if (!scenario.equals("")) {
         stringOut.println(SCENARIO + " " + scenario);
+      }
+      if (!testType.equals(""))
+      {
+        stringOut.println(TEST_TYPE + " " + testType);
       }
       stringOut.println(
           "--------------------------------------------------------------------------------");

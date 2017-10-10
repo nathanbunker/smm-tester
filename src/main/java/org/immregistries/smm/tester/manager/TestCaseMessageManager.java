@@ -63,6 +63,8 @@ public class TestCaseMessageManager {
             testCaseMessage.setPatientType(PatientType.valueOf(readValue(line)));
           } else if (line.startsWith(TestCaseMessage.SCENARIO)) {
             testCaseMessage.setScenario(readValue(line));
+          } else if (line.startsWith(TestCaseMessage.TEST_TYPE)) {
+            testCaseMessage.setTestType(readValue(line));
           } else if (line.startsWith(TestCaseMessage.TEST_CASE_SET)) {
             testCaseMessage.setTestCaseSet(readValue(line));
           } else if (line.startsWith(TestCaseMessage.EXPECTED_RESULT)) {
@@ -84,7 +86,7 @@ public class TestCaseMessageManager {
           } else if (line.startsWith(TestCaseMessage.DERIVED_FROM_TEST_CASE_NUMBER)) {
             testCaseMessage.setDerivedFromTestCaseNumber(readValue(line));
           } else if (line.startsWith(TestCaseMessage.MESSAGE_TYPE)) {
-            testCaseMessage.setMessageType(readValue(line));
+            testCaseMessage.setTestType(readValue(line));
           } else if (line.startsWith(TestCaseMessage.CUSTOM_TRANSFORMATIONS)) {
             testCaseMessage
                 .setCustomTransformations(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));

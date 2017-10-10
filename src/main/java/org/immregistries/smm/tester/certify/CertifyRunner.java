@@ -212,6 +212,8 @@ public class CertifyRunner implements RecordServletInterface {
       addField(sb, PARAM_TM_PREP_MESSAGE_ACTUAL, testCaseMessage.getMessageTextSent());
       addField(sb, PARAM_TM_RESULT_MESSAGE_ACTUAL, testCaseMessage.getActualResponseMessage());
       addField(sb, PARAM_TM_RESULT_STATUS, testCaseMessage.getActualResultStatus());
+      addField(sb, PARAM_TM_RESULT_QUERY_TYPE, testCaseMessage.getActualResultQueryType());
+      addField(sb, PARAM_TM_RESULT_FORECAST_STATUS, testCaseMessage.getResultForecastStatus());
       addField(sb, PARAM_TM_RESULT_ACCEPTED, testCaseMessage.isAccepted());
       addField(sb, PARAM_TM_RESULT_EXECEPTION_TEXT, testCaseMessage.getException());
       addField(sb, PARAM_TM_RESULT_ACK_TYPE, testCaseMessage.getActualResultAckType());
