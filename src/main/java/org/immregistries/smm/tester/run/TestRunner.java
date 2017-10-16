@@ -158,6 +158,7 @@ public class TestRunner {
       throws Exception {
     setupForRunTest(testCaseMessage, message);
     doRunTest(connector, testCaseMessage, message);
+    testCaseMessage.setTotalRunTime(getTotalRunTime());
     evaluateRunTest(connector, testCaseMessage);
     if (validateResponse) {
       validateResponseWithNIST(testCaseMessage, ackMessageText);

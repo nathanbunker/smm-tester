@@ -47,6 +47,7 @@ public class TestCaseMessage {
   public static final String PATIENT_TYPE = "Patient Type:";
   public static final String SCENARIO = "Scenario:";
   public static final String TEST_TYPE = "Test Type:";
+  public static final String TEST_CASE_MODE = "Test Case Mode:";
 
   public static void main(String[] args) {
     for (int i = 0; i < args.length; i++) {
@@ -982,6 +983,10 @@ public class TestCaseMessage {
       if (!testType.equals(""))
       {
         stringOut.println(TEST_TYPE + " " + testType);
+      }
+      if (testCaseMode != TestCaseMode.DEFAULT)
+      {
+        stringOut.println(TEST_CASE_MODE + " " + testCaseMode);
       }
       stringOut.println(
           "--------------------------------------------------------------------------------");

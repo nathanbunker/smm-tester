@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.immregistries.smm.transform.PatientType;
 import org.immregistries.smm.transform.TestCaseMessage;
+import org.immregistries.smm.transform.TestCaseMode;
 import org.immregistries.smm.transform.Transformer;
 
 public class TestCaseMessageManager {
@@ -65,6 +66,8 @@ public class TestCaseMessageManager {
             testCaseMessage.setScenario(readValue(line));
           } else if (line.startsWith(TestCaseMessage.TEST_TYPE)) {
             testCaseMessage.setTestType(readValue(line));
+          } else if (line.startsWith(TestCaseMessage.TEST_CASE_MODE)) {
+            testCaseMessage.setTestCaseMode(TestCaseMode.valueOf(readValue(line)));
           } else if (line.startsWith(TestCaseMessage.TEST_CASE_SET)) {
             testCaseMessage.setTestCaseSet(readValue(line));
           } else if (line.startsWith(TestCaseMessage.EXPECTED_RESULT)) {
