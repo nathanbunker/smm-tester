@@ -129,7 +129,6 @@ public class CreateTestCaseServlet extends ClientServlet {
             String customTransformations = request.getParameter("customTransforms");
             String additionalTransforms = request.getParameter("additionalTransforms");
             String description = request.getParameter("description");
-            String expectedResult = request.getParameter("expectedResult");
             String assertResult = request.getParameter("assertResult");
             String testType = request.getParameter("messageType");
             String derivedFromTestCaseNumber = request.getParameter("derivedFromTestCaseNumber");
@@ -161,12 +160,6 @@ public class CreateTestCaseServlet extends ClientServlet {
             }
             if (description == null) {
               description = "";
-            }
-            if (expectedResult == null && testCaseMessage != null) {
-              expectedResult = testCaseMessage.getExpectedResult();
-            }
-            if (expectedResult == null) {
-              expectedResult = "";
             }
             if (originalMessage == null && testCaseMessage != null) {
               originalMessage = testCaseMessage.getOriginalMessage();
@@ -218,7 +211,6 @@ public class CreateTestCaseServlet extends ClientServlet {
             testCaseMessage.setCustomTransformations(customTransformations);
             testCaseMessage.setAdditionalTransformations(additionalTransforms);
             testCaseMessage.setDescription(description);
-            testCaseMessage.setExpectedResult(expectedResult);
             testCaseMessage.setOriginalMessage(originalMessage);
             testCaseMessage.setQuickTransformations(quickTransformations);
             testCaseMessage.setPatientType(patientType);
@@ -302,12 +294,6 @@ public class CreateTestCaseServlet extends ClientServlet {
             + testCaseMessage.getDescription() + "\" size=\"70\"></td>");
         out.println("        </tr>");
         out.println("        <tr>");
-        out.println("          <td valign=\"top\">Expected Result</td>");
-        out.println(
-            "          <td colspan=\"2\"><input type=\"text\" name=\"expectedResult\" value=\""
-                + testCaseMessage.getExpectedResult() + "\" size=\"70\"></td>");
-        out.println("        </tr>");
-        out.println("        <tr>");
         out.println("          <td valign=\"top\">Assert Result</td>");
         out.println("          <td colspan=\"2\">");
         out.println("            <select name=\"assertResult\">");
@@ -371,8 +357,8 @@ public class CreateTestCaseServlet extends ClientServlet {
         if (!testCaseMessage.getActualResultAckType().equals("")) {
           out.println("        <tr>");
           out.println("          <td>Actual Result</td>");
-          out.println("          <td colspan=\"2\">" + testCaseMessage.getActualResultAckType()
-              + ": " + testCaseMessage.getActualResultAckMessage() + "</td>");
+          out.println(
+              "          <td colspan=\"2\">" + testCaseMessage.getActualResultAckType() + "</td>");
           out.println("        </tr>");
         }
         out.println("        <tr>");

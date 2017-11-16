@@ -147,10 +147,6 @@ public class TestCaseServlet extends ClientServlet {
             out.println("</td>");
             out.println("</tr>");
             out.println("<tr>");
-            out.println("<th nowrap align=\"left\" valign=\"top\">Expected Result</th><td> "
-                + testCaseMessage.getExpectedResult() + "</td>");
-            out.println("</tr>");
-            out.println("<tr>");
             out.println("<th nowrap align=\"left\" valign=\"top\">Assert Result</th><td> "
                 + testCaseMessage.getAssertResult() + "</td>");
             out.println("</tr>");
@@ -233,7 +229,7 @@ public class TestCaseServlet extends ClientServlet {
           }
           out.println("<td>" + testCaseMessage.getAssertResult() + "</td>");
           out.println("<td>" + testCaseMessage.getActualResultAckType() + "</td>");
-          out.println("<td>" + testCaseMessage.getActualResultAckMessage() + "</td>");
+          out.println("<td>" + testCaseMessage.getActualResponseMessage() + "</td>");
           out.println("</tr>");
         }
         out.println("</table>");

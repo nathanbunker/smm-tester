@@ -156,7 +156,7 @@ public class EnvisionConnector extends HttpConnector {
     if (startPos > 0 && endPos > startPos) {
       responseString =
           responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
-      responseString = responseString.replaceAll("\\Q&amp;\\E", "&");
+      responseString = responseString.replaceAll("\\Q&amp;\\E", "&").replaceAll("\\Q&lt;\\E", "<").replaceAll("\\Q&gt;\\E", ">");
       response = new StringBuilder();
       boolean found226 = false;
       boolean found8364 = false;
