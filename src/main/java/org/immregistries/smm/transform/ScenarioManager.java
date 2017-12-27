@@ -72,7 +72,6 @@ public class ScenarioManager {
     String testCaseSet = "";
     String[] quickTransformations = {};
     PatientType patientType = PatientType.ANY_CHILD;
-    String releaseVersion = "1.4";
 
     if (scenario.equals(SCENARIO_BLANK)) {
       description = "Administered for Child";
@@ -341,7 +340,6 @@ public class ScenarioManager {
     testCaseMessage.setOriginalMessage(originalMessage);
     testCaseMessage.setQuickTransformations(quickTransformations);
     testCaseMessage.setPatientType(patientType);
-    testCaseMessage.setReleaseVersion(releaseVersion);
     return testCaseMessage;
   }
 }

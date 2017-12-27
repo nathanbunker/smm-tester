@@ -54,7 +54,7 @@ public class CertifyRunner implements RecordServletInterface {
       input = new InputStreamReader(urlConn.getInputStream());
       BufferedReader in = new BufferedReader(input);
       String line = in.readLine();
-
+      
       while ((line = in.readLine()) != null) {
         testCaseMessageText.append(line);
         testCaseMessageText.append("\n");

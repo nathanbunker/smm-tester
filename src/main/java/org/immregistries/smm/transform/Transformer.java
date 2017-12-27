@@ -666,6 +666,7 @@ public class Transformer {
         } else if (extra.equals("MOTHER")) {
           quickTransforms += "PID-6=~50%[MOTHER_MAIDEN]:[LAST_DIFFERENT]\n";
           quickTransforms += "PID-6.2=[MOTHER]\n";
+          quickTransforms += "PID-6.7=M\n";
           quickTransforms += "NK1-2.1=~60%[LAST]:[LAST_DIFFERENT]\n";
           quickTransforms += "NK1-2.2=[MOTHER]\n";
           quickTransforms += "NK1-2.7=L\n";
@@ -814,19 +815,11 @@ public class Transformer {
         } else if (extra.equals("RACE")) {
           quickTransforms += "PID-10.1=[RACE]\n";
           quickTransforms += "PID-10.2=[RACE_LABEL]\n";
-          if (testCaseMessage.getReleaseVersion().equals("1.4")) {
-            quickTransforms += "PID-10.3=HL70005\n";
-          } else {
-            quickTransforms += "PID-10.3=CDCREC\n";
-          }
+          quickTransforms += "PID-10.3=CDCREC\n";
         } else if (extra.equals("ETHNICITY")) {
           quickTransforms += "PID-22.1=[ETHNICITY]\n";
           quickTransforms += "PID-22.2=[ETHNICITY_LABEL]\n";
-          if (testCaseMessage.getReleaseVersion().equals("1.4")) {
-            quickTransforms += "PID-22.3=HL70005\n";
-          } else {
-            quickTransforms += "PID-22.3=CDCREC\n";
-          }
+          quickTransforms += "PID-22.3=CDCREC\n";
         } else if (extra.equals("2.5.1")) {
           quickTransforms += "MSH-2=^~\\&\n";
           quickTransforms += "MSH-7=[NOW]\n";
@@ -837,12 +830,11 @@ public class Transformer {
               + makeBase62Number(System.currentTimeMillis() % 10000) + "\n";
           quickTransforms += "MSH-11=P\n";
           quickTransforms += "MSH-12=2.5.1\n";
-          if (testCaseMessage.getReleaseVersion().equals("1.5")) {
-            quickTransforms += "MSH-15=ER\n";
-            quickTransforms += "MSH-16=A\n";
-            quickTransforms += "MSH-21.1=Z22\n";
-            quickTransforms += "MSH-21.2=CDCPHINVS\n";
-          }
+          quickTransforms += "MSH-15=ER\n";
+          quickTransforms += "MSH-16=AL\n";
+          quickTransforms += "MSH-21.1=Z22\n";
+          quickTransforms += "MSH-21.2=CDCPHINVS\n";
+          quickTransforms += "PID-1=1\n";
           quickTransforms += "MSH-23\n";
           if (actualTestCase.length() > 15) {
             quickTransforms +=

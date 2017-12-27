@@ -113,7 +113,7 @@ public interface MessageValidationV2Interface {
    *        specify how certain failures are interpreted. For example, length failures may be
    *        detected by the validation service but ignored.
    *        <p>
-   * @return xmlResults – an XML document for reporting the results of the HL7 V2 message
+   * @return xmlResults - an XML document for reporting the results of the HL7 V2 message
    *         validation. For details of the report see the specification for xmlResults. If the
    *         validation process couldn't be performed this is indicated along with the reason why in
    *         the results report.
@@ -166,7 +166,7 @@ public interface MessageValidationV2Interface {
    * that are loaded with this call are reported in the getServiceStatus() method. String
    * xmlLoadResource = loadResource (String resource, String OID, String type);
    * 
-   * @return xmlLoadResource – an XML document indicating the results from the loadResource()
+   * @return xmlLoadResource - an XML document indicating the results from the loadResource()
    *         invocation. The document contains the following attributes.
    *         <p>
    *         status: true if the resource was loaded and validated successfully; false otherwise.
@@ -183,12 +183,12 @@ public interface MessageValidationV2Interface {
    *         errorDescription: This field provides a detailed description indicating the reason the
    *         resource could not be loaded. For a profile, this will include the results from a
    *         profile validation.
-   * @param resource – is the resource to load. A resource is either a profile or a table. The
+   * @param resource - is the resource to load. A resource is either a profile or a table. The
    *        profile is a valid HL7 conformance profile (i.e., it adheres to the HL7 conformance
    *        profile schema and additional requirements place on it by the NIST service). A table is
    *        validated by the hl7TableLibrary schema.
    * @param OID an identifier that references the resource.
-   * @param type – is the type of the resource. The type is either PROFILE or TABLE.
+   * @param type - is the type of the resource. The type is either PROFILE or TABLE.
    */
   String loadResource(String resource, String oid, String type);
 }

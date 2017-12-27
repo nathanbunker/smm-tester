@@ -135,7 +135,6 @@ public class TestCaseMessage {
   private String actualResultAckMessage = "";
   private String actualMessageResponseType = "";
   private PatientType patientType = PatientType.ANY_CHILD;
-  private String releaseVersion = "";
   private boolean hasIssue = false;
   private Throwable exception = null;
   private String actualResponseMessage = "";
@@ -398,14 +397,6 @@ public class TestCaseMessage {
 
   public void setValidationReport(ValidationReport validationReport) {
     this.validationReport = validationReport;
-  }
-
-  public String getReleaseVersion() {
-    return releaseVersion;
-  }
-
-  public void setReleaseVersion(String releaseVersion) {
-    this.releaseVersion = releaseVersion;
   }
 
   public String getTestType() {
