@@ -88,6 +88,10 @@ public class SubmitServlet extends ClientServlet {
           if (testCaseMessage != null) {
             scenarioTransforms =
                 connector.getScenarioTransformationsMap().get(testCaseMessage.getScenario());
+            if (scenarioTransforms == null) {
+              scenarioTransforms = connector.getScenarioTransformationsMap()
+                  .get(testCaseMessage.getTestCaseNumber());
+            }
             additionalTransformations = testCaseMessage.getAdditionalTransformations();
             if (additionalTransformations.equals("")) {
               additionalTransformations = null;
@@ -125,6 +129,10 @@ public class SubmitServlet extends ClientServlet {
           if (testCaseMessage != null) {
             scenarioTransforms =
                 connector.getScenarioTransformationsMap().get(testCaseMessage.getScenario());
+            if (scenarioTransforms == null) {
+              scenarioTransforms = connector.getScenarioTransformationsMap()
+                  .get(testCaseMessage.getTestCaseNumber());
+            }
             additionalTransformations = testCaseMessage.getAdditionalTransformations();
             if (additionalTransformations.equals("")) {
               additionalTransformations = null;

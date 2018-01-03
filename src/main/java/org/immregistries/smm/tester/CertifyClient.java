@@ -132,6 +132,7 @@ public class CertifyClient {
                 if (testCaseMessage == null) {
                   System.err.println("  + Couldn't load test case " + testMessageId);
                   System.err.println("Not able to run test");
+                  CertifyRunner.reportProgress(null, testMessageId, sendData);
                 } else {
                   System.out.println("  + Found " + testCaseMessage.getDescription());
                   TestRunner testRunner = new TestRunner();

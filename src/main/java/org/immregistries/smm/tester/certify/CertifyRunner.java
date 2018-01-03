@@ -35,13 +35,8 @@ public class CertifyRunner implements RecordServletInterface {
     try {
       HttpURLConnection urlConn;
       InputStreamReader input = null;
-      StringBuilder r = new StringBuilder(TEST_MESSAGE_DOWNLOAD_URL);
-      r.append("?");
-      r.append(PARAM_TEST_MESSAGE_ID);
-      r.append("=");
-      r.append(testMessageId);
-
-      URL url = new URL(r.toString());
+      String testCaseMessageUrl = createTestCaseMessageUrl(testMessageId);
+      URL url = new URL(testCaseMessageUrl);
 
       urlConn = (HttpURLConnection) url.openConnection();
       urlConn.setRequestMethod("GET");
@@ -54,7 +49,7 @@ public class CertifyRunner implements RecordServletInterface {
       input = new InputStreamReader(urlConn.getInputStream());
       BufferedReader in = new BufferedReader(input);
       String line = in.readLine();
-      
+
       while ((line = in.readLine()) != null) {
         testCaseMessageText.append(line);
         testCaseMessageText.append("\n");
@@ -66,6 +61,17 @@ public class CertifyRunner implements RecordServletInterface {
     TestCaseMessage testCaseMessage =
         TestCaseMessageManager.createTestCaseMessage(testCaseMessageText.toString());
     return testCaseMessage;
+  }
+
+  public static String createTestCaseMessageUrl(String testMessageId) {
+    StringBuilder r = new StringBuilder(TEST_MESSAGE_DOWNLOAD_URL);
+    r.append("?");
+    r.append(PARAM_TEST_MESSAGE_ID);
+    r.append("=");
+    r.append(testMessageId);
+
+    String testCaseMessageUrl = r.toString();
+    return testCaseMessageUrl;
   }
 
   private static final int MAX_RETRY_COUNT = 15;
@@ -198,28 +204,32 @@ public class CertifyRunner implements RecordServletInterface {
       addField(sb, PARAM_TEST_MESSAGE_ID, testMessageId);
       addField(sb, PARAM_TESTER_STATUS_READY_STATUS, PARAM_TESTER_STATUS_TESTER_STATUS_TESTING);
 
-
-      addField(sb, PARAM_TM_TEST_POSITION, testCaseMessage.getTestPosition());
-      addField(sb, PARAM_TM_TEST_TYPE, testCaseMessage.getTestType());
-      addField(sb, PARAM_TM_TEST_CASE_NUMBER, testCaseMessage.getTestCaseCategoryId());
-      addField(sb, PARAM_TM_TEST_CASE_DESCRIPTION, testCaseMessage.getDescription());
-      addField(sb, PARAM_TM_TEST_CASE_ASSERT_RESULT, testCaseMessage.getAssertResult());
-      addField(sb, PARAM_TM_TEST_CASE_FIELD_NAME, testCaseMessage.getFieldName());
-      addField(sb, PARAM_TM_PREP_MAJOR_CHANGES_MADE, testCaseMessage.isMajorChangesMade());
-      addField(sb, PARAM_TM_PREP_MESSAGE_DERIVED_FROM, testCaseMessage.getDerivedFromVXUMessage());
-      addField(sb, PARAM_TM_PREP_MESSAGE_ORIGINAL_RESPONSE,
-          testCaseMessage.getOriginalMessageResponse());
-      addField(sb, PARAM_TM_PREP_MESSAGE_ACTUAL, testCaseMessage.getMessageTextSent());
-      addField(sb, PARAM_TM_RESULT_MESSAGE_ACTUAL, testCaseMessage.getActualResponseMessage());
-      addField(sb, PARAM_TM_RESULT_STATUS, testCaseMessage.getActualResultStatus());
-      addField(sb, PARAM_TM_RESULT_QUERY_TYPE, testCaseMessage.getActualResultQueryType());
-      addField(sb, PARAM_TM_RESULT_FORECAST_STATUS, testCaseMessage.getResultForecastStatus());
-      addField(sb, PARAM_TM_RESULT_ACCEPTED, testCaseMessage.isAccepted());
-      addField(sb, PARAM_TM_RESULT_EXECEPTION_TEXT, testCaseMessage.getException());
-      addField(sb, PARAM_TM_RESULT_ACK_TYPE, testCaseMessage.getActualResultAckType());
-      addField(sb, PARAM_TM_RESULT_RUN_TIME_MS, testCaseMessage.getTotalRunTime());
-      addField(sb, PARAM_TM_TEST_RUN_LOG, testCaseMessage.getLog());
-
+      if (testCaseMessage == null) {
+        addField(sb, PARAM_TM_RESULT_EXECEPTION_TEXT, "SMM/Tester was unable to load test case #"
+            + testMessageId + " from this AART URL: " + createTestCaseMessageUrl(testMessageId));
+      } else {
+        addField(sb, PARAM_TM_TEST_POSITION, testCaseMessage.getTestPosition());
+        addField(sb, PARAM_TM_TEST_TYPE, testCaseMessage.getTestType());
+        addField(sb, PARAM_TM_TEST_CASE_NUMBER, testCaseMessage.getTestCaseCategoryId());
+        addField(sb, PARAM_TM_TEST_CASE_DESCRIPTION, testCaseMessage.getDescription());
+        addField(sb, PARAM_TM_TEST_CASE_ASSERT_RESULT, testCaseMessage.getAssertResult());
+        addField(sb, PARAM_TM_TEST_CASE_FIELD_NAME, testCaseMessage.getFieldName());
+        addField(sb, PARAM_TM_PREP_MAJOR_CHANGES_MADE, testCaseMessage.isMajorChangesMade());
+        addField(sb, PARAM_TM_PREP_MESSAGE_DERIVED_FROM,
+            testCaseMessage.getDerivedFromVXUMessage());
+        addField(sb, PARAM_TM_PREP_MESSAGE_ORIGINAL_RESPONSE,
+            testCaseMessage.getOriginalMessageResponse());
+        addField(sb, PARAM_TM_PREP_MESSAGE_ACTUAL, testCaseMessage.getMessageTextSent());
+        addField(sb, PARAM_TM_RESULT_MESSAGE_ACTUAL, testCaseMessage.getActualResponseMessage());
+        addField(sb, PARAM_TM_RESULT_STATUS, testCaseMessage.getActualResultStatus());
+        addField(sb, PARAM_TM_RESULT_QUERY_TYPE, testCaseMessage.getActualResultQueryType());
+        addField(sb, PARAM_TM_RESULT_FORECAST_STATUS, testCaseMessage.getResultForecastStatus());
+        addField(sb, PARAM_TM_RESULT_ACCEPTED, testCaseMessage.isAccepted());
+        addField(sb, PARAM_TM_RESULT_EXECEPTION_TEXT, testCaseMessage.getException());
+        addField(sb, PARAM_TM_RESULT_ACK_TYPE, testCaseMessage.getActualResultAckType());
+        addField(sb, PARAM_TM_RESULT_RUN_TIME_MS, testCaseMessage.getTotalRunTime());
+        addField(sb, PARAM_TM_TEST_RUN_LOG, testCaseMessage.getLog());
+      }
       content = sb.toString();
       printout = new DataOutputStream(urlConn.getOutputStream());
       printout.writeBytes(content);

@@ -664,6 +664,12 @@ public abstract class Connector {
           endPos = line.length();
         }
         lastList = line.substring("Scenario Transform for ".length(), endPos).trim();
+      } else if (line.startsWith("Test Case Transform for ")) {
+        int endPos = line.lastIndexOf(':');
+        if (endPos == -1) {
+          endPos = line.length();
+        }
+        lastList = line.substring("Test Case Transform for ".length(), endPos).trim();
       } else if (line.startsWith("TCH Forecast Tester Software Id:")) {
         try {
           tchForecastTesterSoftwareId = Integer.parseInt(readValue(line));

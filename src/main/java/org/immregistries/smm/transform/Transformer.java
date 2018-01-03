@@ -458,6 +458,10 @@ public class Transformer {
     String message = testCaseMessage.getMessageText();
     String scenarioTransforms =
         connector.getScenarioTransformationsMap().get(testCaseMessage.getScenario());
+    if (scenarioTransforms == null) {
+      scenarioTransforms =
+          connector.getScenarioTransformationsMap().get(testCaseMessage.getTestCaseNumber());
+    }
     String additionalTransformations = testCaseMessage.getAdditionalTransformations();
     if (additionalTransformations.equals("")) {
       additionalTransformations = null;
