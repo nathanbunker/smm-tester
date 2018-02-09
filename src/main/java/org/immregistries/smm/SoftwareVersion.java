@@ -2,9 +2,11 @@ package org.immregistries.smm;
 
 
 public class SoftwareVersion {
-  public static final String DQACM_BASE = "http://localhost:8080/aart/";
+  public static final String DQACM_BASE = "http://app.immregistries.org/aart/";
   // "http://localhost:8289/";
   // "http://ois-pt.org/dqacm/";
+  // "http://localhost:8080/aart/";
+  // "http://app.immregistries.org/aart/";
 
   public static final String EVS_URL =
       "http://hl7v2.ws.nist.gov/hl7v2ws//services/soap/MessageValidationV2";

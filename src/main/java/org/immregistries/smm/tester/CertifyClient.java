@@ -5,47 +5,256 @@ package org.immregistries.smm.tester;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 import org.immregistries.smm.RecordServletInterface;
 import org.immregistries.smm.mover.ConnectionManager;
 import org.immregistries.smm.mover.SendData;
+import org.immregistries.smm.mover.ShutdownInterceptor;
 import org.immregistries.smm.tester.certify.CertifyRunner;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.run.TestRunner;
 import org.immregistries.smm.transform.TestCaseMessage;
-import org.immregistries.smm.transform.forecast.ForecastTestPanel;
 
 /**
  * 
  * @author nathan
  */
-public class CertifyClient {
+public class CertifyClient extends Thread {
 
-  private static Map<String, Map<String, TestCaseMessage>> testMessageMapMap =
-      new HashMap<String, Map<String, TestCaseMessage>>();
-  private static SendData sendData = null;
-  private static Connector connector = null;
+  private SendData sendData = null;
+  private Connector connector = null;
   private static String aartName = null;
+  private static List<String> aartUrlList = new ArrayList<String>();
+  private boolean keepRunning = true;
+  private String aartUrl = "";
+  private int sendCount = 0;
+  private StatusLog statusLog = null;
+  private static List<StatusLog> statusLogList = new ArrayList<CertifyClient.StatusLog>();
+  private String status = "";
+  private String aartConnectStatus = "";
 
-  private static List<ForecastTestPanel> forecastTestPanelList = new ArrayList<ForecastTestPanel>();
+  public StatusLog getStatusLog() {
+    return statusLog;
+  }
 
-  static {
-    for (ForecastTestPanel forecastTestPanel : ForecastTestPanel.values()) {
-      if (forecastTestPanel.isStandard()) {
-        forecastTestPanelList.add(forecastTestPanel);
+  public SendData getSendData() {
+    return sendData;
+  }
+
+  public void setSendData(SendData sendData) {
+    this.sendData = sendData;
+  }
+
+  public String getAartConnectStatus() {
+    return aartConnectStatus;
+  }
+
+  public void setAartConnectStatus(String aartConnectStatus) {
+    this.aartConnectStatus = aartConnectStatus;
+  }
+
+  public static String getAartName() {
+    return aartName;
+  }
+
+  public String getAartUrl() {
+    return aartUrl;
+  }
+
+  public Connector getConnector() {
+    return connector;
+  }
+
+  public String getStatus() {
+    return status;
+  }
+
+  public class StatusLog {
+
+    private String statusMessage = "";
+    private String aartPublicIdCode = "";
+    private String testMessageId = "";
+    private String problemMessage = null;
+    private String organizationName = "";
+    private Throwable exception = null;
+    private String testCaseDescription = "";
+
+    public String getTestCaseDescription() {
+      return testCaseDescription;
+    }
+
+    public void setTestCaseDescription(String testCaseDescription) {
+      this.testCaseDescription = testCaseDescription;
+    }
+
+    public Throwable getException() {
+      return exception;
+    }
+
+    public void setException(Throwable exception) {
+      this.exception = exception;
+    }
+
+    public String getStatusMessage() {
+      return statusMessage;
+    }
+
+    public void setStatusMessage(String statusMessage) {
+      this.statusMessage = statusMessage;
+    }
+
+    public String getAartPublicIdCode() {
+      return aartPublicIdCode;
+    }
+
+    public void setAartPublicIdCode(String aartPublicIdCode) {
+      this.aartPublicIdCode = aartPublicIdCode;
+    }
+
+    public String getTestMessageId() {
+      return testMessageId;
+    }
+
+    public void setTestMessageId(String testMessageId) {
+      this.testMessageId = testMessageId;
+    }
+
+    public String getProblemMessage() {
+      return problemMessage;
+    }
+
+    public void setProblemMessage(String problemMessage) {
+      this.problemMessage = problemMessage;
+    }
+
+    public String getOrganizationName() {
+      return organizationName;
+    }
+
+    public void setOrganizationName(String organizationName) {
+      this.organizationName = organizationName;
+    }
+  }
+
+  private static final int STATUS_LOG_LIST_MAX_SIZE = 5000;
+
+  private static void addToStatusLogList(StatusLog statusLog) {
+    synchronized (statusLogList) {
+      while (statusLogList.size() > STATUS_LOG_LIST_MAX_SIZE) {
+        statusLogList.remove(0);
+      }
+      statusLogList.add(statusLog);
+    }
+  }
+
+  private static StatusLog getStatusLog(String testMessageId) {
+    for (StatusLog statusLog : statusLogList) {
+      if (statusLog.testMessageId.equals(testMessageId)) {
+        return statusLog;
       }
     }
+    return null;
+  }
+
+  public void stopRunning() {
+    keepRunning = false;
+  }
+
+  public CertifyClient(String aartUrl) {
+    this.aartUrl = aartUrl;
+  }
+
+  @Override
+  public void run() {
+    while (keepRunning) {
+      try {
+        String aartAction = null;
+        {
+          status = RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_READY;
+          aartAction = CertifyRunner.reportStatus(this);
+          if (aartAction.equals("")) {
+            aartAction = null;
+          } else {
+            if (aartAction.startsWith(RecordServletInterface.PARAM_TESTER_ACTION_RUN)) {
+              String[] actionArgs = aartAction.split("\\s");
+              if (actionArgs.length > 2) {
+                statusLog = new StatusLog();
+                statusLog.setAartPublicIdCode(actionArgs[1]);
+                statusLog.setTestMessageId(actionArgs[2]);
+                statusLog.setStatusMessage("Run command received");
+                addToStatusLogList(statusLog);
+
+                for (SendData sd1 : ConnectionManager.getSendDataList()) {
+                  if (sd1.getConnector() != null && sd1.getConnector().getAartPublicIdCode()
+                      .equals(statusLog.getAartPublicIdCode())) {
+                    ConnectServlet.readNewConnection(this, sd1.getInternalId());
+                    connector = sendData.getConnector();
+                    break;
+                  }
+                }
+                if (connector == null) {
+                  statusLog.setProblemMessage("Connector was not intialized");
+                  continue;
+                } else if (sendData.getTestParticipant() == null) {
+                  statusLog.setProblemMessage(
+                      "Test participant is not recognized and can't be reported to AART");
+                  continue;
+                }
+                statusLog.setOrganizationName(sendData.getTestParticipant().getOrganizationName());
+                statusLog.setStatusMessage("Retrieving test case message");
+                TestCaseMessage testCaseMessage = CertifyRunner.getTestCaseMessage(this);
+
+                if (testCaseMessage == null) {
+                  statusLog
+                      .setProblemMessage("Couldn't load test case " + statusLog.getTestMessageId());
+                  CertifyRunner.reportProgress(null, this);
+                } else {
+                  statusLog.setTestCaseDescription(testCaseMessage.getDescription());
+                  TestRunner testRunner = new TestRunner();
+                  testRunner.setValidateResponse(false);
+                  statusLog.setStatusMessage("Running test case");
+                  try {
+                    testRunner.runTest(connector, testCaseMessage);
+                    sendCount++;
+                  } catch (Throwable t) {
+                    statusLog
+                        .setProblemMessage("Unable to run test case, exception: " + t.getMessage());
+                    statusLog.setException(t);
+                  }
+                  statusLog.setStatusMessage("Reporting results");
+                  CertifyRunner.reportProgress(testCaseMessage, this);
+                  statusLog.setStatusMessage("Test completed");
+                }
+              }
+            }
+          }
+        }
+
+        if (aartAction == null
+            || !aartAction.startsWith(RecordServletInterface.PARAM_TESTER_ACTION_RUN)) {
+          try {
+            TimeUnit.SECONDS.sleep(30);
+          } catch (InterruptedException ie) {
+            // just keep going
+          }
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+        return;
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+    System.out.println("Shutdown confirmed: " + aartUrl);
   }
 
   public static void main(String[] args) throws Exception {
@@ -67,6 +276,7 @@ public class CertifyClient {
       PrintWriter out = new PrintWriter(new FileOutputStream(configFile));
       {
         out.println("AART Name: ");
+        out.println("AART URL: http://app.immregistries.org/aart/");
         out.println("Scan Folder: ");
         out.println("Key Store: ");
         out.println("Key Store Password: ");
@@ -78,108 +288,120 @@ public class CertifyClient {
     }
     System.out.println("Starting Tester Client");
     System.out.println("  + Initializing send data manager");
-    initManagerServlet(args);
+    ConnectionManager connectionManager = initManagerServlet(args);
     if (aartName == null) {
-      System.err.println("AART name is not defined in configuration file ");
+      System.err.println("Unable to start: AART Name is not defined in configuration file ");
+      return;
+    } else if (aartUrlList.size() == 0) {
+      System.err.println("Unable to start: AART URL is not defined");
       return;
     }
-    System.out.println("  + Initializing profile manager");
+    connectionManager.init();
+
+    System.out.println("Service will start in 10 seconds...");
     try {
-      TimeUnit.SECONDS.sleep(10);
+      TimeUnit.SECONDS.sleep(5);
     } catch (InterruptedException ie) {
       // just keep going
     }
-    System.out.println("  + Ready to go");
+    System.out.println("Service will start in 5 seconds...");
+    try {
+      TimeUnit.SECONDS.sleep(5);
+    } catch (InterruptedException ie) {
+      // just keep going
+    }
+    List<CertifyClient> certifyClientList = new ArrayList<CertifyClient>();
+    for (String aartUrl : aartUrlList) {
+      CertifyClient cc = new CertifyClient(aartUrl);
+      certifyClientList.add(cc);
+    }
+    System.out.println("Connecting to:");
+    for (CertifyClient cc : certifyClientList) {
+      System.out.println("  + " + cc.getAartUrl());
+      cc.start();
+    }
+    System.out.println("Ready to go, available commands: ");
+    printHelp();
+    Scanner scanner = new Scanner(System.in);
     while (true) {
-      try {
-
-        String aartAction = null;
-        {
-          aartAction = CertifyRunner.reportStatus(aartName,
-              RecordServletInterface.PARAM_TESTER_STATUS_TESTER_STATUS_READY, null);
-          if (aartAction.equals("")) {
-            aartAction = null;
+      System.out.print(">> ");
+      String command = scanner.nextLine();
+      if (command.equalsIgnoreCase("help")) {
+        printHelp();
+      } else if (command.equalsIgnoreCase("shutdown")) {
+        break;
+      } else if (command.equalsIgnoreCase("status")) {
+        for (CertifyClient cc : certifyClientList) {
+          System.out.println("   " + cc.aartUrl);
+          System.out.println("     " + cc.getAartConnectStatus());
+          if (cc.statusLog == null) {
+            System.out.println("     No commands received");
           } else {
-            if (aartAction.startsWith(RecordServletInterface.PARAM_TESTER_ACTION_RUN)) {
-              String[] actionArgs = aartAction.split("\\s");
-              if (actionArgs.length > 2) {
-                String aartPublicIdCode = actionArgs[1];
-                String testMessageId = actionArgs[2];
-                System.out.println("Run command received");
-                System.out.println("  + AART Public Id Code: " + aartPublicIdCode);
-                System.out.println("  + Test Message Id:     " + testMessageId);
-                for (SendData sd1 : ConnectionManager.getSendDataList()) {
-                  if (sd1.getConnector() != null
-                      && sd1.getConnector().getAartPublicIdCode().equals(aartPublicIdCode)) {
-                    sendData = ConnectServlet.addNewConnection(null, sd1.getInternalId(), true);
-                    connector = sendData.getConnector();
-                    break;
-                  }
-                }
-                if (connector == null) {
-                  System.err.println("  + Problem, connector was not intialized ");
-                  continue;
-                } else if (sendData.getTestParticipant() == null) {
-                  System.err.println(
-                      "  + Problem, test participant is not recognized and can't be reported to AART ");
-                  continue;
-                }
-
-                System.out.println("  + Test Participant Organization: "
-                    + sendData.getTestParticipant().getOrganizationName());
-                System.out.println("Retrieving test case message");
-                TestCaseMessage testCaseMessage = CertifyRunner.getTestCaseMessage(testMessageId);
-                if (testCaseMessage == null) {
-                  System.err.println("  + Couldn't load test case " + testMessageId);
-                  System.err.println("Not able to run test");
-                  CertifyRunner.reportProgress(null, testMessageId, sendData);
-                } else {
-                  System.out.println("  + Found " + testCaseMessage.getDescription());
-                  TestRunner testRunner = new TestRunner();
-                  testRunner.setValidateResponse(false);
-                  System.out.println("Running test");
-                  boolean passed = false;
-                  try {
-                    passed = testRunner.runTest(connector, testCaseMessage);
-                    System.out.println("  + result " + testCaseMessage.getActualResultStatus());
-                    if (passed) {
-                      System.out.println("  + test PASSED");
-                    } else {
-                      System.out.println("  + test FAILED");
-                    }
-                  } catch (Throwable t) {
-                    System.err.println("Exception running test case message: " + t.getMessage());
-                    t.printStackTrace(System.err);
-                  }
-                  System.out.println("Reporting results");
-                  CertifyRunner.reportProgress(testCaseMessage, testMessageId, sendData);
-                  System.out.println("Completed");
-                }
-
-              }
-            }
+            printOutStatusLog(cc.statusLog);
+          }
+          if (cc.sendCount > 0) {
+            System.out.println("     Count:   " + cc.sendCount);
           }
         }
-
-        if (aartAction == null
-            || !aartAction.startsWith(RecordServletInterface.PARAM_TESTER_ACTION_RUN)) {
-          try {
-            TimeUnit.SECONDS.sleep(30);
-          } catch (InterruptedException ie) {
-            // just keep going
+      } else if (command.equalsIgnoreCase("recent")) {
+        synchronized(statusLogList)
+        {
+          int start = statusLogList.size() - 25;
+          if (start < 0)
+          {
+            start = 0;
+          }
+          for (int i = start; i < statusLogList.size(); i++)
+          {
+            StatusLog statusLog = statusLogList.get(i);
+            System.out.println("   " + statusLog.getTestMessageId() + " -- " + statusLog.getStatusMessage());
           }
         }
-      } catch (IOException e) {
-        e.printStackTrace();
-        return;
-      } catch (Exception e) {
-        e.printStackTrace();
+      } else {
+        StatusLog statusLog = getStatusLog(command);
+        if (statusLog == null) {
+          System.out.println("Test case number not recognized");
+        } else {
+          System.out.println("Status for test case " + command);
+          printOutStatusLog(statusLog);
+        }
       }
+    }
+    scanner.close();
+    System.out.println("Shutting down senders...");
+    for (CertifyClient cc : certifyClientList) {
+      cc.stopRunning();
+      System.out.println("  + " + cc.aartUrl);
+    }
+    System.out.println("Shutting down connection manager...");
+    ShutdownInterceptor shutdown = new ShutdownInterceptor();
+    shutdown.run();
+  }
+
+  public static void printHelp() {
+    System.out.println(" + status");
+    System.out.println(" + recent");
+    System.out.println(" + shutdown");
+    System.out.println(" + [test case number]");
+  }
+
+  public static void printOutStatusLog(StatusLog statusLog) {
+    System.out.println("     + Status:    " + statusLog.getStatusMessage());
+    System.out.println("     + IIS ID:    " + statusLog.getAartPublicIdCode());
+    System.out.println("     + Test ID:   " + statusLog.getTestMessageId());
+    System.out.println("     + Test Desc: " + statusLog.getTestCaseDescription());
+    System.out.println("     + Org:       " + statusLog.getOrganizationName());;
+    if (statusLog.getProblemMessage() != null) {
+      System.err.println("     + Problem:   " + statusLog.getProblemMessage());
+    }
+    if (statusLog.getException() != null) {
+      statusLog.getException().printStackTrace(System.err);
     }
   }
 
 
-  public static void initManagerServlet(String[] args) throws FileNotFoundException, IOException {
+  public static ConnectionManager initManagerServlet(String[] args)
+      throws FileNotFoundException, IOException {
     ConnectionManager connectionManager = new ConnectionManager();
     BufferedReader in = new BufferedReader(new FileReader(args[0]));
     String line;
@@ -191,6 +413,8 @@ public class CertifyClient {
         if (value.length() > 0) {
           if (key.equals("AART Name")) {
             aartName = value;
+          } else if (key.equals("AART URL")) {
+            aartUrlList.add(value);
           } else if (key.equals("Key Store")) {
             connectionManager.setKeyStore(value);
           } else if (key.equals("Key Store Password")) {
@@ -205,44 +429,9 @@ public class CertifyClient {
       }
     }
     in.close();
-    connectionManager.init();
+    return connectionManager;
+
   }
 
-  protected static void setupKeystore() throws IOException {
-    if (connector.getKeyStorePassword() != null && !connector.getKeyStorePassword().equals("")) {
-      File keyStoreFile = new File(sendData.getRootDir(), SendData.KEYSTORE_FILE_NAME);
-      if (keyStoreFile.exists()) {
-        System.setProperty("javax.net.ssl.keyStore", keyStoreFile.getCanonicalPath());
-        System.setProperty("javax.net.ssl.keyStorePassword", connector.getKeyStorePassword());
-        System.out.println("Set keystore to be: " + keyStoreFile.getCanonicalPath());
-      } else {
-        System.err
-            .println("Unable to find key store file here: " + keyStoreFile.getCanonicalPath());
-      }
-    }
-  }
-
-  protected static void loadTestCases() throws IOException {
-    {
-      File testCaseDir = sendData.getTestCaseDir(false);
-      if (testCaseDir != null) {
-        CreateTestCaseServlet.readTestCases(testMessageMapMap, testCaseDir, null, false);
-        {
-          File[] dirs = testCaseDir.listFiles(new FileFilter() {
-            public boolean accept(File arg0) {
-              return arg0.isDirectory() && !arg0.getName()
-                  .startsWith(CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX);
-            }
-          });
-          if (dirs != null) {
-            for (File dir : dirs) {
-              CreateTestCaseServlet.readTestCases(testMessageMapMap, dir, dir.getName(), false);
-            }
-          }
-        }
-      }
-      CreateTestCaseServlet.setupGlobalTestCases(testMessageMapMap);
-    }
-  }
 
 }

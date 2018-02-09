@@ -13,8 +13,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 import org.immregistries.smm.RecordServletInterface;
-import org.immregistries.smm.SoftwareVersion;
 import org.immregistries.smm.mover.SendData;
+import org.immregistries.smm.tester.CertifyClient;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.manager.TestCaseMessageManager;
 import org.immregistries.smm.tester.manager.TestParticipant;
@@ -23,19 +23,19 @@ import org.immregistries.smm.transform.TestCaseMessage;
 
 public class CertifyRunner implements RecordServletInterface {
 
-  public static final String REPORT_URL = SoftwareVersion.DQACM_BASE + "record";
-  private static final String MANUAL_URL = SoftwareVersion.DQACM_BASE + "manual";
-  private static final String TEST_MESSAGE_DOWNLOAD_URL =
-      SoftwareVersion.DQACM_BASE + "testMessageDownload";
+  // public static final String REPORT_URL = SoftwareVersion.DQACM_BASE + "record";
+  // private static final String MANUAL_URL = SoftwareVersion.DQACM_BASE + "manual";
+  // private static final String TEST_MESSAGE_DOWNLOAD_URL =
+  // SoftwareVersion.DQACM_BASE + "testMessageDownload";
 
 
 
-  public static TestCaseMessage getTestCaseMessage(String testMessageId) throws Exception {
+  public static TestCaseMessage getTestCaseMessage(CertifyClient certifyClient) throws Exception {
     StringBuilder testCaseMessageText = new StringBuilder();
     try {
       HttpURLConnection urlConn;
       InputStreamReader input = null;
-      String testCaseMessageUrl = createTestCaseMessageUrl(testMessageId);
+      String testCaseMessageUrl = createTestCaseMessageUrl(certifyClient);
       URL url = new URL(testCaseMessageUrl);
 
       urlConn = (HttpURLConnection) url.openConnection();
@@ -63,12 +63,12 @@ public class CertifyRunner implements RecordServletInterface {
     return testCaseMessage;
   }
 
-  public static String createTestCaseMessageUrl(String testMessageId) {
-    StringBuilder r = new StringBuilder(TEST_MESSAGE_DOWNLOAD_URL);
+  public static String createTestCaseMessageUrl(CertifyClient certifyClient) {
+    StringBuilder r = new StringBuilder(certifyClient.getAartUrl() + "testMessageDownload");
     r.append("?");
     r.append(PARAM_TEST_MESSAGE_ID);
     r.append("=");
-    r.append(testMessageId);
+    r.append(certifyClient.getStatusLog().getTestMessageId());
 
     String testCaseMessageUrl = r.toString();
     return testCaseMessageUrl;
@@ -76,13 +76,15 @@ public class CertifyRunner implements RecordServletInterface {
 
   private static final int MAX_RETRY_COUNT = 15;
 
-  public static String reportStatus(String aartName, String status, Connector connector)
-      throws IOException {
+  public static String reportStatus(CertifyClient certifyClient) throws IOException {
 
+    String aartName = CertifyClient.getAartName();
+    String status = certifyClient.getStatus();
+    Connector connector = certifyClient.getConnector();
     HttpURLConnection urlConn;
     InputStreamReader input = null;
-    StringBuilder r = new StringBuilder(MANUAL_URL);
-    r.append("?");
+    StringBuilder r = new StringBuilder(certifyClient.getAartUrl() );
+    r.append("manual?");
     r.append(PARAM_TESTER_STATUS_UPDATE);
     r.append("=");
     r.append("Yes");
@@ -126,7 +128,9 @@ public class CertifyRunner implements RecordServletInterface {
           line = in.readLine();
           input.close();
           if (connectTryCount > 1) {
-            System.out.println("Reconnected to AART");
+            certifyClient.setAartConnectStatus("Reconnected");
+          } else {
+            certifyClient.setAartConnectStatus("Connected");
           }
           if (line == null) {
             return "";
@@ -137,18 +141,16 @@ public class CertifyRunner implements RecordServletInterface {
           if (connectTryCount >= MAX_RETRY_COUNT) {
             throw connectException;
           }
-          System.err.println("Unable to connect to AART");
-          System.err.println("  + AART URL:  " + r.toString());
-          System.err.println("  + Exception: " + connectException.getMessage());
           try {
             if (timeoutWait < 60 * 1000) {
-              System.err.println("Will try to reconnect in " + (timeoutWait / 1000) + " second(s)");
+              certifyClient.setAartConnectStatus(
+                  "Unable to connect, will retry in " + (timeoutWait / 1000) + " second(s)");
             } else if (timeoutWait < 60 * 60 * 1000) {
-              System.err
-                  .println("Will try to reconnect in " + (timeoutWait / 60 * 1000) + " minute(s)");
+              certifyClient.setAartConnectStatus(
+                  "Unable to connect, will retry in " + (timeoutWait / 60 * 1000) + " minute(s)");
             } else {
-              System.out.println(
-                  "Will try to reconnect in " + (timeoutWait / 60 * 60 * 1000) + " hour(s)");
+              certifyClient.setAartConnectStatus("Unable to connect, will retry in "
+                  + (timeoutWait / 60 * 60 * 1000) + " hour(s)");
             }
             synchronized (connectException) {
               connectException.wait(timeoutWait);
@@ -165,17 +167,15 @@ public class CertifyRunner implements RecordServletInterface {
     return "";
   }
 
-  public static void reportProgress(TestCaseMessage testCaseMessage, String testMessageId,
-      SendData sendData) {
-    if (REPORT_URL == null) {
-      return;
-    }
+  public static void reportProgress(TestCaseMessage testCaseMessage, CertifyClient certifyClient) {
+    String testMessageId = certifyClient.getStatusLog().getTestMessageId();
+    SendData sendData = certifyClient.getSendData();
     try {
 
       HttpURLConnection urlConn;
       DataOutputStream printout;
       InputStreamReader input = null;
-      URL url = new URL(REPORT_URL);
+      URL url = new URL(certifyClient.getAartUrl() + "record");
 
       urlConn = (HttpURLConnection) url.openConnection();
       urlConn.setConnectTimeout(120 * 1000);
@@ -206,7 +206,7 @@ public class CertifyRunner implements RecordServletInterface {
 
       if (testCaseMessage == null) {
         addField(sb, PARAM_TM_RESULT_EXECEPTION_TEXT, "SMM/Tester was unable to load test case #"
-            + testMessageId + " from this AART URL: " + createTestCaseMessageUrl(testMessageId));
+            + testMessageId + " from this AART URL: " + createTestCaseMessageUrl(certifyClient));
       } else {
         addField(sb, PARAM_TM_TEST_POSITION, testCaseMessage.getTestPosition());
         addField(sb, PARAM_TM_TEST_TYPE, testCaseMessage.getTestType());
@@ -257,42 +257,40 @@ public class CertifyRunner implements RecordServletInterface {
   }
 
 
-  public static TestParticipant getParticipantResponse(SendData sendData) {
+  public static TestParticipant getParticipantResponse(CertifyClient certifyClient) {
     TestParticipant testParticipant = null;
-    if (REPORT_URL != null) {
-      if (sendData.getConnector() != null
-          && !sendData.getConnector().getAartPublicIdCode().equals("")) {
-        try {
-          HttpURLConnection urlConn;
-          InputStreamReader input = null;
-          String link = REPORT_URL + "?" + PARAM_RESOURCE + "=" + RESOURCE_TEST_PARTICIPANT + "&"
-              + PARAM_TPAR_PUBLIC_ID_CODE + "=" + sendData.getConnector().getAartPublicIdCode()
-              + "&" + PARAM_TPAR_ACCESS_PASSCODE + "="
-              + sendData.getConnector().getAartAccessPasscode();
-          URL url = new URL(link);
-          urlConn = (HttpURLConnection) url.openConnection();
-          urlConn.setConnectTimeout(120 * 1000);
-          urlConn.setRequestMethod("GET");
+    SendData sendData = certifyClient.getSendData();
+    if (sendData.getConnector() != null
+        && !sendData.getConnector().getAartPublicIdCode().equals("")) {
+      try {
+        HttpURLConnection urlConn;
+        InputStreamReader input = null;
+        String link = certifyClient.getAartUrl() + "record?" + PARAM_RESOURCE + "=" + RESOURCE_TEST_PARTICIPANT + "&"
+            + PARAM_TPAR_PUBLIC_ID_CODE + "=" + sendData.getConnector().getAartPublicIdCode() + "&"
+            + PARAM_TPAR_ACCESS_PASSCODE + "=" + sendData.getConnector().getAartAccessPasscode();
+        URL url = new URL(link);
+        urlConn = (HttpURLConnection) url.openConnection();
+        urlConn.setConnectTimeout(120 * 1000);
+        urlConn.setRequestMethod("GET");
 
-          urlConn.setDoInput(true);
-          urlConn.setDoOutput(true);
-          urlConn.setUseCaches(false);
-          input = new InputStreamReader(urlConn.getInputStream());
-          StringBuilder response = new StringBuilder();
-          BufferedReader in = new BufferedReader(input);
-          String line;
-          while ((line = in.readLine()) != null) {
-            response.append(line);
-            response.append('\r');
-          }
-          input.close();
-          testParticipant = TestParticipantManager.readString(response.toString());
-        } catch (IOException e) {
-          e.printStackTrace();
+        urlConn.setDoInput(true);
+        urlConn.setDoOutput(true);
+        urlConn.setUseCaches(false);
+        input = new InputStreamReader(urlConn.getInputStream());
+        StringBuilder response = new StringBuilder();
+        BufferedReader in = new BufferedReader(input);
+        String line;
+        while ((line = in.readLine()) != null) {
+          response.append(line);
+          response.append('\r');
         }
-
+        input.close();
+        testParticipant = TestParticipantManager.readString(response.toString());
+      } catch (IOException e) {
+        e.printStackTrace();
       }
     }
+
     return testParticipant;
   }
 

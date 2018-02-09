@@ -215,16 +215,14 @@ public class ConnectionManager {
 
   public static void registerLabel(SendData sendData) {
     if (sendData.getConnector() != null) {
-      sendDataMapByLabel.put(sendData.getConnector().getLabel(), sendData);
+      synchronized (sendDataMapByLabel) {
+        sendDataMapByLabel.put(sendData.getConnector().getLabel(), sendData);
+      }
     }
   }
 
   public static SendData getSendDatayByLabel(String label) {
     return sendDataMapByLabel.get(label);
-  }
-
-  public static Map<String, SendData> getSendDataMapByLabel() {
-    return sendDataMapByLabel;
   }
 
   public static SendData getSendData(int internalId) {

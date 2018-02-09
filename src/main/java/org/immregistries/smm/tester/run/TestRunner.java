@@ -284,7 +284,6 @@ public class TestRunner {
     testCaseMessage.setHasRun(true);
     wasRun = true;
 
-    System.out.println(testCaseMessage.getLog());
   }
 
   private void evaluateQBP(TestCaseMessage testCaseMessage) {
