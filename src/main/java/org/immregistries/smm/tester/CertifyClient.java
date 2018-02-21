@@ -16,6 +16,7 @@ import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 import org.immregistries.smm.RecordServletInterface;
+import org.immregistries.smm.SoftwareVersion;
 import org.immregistries.smm.mover.ConnectionManager;
 import org.immregistries.smm.mover.SendData;
 import org.immregistries.smm.mover.ShutdownInterceptor;
@@ -287,6 +288,7 @@ public class CertifyClient extends Thread {
       return;
     }
     System.out.println("Starting Tester Client");
+    System.out.println("  + Version: " + SoftwareVersion.VERSION);
     System.out.println("  + Initializing send data manager");
     ConnectionManager connectionManager = initManagerServlet(args);
     if (aartName == null) {
