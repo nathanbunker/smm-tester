@@ -16,7 +16,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.immregistries.smm.tester.manager.QueryConverter;
+import org.immregistries.smm.tester.manager.query.QueryConverter;
+import org.immregistries.smm.tester.manager.query.QueryType;
 import org.immregistries.smm.transform.PatientType;
 import org.immregistries.smm.transform.ScenarioManager;
 import org.immregistries.smm.transform.TestCaseMessage;
@@ -211,7 +212,8 @@ public class GenerateDataServlet extends ClientServlet {
       out.println("<pre>");
 
       for (TestCaseMessage testCaseMessage : testCaseMessageList) {
-        String qbpMessage = QueryConverter.convertVXUtoQBPZ34(testCaseMessage.getMessageText());
+        QueryConverter queryConverter = QueryConverter.getQueryConverter(QueryType.QBP_Z34);
+        String qbpMessage = queryConverter.convert(testCaseMessage.getMessageText());
         out.print(qbpMessage);
       }
       out.println("</pre>");

@@ -305,7 +305,6 @@ public class ConnectionManager {
         try {
           System.setProperty("javax.net.ssl.keyStore", file.getCanonicalPath());
           System.setProperty("javax.net.ssl.keyStorePassword", keyStorePassword);
-          System.out.println("Set keystore to be: " + file.getCanonicalPath());
         } catch (IOException ioe) {
           System.err.println("Unable to setup keystore: " + ioe.getMessage());
           ioe.printStackTrace();
@@ -317,7 +316,6 @@ public class ConnectionManager {
 
     if (sunSecuritySslAllowUnsafeRenegotiation) {
       System.setProperty("sun.security.ssl.allowUnsafeRenegotiation", "true");
-      System.out.println("Setting option to allow unsafe renegotiation ");
     }
 
     ShutdownInterceptor shutdownInterceptor = new ShutdownInterceptor();

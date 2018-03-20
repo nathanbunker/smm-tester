@@ -24,9 +24,10 @@ import javax.servlet.http.HttpSession;
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.manager.HL7Reader;
-import org.immregistries.smm.tester.manager.QueryConverter;
 import org.immregistries.smm.tester.manager.TestCaseMessageManager;
 import org.immregistries.smm.tester.manager.nist.Assertion;
+import org.immregistries.smm.tester.manager.query.QueryConverter;
+import org.immregistries.smm.tester.manager.query.QueryType;
 import org.immregistries.smm.tester.run.TestRunner;
 import org.immregistries.smm.transform.TestCaseMessage;
 import org.immregistries.smm.transform.Transformer;
@@ -317,22 +318,26 @@ public class SubmitServlet extends ClientServlet {
       if (message != null) {
         if (message.indexOf("|VXU^") > 0) {
           {
-            String qbpMessage = QueryConverter.convertVXUtoQBPZ34(message);
+            QueryConverter queryConverter = QueryConverter.getQueryConverter(QueryType.QBP_Z34);
+            String qbpMessage = queryConverter.convert(message);
             out.println("<p>Submit QBP Z34 query message based from VXU displayed above</p>");
             printForm(id, connectors, qbpMessage, testCaseMessage, request, out);
           }
           {
-            String qbpZ44Message = QueryConverter.convertVXUtoQBPZ34Z44(message);
+            QueryConverter queryConverter = QueryConverter.getQueryConverter(QueryType.QBP_Z34_Z44);
+            String qbpZ44Message = queryConverter.convert(message);
             out.println("<p>Submit QBP Z34 with Z44 request based from VXU displayed above</p>");
             printForm(id, connectors, qbpZ44Message, testCaseMessage, request, out);
           }
           {
-            String qbpZ44Message = QueryConverter.convertVXUtoQBPZ44(message);
+            QueryConverter queryConverter = QueryConverter.getQueryConverter(QueryType.QBP_Z44);
+            String qbpZ44Message = queryConverter.convert(message);
             out.println("<p>Submit QBP Z44 query message based from VXU displayed above</p>");
             printForm(id, connectors, qbpZ44Message, testCaseMessage, request, out);
           }
           {
-            String vxqMessage = QueryConverter.convertVXUtoVXQ(message);
+            QueryConverter queryConverter = QueryConverter.getQueryConverter(QueryType.VXQ);
+            String vxqMessage = queryConverter.convert(message);
             out.println("<p>Submit VXQ query message based from VXU displayed above</p>");
             printForm(id, connectors, vxqMessage, testCaseMessage, request, out);
           }

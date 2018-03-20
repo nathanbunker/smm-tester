@@ -104,6 +104,14 @@
     <servlet-class>org.immregistries.smm.tester.StressTestServlet</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>QueryServlet</servlet-name>
+    <servlet-class>org.immregistries.smm.tester.QueryServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>MessageViewerServlet</servlet-name>
+    <servlet-class>org.immregistries.smm.tester.MessageViewerServlet</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>SubmitServlet</servlet-name>
     <servlet-class>org.immregistries.smm.tester.SubmitServlet</servlet-class>
   </servlet>
@@ -182,6 +190,14 @@
   <servlet-mapping>
     <servlet-name>StressTestServlet</servlet-name>
     <url-pattern>/StressTestServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>QueryServlet</servlet-name>
+    <url-pattern>/QueryServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>MessageViewerServlet</servlet-name>
+    <url-pattern>/MessageViewerServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>LoginServlet</servlet-name>

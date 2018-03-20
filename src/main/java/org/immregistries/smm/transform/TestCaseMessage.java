@@ -35,6 +35,7 @@ public class TestCaseMessage {
   public static final String ASSERT_RESULT_PARAMETER = "Assert Result Parameter:";
   public static final String MESSAGE_TYPE = "Message Type:";
   public static final String DERIVED_FROM_TEST_CASE_NUMBER = "Derived From Test Case Number:";
+  public static final String ORIGINAL_TEST_CASE_NUMBER = "Original Test Case Number:";
   public static final String ORIGINAL_MESSAGE = "Original Message:";
   public static final String ACTUAL_RESPONSE_MESSAGE = "Actual Response Message:";
   public static final String DERIVED_FROM_VXU_MESSAGE = "Derived From VXU Message:";
@@ -118,6 +119,7 @@ public class TestCaseMessage {
   private String assertResultParameter = "";
   private String derivedFromTestCaseNumber = "";
   private String fieldName = "";
+  private String originalTestCaseNumber = "";
   private String originalMessage = "";
   private String originalMessageResponse = "";
   private String preparedMessage = null;
@@ -175,6 +177,14 @@ public class TestCaseMessage {
   private long totalRunTime = 0;
   private StringBuilder log = new StringBuilder();
 
+  public String getOriginalTestCaseNumber() {
+    return originalTestCaseNumber;
+  }
+  
+  public void setOriginalTestCaseNumber(String originalTestCaseNumber) {
+    this.originalTestCaseNumber = originalTestCaseNumber;
+  }
+  
   public void log(String s) {
     log.append(s);
     log.append("\n");
@@ -903,6 +913,9 @@ public class TestCaseMessage {
       }
       if (!derivedFromTestCaseNumber.equals("")) {
         stringOut.println(DERIVED_FROM_TEST_CASE_NUMBER + " " + derivedFromTestCaseNumber);
+      }
+      if (!originalTestCaseNumber.equals("")) {
+        stringOut.println(ORIGINAL_TEST_CASE_NUMBER + " " + originalTestCaseNumber);
       }
       for (Comment comment : comments) {
         stringOut.println(COMMENT + " " + comment.getName() + " - " + comment.getText());
