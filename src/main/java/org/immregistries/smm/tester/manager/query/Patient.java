@@ -25,6 +25,7 @@ public class Patient {
   private String phoneLocal = "";
   private boolean multipleBirthIndicator = false;
   private int multipleBirthOrder = 0;
+  
   public String getIdNumber() {
     return idNumber;
   }

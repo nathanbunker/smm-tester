@@ -5,27 +5,18 @@ package org.immregistries.smm.tester;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.immregistries.smm.tester.manager.HL7Reader;
-import org.immregistries.smm.tester.manager.query.PatientIdType;
-import org.immregistries.smm.tester.manager.query.QueryConverter;
 import org.immregistries.smm.tester.manager.query.QueryRequest;
 import org.immregistries.smm.tester.manager.query.QueryResponse;
-import org.immregistries.smm.tester.manager.query.QueryType;
 import org.immregistries.smm.tester.manager.query.Vaccination;
 import org.immregistries.smm.tester.manager.response.ImmunizationMessage;
 import org.immregistries.smm.tester.manager.response.ResponseReader;
-import org.immregistries.smm.transform.ScenarioManager;
-import org.immregistries.smm.transform.TestCaseMessage;
-import org.immregistries.smm.transform.Transformer;
 
 /**
  * 
@@ -116,7 +107,7 @@ public class MessageViewerServlet extends ClientServlet {
 
       out.println("<h2>Message Viewer</h2>");
       out.println("<form action=\"MessageViewerServlet\" method=\"POST\">");
-      out.println("<textarea name=\"" + PARAM_MESSAGE + "\" cols=\"80\" rows=\"10\">" + message
+      out.println("<textarea name=\"" + PARAM_MESSAGE + "\" cols=\"120\" rows=\"15\">" + message
           + "</textarea><br/>");
       out.println("<input type=\"submit\" name=\"" + PARAM_ACTION + "\" value=\"View\"/>");
       out.println("</form>");
@@ -131,15 +122,31 @@ public class MessageViewerServlet extends ClientServlet {
               out.println("<table class=\"boxed\">");
               out.println("  <tr>");
               out.println("    <th class=\"boxed\">Date</th>");
-              out.println("    <th class=\"boxed\">Vaccination</th>");
+              out.println("    <th class=\"boxed\">Vaccination (CVX)</th>");
+              out.println("    <th class=\"boxed\">Action</th>");
+              out.println("    <th class=\"boxed\">Completion</th>");
+              out.println("    <th class=\"boxed\">Source</th>");
+              out.println("    <th class=\"boxed\">Refusal</th>");
+              out.println("    <th class=\"boxed\">Lot Number</th>");
+              out.println("    <th class=\"boxed\">Manufacturer (MVX)</th>");
               out.println("  </tr>");
               SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
               for (Vaccination vaccination : queryResponse.getVaccinationList()) {
                 out.println("  <tr>");
-                out.println("    <td class=\"boxed\">" + (vaccination.getAdministrationDate() == null ? ""
-                    : sdf.format(vaccination.getAdministrationDate())) + "</td>");
+                out.println(
+                    "    <td class=\"boxed\">" + (vaccination.getAdministrationDate() == null ? ""
+                        : sdf.format(vaccination.getAdministrationDate())) + "</td>");
                 out.println("    <td class=\"boxed\">" + vaccination.getVaccineLabel() + " ("
                     + vaccination.getVaccineCvx() + ")</td>");
+                out.println("    <td class=\"boxed\">" + vaccination.getActionCode() + "</td>");
+                out.println(
+                    "    <td class=\"boxed\">" + vaccination.getCompletionStatus() + "</td>");
+                out.println("    <td class=\"boxed\">" + vaccination.getInformationSourceLabel()
+                    + " (" + vaccination.getInformationSource() + ")</td>");
+                out.println("    <td class=\"boxed\">" + vaccination.getRefusalReason() + "</td>");
+                out.println("    <td class=\"boxed\">" + vaccination.getLotNumber() + "</td>");
+                out.println("    <td class=\"boxed\">" + vaccination.getManufacturerLabel() + " ("
+                    + vaccination.getManufacturerMvx() + ")</td>");
                 out.println("  </tr>");
               }
               out.println("</table>");

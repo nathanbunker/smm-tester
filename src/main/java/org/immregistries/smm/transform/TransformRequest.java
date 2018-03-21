@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.Map;
 
 import org.immregistries.smm.tester.connectors.Connector;
+import org.immregistries.smm.tester.manager.HL7Reader;
 import org.immregistries.smm.tester.transform.Patient;
 
 public class TransformRequest {

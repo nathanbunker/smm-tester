@@ -641,6 +641,7 @@ public class TestCaseMessage {
     this.actualResponseMessage = copy.actualResponseMessage;
     this.scenario = copy.scenario;
     this.testType = copy.testType;
+    this.derivedFromTestCaseNumber = copy.derivedFromTestCaseNumber;
   }
 
   public void merge(TestCaseMessage updated) {
