@@ -7,6 +7,7 @@ import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_FORECAST
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_FORECAST_STATUS_NOT_INCLUDED;
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR;
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR_Z33;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST;
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH;
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH_Z32;
@@ -207,9 +208,12 @@ public class TestRunner {
                 queryType = VALUE_RESULT_QUERY_TYPE_TOO_MANY;
               } else if (responseStatus.equals("AE")) {
                 queryType = VALUE_RESULT_QUERY_TYPE_ERROR_Z33;
+              } else  {
+                queryType = VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
               }
             } else {
               q.log("  + No QAK segment found!");
+              queryType = VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
             }
           } else {
             queryType = VALUE_RESULT_QUERY_TYPE_PROFILE_ID_UNEXPECTED;

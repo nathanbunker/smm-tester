@@ -57,7 +57,6 @@ public class TestRunnerTest extends TestCase {
     Connector connector = new SoapConnector("Test", "http://localhost");
     TestCaseMessage testCaseMessage = new TestCaseMessage();
     testCaseMessage.setAssertResult(TestRunner.ASSERT_RESULT_ERROR_LOCATION_IS_ + field);
-    ;
     testRunner.evaluateRunTest(connector, testCaseMessage);
     if (pass) {
       assertTrue(testRunner.isPassedTest());

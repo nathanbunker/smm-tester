@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Random;
 
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.manager.HL7Reader;
 import org.immregistries.smm.tester.transform.IssueCreator;
 import org.immregistries.smm.tester.transform.Patient;
 import org.immregistries.smm.transform.procedure.ProcedureFactory;
