@@ -31,7 +31,11 @@ public class FLSoapConnector extends HttpConnector {
     submitSingleMessage.setUsername(this.userid);
     submitSingleMessage.setHl7Message(message.replaceAll("\\r", "\n"));
     SubmitSingleMessageResponse response = clientService.submitSingleMessage(submitSingleMessage);
-    return response.get_return();
+    String s = response.get_return();
+    if (s.length() > 10) {
+      s = s.replaceAll("\\Q&amp;\\E", "&");
+    }
+    return s;
 
     // Client_ServiceStub.SubmitSingleMessage submitSingleMessage = new
     // Client_ServiceStub.SubmitSingleMessage();

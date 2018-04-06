@@ -63,6 +63,7 @@ public class MOConnector extends HttpConnector {
     while (result != null && result.length() > 0 && result.charAt(0) < ' ') {
       result = result.substring(1);
     }
+    result = result.replaceAll("\\Q&amp;\\E", "&");
     return result;
 
   }
