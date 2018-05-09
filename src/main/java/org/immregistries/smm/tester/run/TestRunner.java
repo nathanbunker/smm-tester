@@ -7,7 +7,6 @@ import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_FORECAST
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_FORECAST_STATUS_NOT_INCLUDED;
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR;
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR_Z33;
-import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST;
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH;
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH_Z32;
@@ -19,6 +18,7 @@ import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TY
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_PROFILE_ID_MISSING;
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_PROFILE_ID_UNEXPECTED;
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -184,6 +184,7 @@ public class TestRunner {
             queryType = VALUE_RESULT_QUERY_TYPE_NOT_FOUND;
           } else {
             q.log("  + No QAK segment found!");
+            queryType = VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
           }
         } else if (messageType.equals("ACK")) {
           queryType = VALUE_RESULT_QUERY_TYPE_ERROR;
@@ -221,6 +222,7 @@ public class TestRunner {
         }
       } else {
         q.log("  + No MSH segment found!");
+        queryType = VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
       }
     }
 

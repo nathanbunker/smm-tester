@@ -73,6 +73,8 @@ public abstract class Connector {
         connector = new WIConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_IL_WS)) {
         connector = new ILConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_IL_SOAP)) {
+        connector = new ILSoapConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_MA_SOAP)) {
         connector = new MAConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_MO_SOAP)) {
@@ -758,6 +760,19 @@ public abstract class Connector {
     }
     s2 = s2 + s;
     return s2;
+  }
+  
+  public StringBuilder extractResponse(StringBuilder response, String startTag, String stopTag) {
+
+    String responseString = response.toString();
+    int startPos = responseString.indexOf(startTag);
+    int endPos = responseString.indexOf(stopTag);
+    if (startPos > 0 && endPos > startPos) {
+      responseString =
+          responseString.substring(startPos + startTag.length(), endPos);
+      response = new StringBuilder(responseString);
+    }
+    return response;
   }
 
 }
