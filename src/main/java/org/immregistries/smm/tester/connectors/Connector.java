@@ -770,7 +770,9 @@ public abstract class Connector {
     if (startPos > 0 && endPos > startPos) {
       responseString =
           responseString.substring(startPos + startTag.length(), endPos);
+      responseString = responseString.replaceAll("\\Q&amp;\\E", "&");
       response = new StringBuilder(responseString);
+      
     }
     return response;
   }

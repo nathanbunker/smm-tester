@@ -344,6 +344,14 @@ public class TestRunner {
             testCaseMessage.log("Analyzing acknowledgement");
             AckAnalyzer ackAnalyzer =
                 new AckAnalyzer(ackMessageText, connector.getAckType(), null, testCaseMessage);
+            if (ackAnalyzer.isPositive())
+            {
+              testCaseMessage.log("Positive acknowledgement detected");
+            }
+            else
+            {
+              testCaseMessage.log("Negative acknowledgement detected");
+            }
             testCaseMessage.setAccepted(ackAnalyzer.isPositive());
 
 

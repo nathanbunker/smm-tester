@@ -206,6 +206,11 @@ public class AckAnalyzer {
         isNotAck = false;
         ackMessage = true;
         positive = ackUpperCase.equals("SUCCESS");
+        if (positive) {
+          log("The phrase \"SUCCESS\" appeared in the message so the message assumed to have been accepted");
+        } else {
+          log("The phrase \"SUCCESS\" did NOT appear in the message so the message assumed to NOT  have been accepted");
+        }
         ackCode = positive ? "AA" : "AE";
       } else {
         ackMessage = false;
@@ -232,9 +237,13 @@ public class AckAnalyzer {
         if (warningRxaPos1 > -1) {
           warningRxaPos2 = ackUpperCase.indexOf(" IGNORED");
           alertProblem = warningRxaPos2 != -1;
+          if (alertProblem) {
+            log("Found \"RXA#\" and \" IGNORED\" in the ack message. Assuming at least one vaccination was not accepted. ");
+          }
         } else {
           if (ackUpperCase.indexOf("RECORD REJECTED") != -1) {
             alertProblem = true;
+            log("Found \"RECORD REJECTED\" in message. Assuming not accepted.");
           }
         }
       }
@@ -367,11 +376,15 @@ public class AckAnalyzer {
           positive = false;
         }
       } else {
+        log("Using default rules to determine if accepted");
         if (ackCode.equals("AA")) {
           positive = true;
+          log("Ack code is AA, so message must have been accepted.");
         } else if (ackCode.equals("AR")) {
           positive = false;
+          log("Ack code is AR, so message could not have been accepted");
         } else {
+          log("Ack code is AE, so message may or may not have been accepted");
           positive = true;
           boolean noSeverity = true;
           int pos = 1;
@@ -382,6 +395,7 @@ public class AckAnalyzer {
                 noSeverity = false;
               }
               if (values[0].equals("E")) {
+                log("Found at least one ERR segment with ERR-4 = 'E'. This message was not accepted.");
                 positive = false;
                 break;
               }
@@ -389,6 +403,7 @@ public class AckAnalyzer {
             pos++;
           }
           if (noSeverity) {
+            log("ERR-4 was never filled in, or there are no ERR segments (both of which should not happen) so assuming message was not accepted. ");
             positive = false;
           }
         }
