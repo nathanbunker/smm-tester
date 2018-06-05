@@ -204,10 +204,14 @@ public class CertifyClient extends Thread {
                 }
                 if (connector == null) {
                   statusLog.setProblemMessage("Connector was not intialized");
+                  System.err.println("  + Connectoion information can not be found: "
+                      + statusLog.getAartPublicIdCode());
                   continue;
                 } else if (sendData.getTestParticipant() == null) {
                   statusLog.setProblemMessage(
                       "Test participant is not recognized and can't be reported to AART");
+                  System.err.println(
+                      "  + Unrecognized test participant: " + statusLog.getAartPublicIdCode());
                   continue;
                 }
                 statusLog.setOrganizationName(sendData.getTestParticipant().getOrganizationName());
@@ -234,6 +238,10 @@ public class CertifyClient extends Thread {
                   statusLog.setStatusMessage("Reporting results");
                   CertifyRunner.reportProgress(testCaseMessage, this);
                   statusLog.setStatusMessage("Test completed");
+                  System.out
+                      .println("  + Tested " + sendData.getTestParticipant().getOrganizationName()
+                          + ", result is " + testCaseMessage.getActualResultStatus().toUpperCase()
+                          + " for test case " + testCaseMessage.getDescription() + "");
                 }
               }
             }
@@ -346,17 +354,15 @@ public class CertifyClient extends Thread {
           }
         }
       } else if (command.equalsIgnoreCase("recent")) {
-        synchronized(statusLogList)
-        {
+        synchronized (statusLogList) {
           int start = statusLogList.size() - 25;
-          if (start < 0)
-          {
+          if (start < 0) {
             start = 0;
           }
-          for (int i = start; i < statusLogList.size(); i++)
-          {
+          for (int i = start; i < statusLogList.size(); i++) {
             StatusLog statusLog = statusLogList.get(i);
-            System.out.println("   " + statusLog.getTestMessageId() + " -- " + statusLog.getStatusMessage());
+            System.out.println(
+                "   " + statusLog.getTestMessageId() + " -- " + statusLog.getStatusMessage());
           }
         }
       } else {

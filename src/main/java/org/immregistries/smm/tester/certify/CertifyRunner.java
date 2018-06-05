@@ -32,10 +32,11 @@ public class CertifyRunner implements RecordServletInterface {
 
   public static TestCaseMessage getTestCaseMessage(CertifyClient certifyClient) throws Exception {
     StringBuilder testCaseMessageText = new StringBuilder();
+    String testCaseMessageUrl = null;
     try {
       HttpURLConnection urlConn;
       InputStreamReader input = null;
-      String testCaseMessageUrl = createTestCaseMessageUrl(certifyClient);
+      testCaseMessageUrl = createTestCaseMessageUrl(certifyClient);
       URL url = new URL(testCaseMessageUrl);
 
       urlConn = (HttpURLConnection) url.openConnection();
@@ -60,6 +61,11 @@ public class CertifyRunner implements RecordServletInterface {
     }
     TestCaseMessage testCaseMessage =
         TestCaseMessageManager.createTestCaseMessage(testCaseMessageText.toString());
+    if (testCaseMessage == null && testCaseMessageUrl != null) {
+      System.err
+          .println("Unable to load test case " + certifyClient.getStatusLog().getTestMessageId()
+              + " for this URL: " + testCaseMessageUrl);
+    }
     return testCaseMessage;
   }
 
@@ -83,7 +89,7 @@ public class CertifyRunner implements RecordServletInterface {
     Connector connector = certifyClient.getConnector();
     HttpURLConnection urlConn;
     InputStreamReader input = null;
-    StringBuilder r = new StringBuilder(certifyClient.getAartUrl() );
+    StringBuilder r = new StringBuilder(certifyClient.getAartUrl());
     r.append("manual?");
     r.append(PARAM_TESTER_STATUS_UPDATE);
     r.append("=");
@@ -145,6 +151,7 @@ public class CertifyRunner implements RecordServletInterface {
             if (timeoutWait < 60 * 1000) {
               certifyClient.setAartConnectStatus(
                   "Unable to connect, will retry in " + (timeoutWait / 1000) + " second(s)");
+
             } else if (timeoutWait < 60 * 60 * 1000) {
               certifyClient.setAartConnectStatus(
                   "Unable to connect, will retry in " + (timeoutWait / 60 * 1000) + " minute(s)");
@@ -152,6 +159,8 @@ public class CertifyRunner implements RecordServletInterface {
               certifyClient.setAartConnectStatus("Unable to connect, will retry in "
                   + (timeoutWait / 60 * 60 * 1000) + " hour(s)");
             }
+            System.err
+                .println("  + " + certifyClient.getAartConnectStatus() + " URL=" + r.toString());
             synchronized (connectException) {
               connectException.wait(timeoutWait);
             }
@@ -231,6 +240,7 @@ public class CertifyRunner implements RecordServletInterface {
         addField(sb, PARAM_TM_TEST_RUN_LOG, testCaseMessage.getLog());
       }
       content = sb.toString();
+      System.err.println("--> content = " + content);
       printout = new DataOutputStream(urlConn.getOutputStream());
       printout.writeBytes(content);
       printout.flush();
@@ -265,9 +275,10 @@ public class CertifyRunner implements RecordServletInterface {
       try {
         HttpURLConnection urlConn;
         InputStreamReader input = null;
-        String link = certifyClient.getAartUrl() + "record?" + PARAM_RESOURCE + "=" + RESOURCE_TEST_PARTICIPANT + "&"
-            + PARAM_TPAR_PUBLIC_ID_CODE + "=" + sendData.getConnector().getAartPublicIdCode() + "&"
-            + PARAM_TPAR_ACCESS_PASSCODE + "=" + sendData.getConnector().getAartAccessPasscode();
+        String link = certifyClient.getAartUrl() + "record?" + PARAM_RESOURCE + "="
+            + RESOURCE_TEST_PARTICIPANT + "&" + PARAM_TPAR_PUBLIC_ID_CODE + "="
+            + sendData.getConnector().getAartPublicIdCode() + "&" + PARAM_TPAR_ACCESS_PASSCODE + "="
+            + sendData.getConnector().getAartAccessPasscode();
         URL url = new URL(link);
         urlConn = (HttpURLConnection) url.openConnection();
         urlConn.setConnectTimeout(120 * 1000);
