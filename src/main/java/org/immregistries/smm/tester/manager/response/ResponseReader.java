@@ -3,15 +3,22 @@ package org.immregistries.smm.tester.manager.response;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import org.immregistries.smm.tester.manager.HL7Reader;
+import org.immregistries.smm.tester.manager.query.ImmunizationUpdate;
 import org.immregistries.smm.tester.manager.query.Patient;
 import org.immregistries.smm.tester.manager.query.PatientIdType;
 import org.immregistries.smm.tester.manager.query.QueryResponse;
 import org.immregistries.smm.tester.manager.query.QueryResponseType;
 import org.immregistries.smm.tester.manager.query.Vaccination;
+import org.immregistries.smm.tester.manager.tximmtrac.A_Segment;
+import org.immregistries.smm.tester.manager.tximmtrac.CX_Segment;
+import org.immregistries.smm.tester.manager.tximmtrac.C_Segment;
+import org.immregistries.smm.tester.manager.tximmtrac.ImmTracSegment;
 
 public class ResponseReader {
   public static ImmunizationMessage readMessage(String message) {
@@ -30,10 +37,9 @@ public class ResponseReader {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         String profile = reader.getValue(21);
-        while (reader.advanceToSegment("PID"))
-        {
+        while (reader.advanceToSegment("PID")) {
           String nameLast = reader.getValue(5, 1);
-          
+
           String idNumber = "";
           String idAuthority = "";
           PatientIdType idType = PatientIdType.MR;
@@ -41,23 +47,23 @@ public class ResponseReader {
           String nameMiddle = reader.getValue(5, 3);
           String motherNameMaiden = reader.getValue(6, 1);
           String birthDateString = reader.getValue(7);
-           Date birthDate = null;
-           if (birthDateString.length() > 8) {
-             birthDateString = birthDateString.substring(0, 8);
-           }
-           String sex = "";
-           String addressStreet1 = "";
-           String addressStreet2 = "";
-           String addressCity = "";
-           String addressState = "";
-           String addressZip = "";
-           String addressCountry = "USA";
-           String phoneArea = "";
-           String phoneLocal = "";
-           boolean multipleBirthIndicator = false;
-           int multipleBirthOrder = 0;
-          
-          
+          Date birthDate = null;
+          if (birthDateString.length() > 8) {
+            birthDateString = birthDateString.substring(0, 8);
+          }
+          String sex = "";
+          String addressStreet1 = "";
+          String addressStreet2 = "";
+          String addressCity = "";
+          String addressState = "";
+          String addressZip = "";
+          String addressCountry = "USA";
+          String phoneArea = "";
+          String phoneLocal = "";
+          boolean multipleBirthIndicator = false;
+          int multipleBirthOrder = 0;
+
+
           Patient patient = new Patient();
           patient.setNameLast(nameLast);
           try {
@@ -139,7 +145,53 @@ public class ResponseReader {
       } else if (messageType.equals("ADT")) {
         // Process
       } else if (messageType.equals("VXU")) {
-        // Process
+        ImmunizationUpdate iu = new ImmunizationUpdate();
+        Patient patient = new Patient();
+        iu.setPatient(patient);
+        if (reader.advanceToSegment("PID")) {
+          patient.setNameLast(reader.getValue(5, 1));
+          patient.setNameFirst(reader.getValue(5, 2));
+          patient.setNameMiddle(reader.getValue(5, 3));
+          patient.setSex(reader.getValue(8));
+          patient.setMotherNameMaiden(reader.getValue(6));
+          String dobString = reader.getValue(7);
+          if (dobString.length() > 8) {
+            dobString = dobString.substring(0, 8);
+          }
+          if (dobString.length() == 8) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+            try {
+              patient.setBirthDate(sdf.parse(dobString));
+            } catch (ParseException e) {
+              // ignore
+            }
+          }
+          patient.setAddressStreet1(reader.getValue(11, 1));
+          patient.setAddressStreet2(reader.getValue(11, 2));
+          patient.setAddressCity(reader.getValue(11, 3));
+          patient.setAddressState(reader.getValue(11, 4));
+          patient.setAddressZip(reader.getValue(11, 5));
+          patient.setAddressCountry(reader.getValue(11, 6));
+          patient.setPhoneArea(reader.getValue(13, 6));
+          patient.setPhoneLocal(reader.getValue(13, 7));
+          String mrn = reader.getValueBySearchingRepeats(3, 1, "MR", 5);
+          String authority = reader.getValueBySearchingRepeats(3, 4, "MR", 5);
+          if (mrn.equals(""))
+          {
+            mrn = reader.getValueBySearchingRepeats(3, 1, "PT", 5);
+            authority = reader.getValueBySearchingRepeats(3, 4, "PT", 5);
+          }
+          patient.setIdNumber(mrn);
+          patient.setIdAuthority(authority);
+        }
+        while (reader.advanceToSegment("NK1")) {
+          String relationship = reader.getValue(3);
+          if (relationship.equals("MTH")) {
+            patient.setMotherNameFirst(reader.getValue(2, 2));
+            patient.setMotherNameMiddle(reader.getValue(2, 3));
+          }
+        }
+        return iu;
       }
 
     }
