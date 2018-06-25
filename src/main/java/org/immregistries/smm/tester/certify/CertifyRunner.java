@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
@@ -80,7 +81,7 @@ public class CertifyRunner implements RecordServletInterface {
     return testCaseMessageUrl;
   }
 
-  private static final int MAX_RETRY_COUNT = 15;
+  private static final long MINUTE = 60 * 1000;
 
   public static String reportStatus(CertifyClient certifyClient) throws IOException {
 
@@ -116,11 +117,11 @@ public class CertifyRunner implements RecordServletInterface {
     String line = null;
 
     {
-      int connectTryCount = 0;
-      long timeoutWait = 1000;
+      boolean disconnected = false;
+      long timeoutWait = 10 * 1000;
+      certifyClient.setAartConnectStatus("Connecting...");
       while (line == null) {
         try {
-          connectTryCount++;
           URL url = new URL(r.toString());
           urlConn = (HttpURLConnection) url.openConnection();
           urlConn.setRequestMethod("GET");
@@ -133,8 +134,11 @@ public class CertifyRunner implements RecordServletInterface {
           BufferedReader in = new BufferedReader(input);
           line = in.readLine();
           input.close();
-          if (connectTryCount > 1) {
+          if (disconnected) {
+            disconnected = false;
             certifyClient.setAartConnectStatus("Reconnected");
+            System.err
+                .println("  + " + certifyClient.getAartConnectStatus() + " URL=" + r.toString());
           } else {
             certifyClient.setAartConnectStatus("Connected");
           }
@@ -143,30 +147,28 @@ public class CertifyRunner implements RecordServletInterface {
           }
           return line;
         } catch (ConnectException connectException) {
-          connectTryCount++;
-          if (connectTryCount >= MAX_RETRY_COUNT) {
-            throw connectException;
-          }
+          disconnected = true;
+          certifyClient.setAartConnectStatus("Connecting...Unable to Connect...Trying again...");
           try {
-            if (timeoutWait < 60 * 1000) {
-              certifyClient.setAartConnectStatus(
-                  "Unable to connect, will retry in " + (timeoutWait / 1000) + " second(s)");
-
-            } else if (timeoutWait < 60 * 60 * 1000) {
-              certifyClient.setAartConnectStatus(
-                  "Unable to connect, will retry in " + (timeoutWait / 60 * 1000) + " minute(s)");
+            if (timeoutWait < MINUTE) {
+              timeoutWait *= 2;
+            } else if (timeoutWait < 5 * MINUTE) {
+              if (timeoutWait < 5 * MINUTE) {
+                timeoutWait += MINUTE;
+              } else {
+                timeoutWait = 5 * MINUTE;
+              }
             } else {
-              certifyClient.setAartConnectStatus("Unable to connect, will retry in "
-                  + (timeoutWait / 60 * 60 * 1000) + " hour(s)");
+              certifyClient.setAartConnectStatus(
+                  "Unable to connect to AART, will retry every 5 minutes until reconnected");
             }
             System.err
                 .println("  + " + certifyClient.getAartConnectStatus() + " URL=" + r.toString());
             synchronized (connectException) {
               connectException.wait(timeoutWait);
             }
-            timeoutWait *= 2;
           } catch (InterruptedException e) {
-            connectTryCount = MAX_RETRY_COUNT;
+            break;
             // continue
           }
         }
@@ -213,10 +215,37 @@ public class CertifyRunner implements RecordServletInterface {
       addField(sb, PARAM_TEST_MESSAGE_ID, testMessageId);
       addField(sb, PARAM_TESTER_STATUS_READY_STATUS, PARAM_TESTER_STATUS_TESTER_STATUS_TESTING);
 
+      {
+        int i = 1;
+        if (!connector.getCustomTransformations().equals("")) {
+          addField(sb, PARAM_TC_TRANSFORMS + i, "\n" + connector.getCustomTransformations());
+          i++;
+        }
+        for (String key : connector.getScenarioTransformationsMap().keySet()) {
+          String transforms = connector.getScenarioTransformationsMap().get(key);
+          addField(sb, PARAM_TC_TRANSFORMS + i, key + "\n" + transforms);
+          i++;
+        }
+      }
+
+
+      StringBuilder out = new StringBuilder();
+      out.append("----- " + (connector.getLabel()
+          + " --------------------------------------------------------------------------------")
+              .substring(0, 80)
+          + "\n");
+      out.append("  URL: " + connector.getUrl() + "\n");
       if (testCaseMessage == null) {
         addField(sb, PARAM_TM_RESULT_EXECEPTION_TEXT, "SMM/Tester was unable to load test case #"
             + testMessageId + " from this AART URL: " + createTestCaseMessageUrl(certifyClient));
+        out.append("  Unable to load test case #" + testMessageId + " from this AART URL: "
+            + createTestCaseMessageUrl(certifyClient) + "\n");
+        System.err.println(out);
       } else {
+        out.append("  Test Case Number: " + testCaseMessage.getTestCaseCategoryId() + "\n");
+        out.append("  Test Description: " + testCaseMessage.getDescription() + "\n");
+        out.append("  Test Type:        " + testCaseMessage.getTestType() + "\n");
+        out.append("  Result Status:    " + testCaseMessage.getActualResultStatus() + "\n");
         addField(sb, PARAM_TM_TEST_POSITION, testCaseMessage.getTestPosition());
         addField(sb, PARAM_TM_TEST_TYPE, testCaseMessage.getTestType());
         addField(sb, PARAM_TM_TEST_CASE_NUMBER, testCaseMessage.getTestCaseCategoryId());
@@ -238,9 +267,14 @@ public class CertifyRunner implements RecordServletInterface {
         addField(sb, PARAM_TM_RESULT_ACK_TYPE, testCaseMessage.getActualResultAckType());
         addField(sb, PARAM_TM_RESULT_RUN_TIME_MS, testCaseMessage.getTotalRunTime());
         addField(sb, PARAM_TM_TEST_RUN_LOG, testCaseMessage.getLog());
+        if (testCaseMessage.getException() == null) {
+          System.out.println(out);
+        } else {
+          System.err.println(out);
+          testCaseMessage.getException().printStackTrace(System.err);
+        }
       }
       content = sb.toString();
-      System.err.println("--> content = " + content);
       printout = new DataOutputStream(urlConn.getOutputStream());
       printout.writeBytes(content);
       printout.flush();
