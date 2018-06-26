@@ -3,9 +3,7 @@ package org.immregistries.smm.tester.manager.response;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import org.immregistries.smm.tester.manager.HL7Reader;
@@ -15,10 +13,6 @@ import org.immregistries.smm.tester.manager.query.PatientIdType;
 import org.immregistries.smm.tester.manager.query.QueryResponse;
 import org.immregistries.smm.tester.manager.query.QueryResponseType;
 import org.immregistries.smm.tester.manager.query.Vaccination;
-import org.immregistries.smm.tester.manager.tximmtrac.A_Segment;
-import org.immregistries.smm.tester.manager.tximmtrac.CX_Segment;
-import org.immregistries.smm.tester.manager.tximmtrac.C_Segment;
-import org.immregistries.smm.tester.manager.tximmtrac.ImmTracSegment;
 
 public class ResponseReader {
   public static ImmunizationMessage readMessage(String message) {
@@ -26,6 +20,8 @@ public class ResponseReader {
       return null;
     }
     HL7Reader reader = new HL7Reader(message);
+    List<Patient> patientList = new ArrayList<Patient>();
+
     if (reader.advanceToSegment("MSH")) {
       String messageType = reader.getValue(9);
       if (messageType.equals("ACK")) {
@@ -34,10 +30,14 @@ public class ResponseReader {
         // Process
       } else if (messageType.equals("RSP")) {
         QueryResponse queryResponse = new QueryResponse();
+        queryResponse.setPatientList(patientList);
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         String profile = reader.getValue(21);
         while (reader.advanceToSegment("PID")) {
+       // Create new patient and fill values.
+          Patient patient = new Patient();
+          patientList.add(patient);
           String nameLast = reader.getValue(5, 1);
 
           String idNumber = "";
@@ -47,6 +47,7 @@ public class ResponseReader {
           String nameMiddle = reader.getValue(5, 3);
           String motherNameMaiden = reader.getValue(6, 1);
           String birthDateString = reader.getValue(7);
+          String sr = reader.getValueBySearchingRepeats(3, 1, "SR", 5);
           Date birthDate = null;
           if (birthDateString.length() > 8) {
             birthDateString = birthDateString.substring(0, 8);
@@ -64,14 +65,20 @@ public class ResponseReader {
           int multipleBirthOrder = 0;
 
 
-          Patient patient = new Patient();
+       // Get patient values.
+          patient.setIdType(PatientIdType.SR);
+          patient.setIdNumber(sr);
           patient.setNameLast(nameLast);
+          patient.setNameFirst(nameFirst);
+          patient.setBirthDate(birthDate);
+          patient.setMotherNameMaiden(motherNameMaiden);
           try {
             patient.setBirthDate(sdf.parse(birthDateString));
           } catch (ParseException e) {
             // do nothing
           }
         }
+        queryResponse.setPatientList(patientList);
         reader.resetPostion();
         QueryResponseType queryResponseType = null;
         if (profile.equalsIgnoreCase("")) {
@@ -176,8 +183,7 @@ public class ResponseReader {
           patient.setPhoneLocal(reader.getValue(13, 7));
           String mrn = reader.getValueBySearchingRepeats(3, 1, "MR", 5);
           String authority = reader.getValueBySearchingRepeats(3, 4, "MR", 5);
-          if (mrn.equals(""))
-          {
+          if (mrn.equals("")) {
             mrn = reader.getValueBySearchingRepeats(3, 1, "PT", 5);
             authority = reader.getValueBySearchingRepeats(3, 4, "PT", 5);
           }
