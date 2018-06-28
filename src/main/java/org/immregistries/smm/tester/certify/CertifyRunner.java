@@ -120,8 +120,6 @@ public class CertifyRunner implements RecordServletInterface {
       r.append(URLEncoder.encode(connector.getAartAccessPasscode(), "UTF-8"));
     }
     
-    System.out.println("--> r = " + r.toString());
-
     String line = null;
 
     {
