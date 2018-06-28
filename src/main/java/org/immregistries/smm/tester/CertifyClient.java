@@ -20,6 +20,7 @@ import org.immregistries.smm.SoftwareVersion;
 import org.immregistries.smm.mover.ConnectionManager;
 import org.immregistries.smm.mover.SendData;
 import org.immregistries.smm.mover.ShutdownInterceptor;
+import org.immregistries.smm.tester.certify.AartUrl;
 import org.immregistries.smm.tester.certify.CertifyRunner;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.run.TestRunner;
@@ -34,14 +35,28 @@ public class CertifyClient extends Thread {
   private SendData sendData = null;
   private Connector connector = null;
   private static String aartName = null;
-  private static List<String> aartUrlList = new ArrayList<String>();
+  private static List<AartUrl> aartUrlList = new ArrayList<AartUrl>();
   private boolean keepRunning = true;
   private String aartUrl = "";
+  private String threadId = null;
+  private String sectionTypes = null;
   private int sendCount = 0;
   private StatusLog statusLog = null;
   private static List<StatusLog> statusLogList = new ArrayList<CertifyClient.StatusLog>();
   private String status = "";
   private String aartConnectStatus = "";
+
+  public String getSectionTypes() {
+    return sectionTypes;
+  }
+
+  public String getThreadId() {
+    return threadId;
+  }
+
+  public void setThreadId(String threadId) {
+    this.threadId = threadId;
+  }
 
   public StatusLog getStatusLog() {
     return statusLog;
@@ -321,9 +336,21 @@ public class CertifyClient extends Thread {
       // just keep going
     }
     List<CertifyClient> certifyClientList = new ArrayList<CertifyClient>();
-    for (String aartUrl : aartUrlList) {
-      CertifyClient cc = new CertifyClient(aartUrl);
-      certifyClientList.add(cc);
+    for (AartUrl aartUrl : aartUrlList) {
+      if (aartUrl.getSectionTypeList().size() > 0) {
+        int count = 0;
+        for (String sectionTypes : aartUrl.getSectionTypeList())
+        {
+          count++;
+          CertifyClient cc = new CertifyClient(aartUrl.getUrl());
+          cc.sectionTypes = sectionTypes;
+          cc.threadId = "" + count;
+          certifyClientList.add(cc);
+        }
+      } else {
+        CertifyClient cc = new CertifyClient(aartUrl.getUrl());
+        certifyClientList.add(cc);
+      }
     }
     System.out.println("Connecting to:");
     for (CertifyClient cc : certifyClientList) {
@@ -413,6 +440,7 @@ public class CertifyClient extends Thread {
     ConnectionManager connectionManager = new ConnectionManager();
     BufferedReader in = new BufferedReader(new FileReader(args[0]));
     String line;
+    AartUrl aartUrl = null;
     while ((line = in.readLine()) != null) {
       int pos = line.indexOf(":");
       if (pos > 0) {
@@ -422,7 +450,12 @@ public class CertifyClient extends Thread {
           if (key.equals("AART Name")) {
             aartName = value;
           } else if (key.equals("AART URL")) {
-            aartUrlList.add(value);
+            aartUrl = new AartUrl(value);
+            aartUrlList.add(aartUrl);
+          } else if (key.equals("AART Thread")) {
+            if (aartUrl != null) {
+              aartUrl.getSectionTypeList().add(value);
+            }
           } else if (key.equals("Key Store")) {
             connectionManager.setKeyStore(value);
           } else if (key.equals("Key Store Password")) {

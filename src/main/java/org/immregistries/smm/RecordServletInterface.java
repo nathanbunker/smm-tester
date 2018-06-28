@@ -236,6 +236,7 @@ public interface RecordServletInterface {
 
   public static final String PARAM_TESTER_STATUS_UPDATE = "testerStatus_update";
   public static final String PARAM_TESTER_STATUS_TESTER_NAME = "testerStatus_testerName";
+  public static final String PARAM_TESTER_STATUS_SECTION_TYPES = "testerStatus_sectionTypes";
   public static final String PARAM_TESTER_STATUS_READY_STATUS = "testerStatus_readyStatus";
   public static final String PARAM_TESTER_STATUS_PUBLIC_ID_CODE = "testerStatus_publicIdCode";
   public static final String PARAM_TESTER_STATUS_ACCESS_PASSCODE = "testerStatus_accessPasscode";

@@ -99,6 +99,12 @@ public class CertifyRunner implements RecordServletInterface {
     r.append(PARAM_TESTER_STATUS_TESTER_NAME);
     r.append("=");
     r.append(URLEncoder.encode(aartName, "UTF-8"));
+    if (certifyClient.getSectionTypes() != null) {
+      r.append("&");
+      r.append(PARAM_TESTER_STATUS_SECTION_TYPES);
+      r.append("=");
+      r.append(URLEncoder.encode(certifyClient.getSectionTypes(), "UTF-8"));
+    }
     r.append("&");
     r.append(PARAM_TESTER_STATUS_READY_STATUS);
     r.append("=");
@@ -113,6 +119,8 @@ public class CertifyRunner implements RecordServletInterface {
       r.append("=");
       r.append(URLEncoder.encode(connector.getAartAccessPasscode(), "UTF-8"));
     }
+    
+    System.out.println("--> r = " + r.toString());
 
     String line = null;
 
