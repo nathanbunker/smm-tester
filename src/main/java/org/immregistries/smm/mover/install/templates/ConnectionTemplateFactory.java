@@ -35,6 +35,7 @@ public class ConnectionTemplateFactory
       new LA_LINKS_Template();
       new MA_MIIS_Template();
       new MD_IMMUNET_Template();
+      new MI_MCIR_Template();
       new ME_PHCHUB_Template();
       new MN_MIIC_Template();
       new MO_SHOWMEVAX_Template();
