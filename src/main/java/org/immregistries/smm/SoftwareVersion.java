@@ -10,7 +10,7 @@ public class SoftwareVersion {
   // http://hl7v2.ws.nist.gov/hl7v2ws//services/soap/MessageValidationV2
 
 
-  public static String VERSION = "2.01.03";
+  public static String VERSION = "2.03";
   public static String VERSION_FOR_SMM_DOWNLOAD = "1.68";
   public static String VERSION_FOR_TESTER_DOWNLOAD = "2.1.03";
 
