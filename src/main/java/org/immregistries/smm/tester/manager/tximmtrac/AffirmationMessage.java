@@ -21,6 +21,10 @@ public class AffirmationMessage extends ImmTracMessage {
   }
 
   public AffirmationMessage(Patient patient) {
+    this(patient, "ASSESSM");
+  }
+
+  public AffirmationMessage(Patient patient, String affirmerId) {
     this();
     SimpleDateFormat sdf = new SimpleDateFormat("yyyMMdd");
     segments = new ArrayList<ImmTracSegment>();
@@ -72,7 +76,7 @@ public class AffirmationMessage extends ImmTracMessage {
     values = new HashMap<ImmTracSegment.Field, String>();
     {
       addSegment(new A_Segment(), values);
-      values.put(A_Segment.AFFIRMER_2, "1111433000");
+      values.put(A_Segment.AFFIRMER_2, affirmerId);
       values.put(A_Segment.AFFIRMATION_DATE_3, sdf.format(new Date()));
     }
     values = new HashMap<ImmTracSegment.Field, String>();
