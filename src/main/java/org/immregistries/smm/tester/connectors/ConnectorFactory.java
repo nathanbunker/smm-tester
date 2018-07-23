@@ -26,8 +26,8 @@ public class ConnectorFactory {
   public static final String TYPE_ND_SOAP = "ND SOAP";
   public static final String TYPE_WI_SOAP = "WI SOAP";
 
-  public static final String[][] TYPES = {{TYPE_SOAP, "SOAP"}, {TYPE_POST, "POST"},
   public static final String[][] TYPES = { { TYPE_SOAP, "SOAP" }, { TYPE_POST, "POST" }, { TYPE_MLLP, "MLLP" },{ TYPE_AL_SOAP, "AL SOAP" },
+      { TYPE_AZ_SOAP, "AZ SOAP" },
       { TYPE_CA_SOAP, "CA SOAP" }, { TYPE_CO_SOAP, "CO SOAP" }, { TYPE_KS_SOAP, "KS SOAP" },
       { TYPE_MA_SOAP, "MA SOAP" }, { TYPE_MO_SOAP, "MO SOAP" }, { TYPE_ND_SOAP, "ND SOAP" },
       { TYPE_NJ_SOAP, "NJ SOAP" }, { TYPE_NM_SOAP, "NM SOAP" }, { TYPE_ENVISION_SOAP, "Envision SOAP" },
