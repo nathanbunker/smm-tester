@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.install;
 
@@ -15,6 +14,7 @@ import org.immregistries.smm.SoftwareVersion;
  * 
  * @author nathan
  */
+@SuppressWarnings("serial")
 public class ClientServlet extends HttpServlet {
 
   protected static void printHtmlHead(PrintWriter out, String title, HttpServletRequest request) {
@@ -33,9 +33,12 @@ public class ClientServlet extends HttpServlet {
     out.println("        else if (document.layers) ");
     out.println("          elem = document.layers[whichLayer]");
     out.println("        vis = elem.style;");
-    out.println("        if (vis.display == '' && elem.offsetWidth != undefined && elem.offsetHeight != undefined) ");
-    out.println("          vis.display = (elem.offsetWidth != 0 && elem.offsetHeight != 0) ? 'block' : 'none';");
-    out.println("        vis.display = (vis.display == '' || vis.display == 'block') ? 'none' : 'block';");
+    out.println(
+        "        if (vis.display == '' && elem.offsetWidth != undefined && elem.offsetHeight != undefined) ");
+    out.println(
+        "          vis.display = (elem.offsetWidth != 0 && elem.offsetHeight != 0) ? 'block' : 'none';");
+    out.println(
+        "        vis.display = (vis.display == '' || vis.display == 'block') ? 'none' : 'block';");
     out.println("      }");
     out.println("    </script>");
     out.println("  </head>");
@@ -52,7 +55,8 @@ public class ClientServlet extends HttpServlet {
     return makeMenu(request, "&nbsp;");
   }
 
-  private static final String[][] MENU = { { "index.html", "DQA" }, { "DownloadServlet", "4. Download" } };
+  private static final String[][] MENU =
+      {{"index.html", "DQA"}, {"DownloadServlet", "4. Download"}};
 
   public static String makeMenu(HttpServletRequest request, String title) {
     StringBuilder result = new StringBuilder();
@@ -83,8 +87,9 @@ public class ClientServlet extends HttpServlet {
   }
 
   public static void printFooter(PrintWriter out) {
-    out.println("    <p>American Immunization Registry Association - IIS HL7 Tester &amp; Simple Message Mover - Version " + SoftwareVersion.VERSION
-        + "</p>");
+    out.println(
+        "    <p>American Immunization Registry Association - IIS HL7 Tester &amp; Simple Message Mover - Version "
+            + SoftwareVersion.VERSION + "</p>");
 
   }
 

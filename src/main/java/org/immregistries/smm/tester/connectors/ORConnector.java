@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester.connectors;
 
@@ -28,17 +27,22 @@ import org.apache.commons.codec.binary.Base64;
  * 
  * @author nathan
  */
-public class ORConnector extends HttpConnector
-{
+public class ORConnector extends HttpConnector {
 
-  private static String XML_START_1 = "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:vac=\"http://vaccination.org/\">";
-  private static String XML_START_2a = "<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\"><wsse:Security soap:mustUnderstand=\"true\" xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\"><wsse:UsernameToken wsu:Id=\"UsernameToken-";
+  private static String XML_START_1 =
+      "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:vac=\"http://vaccination.org/\">";
+  private static String XML_START_2a =
+      "<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\"><wsse:Security soap:mustUnderstand=\"true\" xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\"><wsse:UsernameToken wsu:Id=\"UsernameToken-";
   private static String XML_START_2b = "\"><wsse:Username>";
-  private static String XML_START_3 = "</wsse:Username><wsse:Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText\">";
-  private static String XML_START_4a = "</wsse:Password><wsse:Nonce EncodingType=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary\">";
+  private static String XML_START_3 =
+      "</wsse:Username><wsse:Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText\">";
+  private static String XML_START_4a =
+      "</wsse:Password><wsse:Nonce EncodingType=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary\">";
   private static String XML_START_4b = "</wsse:Nonce><wsu:Created>";
-  private static String XML_START_5 = "</wsu:Created></wsse:UsernameToken></wsse:Security><wsa:Action>http://vaccination.org/IVaccinationService/UpdateHistoryRequest</wsa:Action><wsa:MessageID>";
-  private static String XML_START_6 = "</wsa:MessageID></soap:Header><soap:Body><vac:UpdateHistory><arg0><![CDATA[";
+  private static String XML_START_5 =
+      "</wsu:Created></wsse:UsernameToken></wsse:Security><wsa:Action>http://vaccination.org/IVaccinationService/UpdateHistoryRequest</wsa:Action><wsa:MessageID>";
+  private static String XML_START_6 =
+      "</wsa:MessageID></soap:Header><soap:Body><vac:UpdateHistory><arg0><![CDATA[";
   private static String XML_END = "]]></arg0></vac:UpdateHistory></soap:Body></soap:Envelope>";
 
   private static final String HL7_REQUEST_RESULT_START_TAG = "<return>";
@@ -91,7 +95,8 @@ public class ORConnector extends HttpConnector
 
   }
 
-  public String sendRequest(String request, ClientConnection conn, boolean debug) throws IOException {
+  public String sendRequest(String request, ClientConnection conn, boolean debug)
+      throws IOException {
     StringBuilder debugLog = null;
     URLConnection urlConn = null;
     if (debug) {
@@ -138,8 +143,8 @@ public class ORConnector extends HttpConnector
       sb.append(XML_START_4b);
       sb.append(messageDate);
       sb.append(XML_START_5);
-      sb.append(
-          "uuid:" + randomHex(8) + "-" + randomHex(4) + "-" + randomHex(4) + "-" + randomHex(4) + "-" + randomHex(12));
+      sb.append("uuid:" + randomHex(8) + "-" + randomHex(4) + "-" + randomHex(4) + "-"
+          + randomHex(4) + "-" + randomHex(12));
       sb.append(XML_START_6);
       sb.append(request);
       sb.append(XML_END);
@@ -162,7 +167,8 @@ public class ORConnector extends HttpConnector
       int startPos = responseString.indexOf(HL7_REQUEST_RESULT_START_TAG);
       int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG);
       if (startPos > 0 && endPos > startPos) {
-        responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
+        responseString =
+            responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
         response = new StringBuilder(responseString);
       }
       responseString = responseString.replaceAll("\\Q&amp;\\E", "&");
@@ -177,8 +183,8 @@ public class ORConnector extends HttpConnector
     } catch (IOException e) {
       e.printStackTrace(System.out);
       if (urlConn != null) {
-        InputStreamReader input = new InputStreamReader(((HttpURLConnection) urlConn).getErrorStream());
-        StringBuilder response = new StringBuilder();
+        InputStreamReader input =
+            new InputStreamReader(((HttpURLConnection) urlConn).getErrorStream());
         BufferedReader in = new BufferedReader(input);
         String line;
         while ((line = in.readLine()) != null) {
@@ -209,19 +215,12 @@ public class ORConnector extends HttpConnector
 
   @Override
   protected void setupFields(List<String> fields) {
-    for (String field : fields) {
       // nothing to do
-    }
-
   }
 
   @Override
   protected void makeScriptAdditions(StringBuilder sb) {
     // nothing to do
-    // if (deduplicate) {
-    // sb.append("Deduplicate: true\n");
-    // }
-
   }
 
   Random random = new Random();

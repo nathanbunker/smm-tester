@@ -8,8 +8,7 @@ import org.immregistries.smm.tester.connectors.ks.HL7WSStub;
 import org.immregistries.smm.tester.connectors.ks.HL7WSStub.KSRequest;
 import org.immregistries.smm.tester.connectors.ks.HL7WSStub.KSResult;
 
-public class KSSoapConnector extends HttpConnector
-{
+public class KSSoapConnector extends HttpConnector {
   public KSSoapConnector(String label, String url) throws Exception {
     super(label, url, ConnectorFactory.TYPE_KS_SOAP);
   }
@@ -20,7 +19,8 @@ public class KSSoapConnector extends HttpConnector
   }
 
   @Override
-  public String sendRequest(String request, ClientConnection conn, boolean debug) throws IOException {
+  public String sendRequest(String request, ClientConnection conn, boolean debug)
+      throws IOException {
     try {
       HL7WSStub stub = new HL7WSStub(conn.getUrl());
       KSRequest p = new KSRequest();

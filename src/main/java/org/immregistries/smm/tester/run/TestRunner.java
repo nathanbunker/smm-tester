@@ -1,8 +1,24 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester.run;
+
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_FORECAST_STATUS_INCLUDED;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_FORECAST_STATUS_NOT_INCLUDED;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR_Z33;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH_Z32;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH_Z42;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MULTIPLE_Z31_Z33;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND_OR_TOO_MANY;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_PROFILE_ID_MISSING;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_PROFILE_ID_UNEXPECTED;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY;
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +26,8 @@ import java.util.Map;
 
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.connectors.RunAgainstConnector;
 import org.immregistries.smm.tester.manager.HL7Reader;
+import org.immregistries.smm.tester.manager.forecast.ForecastTesterManager;
 import org.immregistries.smm.tester.manager.nist.NISTValidator;
 import org.immregistries.smm.tester.manager.nist.ValidationReport;
 import org.immregistries.smm.tester.manager.nist.ValidationResource;
@@ -25,7 +41,6 @@ import org.immregistries.smm.transform.Transformer;
  * @author nathan
  */
 public class TestRunner {
-
   public static final String ASSERT_RESULT_ACCEPT_ACCEPT_OR_ERROR = "Accept or Error";
   public static final String ASSERT_RESULT_ACCEPT_ACCEPT_OR_REJECT = "Accept or Reject";
   public static final String ASSERT_RESULT_ACCEPT_REJECT = "Reject";
@@ -34,6 +49,7 @@ public class TestRunner {
   public static final String ASSERT_RESULT_ACCEPT_ACCEPT_AND_WARN = "Accept and Warn";
   public static final String ASSERT_RESULT_ACCEPT = "Accept";
   public static final String ASSERT_RESULT_ERROR_LOCATION_IS_ = "Error Location is ";
+  public static final String ASSERT_RESULT_ERROR_INDICATED = "Error Indicated";
 
   public static final String ACTUAL_RESULT_STATUS_FAIL = "FAIL";
   public static final String ACTUAL_RESULT_STATUS_PASS = "PASS";
@@ -124,8 +140,8 @@ public class TestRunner {
     return runTest(connector, testCaseMessage, message);
   }
 
-  public TestCaseMessage runTestIfNew(Connector connector, TestCaseMessage testCaseMessage, Map<String, TestCaseMessage> testCaseMessageMap)
-      throws Exception {
+  public TestCaseMessage runTestIfNew(Connector connector, TestCaseMessage testCaseMessage,
+      Map<String, TestCaseMessage> testCaseMessageMap) throws Exception {
     wasRun = false;
     testCaseMessage.setActualResponseMessage("");
     testCaseMessage.setPassedTest(false);
@@ -139,9 +155,11 @@ public class TestRunner {
     return testCaseMessage;
   }
 
-  public boolean runTest(Connector connector, TestCaseMessage testCaseMessage, String message) throws Exception {
+  public boolean runTest(Connector connector, TestCaseMessage testCaseMessage, String message)
+      throws Exception {
     setupForRunTest(testCaseMessage, message);
     doRunTest(connector, testCaseMessage, message);
+    testCaseMessage.setTotalRunTime(getTotalRunTime());
     evaluateRunTest(connector, testCaseMessage);
     if (validateResponse) {
       validateResponseWithNIST(testCaseMessage, ackMessageText);
@@ -149,25 +167,173 @@ public class TestRunner {
     return passedTest;
   }
 
+  private boolean setPassFailForQuery(TestCaseMessage q) {
+    String queryType = "";
+    {
+      HL7Reader responseReader = new HL7Reader(q.getActualResponseMessage());
+      if (responseReader.advanceToSegment("MSH")) {
+        String messageType = responseReader.getValue(9);
+        q.log("  + MSH-9 Message Type: " + messageType);
+        if (messageType.equals("VXR")) {
+          queryType = VALUE_RESULT_QUERY_TYPE_MATCH;
+        } else if (messageType.equals("VXX")) {
+          queryType = VALUE_RESULT_QUERY_TYPE_LIST;
+        } else if (messageType.equals("QCK")) {
+          if (responseReader.advanceToSegment("QAK") && responseReader.getValue(2).equals("NF")) {
+            q.log("  + QAK-2 Response Status: NF");
+            queryType = VALUE_RESULT_QUERY_TYPE_NOT_FOUND;
+          } else {
+            q.log("  + No QAK segment found!");
+            queryType = VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
+          }
+        } else if (messageType.equals("ACK")) {
+          queryType = VALUE_RESULT_QUERY_TYPE_ERROR;
+        } else if (messageType.equals("RSP")) {
+          String profile = responseReader.getValue(21);
+          q.log("  + MSH-21 Profile: " + profile);
+          if (profile.equalsIgnoreCase("")) {
+            queryType = VALUE_RESULT_QUERY_TYPE_PROFILE_ID_MISSING;
+          } else if (profile.equalsIgnoreCase("Z32")) {
+            queryType = VALUE_RESULT_QUERY_TYPE_MATCH_Z32;
+          } else if (profile.equalsIgnoreCase("Z42")) {
+            queryType = VALUE_RESULT_QUERY_TYPE_MATCH_Z42;
+          } else if (profile.equalsIgnoreCase("Z31")) {
+            queryType = VALUE_RESULT_QUERY_TYPE_LIST;
+          } else if (profile.equalsIgnoreCase("Z33")) {
+            if (responseReader.advanceToSegment("QAK")) {
+              String responseStatus = responseReader.getValue(2);
+              q.log("  + QAK-2 Response Status: " + responseStatus);
+              if (responseStatus.equals("NF")) {
+                queryType = VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33;
+              } else if (responseStatus.equals("TM")) {
+                queryType = VALUE_RESULT_QUERY_TYPE_TOO_MANY;
+              } else if (responseStatus.equals("AE")) {
+                queryType = VALUE_RESULT_QUERY_TYPE_ERROR_Z33;
+              } else  {
+                queryType = VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
+              }
+            } else {
+              q.log("  + No QAK segment found!");
+              queryType = VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
+            }
+          } else {
+            queryType = VALUE_RESULT_QUERY_TYPE_PROFILE_ID_UNEXPECTED;
+          }
+        }
+      } else {
+        q.log("  + No MSH segment found!");
+        queryType = VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
+      }
+    }
+
+    q.log("  + Query Type Detected: " + queryType);
+    q.setActualResultQueryType(queryType);
+
+    boolean passed = q.getAssertResult().equals(queryType);
+
+    String ar = q.getAssertResult();
+    if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_MATCH)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_MATCH_Z32)
+          || queryType.equals(VALUE_RESULT_QUERY_TYPE_MATCH_Z42);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_MATCH_Z32)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_MATCH_Z32);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_MATCH_Z42)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_MATCH_Z42);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_LIST)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_LIST);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_NOT_FOUND)
+        || ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_TOO_MANY)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_TOO_MANY);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_ERROR)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_ERROR);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_MULTIPLE_Z31_Z33)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_LIST)
+          || queryType.equals(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33);
+    } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_OR_TOO_MANY)) {
+      passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_TOO_MANY)
+          || queryType.equals(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33);
+    }
+
+    if (passed) {
+      q.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_PASS);
+      q.log("  + Test PASSED");
+      return true;
+    } else {
+      q.setActualResultStatus(TestRunner.ACTUAL_RESULT_STATUS_FAIL);
+      q.log("  + Test FAILED");
+      return false;
+    }
+  }
+
+  private static final int[][] ERROR_INDICATED_FIELDS_AND_COMPONENTS = new int[][] {{2, 1}, {2, 2},
+      {2, 3}, {2, 4}, {2, 5}, {3, 1}, {5, 1}, {5, 3}, {5, 4}, {5, 6}, {8, 1}};
+
   protected void evaluateRunTest(Connector connector, TestCaseMessage testCaseMessage) {
+    testCaseMessage.log("EVALUATING TEST RUN");
     errorList = new ArrayList<TestError>();
     String assertResult = testCaseMessage.getAssertResult();
+    HL7Reader errorIndicatedReader = null;
+    testCaseMessage.log("  + Assert Result = " + assertResult);
+    if (testCaseMessage.getTestType().equals("VXU")) {
+      evaluateVXU(connector, testCaseMessage, assertResult, errorIndicatedReader);
+    } else if (testCaseMessage.getTestType().equals("QBP")) {
+      evaluateQBP(testCaseMessage);
+    } else {
+      testCaseMessage.log("  + Test Type '" + testCaseMessage.getTestType()
+          + "' not recognized, unable to evaluate");
+      passedTest = false;
+    }
+    testCaseMessage.setActualResponseMessage(ackMessageText);
+    testCaseMessage.setPassedTest(passedTest);
+    testCaseMessage.setHasRun(true);
+    wasRun = true;
+
+  }
+
+  private void evaluateQBP(TestCaseMessage testCaseMessage) {
+    passedTest = setPassFailForQuery(testCaseMessage);
+    readForecastActual(testCaseMessage);
+    if (testCaseMessage.getForecastActualList().size() > 0) {
+      testCaseMessage.setResultForecastStatus(VALUE_RESULT_FORECAST_STATUS_INCLUDED);
+    } else {
+      testCaseMessage.setResultForecastStatus(VALUE_RESULT_FORECAST_STATUS_NOT_INCLUDED);
+    }
+  }
+
+  private void evaluateVXU(Connector connector, TestCaseMessage testCaseMessage,
+      String assertResult, HL7Reader errorIndicatedReader) {
+    if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ERROR_INDICATED)) {
+      String assertResultParameter = testCaseMessage.getAssertResultParameter();
+      errorIndicatedReader = new HL7Reader(assertResultParameter);
+      if (!errorIndicatedReader.advanceToSegment("ERR")) {
+        errorIndicatedReader = null;
+      } else {
+        testCaseMessage.log(
+            "Will be looking for ERR segment that matches this one: " + assertResultParameter);
+      }
+    }
     if (!assertResult.equalsIgnoreCase("")) {
       if (ackMessageText == null || ackMessageText.equals("")) {
+        testCaseMessage.log("No acknowledgment was returned");
         if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT)) {
           passedTest = false;
         } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_WARN)) {
           passedTest = false;
         } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_SKIP)) {
           passedTest = false;
-        } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ERROR) || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_REJECT)) {
+        } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ERROR)
+            || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_REJECT)) {
           passedTest = true;
         } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_REJECT)
             || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_ERROR)) {
           passedTest = true;
-        } else if (assertResult.toUpperCase().startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
+        } else if (assertResult.toUpperCase()
+            .startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
           passedTest = false;
         }
+        testCaseMessage.log("  + Passed Test = " + passedTest);
       } else {
         ackMessageReader = AckAnalyzer.getMessageReader(ackMessageText, connector.getAckType());
         if (ackMessageReader != null) {
@@ -175,10 +341,22 @@ public class TestRunner {
         }
         {
           if (ackMessageReader != null || !connector.getAckType().isInHL7Format()) {
-            AckAnalyzer ackAnalyzer = new AckAnalyzer(ackMessageText, connector.getAckType());
+            testCaseMessage.log("Analyzing acknowledgement");
+            AckAnalyzer ackAnalyzer =
+                new AckAnalyzer(ackMessageText, connector.getAckType(), null, testCaseMessage);
+            if (ackAnalyzer.isPositive())
+            {
+              testCaseMessage.log("Positive acknowledgement detected");
+            }
+            else
+            {
+              testCaseMessage.log("Negative acknowledgement detected");
+            }
             testCaseMessage.setAccepted(ackAnalyzer.isPositive());
 
+
             if (ackMessageReader != null && ackMessageReader.advanceToSegment("MSA")) {
+              passedTest = false;
               testCaseMessage.setActualResultAckType(ackMessageReader.getValue(1));
               testCaseMessage.setActualResultAckMessage(ackMessageReader.getValue(2));
               boolean accepted = false;
@@ -194,8 +372,10 @@ public class TestRunner {
 
               List<Transform> refList = null;
               boolean foundRef = false;
-              if (assertResult.toUpperCase().startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
-                String refString = assertResult.substring(ASSERT_RESULT_ERROR_LOCATION_IS_.length()).trim();
+              if (assertResult.toUpperCase()
+                  .startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
+                String refString =
+                    assertResult.substring(ASSERT_RESULT_ERROR_LOCATION_IS_.length()).trim();
                 refList = new ArrayList<Transform>();
                 String[] refs = refString.split("\\Qor\\E");
                 for (String r : refs) {
@@ -224,7 +404,8 @@ public class TestRunner {
                   String segmentName = ackMessageReader.getValue(2, 1);
                   String fieldPos = ackMessageReader.getValue(2, 3);
                   for (Transform ref : refList) {
-                    if (ref.getSegment().equalsIgnoreCase(segmentName) && fieldPos.equals("" + ref.getField())) {
+                    if (ref.getSegment().equalsIgnoreCase(segmentName)
+                        && fieldPos.equals("" + ref.getField())) {
                       foundRef = true;
                       break;
                     }
@@ -242,6 +423,21 @@ public class TestRunner {
                   error.setErrorType(ErrorType.UNKNOWN);
                 }
                 error.setDescription(userMessage);
+                if (errorIndicatedReader != null) {
+                  boolean allMatches = true;
+                  for (int[] fieldAndComponent : ERROR_INDICATED_FIELDS_AND_COMPONENTS) {
+                    int field = fieldAndComponent[0];
+                    int component = fieldAndComponent[1];
+                    boolean matches = checkMatches(errorIndicatedReader, field, component);
+                    if (!matches) {
+                      allMatches = false;
+                      break;
+                    }
+                  }
+                  if (allMatches) {
+                    passedTest = true;
+                  }
+                }
 
               }
               if (testCaseMessage.getActualResultAckType().equals("AE") && !rejected) {
@@ -254,19 +450,20 @@ public class TestRunner {
                 }
               }
 
-              passedTest = false;
               if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT)) {
                 passedTest = ackAnalyzer.isPositive();
               } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_WARN)) {
                 passedTest = !rejected;
               } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_AND_SKIP)) {
                 passedTest = !rejected;
-              } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ERROR) || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_REJECT)) {
+              } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ERROR)
+                  || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_REJECT)) {
                 passedTest = !ackAnalyzer.isPositive();
               } else if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_REJECT)
                   || assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT_ACCEPT_OR_ERROR)) {
                 passedTest = true;
-              } else if (assertResult.toUpperCase().startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
+              } else if (assertResult.toUpperCase()
+                  .startsWith(ASSERT_RESULT_ERROR_LOCATION_IS_.toUpperCase())) {
                 if (refList == null) {
                   passedTest = false;
                 } else {
@@ -301,30 +498,28 @@ public class TestRunner {
         }
       }
     }
-    testCaseMessage.setActualResponseMessage(ackMessageText);
-    testCaseMessage.setPassedTest(passedTest);
-    testCaseMessage.setHasRun(true);
-    wasRun = true;
   }
 
-  private void doRunTest(Connector connector, TestCaseMessage testCaseMessage, String message) throws Exception {
-    if (connector instanceof RunAgainstConnector) {
-      RunAgainstConnector rac = (RunAgainstConnector) connector;
-      rac.setTestCaseCategory(testCaseMessage.getTestCaseCategoryId());
-      rac.setTestSectionType(testSectionType);
-    }
+  private void readForecastActual(TestCaseMessage queryTestCaseMessage) {
+    ForecastTesterManager.readForecastActual(queryTestCaseMessage);
+  }
 
+  private boolean checkMatches(HL7Reader errorIndicatedReader, int field, int component) {
+    boolean matches = false;
+    String indicatedValue = errorIndicatedReader.getValue(field, component);
+    String actualValue = ackMessageReader.getValue(field, component);
+    if (indicatedValue.equals("") || indicatedValue.equalsIgnoreCase(actualValue)) {
+      matches = true;
+    }
+    return matches;
+  }
+
+  private void doRunTest(Connector connector, TestCaseMessage testCaseMessage, String message)
+      throws Exception {
     startTime = System.currentTimeMillis();
     ackMessageText = connector.submitMessage(message, false);
     endTime = System.currentTimeMillis();
-
-    if (connector instanceof RunAgainstConnector) {
-      RunAgainstConnector rac = (RunAgainstConnector) connector;
-      if (rac.getOriginalRequestMessage() != null) {
-        testCaseMessage.setMessageTextSent(rac.getOriginalRequestMessage());
-        testCaseMessage.setMessageText(rac.getOriginalRequestMessage());
-      }
-    }
+    testCaseMessage.setActualResponseMessage(ackMessageText);
   }
 
   private void setupForRunTest(TestCaseMessage testCaseMessage, String message) {
@@ -337,16 +532,19 @@ public class TestRunner {
   public static void validateResponseWithNIST(TestCaseMessage testCaseMessage, String messageText) {
     ascertainValidationResource(testCaseMessage, messageText);
     if (testCaseMessage.getValidationResource() != null) {
-      ValidationReport validationReport = NISTValidator.validate(messageText, testCaseMessage.getValidationResource());
+      ValidationReport validationReport =
+          NISTValidator.validate(messageText, testCaseMessage.getValidationResource());
       testCaseMessage.setValidationReport(validationReport);
       if (validationReport != null) {
         testCaseMessage.setValidationReportPass(
-            validationReport.getHeaderReport().getValidationStatus().equals("Complete") && validationReport.getHeaderReport().getErrorCount() == 0);
+            validationReport.getHeaderReport().getValidationStatus().equals("Complete")
+                && validationReport.getHeaderReport().getErrorCount() == 0);
       }
     }
   }
 
-  public static void ascertainValidationResource(TestCaseMessage testCaseMessage, String messageText) {
+  public static void ascertainValidationResource(TestCaseMessage testCaseMessage,
+      String messageText) {
     ValidationResource validationResource = null;
     HL7Reader hl7Reader = new HL7Reader(messageText);
     if (hl7Reader.advanceToSegment("MSH")) {

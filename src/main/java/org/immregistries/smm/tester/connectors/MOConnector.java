@@ -8,14 +8,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.List;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSocketFactory;
-
-public class MOConnector extends HttpConnector
-{
+public class MOConnector extends HttpConnector {
 
   private static final String HL7_REQUEST_RESULT_START_TAG = "<SMVHL7VAL_x0028__x0029_Result>";
   private static final String HL7_REQUEST_RESULT_END_TAG = "</SMVHL7VAL_x0028__x0029_Result>";
@@ -68,18 +63,19 @@ public class MOConnector extends HttpConnector
     while (result != null && result.length() > 0 && result.charAt(0) < ' ') {
       result = result.substring(1);
     }
+    result = result.replaceAll("\\Q&amp;\\E", "&");
     return result;
 
   }
 
-  public String sendRequest(String request, ClientConnection conn, boolean debug) throws IOException {
+  public String sendRequest(String request, ClientConnection conn, boolean debug)
+      throws IOException {
     StringBuilder debugLog = null;
     if (debug) {
       debugLog = new StringBuilder();
     }
     try {
-      //SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
-      SSLSocketFactory factory = null;
+      // SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
 
       HttpURLConnection urlConn;
       DataOutputStream printout;
@@ -87,21 +83,18 @@ public class MOConnector extends HttpConnector
       URL url = new URL(conn.getUrl());
 
       urlConn = (HttpURLConnection) url.openConnection();
-      if (factory != null && urlConn instanceof HttpsURLConnection) {
-        ((HttpsURLConnection) urlConn).setSSLSocketFactory(factory);
-      }
 
       urlConn.setRequestMethod("POST");
 
-      urlConn.setRequestProperty("Content-Type",
-          "application/soap+xml; charset=utf-8");
+      urlConn.setRequestProperty("Content-Type", "application/soap+xml; charset=utf-8");
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       String content;
 
       StringBuilder sb = new StringBuilder();
       sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-      sb.append("<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:prov=\"http://tempuri.org/SMVAX_ProviderInterface_EXT_WS/ProviderInterface_EXT_WS\">");
+      sb.append(
+          "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:prov=\"http://tempuri.org/SMVAX_ProviderInterface_EXT_WS/ProviderInterface_EXT_WS\">");
       sb.append("  <soap:Header>");
       sb.append("    <prov:HL7SoapHeader>");
       sb.append("      <prov:USERID>" + userid + "</prov:USERID>");
@@ -112,11 +105,13 @@ public class MOConnector extends HttpConnector
       sb.append("    </prov:HL7SoapHeader>");
       sb.append("  </soap:Header>");
       sb.append("  <soap:Body>");
-      // sb.append("    <prov:SMVHL7_x0028__x0029_/>");  // This one works, but has the same ACK for everything I submitted.
-      sb.append("    <prov:SMVHL7VAL_x0028__x0029_/>"); // This one currently times out, but was the suggested one by MO.
+      // sb.append(" <prov:SMVHL7_x0028__x0029_/>"); // This one works, but has the same ACK for
+      // everything I submitted.
+      sb.append("    <prov:SMVHL7VAL_x0028__x0029_/>"); // This one currently times out, but was the
+                                                        // suggested one by MO.
       sb.append("  </soap:Body>");
       sb.append("</soap:Envelope>");
-      
+
       content = sb.toString();
 
       printout = new DataOutputStream(urlConn.getOutputStream());
@@ -136,7 +131,8 @@ public class MOConnector extends HttpConnector
       int startPos = responseString.indexOf(HL7_REQUEST_RESULT_START_TAG);
       int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG);
       if (startPos > 0 && endPos > startPos) {
-        responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
+        responseString =
+            responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
         response = new StringBuilder(responseString);
       }
       if (debug) {
@@ -144,22 +140,19 @@ public class MOConnector extends HttpConnector
         response.append("DEBUG LOG: \r");
         response.append(debugLog);
         response.append("MESSAGE SENT: \r");
-        response.append(content.replaceAll("\\&", "&amp;").replaceAll("\\<", "&lt;").replaceAll("\\>", "&gt;"));
+        response.append(
+            content.replaceAll("\\&", "&amp;").replaceAll("\\<", "&lt;").replaceAll("\\>", "&gt;"));
       }
       return response.toString();
     } catch (IOException e) {
-      if (true) {
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter out = new PrintWriter(stringWriter);
-        out.println("Unable to complete request");
-        e.printStackTrace(out);
-        out.println("DEBUG LOG: \r");
-        out.println(debugLog);
-        out.close();
-        return stringWriter.toString();
-      } else {
-        throw e;
-      }
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter out = new PrintWriter(stringWriter);
+      out.println("Unable to complete request");
+      e.printStackTrace(out);
+      out.println("DEBUG LOG: \r");
+      out.println(debugLog);
+      out.close();
+      return stringWriter.toString();
     }
 
   }

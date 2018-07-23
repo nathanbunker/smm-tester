@@ -2,8 +2,7 @@ package org.immregistries.smm.tester.manager.forecast;
 
 import org.immregistries.smm.transform.forecast.ForecastExpected;
 
-public class ForecastActual extends ForecastExpected
-{
+public class ForecastActual extends ForecastExpected {
   private String scheduleName = "";
   private String seriesName = "";
   private String seriesDoseCount = "";

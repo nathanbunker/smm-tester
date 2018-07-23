@@ -2,46 +2,44 @@ package org.immregistries.smm.mover;
 
 import java.util.Date;
 
-public class StatusLog
-{
+public class StatusLog {
   private int logLevel;
   private String issueText = "";
   private Throwable exception = null;
   private Date reportedData = new Date();
-  
-  public Date getReportedData()
-  {
+
+  public Date getReportedData() {
     return reportedData;
   }
-  public void setReportedData(Date reportedData)
-  {
+
+  public void setReportedData(Date reportedData) {
     this.reportedData = reportedData;
   }
-  public Throwable getException()
-  {
+
+  public Throwable getException() {
     return exception;
   }
-  public void setException(Throwable exception)
-  {
+
+  public void setException(Throwable exception) {
     this.exception = exception;
   }
-  public int getLogLevel()
-  {
+
+  public int getLogLevel() {
     return logLevel;
   }
-  public void setLogLevel(int logLevel)
-  {
+
+  public void setLogLevel(int logLevel) {
     this.logLevel = logLevel;
   }
-  public String getIssueText()
-  {
+
+  public String getIssueText() {
     return issueText;
   }
-  public void setIssueText(String issueText)
-  {
+
+  public void setIssueText(String issueText) {
     this.issueText = issueText;
   }
 
-  
-  
+
+
 }

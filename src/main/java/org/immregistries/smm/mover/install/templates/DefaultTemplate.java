@@ -4,13 +4,12 @@ import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 
-public class DefaultTemplate extends ConnectionTemplate
-{
+public class DefaultTemplate extends ConnectionTemplate {
   private static final String _POST = " POST";
   private static final String _SOAP = " SOAP";
 
   public DefaultTemplate() {
-    super("Default", new String[] { _SOAP, _POST });
+    super("Default", new String[] {_SOAP, _POST});
   }
 
   @Override

@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 
 package org.immregistries.smm.tester.connectors;
@@ -22,8 +21,7 @@ import javax.net.ssl.SSLSocketFactory;
  * 
  * @author nathan
  */
-public class CASoapConnector extends HttpConnector
-{
+public class CASoapConnector extends HttpConnector {
 
   public CASoapConnector(String label, String url) {
     super(label, url, "CA SOAP");
@@ -93,7 +91,8 @@ public class CASoapConnector extends HttpConnector
       StringWriter stringWriter = new StringWriter();
       PrintWriter out = new PrintWriter(stringWriter);
       // out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-      out.println("<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:cdc:iisb:2011\">");
+      out.println(
+          "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:cdc:iisb:2011\">");
       out.println("  <soap:Header/>");
       out.println("    <soap:Body>");
       out.println("    <urn:submitSingleMessage> ");
@@ -137,18 +136,18 @@ public class CASoapConnector extends HttpConnector
   public String connectivityTest(String message) throws Exception {
     StringBuilder response = new StringBuilder();
 
-     StringBuilder debugLog = new StringBuilder();
+    StringBuilder debugLog = new StringBuilder();
     String messageBeingSent = null;
     try {
-       SSLSocketFactory factory = setupSSLSocketFactory(false, debugLog);
+      SSLSocketFactory factory = setupSSLSocketFactory(false, debugLog);
       URLConnection urlConn;
       DataOutputStream printout;
       InputStreamReader input = null;
       URL url = new URL(this.url);
       urlConn = url.openConnection();
-       if (factory != null && urlConn instanceof HttpsURLConnection) {
-         ((HttpsURLConnection) urlConn).setSSLSocketFactory(factory);
-       }
+      if (factory != null && urlConn instanceof HttpsURLConnection) {
+        ((HttpsURLConnection) urlConn).setSSLSocketFactory(factory);
+      }
 
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
@@ -159,7 +158,8 @@ public class CASoapConnector extends HttpConnector
       StringWriter stringWriter = new StringWriter();
       PrintWriter out = new PrintWriter(stringWriter);
       // out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-      out.println("<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:cdc:iisb:2011\">");
+      out.println(
+          "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:cdc:iisb:2011\">");
       out.println("  <soap:Header/>");
       out.println("    <soap:Body>");
       out.println("    <urn:connectivityTest> ");
@@ -179,7 +179,7 @@ public class CASoapConnector extends HttpConnector
         response.append('\r');
       }
       input.close();
-      
+
     } catch (IOException ioe) {
       response.append("Unable to relay message, received this error: " + ioe.getMessage());
     }

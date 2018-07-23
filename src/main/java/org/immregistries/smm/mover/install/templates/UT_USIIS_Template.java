@@ -3,12 +3,11 @@ package org.immregistries.smm.mover.install.templates;
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
+import org.immregistries.smm.tester.connectors.Connector.TransferType;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 import org.immregistries.smm.tester.connectors.SoapConnector;
-import org.immregistries.smm.tester.connectors.Connector.TransferType;
 
-public class UT_USIIS_Template extends ConnectionTemplate
-{
+public class UT_USIIS_Template extends ConnectionTemplate {
   public UT_USIIS_Template() {
     super("UT USIIS");
   }

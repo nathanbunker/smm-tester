@@ -5,3 +5,4 @@ bin
 \.settings/
 
 *.prefs
+src/main/java/org/immregistries/smm/tester/BulkQueryServlet.java

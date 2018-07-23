@@ -4,8 +4,7 @@ import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 
-public class WA_IIS_Template extends ConnectionTemplate
-{
+public class WA_IIS_Template extends ConnectionTemplate {
   public WA_IIS_Template() {
     super("WA IIS");
   }

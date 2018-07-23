@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 
 package org.immregistries.smm.tester.connectors;
@@ -23,8 +22,7 @@ import javax.net.ssl.SSLSocketFactory;
  * 
  * @author nathan
  */
-public class SCSoapConnector extends HttpConnector
-{
+public class SCSoapConnector extends HttpConnector {
 
   private static final String RESULT_BEG = "<SubmitSingleMessageResult>";
   private static final String RESULT_END = "</SubmitSingleMessageResult>";

@@ -3,13 +3,11 @@ package org.immregistries.smm.mover.install.templates;
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.connectors.ConnectorFactory;
-import org.immregistries.smm.tester.connectors.EnvisionConnector;
-import org.immregistries.smm.tester.connectors.MAConnector;
 import org.immregistries.smm.tester.connectors.Connector.TransferType;
+import org.immregistries.smm.tester.connectors.ConnectorFactory;
+import org.immregistries.smm.tester.connectors.MAConnector;
 
-public class MA_MIIS_Template extends ConnectionTemplate
-{
+public class MA_MIIS_Template extends ConnectionTemplate {
   public MA_MIIS_Template() {
     super("MA MIIS");
   }

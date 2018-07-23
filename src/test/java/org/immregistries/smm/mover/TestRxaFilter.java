@@ -1,12 +1,11 @@
 package org.immregistries.smm.mover;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
-
-import org.immregistries.smm.mover.RxaFilter;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.HttpConnector;
 import org.junit.Test;

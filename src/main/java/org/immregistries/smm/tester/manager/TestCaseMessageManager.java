@@ -5,14 +5,21 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.immregistries.smm.tester.manager.hl7.HL7Component;
-import org.immregistries.smm.tester.manager.hl7.messages.ACK;
-import org.immregistries.smm.tester.manager.hl7.messages.RSP;
 import org.immregistries.smm.transform.PatientType;
 import org.immregistries.smm.transform.TestCaseMessage;
+import org.immregistries.smm.transform.TestCaseMode;
 import org.immregistries.smm.transform.Transformer;
 
 public class TestCaseMessageManager {
+
+  public static TestCaseMessage createTestCaseMessage(String source) throws Exception {
+    List<TestCaseMessage> testCaseMessageList = createTestCaseMessageList(source);
+    if (testCaseMessageList.isEmpty()) {
+      return null;
+    } else {
+      return testCaseMessageList.get(0);
+    }
+  }
 
   public static List<TestCaseMessage> createTestCaseMessageList(String source) throws Exception {
     List<TestCaseMessage> testCaseMessageList = new ArrayList<TestCaseMessage>();
@@ -57,6 +64,10 @@ public class TestCaseMessageManager {
             testCaseMessage.setPatientType(PatientType.valueOf(readValue(line)));
           } else if (line.startsWith(TestCaseMessage.SCENARIO)) {
             testCaseMessage.setScenario(readValue(line));
+          } else if (line.startsWith(TestCaseMessage.TEST_TYPE)) {
+            testCaseMessage.setTestType(readValue(line));
+          } else if (line.startsWith(TestCaseMessage.TEST_CASE_MODE)) {
+            testCaseMessage.setTestCaseMode(TestCaseMode.valueOf(readValue(line)));
           } else if (line.startsWith(TestCaseMessage.TEST_CASE_SET)) {
             testCaseMessage.setTestCaseSet(readValue(line));
           } else if (line.startsWith(TestCaseMessage.EXPECTED_RESULT)) {
@@ -64,28 +75,37 @@ public class TestCaseMessageManager {
           } else if (line.startsWith(TestCaseMessage.ORIGINAL_MESSAGE)) {
             testCaseMessage.setOriginalMessage(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
           } else if (line.startsWith(TestCaseMessage.ACTUAL_RESPONSE_MESSAGE)) {
-            testCaseMessage.setActualResponseMessage(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
+            testCaseMessage
+                .setActualResponseMessage(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
           } else if (line.startsWith(TestCaseMessage.DERIVED_FROM_VXU_MESSAGE)) {
-            testCaseMessage.setDerivedFromVXUMessage(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
+            testCaseMessage
+                .setDerivedFromVXUMessage(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
           } else if (line.startsWith(TestCaseMessage.QUICK_TRANSFORMATIONS)) {
             testCaseMessage.setQuickTransformations(readValues(line));
           } else if (line.startsWith(TestCaseMessage.ASSERT_RESULT)) {
             testCaseMessage.setAssertResult(readValue(line));
+          } else if (line.startsWith(TestCaseMessage.ASSERT_RESULT_PARAMETER)) {
+            testCaseMessage.setAssertResultParameter(readValue(line));
           } else if (line.startsWith(TestCaseMessage.DERIVED_FROM_TEST_CASE_NUMBER)) {
             testCaseMessage.setDerivedFromTestCaseNumber(readValue(line));
+          } else if (line.startsWith(TestCaseMessage.ORIGINAL_TEST_CASE_NUMBER)) {
+            testCaseMessage.setOriginalTestCaseNumber(readValue(line));
           } else if (line.startsWith(TestCaseMessage.MESSAGE_TYPE)) {
-            testCaseMessage.setMessageType(readValue(line));
+            testCaseMessage.setTestType(readValue(line));
           } else if (line.startsWith(TestCaseMessage.CUSTOM_TRANSFORMATIONS)) {
-            testCaseMessage.setCustomTransformations(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
+            testCaseMessage
+                .setCustomTransformations(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
             lastList = "CT";
           } else if (line.startsWith(TestCaseMessage.EXCLUDE_TRANSFORMATIONS)) {
-            testCaseMessage.setExcludeTransformations(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
+            testCaseMessage
+                .setExcludeTransformations(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
             lastList = "ET";
           } else if (line.startsWith(TestCaseMessage.CAUSE_ISSUES)) {
             testCaseMessage.setCauseIssues(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
             lastList = "CI";
           } else if (line.startsWith(TestCaseMessage.ADDITIONAL_TRANSFORMATIONS)) {
-            testCaseMessage.setAdditionalTransformations(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
+            testCaseMessage
+                .setAdditionalTransformations(readValue(line).replaceAll("\\Q<CR>\\E", "\r"));
             lastList = "AT";
           } else if (line.startsWith("+") && line.length() > 1) {
             if (lastList.equals("CT")) {
@@ -123,7 +143,8 @@ public class TestCaseMessageManager {
     return testCaseMessageList;
   }
 
-  protected static int createTestCase(TestCaseMessage testCaseMessage, StringBuffer message, int number, List<TestCaseMessage> testCaseMessageList) {
+  protected static int createTestCase(TestCaseMessage testCaseMessage, StringBuffer message,
+      int number, List<TestCaseMessage> testCaseMessageList) {
     String messageText = message.toString();
     if (messageText.length() > 0) {
       testCaseMessage.setMessageText(messageText);
@@ -231,7 +252,8 @@ public class TestCaseMessageManager {
     return number;
   }
 
-  protected static void addTestMessageToList(List<TestCaseMessage> testCaseMessageList, TestCaseMessage testCaseMessage) {
+  protected static void addTestMessageToList(List<TestCaseMessage> testCaseMessageList,
+      TestCaseMessage testCaseMessage) {
     if (testCaseMessage.getMessageText().startsWith("MSH|TRANSFORM")) {
       Transformer transformer = new Transformer();
       transformer.transform(testCaseMessage);
@@ -241,7 +263,8 @@ public class TestCaseMessageManager {
     }
 
     for (int i = 0; i < testCaseMessageList.size(); i++) {
-      if (testCaseMessage.getTestCaseNumber().equals(testCaseMessageList.get(i).getTestCaseNumber())) {
+      if (testCaseMessage.getTestCaseNumber()
+          .equals(testCaseMessageList.get(i).getTestCaseNumber())) {
         testCaseMessageList.get(i).merge(testCaseMessage);
         testCaseMessage = null;
         break;
@@ -313,34 +336,9 @@ public class TestCaseMessageManager {
     if (pos == -1 || (++pos == s.length())) {
       return new String[] {};
     }
-    return new String[] { s.substring(0, pos - 1), s.substring(pos) };
+    return new String[] {s.substring(0, pos - 1), s.substring(pos)};
   }
 
-  public static HL7Component createHL7Component(TestCaseMessage testCaseMessage) {
-    try {
-      HL7Component comp = null;
-      if (testCaseMessage.getActualMessageResponseType().equals("")) {
-        if (testCaseMessage.getActualResponseMessage() != null && !testCaseMessage.getActualResponseMessage().equalsIgnoreCase("")) {
-          HL7Reader ackMessageReader = new HL7Reader(testCaseMessage.getActualResponseMessage());
-          if (ackMessageReader.advanceToSegment("MSH")) {
-            testCaseMessage.setActualMessageResponseType(ackMessageReader.getValue(9));
-          }
-        }
-      }
-      if (testCaseMessage.getActualMessageResponseType().equals("ACK")) {
-        comp = new ACK();
-      } else if (testCaseMessage.getActualMessageResponseType().equals("RSP")) {
-        comp = new RSP();
-      }
-      if (comp != null) {
-        comp.parseTextFromMessage(testCaseMessage.getActualResponseMessage());
-        comp.checkConformance();
-        return comp;
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return null;
-  }
+
 
 }

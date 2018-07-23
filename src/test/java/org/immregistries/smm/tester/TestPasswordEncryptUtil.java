@@ -1,7 +1,5 @@
 package org.immregistries.smm.tester;
 
-import org.immregistries.smm.tester.PasswordEncryptUtil;
-
 import junit.framework.TestCase;
 
 public class TestPasswordEncryptUtil extends TestCase
@@ -36,13 +34,6 @@ public class TestPasswordEncryptUtil extends TestCase
       String comparePlainText = PasswordEncryptUtil.decrypt(encryptedText);
       assertEquals(plainText, comparePlainText);
     }
-    System.out.println("--> " + PasswordEncryptUtil.encrypt("I was"));
-    System.out.println("--> " + PasswordEncryptUtil.encrypt("xbzL4o7v40IU8I5Y"));
-    System.out.println("--> " + PasswordEncryptUtil.encrypt("upload1"));
-    System.out.println("--> " + PasswordEncryptUtil.encrypt("470922"));
-    System.out.println("--> " + PasswordEncryptUtil.encrypt("Smk37z!9"));
-    System.out.println("--> " + PasswordEncryptUtil.encrypt("bzg26ne4lrx317td"));
-    System.out.println("--> " + PasswordEncryptUtil.encrypt(""));
     
   }
 }

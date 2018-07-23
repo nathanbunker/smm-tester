@@ -1,7 +1,6 @@
 package org.immregistries.smm.tester.manager.nist;
 
-public class HeaderReport
-{
+public class HeaderReport {
   private String validationStatus = "";
   private String validationStatusInfo = "";
   private String serviceName = "";
@@ -27,11 +26,11 @@ public class HeaderReport
   public String getValidationStatusInfo() {
     return validationStatusInfo;
   }
-  
+
   public void setValidationStatusInfo(String validationStatusInfo) {
     this.validationStatusInfo = validationStatusInfo;
   }
-  
+
   public int getInformCount() {
     return informCount;
   }

@@ -1,7 +1,5 @@
 package org.immregistries.smm.tester.manager;
 
-import org.immregistries.smm.tester.manager.HL7Reader;
-
 import junit.framework.TestCase;
 
 public class TestHL7Reader extends TestCase
@@ -11,8 +9,6 @@ public class TestHL7Reader extends TestCase
   {
     long t = System.currentTimeMillis();
     int rand = (int) (t % 10);
-    System.out.println("--> t    = " + t);
-    System.out.println("--> rand = " + rand);
     assertTrue(rand >= 0 && rand < 10);
   }
 

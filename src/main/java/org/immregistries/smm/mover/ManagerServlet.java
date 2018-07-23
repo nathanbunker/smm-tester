@@ -11,11 +11,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.immregistries.smm.tester.ClientServlet;
 import org.immregistries.smm.tester.connectors.Connector;
 
-public class ManagerServlet extends ClientServlet
-{
+public class ManagerServlet extends ClientServlet {
 
   public static final String INIT_PARAM_KEY_STORE_PASSWORD = "keyStorePassword";
-  public static final String INIT_PARAM_SUN_SECURITY_SSL_ALLOW_UNSAFE_RENEGOTIATION = "sun.security.ssl.allowUnsafeRenegotiation";
+  public static final String INIT_PARAM_SUN_SECURITY_SSL_ALLOW_UNSAFE_RENEGOTIATION =
+      "sun.security.ssl.allowUnsafeRenegotiation";
   public static final String INIT_PARAM_KEY_STORE = "keyStore";
   public static final String INIT_PARAM_ADMIN_PASSWORD = "admin.password";
   public static final String INIT_PARAM_ADMIN_USERNAME = "admin.username";
@@ -40,13 +40,12 @@ public class ManagerServlet extends ClientServlet
   public void init() throws ServletException {
     super.init();
     if (connectionManager == null) {
-        initializeConnectionManager();
+      initializeConnectionManager();
     }
   }
 
   private synchronized void initializeConnectionManager() {
-    if (connectionManager != null)
-    {
+    if (connectionManager != null) {
       return;
     }
     connectionManager = new ConnectionManager();
@@ -88,7 +87,8 @@ public class ManagerServlet extends ClientServlet
   }
 
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     PrintWriter out = response.getWriter();
     try {
@@ -97,9 +97,11 @@ public class ManagerServlet extends ClientServlet
       if (ConnectionManager.getFolderScanner() != null) {
         out.println("<h3>Automatic Data Folder Scanning</h3>");
         if (ConnectionManager.getFolderScanner().isScanning()) {
-          out.println("<p><font color=\"red\">Scanner is currently looking for data folders.</font></p>");
+          out.println(
+              "<p><font color=\"red\">Scanner is currently looking for data folders.</font></p>");
         }
-        out.println("<p>Scan status: " + ConnectionManager.getFolderScanner().getScanningStatus() + "</p>");
+        out.println(
+            "<p>Scan status: " + ConnectionManager.getFolderScanner().getScanningStatus() + "</p>");
       }
       out.println("");
       out.println("<h3>Send Data Folders</h3>");
@@ -129,7 +131,8 @@ public class ManagerServlet extends ClientServlet
   }
 
   @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+      throws ServletException, IOException {
     // TODO Auto-generated method stub
     super.doPost(req, resp);
   }

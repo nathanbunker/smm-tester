@@ -6,8 +6,7 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class SendDataLocker
-{
+public class SendDataLocker {
   private File lockFile = null;
   private long lockTimeOut = 0l;
 
@@ -16,22 +15,18 @@ public class SendDataLocker
     this.lockTimeOut = lockTimeOut;
   }
 
-  public boolean obtainLock() throws IOException
-  {
+  public boolean obtainLock() throws IOException {
 
     // obtain lock
-    if (lockFile.exists())
-    {
+    if (lockFile.exists()) {
       // another process is apparently already working in this folder. This
       // should not happen, but could if two versions
       // of Simple Message Mover are currently running.
       // Need to now check and see how long it has been since this lock was
       // placed.
-      if ((System.currentTimeMillis() - lockFile.lastModified()) > lockTimeOut)
-      {
+      if ((System.currentTimeMillis() - lockFile.lastModified()) > lockTimeOut) {
         lockFile.delete();
-      } else
-      {
+      } else {
         return false;
       }
     }
@@ -39,8 +34,7 @@ public class SendDataLocker
     return true;
   }
 
-  public void renewLock() throws IOException
-  {
+  public void renewLock() throws IOException {
     SimpleDateFormat sdf = new SimpleDateFormat(ConnectionManager.STANDARD_DATE_FORMAT);
     PrintWriter out = new PrintWriter(lockFile);
     out.println("Simple Message Mover (SMM) currently working in this directory");
@@ -53,13 +47,10 @@ public class SendDataLocker
     out.close();
   }
 
-  public void releaseLock()
-  {
-    try
-    {
+  public void releaseLock() {
+    try {
       lockFile.delete();
-    } catch (Throwable t)
-    {
+    } catch (Throwable t) {
       // ignore, tried to get rid of lock, but if can't then continue normally
     }
   }

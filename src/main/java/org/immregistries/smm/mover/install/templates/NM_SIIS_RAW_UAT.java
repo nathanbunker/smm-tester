@@ -6,12 +6,11 @@ import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 import org.immregistries.smm.tester.connectors.HttpConnector;
 
-public class NM_SIIS_RAW_UAT extends ConnectionTemplate
-{
+public class NM_SIIS_RAW_UAT extends ConnectionTemplate {
   private static final String _UAT = " UAT";
 
   public NM_SIIS_RAW_UAT() {
-    super("NM SIIS Raw", new String[] { _UAT, _PROD });
+    super("NM SIIS Raw", new String[] {_UAT, _PROD});
   }
 
   @Override
@@ -63,9 +62,10 @@ public class NM_SIIS_RAW_UAT extends ConnectionTemplate
     httpConnector.setAuthenticationMethod(HttpConnector.AuthenticationMethod.HEADER);
     httpConnector.setCustomTransformations("MSH-3=RPMS\n" + "MSH-4=[OTHERID]\n" + "MSH-6=NMSIIS\n"
         + "insert segment BHS first\n" + "insert segment BTS last\n" + "insert segment FHS first\n"
-        + "insert segment FTS last\n" + "FHS-8=CR\n" + "BSH-8=CR\n" + "FHS-9=[FILENAME]\n" + "FTS-1=1\n" + "BTS-1=1\n"
-        + "FTS-2=CR\n" + "BTS-2=CR\n" + "FHS-4=[USERID]\n" + "BHS-4=[USERID]\n"
-        + "insert segment IN1,IN2 before ORC if missing\n" + "insert segment IN2 after IN1 if missing\n" + "IN1-1=1\n"
+        + "insert segment FTS last\n" + "FHS-8=CR\n" + "BSH-8=CR\n" + "FHS-9=[FILENAME]\n"
+        + "FTS-1=1\n" + "BTS-1=1\n" + "FTS-2=CR\n" + "BTS-2=CR\n" + "FHS-4=[USERID]\n"
+        + "BHS-4=[USERID]\n" + "insert segment IN1,IN2 before ORC if missing\n"
+        + "insert segment IN2 after IN1 if missing\n" + "IN1-1=1\n"
         + "fix missing mother maiden first\n" + "remove observation 64994-7 if 18+\n");
   }
 

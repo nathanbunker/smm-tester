@@ -21,9 +21,11 @@ public abstract class CDCWSDLServer {
   }
 
   @SuppressWarnings("resource")
-  public void process(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  public void process(HttpServletRequest req, HttpServletResponse resp)
+      throws ServletException, IOException {
     String xmlMessage = getBody(req);
-    resp.setContentType("application/soap+xml; charset=UTF-8; action=\"urn:cdc:iisb:2011:connectivityTest\"");
+    resp.setContentType(
+        "application/soap+xml; charset=UTF-8; action=\"urn:cdc:iisb:2011:connectivityTest\"");
     PrintWriter out = new PrintWriter(resp.getOutputStream());
     try {
       if (isConnectivityTest(xmlMessage)) {
@@ -34,7 +36,8 @@ public abstract class CDCWSDLServer {
         authorize(ssm);
         processor.doProcessMessage(out, ssm);
       } else {
-        throw new UnsupportedOperationFault("Expected either connectivityTest or SubmitSingleMessage");
+        throw new UnsupportedOperationFault(
+            "Expected either connectivityTest or SubmitSingleMessage");
       }
     } catch (MessageTooLargeFault mtlf) {
       out = quitelyResetBuffer(resp, out);
@@ -57,18 +60,14 @@ public abstract class CDCWSDLServer {
     }
   }
 
-  public PrintWriter quitelyResetBuffer(HttpServletResponse resp, PrintWriter out)  {
+  public PrintWriter quitelyResetBuffer(HttpServletResponse resp, PrintWriter out) {
     try {
       resp.resetBuffer();
       return new PrintWriter(resp.getOutputStream());
-    }
-    catch (IOException ioe)
-    {
+    } catch (IOException ioe) {
       ioe.printStackTrace();
       // ignore, will just have to print as buffer has already been flushed
-    }
-    catch (IllegalStateException ise)
-    {
+    } catch (IllegalStateException ise) {
       ise.printStackTrace();
       // ignore, will just have to print as buffer has already been flushed
     }
@@ -116,16 +115,19 @@ public abstract class CDCWSDLServer {
   }
 
   private boolean isConnectivityTest(String xmlMessage) {
-    if (xmlMessage.indexOf("<connectivityTest ") > 0 || xmlMessage.indexOf(":connectivityTest ") > 0 || 
-    		xmlMessage.indexOf("<connectivityTest>") > 0 || xmlMessage.indexOf(":connectivityTest>") > 0) {
+    if (xmlMessage.indexOf("<connectivityTest ") > 0 || xmlMessage.indexOf(":connectivityTest ") > 0
+        || xmlMessage.indexOf("<connectivityTest>") > 0
+        || xmlMessage.indexOf(":connectivityTest>") > 0) {
       return true;
     }
     return false;
   }
 
   private boolean isSubmitSingleMessage(String xmlMessage) {
-    if (xmlMessage.indexOf("<submitSingleMessage ") > 0 || xmlMessage.indexOf(":submitSingleMessage ") > 0
-    		|| xmlMessage.indexOf("<submitSingleMessage>") > 0 || xmlMessage.indexOf(":submitSingleMessage>") > 0) {
+    if (xmlMessage.indexOf("<submitSingleMessage ") > 0
+        || xmlMessage.indexOf(":submitSingleMessage ") > 0
+        || xmlMessage.indexOf("<submitSingleMessage>") > 0
+        || xmlMessage.indexOf(":submitSingleMessage>") > 0) {
       return true;
     }
     return false;
@@ -188,11 +190,11 @@ public abstract class CDCWSDLServer {
     return value;
   }
 
-  
-  public static void printWSDL(PrintWriter out, String url)
-  {
+
+  public static void printWSDL(PrintWriter out, String url) {
     out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-    out.println("<definitions xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\" ");
+    out.println(
+        "<definitions xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\" ");
     out.println("             xmlns:wsp=\"http://www.w3.org/ns/ws-policy\" ");
     out.println("             xmlns:wsp1_2=\"http://schemas.xmlsoap.org/ws/2004/09/policy\" ");
     out.println("             xmlns:wsam=\"http://www.w3.org/2007/05/addressing/metadata\" ");
@@ -206,32 +208,40 @@ public abstract class CDCWSDLServer {
     out.println("");
     out.println("<!-- schema for types -->");
     out.println("<types>");
-    out.println("    <xsd:schema elementFormDefault=\"qualified\" targetNamespace=\"urn:cdc:iisb:2011\">");
+    out.println(
+        "    <xsd:schema elementFormDefault=\"qualified\" targetNamespace=\"urn:cdc:iisb:2011\">");
     out.println("    ");
     out.println("    <xsd:complexType name=\"connectivityTestRequestType\">");
     out.println("      <xsd:sequence>");
-    out.println("        <xsd:element name=\"echoBack\" type=\"xsd:string\" minOccurs=\"1\" maxOccurs=\"1\" nillable=\"true\"/>");
+    out.println(
+        "        <xsd:element name=\"echoBack\" type=\"xsd:string\" minOccurs=\"1\" maxOccurs=\"1\" nillable=\"true\"/>");
     out.println("      </xsd:sequence>");
     out.println("    </xsd:complexType>");
     out.println("    ");
     out.println("    <xsd:complexType name=\"connectivityTestResponseType\">");
     out.println("      <xsd:sequence>");
-    out.println("        <xsd:element name=\"return\" type=\"xsd:string\" minOccurs=\"1\" maxOccurs=\"1\" nillable=\"true\"/>");
+    out.println(
+        "        <xsd:element name=\"return\" type=\"xsd:string\" minOccurs=\"1\" maxOccurs=\"1\" nillable=\"true\"/>");
     out.println("      </xsd:sequence>");
     out.println("    </xsd:complexType>");
     out.println("  ");
     out.println("    <xsd:complexType name=\"submitSingleMessageRequestType\">");
     out.println("      <xsd:sequence>");
-    out.println("        <xsd:element name=\"username\" type=\"xsd:string\" minOccurs=\"0\" maxOccurs=\"1\" nillable=\"true\"/>");
-    out.println("        <xsd:element name=\"password\" type=\"xsd:string\" minOccurs=\"0\" maxOccurs=\"1\" nillable=\"true\"/>");
-    out.println("        <xsd:element name=\"facilityID\" type=\"xsd:string\"  minOccurs=\"0\" maxOccurs=\"1\" nillable=\"true\"/>");
-    out.println("        <xsd:element name=\"hl7Message\" type=\"xsd:string\" minOccurs=\"1\" maxOccurs=\"1\" nillable=\"true\"/>");
+    out.println(
+        "        <xsd:element name=\"username\" type=\"xsd:string\" minOccurs=\"0\" maxOccurs=\"1\" nillable=\"true\"/>");
+    out.println(
+        "        <xsd:element name=\"password\" type=\"xsd:string\" minOccurs=\"0\" maxOccurs=\"1\" nillable=\"true\"/>");
+    out.println(
+        "        <xsd:element name=\"facilityID\" type=\"xsd:string\"  minOccurs=\"0\" maxOccurs=\"1\" nillable=\"true\"/>");
+    out.println(
+        "        <xsd:element name=\"hl7Message\" type=\"xsd:string\" minOccurs=\"1\" maxOccurs=\"1\" nillable=\"true\"/>");
     out.println("      </xsd:sequence>");
     out.println("    </xsd:complexType>");
     out.println("    ");
     out.println("    <xsd:complexType name=\"submitSingleMessageResponseType\">");
     out.println("      <xsd:sequence>");
-    out.println("        <xsd:element name=\"return\" type=\"xsd:string\" minOccurs=\"1\" maxOccurs=\"1\" nillable=\"true\"/>");
+    out.println(
+        "        <xsd:element name=\"return\" type=\"xsd:string\" minOccurs=\"1\" maxOccurs=\"1\" nillable=\"true\"/>");
     out.println("      </xsd:sequence>    ");
     out.println("    </xsd:complexType>");
     out.println("    ");
@@ -267,14 +277,20 @@ public abstract class CDCWSDLServer {
     out.println("       </xsd:sequence>    ");
     out.println("    </xsd:complexType>        ");
     out.println("      ");
-    out.println("    <xsd:element name=\"connectivityTest\" type=\"tns:connectivityTestRequestType\"/>");
-    out.println("    <xsd:element name=\"connectivityTestResponse\" type=\"tns:connectivityTestResponseType\"/>");
-    out.println("    <xsd:element name=\"submitSingleMessage\" type=\"tns:submitSingleMessageRequestType\"/>");
-    out.println("    <xsd:element name=\"submitSingleMessageResponse\" type=\"tns:submitSingleMessageResponseType\"/>");
+    out.println(
+        "    <xsd:element name=\"connectivityTest\" type=\"tns:connectivityTestRequestType\"/>");
+    out.println(
+        "    <xsd:element name=\"connectivityTestResponse\" type=\"tns:connectivityTestResponseType\"/>");
+    out.println(
+        "    <xsd:element name=\"submitSingleMessage\" type=\"tns:submitSingleMessageRequestType\"/>");
+    out.println(
+        "    <xsd:element name=\"submitSingleMessageResponse\" type=\"tns:submitSingleMessageResponseType\"/>");
     out.println("    <xsd:element name=\"fault\" type=\"tns:soapFaultType\"/>");
-    out.println("    <xsd:element name=\"UnsupportedOperationFault\" type=\"tns:UnsupportedOperationFaultType\"/>");
+    out.println(
+        "    <xsd:element name=\"UnsupportedOperationFault\" type=\"tns:UnsupportedOperationFaultType\"/>");
     out.println("    <xsd:element name=\"SecurityFault\" type=\"tns:SecurityFaultType\"/>");
-    out.println("    <xsd:element name=\"MessageTooLargeFault\" type=\"tns:MessageTooLargeFaultType\"/>");
+    out.println(
+        "    <xsd:element name=\"MessageTooLargeFault\" type=\"tns:MessageTooLargeFaultType\"/>");
     out.println("    ");
     out.println("    </xsd:schema>");
     out.println("  </types>");
@@ -319,39 +335,53 @@ public abstract class CDCWSDLServer {
     out.println("  <portType name=\"IIS_PortType\">");
     out.println("    <operation name=\"connectivityTest\">");
     out.println("      <documentation>the connectivity test</documentation>");
-    out.println("      <input message=\"tns:connectivityTest_Message\" wsaw:Action=\"urn:cdc:iisb:2011:connectivityTest\"/>");
-    out.println("      <output message=\"tns:connectivityTestResponse_Message\" wsaw:Action=\"urn:cdc:iisb:2011:connectivityTestResponse\"/>");
-    out.println("      <fault name=\"UnknownFault\" message=\"tns:UnknownFault_Message\"/>  <!-- a general soap fault -->");
-    out.println("      <fault name=\"UnsupportedOperationFault\" message=\"tns:UnsupportedOperationFault_Message\"/>  <!-- The UnsupportedOperation soap fault -->");
+    out.println(
+        "      <input message=\"tns:connectivityTest_Message\" wsaw:Action=\"urn:cdc:iisb:2011:connectivityTest\"/>");
+    out.println(
+        "      <output message=\"tns:connectivityTestResponse_Message\" wsaw:Action=\"urn:cdc:iisb:2011:connectivityTestResponse\"/>");
+    out.println(
+        "      <fault name=\"UnknownFault\" message=\"tns:UnknownFault_Message\"/>  <!-- a general soap fault -->");
+    out.println(
+        "      <fault name=\"UnsupportedOperationFault\" message=\"tns:UnsupportedOperationFault_Message\"/>  <!-- The UnsupportedOperation soap fault -->");
     out.println("    </operation>");
     out.println("");
     out.println("    <operation name=\"submitSingleMessage\">");
     out.println("      <documentation>submit single message</documentation>");
-    out.println("      <input message=\"tns:submitSingleMessage_Message\" wsaw:Action=\"urn:cdc:iisb:2011:submitSingleMessage\"/>");
-    out.println("      <output message=\"tns:submitSingleMessageResponse_Message\" wsaw:Action=\"urn:cdc:iisb:2011:submitSingleMessageResponse\"/>");
-    out.println("      <fault name=\"UnknownFault\" message=\"tns:UnknownFault_Message\"/>  <!-- a general soap fault -->");
+    out.println(
+        "      <input message=\"tns:submitSingleMessage_Message\" wsaw:Action=\"urn:cdc:iisb:2011:submitSingleMessage\"/>");
+    out.println(
+        "      <output message=\"tns:submitSingleMessageResponse_Message\" wsaw:Action=\"urn:cdc:iisb:2011:submitSingleMessageResponse\"/>");
+    out.println(
+        "      <fault name=\"UnknownFault\" message=\"tns:UnknownFault_Message\"/>  <!-- a general soap fault -->");
     out.println("      <fault name=\"SecurityFault\" message=\"tns:SecurityFault_Message\"/>");
-    out.println("      <fault name=\"MessageTooLargeFault\" message=\"tns:MessageTooLargeFault_Message\"/>");
+    out.println(
+        "      <fault name=\"MessageTooLargeFault\" message=\"tns:MessageTooLargeFault_Message\"/>");
     out.println("    </operation>");
     out.println("  </portType>");
     out.println("");
     out.println("  <!-- SOAP 1.2 Binding -->");
     out.println("  <binding name=\"client_Binding_Soap12\" type=\"tns:IIS_PortType\">");
-    out.println("    <soap12:binding style=\"document\" transport=\"http://schemas.xmlsoap.org/soap/http\" />");
+    out.println(
+        "    <soap12:binding style=\"document\" transport=\"http://schemas.xmlsoap.org/soap/http\" />");
     out.println("    <operation name=\"connectivityTest\">");
     out.println("      <soap12:operation soapAction=\"urn:cdc:iisb:2011:connectivityTest\" />");
     out.println("      <input><soap12:body use=\"literal\" /></input>");
     out.println("      <output><soap12:body use=\"literal\" /></output>");
-    out.println("      <fault name=\"UnknownFault\"><soap12:fault use=\"literal\" name=\"UnknownFault\"/></fault>");
-    out.println("      <fault name=\"UnsupportedOperationFault\"><soap12:fault use=\"literal\" name=\"UnsupportedOperationFault\"/></fault>");
+    out.println(
+        "      <fault name=\"UnknownFault\"><soap12:fault use=\"literal\" name=\"UnknownFault\"/></fault>");
+    out.println(
+        "      <fault name=\"UnsupportedOperationFault\"><soap12:fault use=\"literal\" name=\"UnsupportedOperationFault\"/></fault>");
     out.println("    </operation>");
     out.println("    <operation name=\"submitSingleMessage\">");
     out.println("      <soap12:operation soapAction=\"urn:cdc:iisb:2011:submitSingleMessage\" />");
     out.println("      <input><soap12:body use=\"literal\" /></input>");
     out.println("      <output><soap12:body use=\"literal\" /></output>");
-    out.println("      <fault name=\"UnknownFault\"><soap12:fault use=\"literal\" name=\"UnknownFault\"/></fault>");
-    out.println("      <fault name=\"SecurityFault\"><soap12:fault use=\"literal\" name=\"SecurityFault\"/></fault>");
-    out.println("      <fault name=\"MessageTooLargeFault\"><soap12:fault use=\"literal\" name=\"MessageTooLargeFault\"/></fault>");
+    out.println(
+        "      <fault name=\"UnknownFault\"><soap12:fault use=\"literal\" name=\"UnknownFault\"/></fault>");
+    out.println(
+        "      <fault name=\"SecurityFault\"><soap12:fault use=\"literal\" name=\"SecurityFault\"/></fault>");
+    out.println(
+        "      <fault name=\"MessageTooLargeFault\"><soap12:fault use=\"literal\" name=\"MessageTooLargeFault\"/></fault>");
     out.println("    </operation>");
     out.println("  </binding>");
     out.println("");

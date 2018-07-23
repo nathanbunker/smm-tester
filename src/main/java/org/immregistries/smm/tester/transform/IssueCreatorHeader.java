@@ -1,10 +1,7 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester.transform;
-
-import java.util.Arrays;
 
 import org.immregistries.smm.transform.TestCaseMessage;
 
@@ -12,10 +9,10 @@ import org.immregistries.smm.transform.TestCaseMessage;
  * 
  * @author nathan
  */
-public class IssueCreatorHeader extends IssueCreator
-{
+public class IssueCreatorHeader extends IssueCreator {
 
-  public static String createTransforms(TestCaseMessage testCaseMessage, Issue issue, String transforms, boolean not) {
+  public static String createTransforms(TestCaseMessage testCaseMessage, Issue issue,
+      String transforms, boolean not) {
     boolean is = !not;
     if (issue == Issue.HL7_SEGMENT_IS_UNRECOGNIZED) {
       if (is) {

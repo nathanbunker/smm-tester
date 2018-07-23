@@ -3,12 +3,11 @@ package org.immregistries.smm.mover.install.templates;
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
+import org.immregistries.smm.tester.connectors.Connector.TransferType;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 import org.immregistries.smm.tester.connectors.NDSoapConnector;
-import org.immregistries.smm.tester.connectors.Connector.TransferType;
 
-public class ND_NDIIS_Template extends ConnectionTemplate
-{
+public class ND_NDIIS_Template extends ConnectionTemplate {
   public ND_NDIIS_Template() {
     super("ND NDIIS");
   }

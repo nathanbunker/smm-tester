@@ -3,13 +3,11 @@ package org.immregistries.smm.mover.install.templates;
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.connectors.ConnectorFactory;
-import org.immregistries.smm.tester.connectors.EnvisionConnector;
-import org.immregistries.smm.tester.connectors.SoapConnector;
 import org.immregistries.smm.tester.connectors.Connector.TransferType;
+import org.immregistries.smm.tester.connectors.ConnectorFactory;
+import org.immregistries.smm.tester.connectors.SoapConnector;
 
-public class ID_IRIS_Template extends ConnectionTemplate
-{
+public class ID_IRIS_Template extends ConnectionTemplate {
   public ID_IRIS_Template() {
     super("ID IRIS");
   }

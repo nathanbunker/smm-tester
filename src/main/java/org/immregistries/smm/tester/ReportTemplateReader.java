@@ -1,6 +1,5 @@
 package org.immregistries.smm.tester;
 
-public class ReportTemplateReader
-{
+public class ReportTemplateReader {
 
 }

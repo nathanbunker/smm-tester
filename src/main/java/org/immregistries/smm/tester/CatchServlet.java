@@ -9,10 +9,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+@SuppressWarnings("serial")
 public class CatchServlet extends ClientServlet {
 
   @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+      throws ServletException, IOException {
 
     System.out.println("POST called");
     dumpDetails(req);
@@ -20,7 +22,8 @@ public class CatchServlet extends ClientServlet {
   }
 
   @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+      throws ServletException, IOException {
     System.out.println("GET called");
 
     dumpDetails(req);
@@ -38,15 +41,13 @@ public class CatchServlet extends ClientServlet {
       out.println("  <input type=\"submit\" name=\"submit\" value=\"Submit\"/>");
       out.println("</form>");
       printHtmlFoot(out);
-    }
-    finally
-    {
+    } finally {
       out.close();
     }
   }
 
   private void dumpDetails(HttpServletRequest req) throws IOException {
-    
+
     System.out.println("Path: " + req.getPathInfo());
     System.out.println("Query: " + req.getQueryString());
     System.out.println("Protocol: " + req.getProtocol());

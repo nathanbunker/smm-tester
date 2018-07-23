@@ -1,11 +1,10 @@
 package org.immregistries.smm.transform.procedure;
 
-import junit.framework.TestCase;
-
 import org.immregistries.smm.transform.TestCaseMessage;
 import org.immregistries.smm.transform.Transformer;
-import org.immregistries.smm.transform.procedure.AnonymizeAndUpdateRecord;
 import org.junit.Test;
+
+import junit.framework.TestCase;
 
 public class AnonymizeAndUpdateRecordTest extends TestCase {
 

@@ -15,7 +15,8 @@ public class RemoveVaccinationGroupsProcedure implements ProcedureInterface {
   }
 
   // run procedure Remove_Vaccination_Groups where RXA-20 equals 'RE'
-  public void doProcedure(TransformRequest transformRequest, LinkedList<String> tokenList) throws IOException {
+  public void doProcedure(TransformRequest transformRequest, LinkedList<String> tokenList)
+      throws IOException {
     String token = "";
     while (!token.equalsIgnoreCase("where") && !tokenList.isEmpty()) {
       token = tokenList.removeFirst();
@@ -26,7 +27,8 @@ public class RemoveVaccinationGroupsProcedure implements ProcedureInterface {
         token = tokenList.removeFirst();
         if (token.equalsIgnoreCase("equals") && !tokenList.isEmpty()) {
           String valueSearch = tokenList.removeFirst();
-          BufferedReader inResult = new BufferedReader(new StringReader(transformRequest.getResultText()));
+          BufferedReader inResult =
+              new BufferedReader(new StringReader(transformRequest.getResultText()));
           String lineResult;
           String finalMessage = "";
           String vaccinationGroup = "";
@@ -34,7 +36,8 @@ public class RemoveVaccinationGroupsProcedure implements ProcedureInterface {
             lineResult = lineResult.trim();
             if (lineResult.startsWith("ORC|")) {
               if (!vaccinationGroup.equals("")) {
-                String valueActual = Transformer.getValueFromHL7(hl7Ref, vaccinationGroup, transformRequest);
+                String valueActual =
+                    Transformer.getValueFromHL7(hl7Ref, vaccinationGroup, transformRequest);
                 if (!valueSearch.equalsIgnoreCase(valueActual)) {
                   finalMessage += vaccinationGroup;
                 }
@@ -47,7 +50,8 @@ public class RemoveVaccinationGroupsProcedure implements ProcedureInterface {
             }
           }
           if (!vaccinationGroup.equals("")) {
-            String valueActual = Transformer.getValueFromHL7(hl7Ref, vaccinationGroup, transformRequest);
+            String valueActual =
+                Transformer.getValueFromHL7(hl7Ref, vaccinationGroup, transformRequest);
             if (!valueSearch.equalsIgnoreCase(valueActual)) {
               finalMessage += vaccinationGroup;
             }

@@ -4,8 +4,7 @@ import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 
-public class CA_SDIR_Template extends ConnectionTemplate
-{
+public class CA_SDIR_Template extends ConnectionTemplate {
   public CA_SDIR_Template() {
     super("CA SDIR");
   }
@@ -17,7 +16,8 @@ public class CA_SDIR_Template extends ConnectionTemplate
       cc.setUrl("http://www.sdirtrain.org/other/receivehl7.jsp");
       cc.setFacilityidShow(true);
       cc.setTypeShow(false);
-      cc.setInstructions("In order to connect to SDIR you will need a User Id, Password and Facility Id. ");
+      cc.setInstructions(
+          "In order to connect to SDIR you will need a User Id, Password and Facility Id. ");
       cc.setReceiverName("SDIR");
       cc.setUseridRequired(true);
       cc.setPasswordRequired(true);
@@ -27,7 +27,8 @@ public class CA_SDIR_Template extends ConnectionTemplate
       cc.setUrl("");
       cc.setFacilityidShow(true);
       cc.setTypeShow(false);
-      cc.setInstructions("In order to connect to SDIR you will need a User Id, Password and Facility Id and the URL. ");
+      cc.setInstructions(
+          "In order to connect to SDIR you will need a User Id, Password and Facility Id and the URL. ");
       cc.setReceiverName("SDIR");
       cc.setUseridRequired(true);
       cc.setPasswordRequired(true);

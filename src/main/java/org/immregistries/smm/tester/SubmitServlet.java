@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester;
 
@@ -15,9 +14,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -27,11 +24,10 @@ import javax.servlet.http.HttpSession;
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.manager.HL7Reader;
-import org.immregistries.smm.tester.manager.QueryConverter;
 import org.immregistries.smm.tester.manager.TestCaseMessageManager;
 import org.immregistries.smm.tester.manager.nist.Assertion;
-import org.immregistries.smm.tester.manager.nist.NISTValidator;
-import org.immregistries.smm.tester.manager.nist.ValidationReport;
+import org.immregistries.smm.tester.manager.query.QueryConverter;
+import org.immregistries.smm.tester.manager.query.QueryType;
 import org.immregistries.smm.tester.run.TestRunner;
 import org.immregistries.smm.transform.TestCaseMessage;
 import org.immregistries.smm.transform.Transformer;
@@ -40,8 +36,8 @@ import org.immregistries.smm.transform.Transformer;
  * 
  * @author nathan
  */
-public class SubmitServlet extends ClientServlet
-{
+@SuppressWarnings("serial")
+public class SubmitServlet extends ClientServlet {
 
   protected static Connector getConnector(int id, HttpSession session) throws ServletException {
     List<Connector> connectors = ConnectServlet.getConnectors(session);
@@ -53,19 +49,15 @@ public class SubmitServlet extends ClientServlet
   }
 
   /**
-   * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-   * methods.
+   * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
-  protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+      throws Exception {
 
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
@@ -90,11 +82,17 @@ public class SubmitServlet extends ClientServlet
 
       if (transform) {
         if (request.getParameter("transform") != null) {
-          TestCaseMessage testCaseMessage = (TestCaseMessage) session.getAttribute("testCaseMessage");
+          TestCaseMessage testCaseMessage =
+              (TestCaseMessage) session.getAttribute("testCaseMessage");
           String scenarioTransforms = null;
           String additionalTransformations = "";
           if (testCaseMessage != null) {
-            scenarioTransforms = connector.getScenarioTransformationsMap().get(testCaseMessage.getScenario());
+            scenarioTransforms =
+                connector.getScenarioTransformationsMap().get(testCaseMessage.getScenario());
+            if (scenarioTransforms == null) {
+              scenarioTransforms = connector.getScenarioTransformationsMap()
+                  .get(testCaseMessage.getTestCaseNumber());
+            }
             additionalTransformations = testCaseMessage.getAdditionalTransformations();
             if (additionalTransformations.equals("")) {
               additionalTransformations = null;
@@ -105,13 +103,15 @@ public class SubmitServlet extends ClientServlet
             Transformer transformer = new Transformer();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
             connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
-            message = transformer.transformForTesting(connector, message, connector.getCustomTransformations(), scenarioTransforms, null, additionalTransformations, null);
+            message = transformer.transformForTesting(connector, message,
+                connector.getCustomTransformations(), scenarioTransforms, null,
+                additionalTransformations, null);
           }
         } else {
           String customTranformations = "";
           try {
-            BufferedReader customTransformsIn = new BufferedReader(
-                new StringReader(connector.getCustomTransformations()));
+            BufferedReader customTransformsIn =
+                new BufferedReader(new StringReader(connector.getCustomTransformations()));
             String line;
             int i = 0;
             while ((line = customTransformsIn.readLine()) != null) {
@@ -123,11 +123,17 @@ public class SubmitServlet extends ClientServlet
           } catch (IOException ioe) {
             // ignore
           }
-          TestCaseMessage testCaseMessage = (TestCaseMessage) session.getAttribute("testCaseMessage");
+          TestCaseMessage testCaseMessage =
+              (TestCaseMessage) session.getAttribute("testCaseMessage");
           String scenarioTransforms = null;
           String additionalTransformations = "";
           if (testCaseMessage != null) {
-            scenarioTransforms = connector.getScenarioTransformationsMap().get(testCaseMessage.getScenario());
+            scenarioTransforms =
+                connector.getScenarioTransformationsMap().get(testCaseMessage.getScenario());
+            if (scenarioTransforms == null) {
+              scenarioTransforms = connector.getScenarioTransformationsMap()
+                  .get(testCaseMessage.getTestCaseNumber());
+            }
             additionalTransformations = testCaseMessage.getAdditionalTransformations();
             if (additionalTransformations.equals("")) {
               additionalTransformations = null;
@@ -138,8 +144,8 @@ public class SubmitServlet extends ClientServlet
             Transformer transformer = new Transformer();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
             connector.setCurrentFilename("dqa-tester-request" + sdf.format(new Date()) + ".hl7");
-            message = transformer.transformForSubmitServlet(connector, message, customTranformations, scenarioTransforms, null,
-                additionalTransformations);
+            message = transformer.transformForSubmitServlet(connector, message,
+                customTranformations, scenarioTransforms, null, additionalTransformations);
           }
         }
       }
@@ -171,17 +177,14 @@ public class SubmitServlet extends ClientServlet
   /**
    * Handles the HTTP <code>GET</code> method.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
     if (username == null) {
@@ -249,7 +252,8 @@ public class SubmitServlet extends ClientServlet
             HL7Reader ackMessageReader = new HL7Reader(responseText);
             if (ackMessageReader.advanceToSegment("MSH")) {
               String messageType = ackMessageReader.getValue(9);
-              if (messageType.equals("RSP") || messageType.equals("VXR") || messageType.equals("VXX")) {
+              if (messageType.equals("RSP") || messageType.equals("VXR")
+                  || messageType.equals("VXX")) {
                 title = "Query Response Received";
               } else {
                 ackAnalyzer = new AckAnalyzer(responseText, connector.getAckType());
@@ -265,8 +269,8 @@ public class SubmitServlet extends ClientServlet
             out.print(responseText.replace("<", "&lt;").replace(">", "&gt;"));
             out.println("</pre>");
             {
-              TestCaseMessage validateResponseTestCaseMessage = (TestCaseMessage) request
-                  .getAttribute("validateResponseTestCaseMessage");
+              TestCaseMessage validateResponseTestCaseMessage =
+                  (TestCaseMessage) request.getAttribute("validateResponseTestCaseMessage");
               if (validateResponseTestCaseMessage != null) {
                 printValidationResults(out, validateResponseTestCaseMessage);
               }
@@ -280,8 +284,8 @@ public class SubmitServlet extends ClientServlet
             out.print(requestText);
             out.println("</pre>");
             {
-              TestCaseMessage validateRequestTestCaseMessage = (TestCaseMessage) request
-                  .getAttribute("validateRequestTestCaseMessage");
+              TestCaseMessage validateRequestTestCaseMessage =
+                  (TestCaseMessage) request.getAttribute("validateRequestTestCaseMessage");
               if (validateRequestTestCaseMessage != null) {
                 printValidationResults(out, validateRequestTestCaseMessage);
               }
@@ -297,7 +301,8 @@ public class SubmitServlet extends ClientServlet
             host = "[unknown]";
           }
           try {
-            out.println("<p>Status for " + connector.getLabelDisplay() + ": <br><font color=\"blue\">"
+            out.println("<p>Status for " + connector.getLabelDisplay()
+                + ": <br><font color=\"blue\">"
                 + connector.connectivityTest("Sent from client '" + host + "'") + "</font></p>");
           } catch (Exception t) {
             out.println("<p>Unable to test against remote server: " + t.getMessage() + "</p>");
@@ -313,32 +318,29 @@ public class SubmitServlet extends ClientServlet
       if (message != null) {
         if (message.indexOf("|VXU^") > 0) {
           {
-            String qbpMessage = QueryConverter.convertVXUtoQBPZ34(message);
-            session.setAttribute(CompareServlet.VXU_MESSAGE, message);
+            QueryConverter queryConverter = QueryConverter.getQueryConverter(QueryType.QBP_Z34);
+            String qbpMessage = queryConverter.convert(message);
             out.println("<p>Submit QBP Z34 query message based from VXU displayed above</p>");
             printForm(id, connectors, qbpMessage, testCaseMessage, request, out);
           }
           {
-            String qbpZ44Message = QueryConverter.convertVXUtoQBPZ34Z44(message);
+            QueryConverter queryConverter = QueryConverter.getQueryConverter(QueryType.QBP_Z34_Z44);
+            String qbpZ44Message = queryConverter.convert(message);
             out.println("<p>Submit QBP Z34 with Z44 request based from VXU displayed above</p>");
             printForm(id, connectors, qbpZ44Message, testCaseMessage, request, out);
           }
           {
-            String qbpZ44Message = QueryConverter.convertVXUtoQBPZ44(message);
+            QueryConverter queryConverter = QueryConverter.getQueryConverter(QueryType.QBP_Z44);
+            String qbpZ44Message = queryConverter.convert(message);
             out.println("<p>Submit QBP Z44 query message based from VXU displayed above</p>");
             printForm(id, connectors, qbpZ44Message, testCaseMessage, request, out);
           }
           {
-            String vxqMessage = QueryConverter.convertVXUtoVXQ(message);
+            QueryConverter queryConverter = QueryConverter.getQueryConverter(QueryType.VXQ);
+            String vxqMessage = queryConverter.convert(message);
             out.println("<p>Submit VXQ query message based from VXU displayed above</p>");
             printForm(id, connectors, vxqMessage, testCaseMessage, request, out);
           }
-        }
-      }
-      if (responseText != null && responseText.indexOf("|RSP^") > 0) {
-        session.setAttribute(CompareServlet.RSP_MESSAGE, responseText);
-        if (session.getAttribute(CompareServlet.VXU_MESSAGE) != null) {
-          out.println("<p><a href=\"CompareServlet\">Compare response with original VXU</a></p>");
         }
       }
 
@@ -382,8 +384,9 @@ public class SubmitServlet extends ClientServlet
           + "from the system you wish to test against. Once you have the login parameters "
           + "you should select the appropriate service and then paste a test message. "
           + "After clicking Submit you will see the results of your query. </p>");
-      out.println("<p>If you wish to only ping the server, then you only need to select the service "
-          + "and then click Refresh. This will give the results of the ping below. </p>");
+      out.println(
+          "<p>If you wish to only ping the server, then you only need to select the service "
+              + "and then click Refresh. This will give the results of the ping below. </p>");
       out.println("  </div>");
       // testTestCaseMessage(out);
       printHtmlFoot(out);
@@ -415,8 +418,8 @@ public class SubmitServlet extends ClientServlet
     out.println("</table>");
   }
 
-  private void printForm(int id, List<Connector> connectors, String message, TestCaseMessage testCaseMessage,
-      HttpServletRequest request, PrintWriter out) {
+  private void printForm(int id, List<Connector> connectors, String message,
+      TestCaseMessage testCaseMessage, HttpServletRequest request, PrintWriter out) {
     out.println("    <form action=\"SubmitServlet\" method=\"POST\">");
     out.println("      <table border=\"0\">");
     out.println("        <tr>");
@@ -432,10 +435,11 @@ public class SubmitServlet extends ClientServlet
       for (Connector connector : connectors) {
         i++;
         if (id == i) {
-          out.println("              <option value=\"" + i + "\" selected=\"true\">" + connector.getLabelDisplay()
-              + "</option>");
+          out.println("              <option value=\"" + i + "\" selected=\"true\">"
+              + connector.getLabelDisplay() + "</option>");
         } else {
-          out.println("              <option value=\"" + i + "\">" + connector.getLabelDisplay() + "</option>");
+          out.println("              <option value=\"" + i + "\">" + connector.getLabelDisplay()
+              + "</option>");
         }
       }
       out.println("            </select>");
@@ -444,8 +448,8 @@ public class SubmitServlet extends ClientServlet
     out.println("        </tr>");
     out.println("        <tr>");
     out.println("          <td valign=\"top\">Message</td>");
-    out.println("          <td><textarea name=\"message\" cols=\"70\" rows=\"10\" wrap=\"off\">" + message
-        + "</textarea></td>");
+    out.println("          <td><textarea name=\"message\" cols=\"70\" rows=\"10\" wrap=\"off\">"
+        + message + "</textarea></td>");
     out.println("        </tr>");
 
     if (connectors.size() == 1) {
@@ -453,11 +457,12 @@ public class SubmitServlet extends ClientServlet
         out.println("        <tr>");
         out.println("          <td valign=\"top\">Transform</td>");
         out.println("          <td>");
-        out.println("            <input type=\"hidden\" name=\"transformSelection\" value=\"yes\"/>");
+        out.println(
+            "            <input type=\"hidden\" name=\"transformSelection\" value=\"yes\"/>");
         boolean shouldSelectAll = request.getParameter("transformSelection") == null;
         try {
-          BufferedReader customTransformsIn = new BufferedReader(
-              new StringReader(connectors.get(0).getCustomTransformations()));
+          BufferedReader customTransformsIn =
+              new BufferedReader(new StringReader(connectors.get(0).getCustomTransformations()));
           String line;
 
           int i = 0;
@@ -466,7 +471,8 @@ public class SubmitServlet extends ClientServlet
             boolean confirmed = true;
             if (testCaseMessage != null) {
               try {
-                BufferedReader etIn = new BufferedReader(new StringReader(testCaseMessage.getExcludeTransformations()));
+                BufferedReader etIn = new BufferedReader(
+                    new StringReader(testCaseMessage.getExcludeTransformations()));
                 String l;
                 while ((l = etIn.readLine()) != null) {
                   if (l.equals(line)) {
@@ -478,9 +484,11 @@ public class SubmitServlet extends ClientServlet
                 // ignore
               }
             }
-            boolean selected = (shouldSelectAll && confirmed) || request.getParameter("transform" + i) != null;
-            out.println("            <input type=\"checkbox\" name=\"transform" + i + "\" value=\"true\""
-                + (selected ? " checked=\"true\"" : "") + "/>" + line + "<br/>");
+            boolean selected =
+                (shouldSelectAll && confirmed) || request.getParameter("transform" + i) != null;
+            out.println(
+                "            <input type=\"checkbox\" name=\"transform" + i + "\" value=\"true\""
+                    + (selected ? " checked=\"true\"" : "") + "/>" + line + "<br/>");
           }
         } catch (IOException ioe) {
           // ignore
@@ -527,7 +535,7 @@ public class SubmitServlet extends ClientServlet
     tcm.setExpectedResult("This is an expected result text");
     tcm.setMessageText("MSH|\rPID|1|\rRXA|1|\rRXA|2\r");
     tcm.setOriginalMessage("MSH\rPID\rRXA\rRXR\r");
-    tcm.setQuickTransformations(new String[] { "2.5.1", "BOY" });
+    tcm.setQuickTransformations(new String[] {"2.5.1", "BOY"});
     tcm.setTestCaseNumber("1.1");
     tcm.setTestCaseSet("CDC");
     out.print("<pre>");
@@ -547,17 +555,14 @@ public class SubmitServlet extends ClientServlet
   /**
    * Handles the HTTP <code>POST</code> method.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
   @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     try {
       processRequest(request, response);
     } catch (Exception e) {

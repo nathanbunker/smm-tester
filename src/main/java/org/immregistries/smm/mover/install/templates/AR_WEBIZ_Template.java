@@ -2,14 +2,12 @@ package org.immregistries.smm.mover.install.templates;
 
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.mover.install.ConnectionConfiguration;
-import org.immregistries.smm.tester.connectors.ALSoapConnector;
 import org.immregistries.smm.tester.connectors.Connector;
+import org.immregistries.smm.tester.connectors.Connector.TransferType;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 import org.immregistries.smm.tester.connectors.EnvisionConnector;
-import org.immregistries.smm.tester.connectors.Connector.TransferType;
 
-public class AR_WEBIZ_Template extends ConnectionTemplate
-{
+public class AR_WEBIZ_Template extends ConnectionTemplate {
   public AR_WEBIZ_Template() {
     super("AR WebIZ");
   }

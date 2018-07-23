@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester.transform;
 
@@ -10,10 +9,10 @@ import org.immregistries.smm.transform.TestCaseMessage;
  * 
  * @author nathan
  */
-public class IssueCreatorNextOfKin extends IssueCreator
-{
+public class IssueCreatorNextOfKin extends IssueCreator {
 
-  public static String createTransforms(TestCaseMessage testCaseMessage, Issue issue, String transforms, boolean not) {
+  public static String createTransforms(TestCaseMessage testCaseMessage, Issue issue,
+      String transforms, boolean not) {
     boolean is = !not;
     if (issue == Issue.NEXT_OF_KIN_ADDRESS_IS_DIFFERENT_FROM_PATIENT_ADDRESS) {
       if (is) {
@@ -44,7 +43,8 @@ public class IssueCreatorNextOfKin extends IssueCreator
     } else if (issue == Issue.NEXT_OF_KIN_ADDRESS_CITY_IS_TOO_LONG) {
       if (is) {
         testCaseMessage.setHasIssue(true);
-        transforms += "NK1-4.3=This name is way too long for a city so long that it might cause some systems to crash as the max number of chars is fifty\n";
+        transforms +=
+            "NK1-4.3=This name is way too long for a city so long that it might cause some systems to crash as the max number of chars is fifty\n";
       }
     } else if (issue == Issue.NEXT_OF_KIN_ADDRESS_CITY_IS_MISSING) {
       if (is) {
@@ -111,7 +111,7 @@ public class IssueCreatorNextOfKin extends IssueCreator
     } else if (issue == Issue.NEXT_OF_KIN_ADDRESS_TYPE_IS_IGNORED) {
       // not implemented
     } else if (issue == Issue.NEXT_OF_KIN_ADDRESS_TYPE_IS_INVALID) {
-         // not implemented
+      // not implemented
     } else if (issue == Issue.NEXT_OF_KIN_ADDRESS_TYPE_IS_VALUED_BAD_ADDRESS) {
       if (is) {
         testCaseMessage.setHasIssue(true);

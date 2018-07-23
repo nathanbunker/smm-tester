@@ -1,8 +1,8 @@
 /**
  * SubmitSingleMessageResponseType.java
  *
- * This file was auto-generated from WSDL
- * by the Apache Axis2 version: 1.6.2  Built on : Apr 17, 2012 (05:34:40 IST)
+ * This file was auto-generated from WSDL by the Apache Axis2 version: 1.6.2 Built on : Apr 17, 2012
+ * (05:34:40 IST)
  */
 
 package org.immregistries.smm.tester.connectors.tlep;
@@ -10,12 +10,11 @@ package org.immregistries.smm.tester.connectors.tlep;
 /**
  * SubmitSingleMessageResponseType bean class
  */
-@SuppressWarnings({ "unchecked", "unused" })
+@SuppressWarnings({"all"})
 public class SubmitSingleMessageResponseType implements org.apache.axis2.databinding.ADBBean {
   /*
    * This type was generated from the piece of schema that had name =
-   * submitSingleMessageResponseType Namespace URI = urn:cdc:iisb:2011 Namespace
-   * Prefix = ns1
+   * submitSingleMessageResponseType Namespace URI = urn:cdc:iisb:2011 Namespace Prefix = ns1
    */
 
   /**
@@ -36,8 +35,7 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
   /**
    * Auto generated setter method
    * 
-   * @param param
-   *          _return
+   * @param param _return
    */
   public void set_return(java.lang.String param) {
 
@@ -51,20 +49,24 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
    * @param factory
    * @return org.apache.axiom.om.OMElement
    */
-  public org.apache.axiom.om.OMElement getOMElement(final javax.xml.namespace.QName parentQName, final org.apache.axiom.om.OMFactory factory)
+  public org.apache.axiom.om.OMElement getOMElement(final javax.xml.namespace.QName parentQName,
+      final org.apache.axiom.om.OMFactory factory)
       throws org.apache.axis2.databinding.ADBException {
 
-    org.apache.axiom.om.OMDataSource dataSource = new org.apache.axis2.databinding.ADBDataSource(this, parentQName);
+    org.apache.axiom.om.OMDataSource dataSource =
+        new org.apache.axis2.databinding.ADBDataSource(this, parentQName);
     return factory.createOMElement(dataSource, parentQName);
 
   }
 
-  public void serialize(final javax.xml.namespace.QName parentQName, javax.xml.stream.XMLStreamWriter xmlWriter)
+  public void serialize(final javax.xml.namespace.QName parentQName,
+      javax.xml.stream.XMLStreamWriter xmlWriter)
       throws javax.xml.stream.XMLStreamException, org.apache.axis2.databinding.ADBException {
     serialize(parentQName, xmlWriter, false);
   }
 
-  public void serialize(final javax.xml.namespace.QName parentQName, javax.xml.stream.XMLStreamWriter xmlWriter, boolean serializeType)
+  public void serialize(final javax.xml.namespace.QName parentQName,
+      javax.xml.stream.XMLStreamWriter xmlWriter, boolean serializeType)
       throws javax.xml.stream.XMLStreamException, org.apache.axis2.databinding.ADBException {
 
     java.lang.String prefix = null;
@@ -78,9 +80,11 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
 
       java.lang.String namespacePrefix = registerPrefix(xmlWriter, "urn:cdc:iisb:2011");
       if ((namespacePrefix != null) && (namespacePrefix.trim().length() > 0)) {
-        writeAttribute("xsi", "http://www.w3.org/2001/XMLSchema-instance", "type", namespacePrefix + ":submitSingleMessageResponseType", xmlWriter);
+        writeAttribute("xsi", "http://www.w3.org/2001/XMLSchema-instance", "type",
+            namespacePrefix + ":submitSingleMessageResponseType", xmlWriter);
       } else {
-        writeAttribute("xsi", "http://www.w3.org/2001/XMLSchema-instance", "type", "submitSingleMessageResponseType", xmlWriter);
+        writeAttribute("xsi", "http://www.w3.org/2001/XMLSchema-instance", "type",
+            "submitSingleMessageResponseType", xmlWriter);
       }
 
     }
@@ -115,8 +119,9 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
   /**
    * Utility method to write an element start tag.
    */
-  private void writeStartElement(java.lang.String prefix, java.lang.String namespace, java.lang.String localPart,
-      javax.xml.stream.XMLStreamWriter xmlWriter) throws javax.xml.stream.XMLStreamException {
+  private void writeStartElement(java.lang.String prefix, java.lang.String namespace,
+      java.lang.String localPart, javax.xml.stream.XMLStreamWriter xmlWriter)
+      throws javax.xml.stream.XMLStreamException {
     java.lang.String writerPrefix = xmlWriter.getPrefix(namespace);
     if (writerPrefix != null) {
       xmlWriter.writeStartElement(namespace, localPart);
@@ -136,7 +141,8 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
   /**
    * Util method to write an attribute with the ns prefix
    */
-  private void writeAttribute(java.lang.String prefix, java.lang.String namespace, java.lang.String attName, java.lang.String attValue,
+  private void writeAttribute(java.lang.String prefix, java.lang.String namespace,
+      java.lang.String attName, java.lang.String attValue,
       javax.xml.stream.XMLStreamWriter xmlWriter) throws javax.xml.stream.XMLStreamException {
     if (xmlWriter.getPrefix(namespace) == null) {
       xmlWriter.writeNamespace(prefix, namespace);
@@ -148,8 +154,9 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
   /**
    * Util method to write an attribute without the ns prefix
    */
-  private void writeAttribute(java.lang.String namespace, java.lang.String attName, java.lang.String attValue,
-      javax.xml.stream.XMLStreamWriter xmlWriter) throws javax.xml.stream.XMLStreamException {
+  private void writeAttribute(java.lang.String namespace, java.lang.String attName,
+      java.lang.String attValue, javax.xml.stream.XMLStreamWriter xmlWriter)
+      throws javax.xml.stream.XMLStreamException {
     if (namespace.equals("")) {
       xmlWriter.writeAttribute(attName, attValue);
     } else {
@@ -161,8 +168,9 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
   /**
    * Util method to write an attribute without the ns prefix
    */
-  private void writeQNameAttribute(java.lang.String namespace, java.lang.String attName, javax.xml.namespace.QName qname,
-      javax.xml.stream.XMLStreamWriter xmlWriter) throws javax.xml.stream.XMLStreamException {
+  private void writeQNameAttribute(java.lang.String namespace, java.lang.String attName,
+      javax.xml.namespace.QName qname, javax.xml.stream.XMLStreamWriter xmlWriter)
+      throws javax.xml.stream.XMLStreamException {
 
     java.lang.String attributeNamespace = qname.getNamespaceURI();
     java.lang.String attributePrefix = xmlWriter.getPrefix(attributeNamespace);
@@ -188,7 +196,8 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
    * method to handle Qnames
    */
 
-  private void writeQName(javax.xml.namespace.QName qname, javax.xml.stream.XMLStreamWriter xmlWriter) throws javax.xml.stream.XMLStreamException {
+  private void writeQName(javax.xml.namespace.QName qname,
+      javax.xml.stream.XMLStreamWriter xmlWriter) throws javax.xml.stream.XMLStreamException {
     java.lang.String namespaceURI = qname.getNamespaceURI();
     if (namespaceURI != null) {
       java.lang.String prefix = xmlWriter.getPrefix(namespaceURI);
@@ -199,18 +208,22 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
       }
 
       if (prefix.trim().length() > 0) {
-        xmlWriter.writeCharacters(prefix + ":" + org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qname));
+        xmlWriter.writeCharacters(
+            prefix + ":" + org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qname));
       } else {
         // i.e this is the default namespace
-        xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qname));
+        xmlWriter.writeCharacters(
+            org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qname));
       }
 
     } else {
-      xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qname));
+      xmlWriter
+          .writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qname));
     }
   }
 
-  private void writeQNames(javax.xml.namespace.QName[] qnames, javax.xml.stream.XMLStreamWriter xmlWriter) throws javax.xml.stream.XMLStreamException {
+  private void writeQNames(javax.xml.namespace.QName[] qnames,
+      javax.xml.stream.XMLStreamWriter xmlWriter) throws javax.xml.stream.XMLStreamException {
 
     if (qnames != null) {
       // we have to store this data until last moment since it is not possible
@@ -234,12 +247,15 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
           }
 
           if (prefix.trim().length() > 0) {
-            stringToWrite.append(prefix).append(":").append(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qnames[i]));
+            stringToWrite.append(prefix).append(":").append(
+                org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qnames[i]));
           } else {
-            stringToWrite.append(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qnames[i]));
+            stringToWrite.append(
+                org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qnames[i]));
           }
         } else {
-          stringToWrite.append(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qnames[i]));
+          stringToWrite
+              .append(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qnames[i]));
         }
       }
       xmlWriter.writeCharacters(stringToWrite.toString());
@@ -250,8 +266,8 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
   /**
    * Register a namespace prefix
    */
-  private java.lang.String registerPrefix(javax.xml.stream.XMLStreamWriter xmlWriter, java.lang.String namespace)
-      throws javax.xml.stream.XMLStreamException {
+  private java.lang.String registerPrefix(javax.xml.stream.XMLStreamWriter xmlWriter,
+      java.lang.String namespace) throws javax.xml.stream.XMLStreamException {
     java.lang.String prefix = xmlWriter.getPrefix(namespace);
     if (prefix == null) {
       prefix = generatePrefix(namespace);
@@ -273,16 +289,19 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
    * databinding method to get an XML representation of this object
    *
    */
-  public javax.xml.stream.XMLStreamReader getPullParser(javax.xml.namespace.QName qName) throws org.apache.axis2.databinding.ADBException {
+  public javax.xml.stream.XMLStreamReader getPullParser(javax.xml.namespace.QName qName)
+      throws org.apache.axis2.databinding.ADBException {
 
     java.util.ArrayList elementList = new java.util.ArrayList();
     java.util.ArrayList attribList = new java.util.ArrayList();
 
     elementList.add(new javax.xml.namespace.QName("urn:cdc:iisb:2011", "return"));
 
-    elementList.add(local_return == null ? null : org.apache.axis2.databinding.utils.ConverterUtil.convertToString(local_return));
+    elementList.add(local_return == null ? null
+        : org.apache.axis2.databinding.utils.ConverterUtil.convertToString(local_return));
 
-    return new org.apache.axis2.databinding.utils.reader.ADBXMLStreamReaderImpl(qName, elementList.toArray(), attribList.toArray());
+    return new org.apache.axis2.databinding.utils.reader.ADBXMLStreamReaderImpl(qName,
+        elementList.toArray(), attribList.toArray());
 
   }
 
@@ -292,15 +311,15 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
   public static class Factory {
 
     /**
-     * static method to create the object Precondition: If this object is an
-     * element, the current or next start element starts this object and any
-     * intervening reader events are ignorable If this object is not an element,
-     * it is a complex type and the reader is at the event just after the outer
-     * start element Postcondition: If this object is an element, the reader is
-     * positioned at its end element If this object is a complex type, the
-     * reader is positioned at the end element of its outer element
+     * static method to create the object Precondition: If this object is an element, the current or
+     * next start element starts this object and any intervening reader events are ignorable If this
+     * object is not an element, it is a complex type and the reader is at the event just after the
+     * outer start element Postcondition: If this object is an element, the reader is positioned at
+     * its end element If this object is a complex type, the reader is positioned at the end element
+     * of its outer element
      */
-    public static SubmitSingleMessageResponseType parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception {
+    public static SubmitSingleMessageResponseType parse(javax.xml.stream.XMLStreamReader reader)
+        throws java.lang.Exception {
       SubmitSingleMessageResponseType object = new SubmitSingleMessageResponseType();
 
       int event;
@@ -313,7 +332,8 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
           reader.next();
 
         if (reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance", "type") != null) {
-          java.lang.String fullTypeName = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance", "type");
+          java.lang.String fullTypeName =
+              reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance", "type");
           if (fullTypeName != null) {
             java.lang.String nsPrefix = null;
             if (fullTypeName.indexOf(":") > -1) {
@@ -326,8 +346,8 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
             if (!"submitSingleMessageResponseType".equals(type)) {
               // find namespace for the prefix
               java.lang.String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
-              return (SubmitSingleMessageResponseType) org.immregistries.smm.tester.connectors.tlep.ExtensionMapper.getTypeObject(nsUri, type,
-                  reader);
+              return (SubmitSingleMessageResponseType) org.immregistries.smm.tester.connectors.tlep.ExtensionMapper
+                  .getTypeObject(nsUri, type, reader);
             }
 
           }
@@ -344,12 +364,15 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
         while (!reader.isStartElement() && !reader.isEndElement())
           reader.next();
 
-        if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011", "return").equals(reader.getName())) {
+        if (reader.isStartElement() && new javax.xml.namespace.QName("urn:cdc:iisb:2011", "return")
+            .equals(reader.getName())) {
 
-          nillableValue = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance", "nil");
+          nillableValue =
+              reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance", "nil");
           if (!"true".equals(nillableValue) && !"1".equals(nillableValue)) {
             java.lang.String content = reader.getElementText();
-            object.set_return(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
+            object.set_return(
+                org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
           } else {
             reader.getElementText();
             object.set_return("No Response Returned");
@@ -362,7 +385,8 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
         else {
           // A start element we are not expecting indicates an invalid parameter
           // was passed
-          throw new org.apache.axis2.databinding.ADBException("Unexpected subelement " + reader.getName());
+          throw new org.apache.axis2.databinding.ADBException(
+              "Unexpected subelement " + reader.getName());
         }
 
         while (!reader.isStartElement() && !reader.isEndElement())
@@ -371,7 +395,8 @@ public class SubmitSingleMessageResponseType implements org.apache.axis2.databin
         if (reader.isStartElement())
           // A start element we are not expecting indicates a trailing invalid
           // property
-          throw new org.apache.axis2.databinding.ADBException("Unexpected subelement " + reader.getName());
+          throw new org.apache.axis2.databinding.ADBException(
+              "Unexpected subelement " + reader.getName());
 
       } catch (javax.xml.stream.XMLStreamException e) {
         throw new java.lang.Exception(e);

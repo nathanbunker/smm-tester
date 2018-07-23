@@ -10,9 +10,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSocketFactory;
-
 public class NJConnector extends HttpConnector {
 
   private static final String HL7_REQUEST_RESULT_START_TAG = "ResponseHL7Message>";
@@ -70,14 +67,14 @@ public class NJConnector extends HttpConnector {
 
   }
 
-  public String sendRequest(String request, ClientConnection conn, boolean debug) throws IOException {
+  public String sendRequest(String request, ClientConnection conn, boolean debug)
+      throws IOException {
     StringBuilder debugLog = null;
     if (debug) {
       debugLog = new StringBuilder();
     }
     try {
       // SSLSocketFactory factory = setupSSLSocketFactory(debug, debugLog);
-      SSLSocketFactory factory = null;
 
       HttpURLConnection urlConn;
       DataOutputStream printout;
@@ -85,9 +82,6 @@ public class NJConnector extends HttpConnector {
       URL url = new URL(conn.getUrl());
 
       urlConn = (HttpURLConnection) url.openConnection();
-      if (factory != null && urlConn instanceof HttpsURLConnection) {
-        ((HttpsURLConnection) urlConn).setSSLSocketFactory(factory);
-      }
 
       urlConn.setRequestMethod("POST");
 
@@ -101,7 +95,8 @@ public class NJConnector extends HttpConnector {
         sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
         sb.append("<S:Envelope xmlns:S=\"http://www.w3.org/2003/05/soap-envelope\">");
         sb.append("<S:Body>");
-        sb.append("<ns4:NJIISIMSGetRequest xmlns:ns4=\"http://njiis.njdoh.gov/ims/service/schema/hl7/get/request\">");
+        sb.append(
+            "<ns4:NJIISIMSGetRequest xmlns:ns4=\"http://njiis.njdoh.gov/ims/service/schema/hl7/get/request\">");
         sb.append("<ns4:RequestHeader>");
         sb.append("<ns4:FacilityID>" + userid + "</ns4:FacilityID>");
         sb.append("<ns4:FacilityKey>" + password + "</ns4:FacilityKey>");
@@ -109,7 +104,8 @@ public class NJConnector extends HttpConnector {
         sb.append("<ns4:GetRequest>");
         sb.append("<ns4:NJIISProviderID>" + facilityid + "</ns4:NJIISProviderID>");
         sb.append("<ns4:HL7MessageVersion>2.5.1</ns4:HL7MessageVersion>");
-        sb.append("<ns4:RequestHL7Message>" + replaceAmpersand(request) + "</ns4:RequestHL7Message>");
+        sb.append(
+            "<ns4:RequestHL7Message>" + replaceAmpersand(request) + "</ns4:RequestHL7Message>");
         sb.append("</ns4:GetRequest>");
         sb.append("</ns4:NJIISIMSGetRequest>");
         sb.append("</S:Body>");
@@ -118,7 +114,8 @@ public class NJConnector extends HttpConnector {
         sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
         sb.append("<S:Envelope xmlns:S=\"http://www.w3.org/2003/05/soap-envelope\">");
         sb.append("<S:Body>");
-        sb.append("<ns0:NJIISIMSPutRequest xmlns:ns0=\"http://njiis.njdoh.gov/ims/service/schema/hl7/put/request\">");
+        sb.append(
+            "<ns0:NJIISIMSPutRequest xmlns:ns0=\"http://njiis.njdoh.gov/ims/service/schema/hl7/put/request\">");
         sb.append("<ns0:RequestHeader>");
         sb.append("<ns0:FacilityID>" + userid + "</ns0:FacilityID>");
         sb.append("<ns0:FacilityKey>" + password + "</ns0:FacilityKey>");
@@ -126,7 +123,8 @@ public class NJConnector extends HttpConnector {
         sb.append("<ns0:PutRequest>");
         sb.append("<ns0:NJIISProviderID>" + facilityid + "</ns0:NJIISProviderID>");
         sb.append("<ns0:HL7MessageVersion>2.5.1</ns0:HL7MessageVersion>");
-        sb.append("<ns0:RequestHL7Message>" + replaceAmpersand(request) + "</ns0:RequestHL7Message>");
+        sb.append(
+            "<ns0:RequestHL7Message>" + replaceAmpersand(request) + "</ns0:RequestHL7Message>");
         sb.append("</ns0:PutRequest>");
         sb.append("</ns0:NJIISIMSPutRequest>");
         sb.append("</S:Body>");
@@ -153,8 +151,10 @@ public class NJConnector extends HttpConnector {
       if (startPos > 0) {
         int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG, startPos);
         if (endPos > startPos) {
-          responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
-          responseString = responseString.replaceAll("\\Q&#xd;\\E", "\r").replaceAll("\\Q&amp;\\E", "&");
+          responseString =
+              responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
+          responseString =
+              responseString.replaceAll("\\Q&#xd;\\E", "\r").replaceAll("\\Q&amp;\\E", "&");
           response = new StringBuilder(responseString);
         }
       }
@@ -163,22 +163,19 @@ public class NJConnector extends HttpConnector {
         response.append("DEBUG LOG: \r");
         response.append(debugLog);
         response.append("MESSAGE SENT: \r");
-        response.append(content.replaceAll("\\&", "&amp;").replaceAll("\\<", "&lt;").replaceAll("\\>", "&gt;"));
+        response.append(
+            content.replaceAll("\\&", "&amp;").replaceAll("\\<", "&lt;").replaceAll("\\>", "&gt;"));
       }
       return response.toString();
     } catch (IOException e) {
-      if (true) {
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter out = new PrintWriter(stringWriter);
-        out.println("Unable to complete request");
-        e.printStackTrace(out);
-        out.println("DEBUG LOG: \r");
-        out.println(debugLog);
-        out.close();
-        return stringWriter.toString();
-      } else {
-        throw e;
-      }
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter out = new PrintWriter(stringWriter);
+      out.println("Unable to complete request");
+      e.printStackTrace(out);
+      out.println("DEBUG LOG: \r");
+      out.println(debugLog);
+      out.close();
+      return stringWriter.toString();
     }
 
   }

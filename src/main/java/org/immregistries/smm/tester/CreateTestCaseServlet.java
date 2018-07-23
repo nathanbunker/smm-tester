@@ -34,35 +34,33 @@ import org.immregistries.smm.transform.Transformer;
  * 
  * @author nathan
  */
+@SuppressWarnings("serial")
 public class CreateTestCaseServlet extends ClientServlet {
 
   public static final String IIS_TEST_REPORT_FILENAME_PREFIX = "IIS Test Report";
 
   /**
-   * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-   * methods.
+   * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
-  protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
 
     String username = (String) session.getAttribute("username");
-    Authenticate.User user = (Authenticate.User) session.getAttribute("user");
     if (username == null) {
       response.sendRedirect(Authenticate.APP_DEFAULT_HOME);
     } else {
       List<Connector> connectors = ConnectServlet.getConnectors(session);
       PrintWriter out = response.getWriter();
-      List<TestCaseMessage> selectedTestCaseMessageList = (List<TestCaseMessage>) session.getAttribute("selectedTestCaseMessageList");
+      @SuppressWarnings("unchecked")
+      List<TestCaseMessage> selectedTestCaseMessageList =
+          (List<TestCaseMessage>) session.getAttribute("selectedTestCaseMessageList");
       if (selectedTestCaseMessageList != null && selectedTestCaseMessageList.isEmpty()) {
         selectedTestCaseMessageList = null;
       }
@@ -82,7 +80,7 @@ public class CreateTestCaseServlet extends ClientServlet {
         }
       }
 
-      
+
       String testCaseNumber;
       String testCaseSet;
       TestCaseMessage testCaseMessage = null;
@@ -95,9 +93,12 @@ public class CreateTestCaseServlet extends ClientServlet {
         testCaseSet = request.getParameter("testCaseSet");
         if (testCaseNumber != null && testCaseNumber.length() > 0) {
           if (request.getParameter("global") != null) {
-            testCaseMessage = getTestCaseMessageMap("Global: " + testCaseSet, getTestCaseMessageMapMap(session)).get(testCaseNumber);
+            testCaseMessage =
+                getTestCaseMessageMap("Global: " + testCaseSet, getTestCaseMessageMapMap(session))
+                    .get(testCaseNumber);
           } else {
-            testCaseMessage = getTestCaseMessageMap(testCaseSet, getTestCaseMessageMapMap(session)).get(testCaseNumber);
+            testCaseMessage = getTestCaseMessageMap(testCaseSet, getTestCaseMessageMapMap(session))
+                .get(testCaseNumber);
           }
         } else {
           testCaseMessage = (TestCaseMessage) session.getAttribute("testCaseMessage");
@@ -114,10 +115,8 @@ public class CreateTestCaseServlet extends ClientServlet {
       }
       runTimes++;
       session.setAttribute("runTimes", runTimes);
-      String actualTestCase = testCaseNumber;
       if (testCaseNumber == null || testCaseNumber.equals("")) {
         testCaseNumber = "";
-        actualTestCase = "TC-" + runTimes;
       }
       {
         String scenario = request.getParameter("scenario");
@@ -130,12 +129,10 @@ public class CreateTestCaseServlet extends ClientServlet {
             String customTransformations = request.getParameter("customTransforms");
             String additionalTransforms = request.getParameter("additionalTransforms");
             String description = request.getParameter("description");
-            String expectedResult = request.getParameter("expectedResult");
             String assertResult = request.getParameter("assertResult");
-            String messageType = request.getParameter("messageType");
+            String testType = request.getParameter("messageType");
             String derivedFromTestCaseNumber = request.getParameter("derivedFromTestCaseNumber");
-            if (derivedFromTestCaseNumber == null)
-            {
+            if (derivedFromTestCaseNumber == null) {
               derivedFromTestCaseNumber = "";
             }
             String[] quickTransformations = request.getParameterValues("extra");
@@ -143,11 +140,13 @@ public class CreateTestCaseServlet extends ClientServlet {
             if (request.getParameter("patientType") != null) {
               patientType = PatientType.valueOf(request.getParameter("patientType"));
             }
-            if (quickTransformations == null && request.getParameter("settingQuickTransformations") == null) {
+            if (quickTransformations == null
+                && request.getParameter("settingQuickTransformations") == null) {
               if (testCaseMessage != null) {
                 quickTransformations = testCaseMessage.getQuickTransformations();
               } else {
-                quickTransformations = new String[] { "2.5.1", "BOY", "DOB", "ADDRESS", "PHONE", "MOTHER", "VAC1_HIST", "VAC2_HIST", "VAC3_ADMIN" };
+                quickTransformations = new String[] {"2.5.1", "BOY", "DOB", "ADDRESS", "PHONE",
+                    "MOTHER", "VAC1_HIST", "VAC2_HIST", "VAC3_ADMIN"};
               }
             }
             if (testCaseSet == null && testCaseMessage != null) {
@@ -162,17 +161,12 @@ public class CreateTestCaseServlet extends ClientServlet {
             if (description == null) {
               description = "";
             }
-            if (expectedResult == null && testCaseMessage != null) {
-              expectedResult = testCaseMessage.getExpectedResult();
-            }
-            if (expectedResult == null) {
-              expectedResult = "";
-            }
             if (originalMessage == null && testCaseMessage != null) {
               originalMessage = testCaseMessage.getOriginalMessage();
             }
             if (originalMessage == null) {
-              originalMessage = "MSH|\nPID|\nNK1|\nPV1|\nORC|\nRXA|\nORC|\nRXA|\nORC|\nRXA|\nOBX|\nOBX|\nOBX|\nOBX|\n";
+              originalMessage =
+                  "MSH|\nPID|\nNK1|\nPV1|\nORC|\nRXA|\nORC|\nRXA|\nORC|\nRXA|\nOBX|\nOBX|\nOBX|\nOBX|\n";
             }
             if (customTransformations == null && testCaseMessage != null) {
               customTransformations = testCaseMessage.getCustomTransformations();
@@ -189,29 +183,22 @@ public class CreateTestCaseServlet extends ClientServlet {
             if (assertResult == null && testCaseMessage != null) {
               assertResult = testCaseMessage.getAssertResult();
             }
-            if (messageType == null && testCaseMessage != null) {
-              messageType = testCaseMessage.getMessageType();
-            }
-            if (derivedFromTestCaseNumber == null && testCaseMessage != null) {
-              derivedFromTestCaseNumber = testCaseMessage.getDerivedFromTestCaseNumber();
+            if (testType == null && testCaseMessage != null) {
+              testType = testCaseMessage.getTestType();
             }
             if (assertResult == null) {
               assertResult = "Accept";
             }
-            if (messageType == null) {
-              messageType = "VXU";
-            }
-            if (derivedFromTestCaseNumber == null) {
-              messageType = "";
+            if (testType == null) {
+              testType = "VXU";
             }
             if (testCaseMessage == null) {
               testCaseMessage = new TestCaseMessage();
             }
-            if (!testCaseMessage.getTestCaseNumber().equals(testCaseNumber) || !testCaseMessage.getTestCaseSet().equals(testCaseSet))
-            {
+            if (!testCaseMessage.getTestCaseNumber().equals(testCaseNumber)
+                || !testCaseMessage.getTestCaseSet().equals(testCaseSet)) {
               testCaseMessage = new TestCaseMessage();
-              if (selectedTestCaseMessageList != null)
-              {
+              if (selectedTestCaseMessageList != null) {
                 selectedTestCaseMessageList.add(testCaseMessage);
                 testCasePos = selectedTestCaseMessageList.size() - 1;
               }
@@ -219,12 +206,11 @@ public class CreateTestCaseServlet extends ClientServlet {
             testCaseMessage.setTestCaseNumber(testCaseNumber);
             testCaseMessage.setTestCaseSet(testCaseSet);
             testCaseMessage.setAssertResult(assertResult);
-            testCaseMessage.setMessageType(messageType);
+            testCaseMessage.setTestType(testType);
             testCaseMessage.setDerivedFromTestCaseNumber(derivedFromTestCaseNumber);
             testCaseMessage.setCustomTransformations(customTransformations);
             testCaseMessage.setAdditionalTransformations(additionalTransforms);
             testCaseMessage.setDescription(description);
-            testCaseMessage.setExpectedResult(expectedResult);
             testCaseMessage.setOriginalMessage(originalMessage);
             testCaseMessage.setQuickTransformations(quickTransformations);
             testCaseMessage.setPatientType(patientType);
@@ -234,7 +220,8 @@ public class CreateTestCaseServlet extends ClientServlet {
             if (request.getParameter("excludeTransform") != null) {
               if (connectors.size() == 1) {
                 if (!connectors.get(0).getCustomTransformations().equals("")) {
-                  BufferedReader customTransformsIn = new BufferedReader(new StringReader(connectors.get(0).getCustomTransformations()));
+                  BufferedReader customTransformsIn = new BufferedReader(
+                      new StringReader(connectors.get(0).getCustomTransformations()));
                   String line;
                   int i = 0;
                   StringBuilder sb = new StringBuilder();
@@ -260,10 +247,12 @@ public class CreateTestCaseServlet extends ClientServlet {
         Map<String, TestCaseMessage> testCaseMessageMap = null;
         if (testCaseMessage.getTestCaseNumber().length() > 0) {
           if (testCaseMessage.isGlobal()) {
-            testCaseMessageMap = getTestCaseMessageMap("Global: " + testCaseSet, getTestCaseMessageMapMap(session));
+            testCaseMessageMap =
+                getTestCaseMessageMap("Global: " + testCaseSet, getTestCaseMessageMapMap(session));
             testCaseMessageMap.put(testCaseNumber, testCaseMessage);
           } else {
-            testCaseMessageMap = getTestCaseMessageMap(testCaseSet, getTestCaseMessageMapMap(session));
+            testCaseMessageMap =
+                getTestCaseMessageMap(testCaseSet, getTestCaseMessageMapMap(session));
             testCaseMessageMap.put(testCaseNumber, testCaseMessage);
           }
         }
@@ -285,49 +274,62 @@ public class CreateTestCaseServlet extends ClientServlet {
         out.println("      <table>");
         out.println("        <tr>");
         out.println("          <td valign=\"top\">Test Case Num</td>");
-        out.println("          <td><input type=\"text\" name=\"testCaseNumber\" value=\"" + testCaseMessage.getTestCaseNumber()
-            + "\" size=\"15\"> Test Set <input type=\"text\" name=\"testCaseSet\" value=\"" + testCaseMessage.getTestCaseSet() + "\" size=\"20\">");
-        out.println("                  <input type=\"checkbox\" name=\"global\" value=\"true\"" + (testCaseMessage.isGlobal() ? " checked" : "")
-            + "> Global</td>");
-        out.println("          <input type=\"hidden\" name=\"runTimes\" value=\"" + runTimes + "\"></td>");
-        out.println("          <input type=\"hidden\" name=\"testCasePos\" value=\"" + testCasePos + "\"></td>");
+        out.println("          <td><input type=\"text\" name=\"testCaseNumber\" value=\""
+            + testCaseMessage.getTestCaseNumber()
+            + "\" size=\"15\"> Test Set <input type=\"text\" name=\"testCaseSet\" value=\""
+            + testCaseMessage.getTestCaseSet() + "\" size=\"20\">");
+        out.println("                  <input type=\"checkbox\" name=\"global\" value=\"true\""
+            + (testCaseMessage.isGlobal() ? " checked" : "") + "> Global</td>");
+        out.println(
+            "          <input type=\"hidden\" name=\"runTimes\" value=\"" + runTimes + "\"></td>");
+        out.println("          <input type=\"hidden\" name=\"testCasePos\" value=\"" + testCasePos
+            + "\"></td>");
         out.println("          <td align=\"right\">");
         makeButtons(selectedTestCaseMessageList, out, testCasePos);
         out.println("          </td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td valign=\"top\">Description</td>");
-        out.println("          <td colspan=\"2\"><input type=\"text\" name=\"description\" value=\"" + testCaseMessage.getDescription()
-            + "\" size=\"70\"></td>");
-        out.println("        </tr>");
-        out.println("        <tr>");
-        out.println("          <td valign=\"top\">Expected Result</td>");
-        out.println("          <td colspan=\"2\"><input type=\"text\" name=\"expectedResult\" value=\"" + testCaseMessage.getExpectedResult()
-            + "\" size=\"70\"></td>");
+        out.println("          <td colspan=\"2\"><input type=\"text\" name=\"description\" value=\""
+            + testCaseMessage.getDescription() + "\" size=\"70\"></td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td valign=\"top\">Assert Result</td>");
         out.println("          <td colspan=\"2\">");
         out.println("            <select name=\"assertResult\">");
         out.println("              <option value=\"\">select</option>");
-        out.println("              <option value=\"Accept\"" + (testCaseMessage.getAssertResult().equals("Accept") ? " selected=\"true\"" : "")
+        out.println("              <option value=\"Accept\""
+            + (testCaseMessage.getAssertResult().equals("Accept") ? " selected=\"true\"" : "")
             + ">Accept</option>");
         out.println("              <option value=\"Accept and Warn\""
-            + (testCaseMessage.getAssertResult().equals("Accept and Warn") ? " selected=\"true\"" : "") + ">Accept and Warn</option>");
-        out.println("              <option value=\"Reject\"" + (testCaseMessage.getAssertResult().equals("Reject") ? " selected=\"true\"" : "")
+            + (testCaseMessage.getAssertResult().equals("Accept and Warn") ? " selected=\"true\""
+                : "")
+            + ">Accept and Warn</option>");
+        out.println("              <option value=\"Reject\""
+            + (testCaseMessage.getAssertResult().equals("Reject") ? " selected=\"true\"" : "")
             + ">Reject</option>");
-        
-        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH);
-        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH_Z32);
-        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH_Z42);
+
+        printQueryOption(out, testCaseMessage,
+            RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH);
+        printQueryOption(out, testCaseMessage,
+            RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH_Z32);
+        printQueryOption(out, testCaseMessage,
+            RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MATCH_Z42);
         printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_LIST);
-        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND);
-        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33);
-        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR_Z33);
-        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY);
-        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR);
-        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MULTIPLE_Z31_Z33);
-        printQueryOption(out, testCaseMessage, RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND_OR_TOO_MANY);
+        printQueryOption(out, testCaseMessage,
+            RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND);
+        printQueryOption(out, testCaseMessage,
+            RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33);
+        printQueryOption(out, testCaseMessage,
+            RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR_Z33);
+        printQueryOption(out, testCaseMessage,
+            RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY);
+        printQueryOption(out, testCaseMessage,
+            RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR);
+        printQueryOption(out, testCaseMessage,
+            RecordServletInterface.VALUE_RESULT_QUERY_TYPE_MULTIPLE_Z31_Z33);
+        printQueryOption(out, testCaseMessage,
+            RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND_OR_TOO_MANY);
 
         out.println("            </select>");
         out.println("          </td>");
@@ -337,29 +339,33 @@ public class CreateTestCaseServlet extends ClientServlet {
         out.println("          <td colspan=\"2\">");
         out.println("            <select name=\"messageType\">");
         out.println("              <option value=\"\">select</option>");
-        out.println("              <option value=\"VXU\"" + (testCaseMessage.getMessageType().equals("VXU") ? " selected=\"true\"" : "")
+        out.println("              <option value=\"VXU\""
+            + (testCaseMessage.getTestType().equals("VXU") ? " selected=\"true\"" : "")
             + ">VXU</option>");
-        out.println("              <option value=\"QBP\"" + (testCaseMessage.getMessageType().equals("QBP") ? " selected=\"true\"" : "")
+        out.println("              <option value=\"QBP\""
+            + (testCaseMessage.getTestType().equals("QBP") ? " selected=\"true\"" : "")
             + ">QBP</option>");
         out.println("            </select>");
         out.println("          </td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td valign=\"top\">Derived From</td>");
-        out.println("          <td colspan=\"2\"><input type=\"text\" name=\"derivedFromTestCaseNumber\" value=\"" + testCaseMessage.getDerivedFromTestCaseNumber()
-            + "\" size=\"15\"></td>");
+        out.println(
+            "          <td colspan=\"2\"><input type=\"text\" name=\"derivedFromTestCaseNumber\" value=\""
+                + testCaseMessage.getDerivedFromTestCaseNumber() + "\" size=\"15\"></td>");
         out.println("        </tr>");
         if (!testCaseMessage.getActualResultAckType().equals("")) {
           out.println("        <tr>");
           out.println("          <td>Actual Result</td>");
-          out.println("          <td colspan=\"2\">" + testCaseMessage.getActualResultAckType() + ": " + testCaseMessage.getActualResultAckMessage()
-              + "</td>");
+          out.println(
+              "          <td colspan=\"2\">" + testCaseMessage.getActualResultAckType() + "</td>");
           out.println("        </tr>");
         }
         out.println("        <tr>");
         out.println("          <td valign=\"top\">Start Message</td>");
-        out.println("          <td colspan=\"2\"><textarea name=\"base\" cols=\"70\" rows=\"7\" wrap=\"off\">" + testCaseMessage.getOriginalMessage()
-            + "</textarea></td>");
+        out.println(
+            "          <td colspan=\"2\"><textarea name=\"base\" cols=\"70\" rows=\"7\" wrap=\"off\">"
+                + testCaseMessage.getOriginalMessage() + "</textarea></td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td valign=\"top\">Transform</td>");
@@ -368,71 +374,99 @@ public class CreateTestCaseServlet extends ClientServlet {
         out.println("              <tr>");
         out.println("                <td>");
         out.println("                  <div class=\"smallTitle\">Patient Type</div>");
-        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.ANY_CHILD + "\""
+        out.println("                  <input type=\"radio\" name=\"patientType\" value=\""
+            + PatientType.ANY_CHILD + "\""
             + isChecked(PatientType.ANY_CHILD, testCaseMessage.getPatientType()) + "/> Any Child ");
-        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.ADULT + "\""
+        out.println("                  <input type=\"radio\" name=\"patientType\" value=\""
+            + PatientType.ADULT + "\""
             + isChecked(PatientType.ADULT, testCaseMessage.getPatientType()) + "/> Adult <br/>");
-        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.BABY + "\""
+        out.println("                  <input type=\"radio\" name=\"patientType\" value=\""
+            + PatientType.BABY + "\""
             + isChecked(PatientType.BABY, testCaseMessage.getPatientType()) + "/> Baby ");
-        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.TODDLER + "\""
+        out.println("                  <input type=\"radio\" name=\"patientType\" value=\""
+            + PatientType.TODDLER + "\""
             + isChecked(PatientType.TODDLER, testCaseMessage.getPatientType()) + "/> Toddler");
-        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.TWEEN + "\""
+        out.println("                  <input type=\"radio\" name=\"patientType\" value=\""
+            + PatientType.TWEEN + "\""
             + isChecked(PatientType.TWEEN, testCaseMessage.getPatientType()) + "/> Tween <br/>");
-        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.TWO_MONTHS_OLD + "\""
-            + isChecked(PatientType.TWO_MONTHS_OLD, testCaseMessage.getPatientType()) + "/> 2 Months ");
-        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.TWO_YEARS_OLD + "\""
-            + isChecked(PatientType.TWO_YEARS_OLD, testCaseMessage.getPatientType()) + "/> 2 Years <br/>");
-        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.FOUR_YEARS_OLD + "\""
-            + isChecked(PatientType.FOUR_YEARS_OLD, testCaseMessage.getPatientType()) + "/> 4 Years ");
-        out.println("                  <input type=\"radio\" name=\"patientType\" value=\"" + PatientType.TWELVE_YEARS_OLD + "\""
-            + isChecked(PatientType.TWELVE_YEARS_OLD, testCaseMessage.getPatientType()) + "/> 12 Years <br/>");
+        out.println("                  <input type=\"radio\" name=\"patientType\" value=\""
+            + PatientType.TWO_MONTHS_OLD + "\""
+            + isChecked(PatientType.TWO_MONTHS_OLD, testCaseMessage.getPatientType())
+            + "/> 2 Months ");
+        out.println("                  <input type=\"radio\" name=\"patientType\" value=\""
+            + PatientType.TWO_YEARS_OLD + "\""
+            + isChecked(PatientType.TWO_YEARS_OLD, testCaseMessage.getPatientType())
+            + "/> 2 Years <br/>");
+        out.println("                  <input type=\"radio\" name=\"patientType\" value=\""
+            + PatientType.FOUR_YEARS_OLD + "\""
+            + isChecked(PatientType.FOUR_YEARS_OLD, testCaseMessage.getPatientType())
+            + "/> 4 Years ");
+        out.println("                  <input type=\"radio\" name=\"patientType\" value=\""
+            + PatientType.TWELVE_YEARS_OLD + "\""
+            + isChecked(PatientType.TWELVE_YEARS_OLD, testCaseMessage.getPatientType())
+            + "/> 12 Years <br/>");
         out.println("                  <div class=\"smallTitle\">Quick Transforms</div>");
-        out.println("                  <input type=\"hidden\" name=\"settingQuickTransformations\" value=\"true\">");
+        out.println(
+            "                  <input type=\"hidden\" name=\"settingQuickTransformations\" value=\"true\">");
         out.println("                  <input type=\"checkbox\" name=\"extra\" value=\"2.5.1\""
-            + isChecked("2.5.1", testCaseMessage.getQuickTransformations()) + "> 2.5.1 <input type=\"checkbox\" name=\"extra\" value=\"2.3.1\""
+            + isChecked("2.5.1", testCaseMessage.getQuickTransformations())
+            + "> 2.5.1 <input type=\"checkbox\" name=\"extra\" value=\"2.3.1\""
             + isChecked("2.3.1", testCaseMessage.getQuickTransformations()) + "> 2.3.1<br>");
         out.println("                  <input type=\"checkbox\" name=\"extra\" value=\"BOY\""
-            + isChecked("BOY", testCaseMessage.getQuickTransformations()) + "> Boy <input type=\"checkbox\" name=\"extra\" value=\"GIRL\""
-            + isChecked("GIRL", testCaseMessage.getQuickTransformations()) + "> Girl <input type=\"checkbox\" name=\"extra\" value=\"BOY_OR_GIRL\""
+            + isChecked("BOY", testCaseMessage.getQuickTransformations())
+            + "> Boy <input type=\"checkbox\" name=\"extra\" value=\"GIRL\""
+            + isChecked("GIRL", testCaseMessage.getQuickTransformations())
+            + "> Girl <input type=\"checkbox\" name=\"extra\" value=\"BOY_OR_GIRL\""
             + isChecked("BOY_OR_GIRL", testCaseMessage.getQuickTransformations()) + "> Either<br>");
-        out.println(
-            "                  <input type=\"checkbox\" name=\"extra\" value=\"DOB\"" + isChecked("DOB", testCaseMessage.getQuickTransformations())
-                + "> Date of Birth <input type=\"checkbox\" name=\"extra\" value=\"TWIN_POSSIBLE\""
-                + isChecked("TWIN_POSSIBLE", testCaseMessage.getQuickTransformations()) + "> Twin Possible<br>");
+        out.println("                  <input type=\"checkbox\" name=\"extra\" value=\"DOB\""
+            + isChecked("DOB", testCaseMessage.getQuickTransformations())
+            + "> Date of Birth <input type=\"checkbox\" name=\"extra\" value=\"TWIN_POSSIBLE\""
+            + isChecked("TWIN_POSSIBLE", testCaseMessage.getQuickTransformations())
+            + "> Twin Possible<br>");
         out.println("                  <input type=\"checkbox\" name=\"extra\" value=\"ADDRESS\""
-            + isChecked("ADDRESS", testCaseMessage.getQuickTransformations()) + "> Address <input type=\"checkbox\" name=\"extra\" value=\"PHONE\""
+            + isChecked("ADDRESS", testCaseMessage.getQuickTransformations())
+            + "> Address <input type=\"checkbox\" name=\"extra\" value=\"PHONE\""
             + isChecked("PHONE", testCaseMessage.getQuickTransformations()) + "> Phone<br>");
         out.println("                  <input type=\"checkbox\" name=\"extra\" value=\"MOTHER\""
-            + isChecked("MOTHER", testCaseMessage.getQuickTransformations()) + "> Mother <input type=\"checkbox\" name=\"extra\" value=\"FATHER\""
+            + isChecked("MOTHER", testCaseMessage.getQuickTransformations())
+            + "> Mother <input type=\"checkbox\" name=\"extra\" value=\"FATHER\""
             + isChecked("FATHER", testCaseMessage.getQuickTransformations()) + "> Father<br>");
         out.println("                  <input type=\"checkbox\" name=\"extra\" value=\"RACE\""
-            + isChecked("RACE", testCaseMessage.getQuickTransformations()) + "> Race <input type=\"checkbox\" name=\"extra\" value=\"ETHNICITY\""
-            + isChecked("ETHNICITY", testCaseMessage.getQuickTransformations()) + "> Ethnicity<br>");
-        out.println("                  Vacc #1 <input type=\"checkbox\" name=\"extra\" value=\"VAC1_ADMIN\""
-            + isChecked("VAC1_ADMIN", testCaseMessage.getQuickTransformations())
-            + "> Admin <input type=\"checkbox\" name=\"extra\" value=\"VAC1_HIST\""
-            + isChecked("VAC1_HIST", testCaseMessage.getQuickTransformations()) + "> Hist<br>");
-        out.println("                  Vacc #2 <input type=\"checkbox\" name=\"extra\" value=\"VAC2_ADMIN\""
-            + isChecked("VAC2_ADMIN", testCaseMessage.getQuickTransformations())
-            + "> Admin <input type=\"checkbox\" name=\"extra\" value=\"VAC2_HIST\""
-            + isChecked("VAC2_HIST", testCaseMessage.getQuickTransformations()) + "> Hist<br>");
-        out.println("                  Vacc #3 <input type=\"checkbox\" name=\"extra\" value=\"VAC3_ADMIN\""
-            + isChecked("VAC3_ADMIN", testCaseMessage.getQuickTransformations())
-            + "> Admin <input type=\"checkbox\" name=\"extra\" value=\"VAC3_HIST\""
-            + isChecked("VAC3_HIST", testCaseMessage.getQuickTransformations()) + "> Hist");
+            + isChecked("RACE", testCaseMessage.getQuickTransformations())
+            + "> Race <input type=\"checkbox\" name=\"extra\" value=\"ETHNICITY\""
+            + isChecked("ETHNICITY", testCaseMessage.getQuickTransformations())
+            + "> Ethnicity<br>");
+        out.println(
+            "                  Vacc #1 <input type=\"checkbox\" name=\"extra\" value=\"VAC1_ADMIN\""
+                + isChecked("VAC1_ADMIN", testCaseMessage.getQuickTransformations())
+                + "> Admin <input type=\"checkbox\" name=\"extra\" value=\"VAC1_HIST\""
+                + isChecked("VAC1_HIST", testCaseMessage.getQuickTransformations()) + "> Hist<br>");
+        out.println(
+            "                  Vacc #2 <input type=\"checkbox\" name=\"extra\" value=\"VAC2_ADMIN\""
+                + isChecked("VAC2_ADMIN", testCaseMessage.getQuickTransformations())
+                + "> Admin <input type=\"checkbox\" name=\"extra\" value=\"VAC2_HIST\""
+                + isChecked("VAC2_HIST", testCaseMessage.getQuickTransformations()) + "> Hist<br>");
+        out.println(
+            "                  Vacc #3 <input type=\"checkbox\" name=\"extra\" value=\"VAC3_ADMIN\""
+                + isChecked("VAC3_ADMIN", testCaseMessage.getQuickTransformations())
+                + "> Admin <input type=\"checkbox\" name=\"extra\" value=\"VAC3_HIST\""
+                + isChecked("VAC3_HIST", testCaseMessage.getQuickTransformations()) + "> Hist");
         if (connectors.size() == 1) {
           if (!connectors.get(0).getCustomTransformations().equals("")) {
             out.println("                  <div class=\"smallTitle\">Exclude Transforms</div>");
-            out.println("            <input type=\"hidden\" name=\"excludeTransform\" value=\"true\"/>");
+            out.println(
+                "            <input type=\"hidden\" name=\"excludeTransform\" value=\"true\"/>");
             try {
-              BufferedReader ctIn = new BufferedReader(new StringReader(connectors.get(0).getCustomTransformations()));
+              BufferedReader ctIn = new BufferedReader(
+                  new StringReader(connectors.get(0).getCustomTransformations()));
               String line;
               int i = 0;
               while ((line = ctIn.readLine()) != null) {
                 i++;
                 boolean selected = false;
                 {
-                  BufferedReader etIn = new BufferedReader(new StringReader(testCaseMessage.getExcludeTransformations()));
+                  BufferedReader etIn = new BufferedReader(
+                      new StringReader(testCaseMessage.getExcludeTransformations()));
                   String l;
                   while ((l = etIn.readLine()) != null) {
                     if (l.equals(line)) {
@@ -441,8 +475,9 @@ public class CreateTestCaseServlet extends ClientServlet {
                     }
                   }
                 }
-                out.println("            <input type=\"checkbox\" name=\"excludeTransform" + i + "\" value=\"true\""
-                    + (selected ? " checked=\"true\"" : "") + "/>" + line + "<br/>");
+                out.println("            <input type=\"checkbox\" name=\"excludeTransform" + i
+                    + "\" value=\"true\"" + (selected ? " checked=\"true\"" : "") + "/>" + line
+                    + "<br/>");
               }
             } catch (IOException ioe) {
               // ignore
@@ -452,14 +487,17 @@ public class CreateTestCaseServlet extends ClientServlet {
         out.println("                </td>");
         out.println("                <td valign=\"top\">");
         out.println("                  <div class=\"smallTitle\">Quick Transforms Applied</div> ");
-        out.println("                  <pre style=\"text-align: left; height: 170px; width: 250px;overflow:auto;\">"
-            + testCaseMessage.getQuickTransformationsConverted() + "</pre><br/>");
+        out.println(
+            "                  <pre style=\"text-align: left; height: 170px; width: 250px;overflow:auto;\">"
+                + testCaseMessage.getQuickTransformationsConverted() + "</pre><br/>");
         out.println("                  <div class=\"smallTitle\">Custom Transforms</div>");
-        out.println("                  <textarea name=\"customTransforms\" cols=\"30\" rows=\"4\" wrap=\"off\">"
-            + testCaseMessage.getCustomTransformations() + "</textarea><br/>");
+        out.println(
+            "                  <textarea name=\"customTransforms\" cols=\"30\" rows=\"4\" wrap=\"off\">"
+                + testCaseMessage.getCustomTransformations() + "</textarea><br/>");
         out.println("                  <div class=\"smallTitle\">Additional Transforms</div>");
-        out.println("                  <textarea name=\"additionalTransforms\" cols=\"30\" rows=\"4\" wrap=\"off\">"
-            + testCaseMessage.getAdditionalTransformations() + "</textarea>");
+        out.println(
+            "                  <textarea name=\"additionalTransforms\" cols=\"30\" rows=\"4\" wrap=\"off\">"
+                + testCaseMessage.getAdditionalTransformations() + "</textarea>");
         out.println("                </td>");
         out.println("              </tr>");
         out.println("            </table>");
@@ -467,13 +505,15 @@ public class CreateTestCaseServlet extends ClientServlet {
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td valign=\"top\">Test Case</td>");
-        out.println("          <td colspan=\"2\"><pre style=\"text-align: left; height: 250px; width: 520px;overflow:auto;\">"
-            + testCaseMessage.createText(true) + "</pre></td>");
+        out.println(
+            "          <td colspan=\"2\"><pre style=\"text-align: left; height: 250px; width: 520px;overflow:auto;\">"
+                + testCaseMessage.createText(true) + "</pre></td>");
         out.println("        </tr>");
         out.println("        <tr>");
         out.println("          <td colspan=\"3\" align=\"right\">");
         if (selectedTestCaseMessageList != null) {
-          out.println("            <input type=\"hidden\" name=\"testCasePos\" value=\"" + testCasePos + "\"/>");
+          out.println("            <input type=\"hidden\" name=\"testCasePos\" value=\""
+              + testCasePos + "\"/>");
           if (testCasePos > 0) {
             out.println("            <input type=\"submit\" name=\"action\" value=\"Prev\"/>");
           }
@@ -490,10 +530,11 @@ public class CreateTestCaseServlet extends ClientServlet {
         session.setAttribute("testCaseMessage", testCaseMessage);
         if (!testCaseMessage.getTestCaseNumber().equals("")) {
           if (testCaseMessage.isGlobal()) {
-            getTestCaseMessageMap("Global: " + testCaseSet, getTestCaseMessageMapMap(session)).put(testCaseMessage.getTestCaseNumber(),
-                testCaseMessage);
+            getTestCaseMessageMap("Global: " + testCaseSet, getTestCaseMessageMapMap(session))
+                .put(testCaseMessage.getTestCaseNumber(), testCaseMessage);
           } else {
-            getTestCaseMessageMap(testCaseSet, getTestCaseMessageMapMap(session)).put(testCaseMessage.getTestCaseNumber(), testCaseMessage);
+            getTestCaseMessageMap(testCaseSet, getTestCaseMessageMapMap(session))
+                .put(testCaseMessage.getTestCaseNumber(), testCaseMessage);
           }
         }
         out.println("    </form>");
@@ -501,11 +542,13 @@ public class CreateTestCaseServlet extends ClientServlet {
         out.println("  <h2>How To Use This Page</h2>");
         out.println("  <p>This page is built to help you quickly create a valid test message. "
             + "The result of this process is an HL7 message that can be tested plus the headers "
-            + "that the Data Quality Test tool uses to make a pretty test case report. Here are " + "the steps to creating a test case:</p>");
+            + "that the Data Quality Test tool uses to make a pretty test case report. Here are "
+            + "the steps to creating a test case:</p>");
         out.println("   <ol>");
         out.println(
             "     <li><b>Test Case Num and Set</b> Indicate the test case number you wish to use for this test case. If you don't supply a number then one will be automatically assigned. (This assigned number will increment by 1 every time you submit this page.) The set is for grouping test cases into more manageble sections. </li>");
-        out.println("     <li><b>Description</b> Write a human readable description that describes what you are trying to test. </li>");
+        out.println(
+            "     <li><b>Description</b> Write a human readable description that describes what you are trying to test. </li>");
         out.println(
             "     <li><b>Expected Result</b> Write a human readable description of describes what you expect to happen when you submit this message.</li>");
         out.println(
@@ -531,7 +574,8 @@ public class CreateTestCaseServlet extends ClientServlet {
             "             <li><b>2.5.1 or 2.3.1</b> Select what kind of message you are generating and the required fields not listed below will be filled in. </li>");
         out.println(
             "             <li><b>Boy or Girl</b> Selecting boy or girl will populate the last name, first name, middle name and birth date of the patient. The last name is a random last name out of over 1000 last names derived from US county names. The first and middle name are a random selection of the top 1000 most popular baby names for either girl or boy. The gender is M for boy and F for girl. </li>");
-        out.println("             <li><b>Date of Birth</b> The birth date is a random date in 2009 or 2010. </li>");
+        out.println(
+            "             <li><b>Date of Birth</b> The birth date is a random date in 2009 or 2010. </li>");
         out.println(
             "             <li><b>Address</b> The street number is randomly generated number betewen 1 and 400, the street name a randomly selected county name, the street type a randomly selected value of 5 common street types. The city, state and zip code are correct for a real city in the state of Michigan.</li>");
         out.println(
@@ -549,30 +593,47 @@ public class CreateTestCaseServlet extends ClientServlet {
         out.println(
             "         <li><b>Custom Transforms</b> You can indicate your own transforms by using the same format as the quick transforms. The format is this: <code>{SEG_NAME}[#{SEG_REP_NUM}]-{FIELD_NUM}[.{SUB_FIELD{NUM}]={value}</code>. The custom transforms will be run after the quick transforms. You may set any value here and it will be placed in the message exactly as you write it. It is okay to use HL7 special characters but they will not be escaped. Putting a blank value will blank out a specific field. Values such as PID#1-1 and PID-1 are equivalant, and PID-3.1 and PID-3 are also equivalant. There are also a set of defined values that you can access by placing the defined value code with bracket around it. Note: These values are generate each time a new message is generated, but stay the same while transforming the entire message, which means that if you use [BOY] a randomly choosen baby boy's name will be choosen but it will be the same throughout a transformation of a single message. The following defind value codes are supported:");
         out.println("           <ul>");
-        out.println("             <li><b>[BOY]</b> A randomly choosen name for a list of 1000 most common male baby names in 2010.</li>");
-        out.println("             <li><b>[GIRL]</b> A randomly choosen name for a list of 1000 most common female baby names in 2010.</li>");
-        out.println("             <li><b>[FATHER]</b> A randomly choosen name for a list of 1000 most common male baby names in 2010.</li>");
-        out.println("             <li><b>[MOTHER]</b> A randomly choosen name for a list of 1000 most common female baby names in 2010.</li>");
+        out.println(
+            "             <li><b>[BOY]</b> A randomly choosen name for a list of 1000 most common male baby names in 2010.</li>");
+        out.println(
+            "             <li><b>[GIRL]</b> A randomly choosen name for a list of 1000 most common female baby names in 2010.</li>");
+        out.println(
+            "             <li><b>[FATHER]</b> A randomly choosen name for a list of 1000 most common male baby names in 2010.</li>");
+        out.println(
+            "             <li><b>[MOTHER]</b> A randomly choosen name for a list of 1000 most common female baby names in 2010.</li>");
         out.println(
             "             <li><b>[MOTHER_MAIDEN]</b> A randomly choosen name for a list of over 1000 names derived from current US county names.</li>");
         out.println("             <li><b>[DOB]</b> A randomly choosen date in 2009 or 2010.</li>");
-        out.println("             <li><b>[NOW]</b> An HL7 formatted date and time representing the current time now.</li>");
-        out.println("             <li><b>[TODAY]</b> An HL7 formatted date with no time representing the current date today.</li>");
+        out.println(
+            "             <li><b>[NOW]</b> An HL7 formatted date and time representing the current time now.</li>");
+        out.println(
+            "             <li><b>[TODAY]</b> An HL7 formatted date with no time representing the current date today.</li>");
         out.println(
             "             <li><b>[LAST]</b> A randomly choosen name for a list of over 1000 names derived from current US county names.</li>");
-        out.println("             <li><b>[GIRL_MIDDLE]</b> A randomly choosen name for a list of 1000 most common female baby names in 2010.</li>");
-        out.println("             <li><b>[BOY_MIDDLE]</b> A randomly choosen name for a list of 1000 most common male baby names in 2010.</li>");
-        out.println("             <li><b>[GIRL_MIDDLE_INITIAL] The first initial of [GIRL_MIDDLE]</b> </li>");
-        out.println("             <li><b>[BOY_MIDDLE_INITIAL]</b> The first initial of [BOY_MIDDLE]</li>");
-        out.println("             <li><b>[VAC1_DATE]</b> A randomly choosen date about 2 months after [DOB]</li>");
-        out.println("             <li><b>[VAC2_DATE]</b> A randomly choosen date about 2 months after [VAC1_DATE]</li>");
-        out.println("             <li><b>[VAC3_DATE]</b> A randomly choosen date about 2 months after [VAC2_DATE]</li>");
-        out.println("             <li><b>[CITY]</b> A randomly choosen name of a city in Michigan.</li>");
+        out.println(
+            "             <li><b>[GIRL_MIDDLE]</b> A randomly choosen name for a list of 1000 most common female baby names in 2010.</li>");
+        out.println(
+            "             <li><b>[BOY_MIDDLE]</b> A randomly choosen name for a list of 1000 most common male baby names in 2010.</li>");
+        out.println(
+            "             <li><b>[GIRL_MIDDLE_INITIAL] The first initial of [GIRL_MIDDLE]</b> </li>");
+        out.println(
+            "             <li><b>[BOY_MIDDLE_INITIAL]</b> The first initial of [BOY_MIDDLE]</li>");
+        out.println(
+            "             <li><b>[VAC1_DATE]</b> A randomly choosen date about 2 months after [DOB]</li>");
+        out.println(
+            "             <li><b>[VAC2_DATE]</b> A randomly choosen date about 2 months after [VAC1_DATE]</li>");
+        out.println(
+            "             <li><b>[VAC3_DATE]</b> A randomly choosen date about 2 months after [VAC2_DATE]</li>");
+        out.println(
+            "             <li><b>[CITY]</b> A randomly choosen name of a city in Michigan.</li>");
         out.println(
             "             <li><b>[STREET]</b> A randomly generated street with a street number between 1 and 400 a street name from a randomly choosen US county name, and the street type from a list of 5 commmon street types.</li>");
-        out.println("             <li><b>[STATE]</b> The correct state for the real city picked [CITY]</li>");
-        out.println("             <li><b>[ZIP]</b> The correct zip for the real city picked for [CITY]</li>");
-        out.println("             <li><b>[PHONE]</b> A randomly generated phone, but with a area code correct for city picked for [CITY]. </li>");
+        out.println(
+            "             <li><b>[STATE]</b> The correct state for the real city picked [CITY]</li>");
+        out.println(
+            "             <li><b>[ZIP]</b> The correct zip for the real city picked for [CITY]</li>");
+        out.println(
+            "             <li><b>[PHONE]</b> A randomly generated phone, but with a area code correct for city picked for [CITY]. </li>");
         out.println("           </ul>");
         out.println("         </li>");
         out.println("       </ul>");
@@ -592,19 +653,25 @@ public class CreateTestCaseServlet extends ClientServlet {
     }
   }
 
-  private void printQueryOption(PrintWriter out, TestCaseMessage testCaseMessage, String queryField) {
-    out.println("              <option value=\"" + queryField + "\"" + (testCaseMessage.getAssertResult().equals(queryField) ? " selected=\"true\"" : "")
-        + ">Query " + queryField +  "</option>");
+  private void printQueryOption(PrintWriter out, TestCaseMessage testCaseMessage,
+      String queryField) {
+    out.println("              <option value=\"" + queryField + "\""
+        + (testCaseMessage.getAssertResult().equals(queryField) ? " selected=\"true\"" : "")
+        + ">Query " + queryField + "</option>");
   }
 
-  protected void makeButtons(List<TestCaseMessage> selectedTestCaseMessageList, PrintWriter out, int testCasePos) {
+  protected void makeButtons(List<TestCaseMessage> selectedTestCaseMessageList, PrintWriter out,
+      int testCasePos) {
     if (selectedTestCaseMessageList != null) {
       boolean showPrev = testCasePos > 0;
       boolean showNext = (testCasePos + 1) < selectedTestCaseMessageList.size();
-      out.println("            <input type=\"hidden\" name=\"testCasePos\" value=\"" + testCasePos + "\"/>");
-      out.println("            <input type=\"submit\" name=\"action\" value=\"Prev\"" + (showPrev ? "" : "disabled=\"disabled\"") + "/>");
+      out.println("            <input type=\"hidden\" name=\"testCasePos\" value=\"" + testCasePos
+          + "\"/>");
+      out.println("            <input type=\"submit\" name=\"action\" value=\"Prev\""
+          + (showPrev ? "" : "disabled=\"disabled\"") + "/>");
       out.println("            <input type=\"submit\" name=\"action\" value=\"Update\"/>");
-      out.println("            <input type=\"submit\" name=\"action\" value=\"Next\"" + (showNext ? "" : "disabled=\"disabled\"") + "/>");
+      out.println("            <input type=\"submit\" name=\"action\" value=\"Next\""
+          + (showNext ? "" : "disabled=\"disabled\"") + "/>");
     } else {
       out.println("            <input type=\"submit\" name=\"action\" value=\"Update\"/>");
     }
@@ -616,17 +683,14 @@ public class CreateTestCaseServlet extends ClientServlet {
   /**
    * Handles the HTTP <code>GET</code> method.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     processRequest(request, response);
 
   }
@@ -634,17 +698,14 @@ public class CreateTestCaseServlet extends ClientServlet {
   /**
    * Handles the HTTP <code>POST</code> method.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
   @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     processRequest(request, response);
 
   }
@@ -694,9 +755,11 @@ public class CreateTestCaseServlet extends ClientServlet {
     }
   }
 
-  protected static Map<String, Map<String, TestCaseMessage>> getTestCaseMessageMapMap(HttpSession session) {
-    Map<String, Map<String, TestCaseMessage>> testMessageMapMap = (Map<String, Map<String, TestCaseMessage>>) session
-        .getAttribute("testCaseMessageMapMap");
+  protected static Map<String, Map<String, TestCaseMessage>> getTestCaseMessageMapMap(
+      HttpSession session) {
+    @SuppressWarnings("unchecked")
+    Map<String, Map<String, TestCaseMessage>> testMessageMapMap =
+        (Map<String, Map<String, TestCaseMessage>>) session.getAttribute("testCaseMessageMapMap");
     if (testMessageMapMap == null) {
       testMessageMapMap = new HashMap<String, Map<String, TestCaseMessage>>();
       session.setAttribute("testCaseMessageMapMap", testMessageMapMap);
@@ -705,11 +768,13 @@ public class CreateTestCaseServlet extends ClientServlet {
   }
 
   protected static void saveTestCase(TestCaseMessage testCaseMessage, HttpSession session) {
-    if (testCaseMessage.getTestCaseNumber() != null && !testCaseMessage.getTestCaseNumber().equals("")) {
+    if (testCaseMessage.getTestCaseNumber() != null
+        && !testCaseMessage.getTestCaseNumber().equals("")) {
       Authenticate.User user = (Authenticate.User) session.getAttribute("user");
       if (testCaseMessage.isGlobal()) {
         File testCaseDir = getOrCreateTestCaseDir(testCaseMessage, user);
-        File testCaseFile = new File(testCaseDir, "TC-" + testCaseMessage.getTestCaseNumber() + ".txt");
+        File testCaseFile =
+            new File(testCaseDir, "TC-" + testCaseMessage.getTestCaseNumber() + ".txt");
         try {
           PrintWriter out = new PrintWriter(new FileWriter(testCaseFile));
           out.print(testCaseMessage.createText());
@@ -718,11 +783,10 @@ public class CreateTestCaseServlet extends ClientServlet {
           ioe.printStackTrace();
           // unable to save, continue as normal
         }
-      }
-      else 
-      if (user != null && user.hasSendData()) {
+      } else if (user != null && user.hasSendData()) {
         File testCaseDir = getOrCreateTestCaseDir(testCaseMessage, user);
-        File testCaseFile = new File(testCaseDir, "TC-" + testCaseMessage.getTestCaseNumber() + ".txt");
+        File testCaseFile =
+            new File(testCaseDir, "TC-" + testCaseMessage.getTestCaseNumber() + ".txt");
         try {
           PrintWriter out = new PrintWriter(new FileWriter(testCaseFile));
           out.print(testCaseMessage.createText());
@@ -739,17 +803,20 @@ public class CreateTestCaseServlet extends ClientServlet {
     Authenticate.User user = (Authenticate.User) session.getAttribute("user");
     if (user != null && user.hasSendData()) {
       File testCaseDir = getOrCreateTestCaseDir(testCaseMessage, user);
-      if (testCaseMessage.getTestCaseNumber() != null && !testCaseMessage.getTestCaseNumber().equals("")) {
+      if (testCaseMessage.getTestCaseNumber() != null
+          && !testCaseMessage.getTestCaseNumber().equals("")) {
         saveTestCaseHtml(testCaseMessage, testCaseDir);
       }
     }
   }
 
   public static void saveTestCaseHtml(TestCaseMessage testCaseMessage, File testCaseDir) {
-    File testCaseFile = new File(testCaseDir, "TC-" + testCaseMessage.getTestCaseNumber() + ".html");
+    File testCaseFile =
+        new File(testCaseDir, "TC-" + testCaseMessage.getTestCaseNumber() + ".html");
     try {
       PrintWriter out = new PrintWriter(new FileWriter(testCaseFile));
-      String title = "Test Case Message " + testCaseMessage.getTestCaseNumber() + ": " + testCaseMessage.getDescription();
+      String title = "Test Case Message " + testCaseMessage.getTestCaseNumber() + ": "
+          + testCaseMessage.getDescription();
       ClientServlet.printHtmlHeadForFile(out, title);
       out.println("<p>[Return to <a href=\"IIS Testing Report.html\"/>IIS Test Report</a>]</p>");
 
@@ -762,11 +829,13 @@ public class CreateTestCaseServlet extends ClientServlet {
     }
   }
 
-  public static File getOrCreateTestCaseDir(TestCaseMessage testCaseMessage, Authenticate.User user) {
+  public static File getOrCreateTestCaseDir(TestCaseMessage testCaseMessage,
+      Authenticate.User user) {
     if (testCaseMessage.isGlobal() && ConnectionManager.getGlobalFolders().size() > 0) {
       File globalDir = ConnectionManager.getGlobalFolders().get(0);
       if (!globalDir.exists()) {
-        throw new IllegalArgumentException("Global directory does not exsist, unable to save file!");
+        throw new IllegalArgumentException(
+            "Global directory does not exsist, unable to save file!");
       }
       if (!testCaseMessage.getTestCaseSet().equals("")) {
         globalDir = new File(globalDir, testCaseMessage.getTestCaseSet());
@@ -812,7 +881,8 @@ public class CreateTestCaseServlet extends ClientServlet {
         {
           File[] dirs = testCaseDir.listFiles(new FileFilter() {
             public boolean accept(File arg0) {
-              return arg0.isDirectory() && !arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
+              return arg0.isDirectory()
+                  && !arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
             }
           });
           if (dirs != null) {
@@ -829,13 +899,16 @@ public class CreateTestCaseServlet extends ClientServlet {
 
   }
 
-  public static void setupGlobalTestCases(Map<String, Map<String, TestCaseMessage>> testMessageMapMap) throws FileNotFoundException, IOException {
+  public static void setupGlobalTestCases(
+      Map<String, Map<String, TestCaseMessage>> testMessageMapMap)
+      throws FileNotFoundException, IOException {
     for (File globalDir : ConnectionManager.getGlobalFolders()) {
       if (globalDir.exists() && globalDir.isDirectory()) {
         readTestCases(testMessageMapMap, globalDir, null, true);
         File[] dirs = globalDir.listFiles(new FileFilter() {
           public boolean accept(File arg0) {
-            return arg0.isDirectory() && !arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
+            return arg0.isDirectory()
+                && !arg0.getName().startsWith(IIS_TEST_REPORT_FILENAME_PREFIX);
           }
         });
         if (dirs != null) {
@@ -878,7 +951,8 @@ public class CreateTestCaseServlet extends ClientServlet {
     return fileList;
   }
 
-  public static void readTestCases(Map<String, Map<String, TestCaseMessage>> testMessageMapMap, File testCaseDir, String testCaseSet, boolean global)
+  public static void readTestCases(Map<String, Map<String, TestCaseMessage>> testMessageMapMap,
+      File testCaseDir, String testCaseSet, boolean global)
       throws FileNotFoundException, IOException {
     String[] filenames = testCaseDir.list(new FilenameFilter() {
       public boolean accept(File file, String arg1) {
@@ -899,11 +973,13 @@ public class CreateTestCaseServlet extends ClientServlet {
         }
         in.close();
 
-        List<TestCaseMessage> testCaseMessageList = TestCaseServlet.parseAndAddTestCases(testScript.toString());
+        List<TestCaseMessage> testCaseMessageList =
+            TestCaseServlet.parseAndAddTestCases(testScript.toString());
         for (TestCaseMessage testCaseMessage : testCaseMessageList) {
           if (!testCaseMessage.getTestCaseNumber().equals("")) {
             testCaseMessage.setGlobal(global);
-            CreateTestCaseServlet.getTestCaseMessageMap(testCaseSet, testMessageMapMap).put(testCaseMessage.getTestCaseNumber(), testCaseMessage);
+            CreateTestCaseServlet.getTestCaseMessageMap(testCaseSet, testMessageMapMap)
+                .put(testCaseMessage.getTestCaseNumber(), testCaseMessage);
           }
         }
       }

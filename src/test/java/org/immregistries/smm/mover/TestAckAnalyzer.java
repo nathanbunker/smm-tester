@@ -1,8 +1,9 @@
 package org.immregistries.smm.mover;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import org.immregistries.smm.mover.AckAnalyzer;
 import org.junit.Test;
 
 public class TestAckAnalyzer
@@ -80,6 +81,10 @@ public class TestAckAnalyzer
 +"ERR||ORC^1^2^1|101^Required field missing^HL70357|W|^^^DQA0387^Vaccination placer order number is missing^HL70533|||Vaccination placer order number is missing|\r"
 +"ERR||RXA^1^11.4^1|101^Required field missing^HL70357|W|^^^DQA0314^Vaccination facility id is missing^HL70533|||Vaccination facility id is missing|\r"
 +"ERR|||0^Message accepted^HL70357|I||||Message accepted with 1 vaccination|\r";
+  
+  private static final String IL_TEST_01 = "MSH|^~\\&||ICARE|TEST||20180510081950-0500||ACK^V04^ACK|1298061|P|2.5.1|||NE|NE|||||Z23^CDCPHINVS \r"
+      +"MSA|AR|1tMo-SA.13.2.1|Message had been ignored by ICARE system \r"
++"ERR||PID^7|101^Required field missing^HL70357|E|2^Invalid Date^HL70533^101.1118^Invalid Birth Date^L|||Message had been Ignored. Invalid Birth Date \r";
 
   @Test
   public void testAckAnalyzer() {
@@ -144,6 +149,11 @@ public class TestAckAnalyzer
     assertTrue(ackAnalyzer.isAckMessage());
     assertTrue(ackAnalyzer.isPositive());
     assertEquals("AA", ackAnalyzer.getAckCode());
+    
+    ackAnalyzer = new AckAnalyzer(IL_TEST_01,  AckAnalyzer.AckType.DEFAULT);
+    assertTrue(ackAnalyzer.isAckMessage());
+    assertFalse(ackAnalyzer.isPositive());
+    assertEquals("AR", ackAnalyzer.getAckCode());
 
   }
 

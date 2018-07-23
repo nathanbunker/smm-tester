@@ -9,22 +9,66 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.immregistries.smm.mover.SendData;
-import org.immregistries.smm.tester.certify.CAForecast;
-import org.immregistries.smm.tester.certify.CertifyRunner;
+import org.immregistries.smm.tester.CreateTestCaseServlet;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.manager.CvsReader;
 import org.immregistries.smm.tester.manager.forecast.EvaluationActual;
 import org.immregistries.smm.tester.manager.forecast.ForecastActual;
 import org.immregistries.smm.tester.manager.forecast.ForecastTesterManager;
+import org.immregistries.smm.tester.manager.query.QueryConverter;
+import org.immregistries.smm.tester.manager.query.QueryType;
 import org.immregistries.smm.transform.TestCaseMessage;
 import org.immregistries.smm.transform.Transformer;
 
-public class QueryRunner extends CertifyRunner {
+public class QueryRunner extends Thread {
+
+
+  private Connector connector;
+  private Connector queryConnector;
+  private ForecastTesterManager forecastTesterManager = null;
+  private String testCaseSet = "";
+  private Date testStarted = null;
+  private Date testFinished = null;
+  private QueryType queryType = null;
+  private boolean willQuery = false;
+  private boolean pauseBeforeQuerying = false;
+  private boolean redactListResponses = false;
+  private boolean reportErrorsOnly = false;
+  private boolean condenseErrors = false;
+  private String uniqueMRNBase = "";
+  private static int uniqueMRNBaseInc = 0;
+  private SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+  private Transformer transformer;
+  private SendData sendData;
+  private File testDir;
+  private TestCaseMessage testCaseMessageBase = null;
+  private String status = "";
+  protected List<String> statusMessageList = null;
+  protected Throwable exception = null;
+  protected boolean keepRunning = true;
+  protected Map<String, Map<String, TestCaseMessage>> testMessageMapMap;
+  private long lastLogStatus = System.currentTimeMillis();
+
+
+  public static final String QUERY_TYPE_QBP_Z34 = "QBP-Z34";
+  public static final String QUERY_TYPE_QBP_Z34_Z44 = "QBP-Z34-Z44";
+  public static final String QUERY_TYPE_QBP_Z44 = "QBP-Z44";
+  public static final String QUERY_TYPE_VXQ = "VXQ";
+  public static final String QUERY_TYPE_NONE = "None";
+
+  public static final String STATUS_INITIALIZED = "Initialized";
+  public static final String STATUS_STARTED = "Started";
+  public static final String STATUS_COMPLETED = "Completed";
+  public static final String STATUS_STOPPED = "Stopped";
+  public static final String STATUS_PROBLEM = "Problem";
+  public static final String STATUS_PAUSED = "Paused";
 
   public static final String FILE_NAME = "fileName";
   public static final String USER_NAME = "userName";
@@ -62,9 +106,74 @@ public class QueryRunner extends CertifyRunner {
     this.testPanelLabel = testPanelLabel;
   }
 
-  public QueryRunner(Connector connector, SendData sendData, String queryType,
+  public void switchStatus(String status, String logMessage) {
+    this.status = status;
+    logStatusMessage(logMessage);
+  }
+
+  protected void indicateActive() {
+    lastLogStatus = System.currentTimeMillis();
+  }
+
+  protected void logStatusMessage(String status) {
+    indicateActive();
+    synchronized (statusMessageList) {
+      statusMessageList.add(sdf.format(new Date()) + " : " + status);
+    }
+  }
+
+
+  public void oldCertifyRunnerInit(Connector connector, SendData sendData, QueryType queryType) {
+    this.connector = connector;
+    this.queryConnector = connector.getOtherConnectorMap().get(Connector.PURPOSE_QUERY);
+    if (this.queryConnector == null) {
+      queryConnector = connector;
+    }
+    this.queryType = queryType;
+
+    this.sendData = sendData;
+
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
+    testCaseSet =
+        CreateTestCaseServlet.IIS_TEST_REPORT_FILENAME_PREFIX + " " + sdf.format(new Date());
+
+    sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+    statusMessageList = new ArrayList<String>();
+
+    switchStatus(STATUS_INITIALIZED, "Initializing CertifyRunner");
+    willQuery = queryType != null
+        && (queryType.equals(QUERY_TYPE_QBP_Z34) || queryType.equals(QUERY_TYPE_QBP_Z34_Z44)
+            || queryType.equals(QUERY_TYPE_QBP_Z44) || queryType.equals(QUERY_TYPE_VXQ));
+    if (willQuery) {
+      logStatusMessage("Query will be run: " + queryType);
+    } else {
+      logStatusMessage("Query was not enabled");
+    }
+
+    logStatusMessage("IIS Tester Initialized");
+  }
+
+  public static final String TCH_FORECAST_TESTER_URL =
+      "http://tchforecasttester.org/ft/ExternalTestServlet";
+  public static final boolean REPORT_RESULTS = true;
+
+  public void stopRunning() {
+    keepRunning = false;
+  }
+
+  public String getStatus() {
+    return status;
+  }
+
+  public List<String> getStatusMessageList() {
+    synchronized (statusMessageList) {
+      return new ArrayList<String>(statusMessageList);
+    }
+  }
+
+  public QueryRunner(Connector connector, SendData sendData, QueryType queryType,
       Set<String> filenamesSelectedSet, String userName, String password, String transforms) {
-    super(connector, sendData, queryType);
+    oldCertifyRunnerInit(connector, sendData, queryType);
     this.filenamesSelectedSet = filenamesSelectedSet;
     this.userName = userName;
     this.password = password;
@@ -75,13 +184,12 @@ public class QueryRunner extends CertifyRunner {
           "Query directory does not exist: " + sendData.getQueryDir().getName());
       return;
     }
-    forecastTesterManager = new ForecastTesterManager(CAForecast.TCH_FORECAST_TESTER_URL);
+    forecastTesterManager = new ForecastTesterManager(TCH_FORECAST_TESTER_URL);
     switchStatus(STATUS_INITIALIZED, "Setup and ready to go");
   }
 
-  @Override
   public void run() {
-    if (getStatus().equals(STATUS_INITIALIZED)) {
+    if (status.equals(STATUS_INITIALIZED)) {
       switchStatus(STATUS_STARTED, "Starting");
       String[] filenames = getListOfFiles(sendData);
       for (String filename : filenames) {
@@ -153,7 +261,7 @@ public class QueryRunner extends CertifyRunner {
                   queryFile.getName().substring(0, queryFile.getName().length() - 4));
               queryTestCaseMessage.setTchForecastTesterUserName(userName);
               queryTestCaseMessage.setTchForecastTesterPassword(password);
-              if (CAForecast.REPORT_RESULTS) {
+              if (REPORT_RESULTS) {
                 String result =
                     forecastTesterManager.reportForecastResults(queryTestCaseMessage, connector);
                 logStatusMessage("             Reported to TCH: " + result);
@@ -260,6 +368,15 @@ public class QueryRunner extends CertifyRunner {
       }
     }
     return goodToGo;
+  }
+
+  public String convertToQuery(TestCaseMessage testCaseMessage) {
+    QueryConverter queryConverter = QueryConverter.getQueryConverter(queryType);
+    if (queryConverter != null) {
+      return queryConverter.convert(testCaseMessage.getMessageText());
+    }
+    throw new IllegalArgumentException(
+        "Unable to convert query because query type '" + queryType + "' is not recognized");
   }
 
 }

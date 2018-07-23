@@ -2,8 +2,6 @@ package org.immregistries.smm.tester.manager;
 
 import java.util.List;
 
-import org.immregistries.smm.tester.manager.CvsReader;
-
 import junit.framework.TestCase;
 
 public class CvsReaderTester extends TestCase

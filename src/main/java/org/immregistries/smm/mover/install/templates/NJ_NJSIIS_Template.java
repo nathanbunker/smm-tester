@@ -3,13 +3,11 @@ package org.immregistries.smm.mover.install.templates;
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.connectors.ConnectorFactory;
-import org.immregistries.smm.tester.connectors.NDSoapConnector;
-import org.immregistries.smm.tester.connectors.NJConnector;
 import org.immregistries.smm.tester.connectors.Connector.TransferType;
+import org.immregistries.smm.tester.connectors.ConnectorFactory;
+import org.immregistries.smm.tester.connectors.NJConnector;
 
-public class NJ_NJSIIS_Template extends ConnectionTemplate
-{
+public class NJ_NJSIIS_Template extends ConnectionTemplate {
   public NJ_NJSIIS_Template() {
     super("NJ NJSIIS");
   }
@@ -50,7 +48,7 @@ public class NJ_NJSIIS_Template extends ConnectionTemplate
     con.addCustomTransformation("MSH-6=NJDOH");
     if (templateName.endsWith(_TEST)) {
       con.addCustomTransformation("MSH-11=T");
-    } 
+    }
     con.addCustomTransformation("PID-3.4=[FACILITYID]");
     con.setAckType(AckAnalyzer.AckType.DEFAULT);
     con.setTransferType(TransferType.NEAR_REAL_TIME_LINK);

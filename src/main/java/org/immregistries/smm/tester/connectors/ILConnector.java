@@ -13,8 +13,7 @@ import java.util.List;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
-public class ILConnector extends HttpConnector
-{
+public class ILConnector extends HttpConnector {
 
   private static final String HL7_REQUEST_RESULT_START_TAG = "<HL7RequestResult>";
   private static final String HL7_REQUEST_RESULT_END_TAG = "</HL7RequestResult>";
@@ -72,7 +71,8 @@ public class ILConnector extends HttpConnector
 
   }
 
-  public String sendRequest(String request, ClientConnection conn, boolean debug) throws IOException {
+  public String sendRequest(String request, ClientConnection conn, boolean debug)
+      throws IOException {
     StringBuilder debugLog = null;
     if (debug) {
       debugLog = new StringBuilder();
@@ -102,7 +102,8 @@ public class ILConnector extends HttpConnector
       String content;
 
       StringBuilder sb = new StringBuilder();
-      sb.append("<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:hl7=\"http://HL7_ICARE\">");
+      sb.append(
+          "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:hl7=\"http://HL7_ICARE\">");
       sb.append("<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">");
       sb.append("<wsa:To>https://icarehl7.dph.illinois.gov</wsa:To>");
       sb.append("<wsa:Action>http://HL7_ICARE/HL7Exchange/HL7Request</wsa:Action></soap:Header>");
@@ -133,13 +134,9 @@ public class ILConnector extends HttpConnector
         response.append('\r');
       }
       input.close();
-      String responseString = response.toString();
-      int startPos = responseString.indexOf(HL7_REQUEST_RESULT_START_TAG);
-      int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG);
-      if (startPos > 0 && endPos > startPos) {
-        responseString = responseString.substring(startPos + HL7_REQUEST_RESULT_START_TAG.length(), endPos);
-        response = new StringBuilder(responseString);
-      }
+      String startTag = HL7_REQUEST_RESULT_START_TAG;
+      String stopTag = HL7_REQUEST_RESULT_END_TAG;
+      response = extractResponse(response, startTag, stopTag);
       if (debug) {
         response.append("\r");
         response.append("DEBUG LOG: \r");
@@ -162,6 +159,7 @@ public class ILConnector extends HttpConnector
     }
 
   }
+
 
   @Override
   public String connectivityTest(String message) throws Exception {

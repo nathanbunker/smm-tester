@@ -5,10 +5,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import org.apache.commons.codec.binary.Base64;
-
-public class ProcessorUrlEncoded extends Processor
-{
+public class ProcessorUrlEncoded extends Processor {
 
   public ProcessorUrlEncoded(CDCWSDLServer server) {
     super(server);
@@ -47,7 +44,8 @@ public class ProcessorUrlEncoded extends Processor
     out.println("  <Body>");
     out.println("    <connectivityTestResponse xmlns=\"urn:cdc:iisb:2011\">");
     try {
-      out.println("      <return>" + URLEncoder.encode(server.getEchoBackMessage(echoBack), "UTF-8") + "</return>   ");
+      out.println("      <return>" + URLEncoder.encode(server.getEchoBackMessage(echoBack), "UTF-8")
+          + "</return>   ");
     } catch (UnsupportedEncodingException usce) {
       // ignore
     }
@@ -56,5 +54,5 @@ public class ProcessorUrlEncoded extends Processor
     out.println("</Envelope>");
   }
 
-  
+
 }

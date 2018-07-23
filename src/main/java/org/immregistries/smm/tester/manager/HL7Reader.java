@@ -6,8 +6,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HL7Reader
-{
+public class HL7Reader {
 
   private List<String> originalLineList = null;
   private List<List<String>> segmentList = null;
@@ -41,7 +40,8 @@ public class HL7Reader
                 endPos = line.length();
               }
               fieldList.add(line.substring(startPos, endPos));
-              if (startPos == 0 && (line.startsWith("MSH|") || line.startsWith("BHS|") | line.startsWith("FHS|"))) {
+              if (startPos == 0 && (line.startsWith("MSH|")
+                  || line.startsWith("BHS|") | line.startsWith("FHS|"))) {
                 fieldList.add("|");
               }
               startPos = endPos + 1;
@@ -259,11 +259,9 @@ public class HL7Reader
     field = cutoff(field, "~");
     field = cutoff(field, "^");
     i = 1;
-    while (i < subcomponentNum)
-    {
+    while (i < subcomponentNum) {
       int pos = field.indexOf("&");
-      if (pos == -1 || (pos + 1) == field.length())
-      {
+      if (pos == -1 || (pos + 1) == field.length()) {
         return "";
       }
       field = field.substring(pos + 1);
@@ -284,7 +282,8 @@ public class HL7Reader
     return count;
   }
 
-  public String getValueBySearchingRepeats(int fieldNum, int componentNum, String searchValue, int searchComponentNum) {
+  public String getValueBySearchingRepeats(int fieldNum, int componentNum, String searchValue,
+      int searchComponentNum) {
     String field = getOriginalField(fieldNum);
     int pos = 0;
     while (pos < field.length()) {
@@ -349,6 +348,6 @@ public class HL7Reader
   }
 
   public void resetPostion() {
-    segmentPosition = 0;
+    segmentPosition = -1;
   }
 }

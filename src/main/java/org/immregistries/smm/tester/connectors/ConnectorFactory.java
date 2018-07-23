@@ -1,7 +1,6 @@
 package org.immregistries.smm.tester.connectors;
 
-public class ConnectorFactory
-{
+public class ConnectorFactory {
 
   public static final String TYPE_SOAP = "SOAP";
   public static final String TYPE_POST = "POST";
@@ -13,6 +12,7 @@ public class ConnectorFactory
   public static final String TYPE_CO_SOAP = "CO SOAP";
   public static final String TYPE_KS_SOAP = "KS SOAP";
   public static final String TYPE_IL_WS = "IL WS";
+  public static final String TYPE_IL_SOAP = "IL SOAP";
   public static final String TYPE_MA_SOAP = "MA SOAP";
   public static final String TYPE_MO_SOAP = "MO SOAP";
   public static final String TYPE_NM_SOAP = "NM SOAP";
@@ -60,6 +60,8 @@ public class ConnectorFactory
       connector = new WIConnector(label, url);
     } else if (type.equals(TYPE_IL_WS)) {
       connector = new ILConnector(label, url);
+    } else if (type.equals(TYPE_IL_SOAP)) {
+      connector = new ILSoapConnector(label, url);
     } else if (type.equals(TYPE_MA_SOAP)) {
       connector = new MAConnector(label, url);
     } else if (type.equals(TYPE_MO_SOAP)) {

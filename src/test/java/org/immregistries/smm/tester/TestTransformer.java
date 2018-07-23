@@ -1,6 +1,6 @@
 package org.immregistries.smm.tester;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;

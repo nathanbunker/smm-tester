@@ -4,8 +4,7 @@ import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 
-public class PA_SIIS_Template extends ConnectionTemplate
-{
+public class PA_SIIS_Template extends ConnectionTemplate {
   public PA_SIIS_Template() {
     super("PA SIIS");
   }

@@ -22,8 +22,7 @@ import java.util.Set;
 
 import org.immregistries.smm.tester.Authenticate;
 
-public class ConnectionManager
-{
+public class ConnectionManager {
   private String keyStorePassword = "";
   private boolean sunSecuritySslAllowUnsafeRenegotiation = false;
   private String keyStore = "";
@@ -43,7 +42,8 @@ public class ConnectionManager
     return sunSecuritySslAllowUnsafeRenegotiation;
   }
 
-  public void setSunSecuritySslAllowUnsafeRenegotiation(boolean sunSecuritySslAllowUnsafeRenegotiation) {
+  public void setSunSecuritySslAllowUnsafeRenegotiation(
+      boolean sunSecuritySslAllowUnsafeRenegotiation) {
     this.sunSecuritySslAllowUnsafeRenegotiation = sunSecuritySslAllowUnsafeRenegotiation;
   }
 
@@ -108,7 +108,6 @@ public class ConnectionManager
   private static String randomId = "";
   private static String supportCenterUrl = null;
   private static String supportCenterCode = "";
-  private static ShutdownInterceptor shutdownInterceptor;
   private static File softwareDir = null;
   private static boolean scanDirectories = true;
   private static List<File> globalFolders = new ArrayList<File>();
@@ -162,7 +161,8 @@ public class ConnectionManager
   public static SendData authenticateSendData(String label, int sendDataId) {
     for (SendData sendData : sendDataSet) {
       if (sendData.getConnector() != null) {
-        if (sendData.getConnector().getLabel().equalsIgnoreCase(label) && sendData.getRandomId() == sendDataId) {
+        if (sendData.getConnector().getLabel().equalsIgnoreCase(label)
+            && sendData.getRandomId() == sendDataId) {
           return sendData;
         }
       }
@@ -215,16 +215,14 @@ public class ConnectionManager
 
   public static void registerLabel(SendData sendData) {
     if (sendData.getConnector() != null) {
-      sendDataMapByLabel.put(sendData.getConnector().getLabel(), sendData);
+      synchronized (sendDataMapByLabel) {
+        sendDataMapByLabel.put(sendData.getConnector().getLabel(), sendData);
+      }
     }
   }
 
   public static SendData getSendDatayByLabel(String label) {
     return sendDataMapByLabel.get(label);
-  }
-
-  public static Map<String, SendData> getSendDataMapByLabel() {
-    return sendDataMapByLabel;
   }
 
   public static SendData getSendData(int internalId) {
@@ -296,7 +294,8 @@ public class ConnectionManager
       supportCenterCode = null;
     }
 
-    if (adminUsername != null && !adminUsername.equals("") && adminPassword != null && !adminPassword.equals("")) {
+    if (adminUsername != null && !adminUsername.equals("") && adminPassword != null
+        && !adminPassword.equals("")) {
       Authenticate.setupAdminUser(adminUsername, adminPassword);
     }
 
@@ -306,7 +305,6 @@ public class ConnectionManager
         try {
           System.setProperty("javax.net.ssl.keyStore", file.getCanonicalPath());
           System.setProperty("javax.net.ssl.keyStorePassword", keyStorePassword);
-          System.out.println("Set keystore to be: " + file.getCanonicalPath());
         } catch (IOException ioe) {
           System.err.println("Unable to setup keystore: " + ioe.getMessage());
           ioe.printStackTrace();
@@ -318,7 +316,6 @@ public class ConnectionManager
 
     if (sunSecuritySslAllowUnsafeRenegotiation) {
       System.setProperty("sun.security.ssl.allowUnsafeRenegotiation", "true");
-      System.out.println("Setting option to allow unsafe renegotiation ");
     }
     if (false) {
       System.out.println("Setting option to stop TLSv1 hello ");
@@ -354,7 +351,8 @@ public class ConnectionManager
       localHostMac = network.getHardwareAddress();
       sb.append(":mac");
       for (int i = 0; i < localHostMac.length; i++) {
-        sb.append(String.format("%02X%s", localHostMac[i], (i < localHostMac.length - 1) ? "-" : ""));
+        sb.append(
+            String.format("%02X%s", localHostMac[i], (i < localHostMac.length - 1) ? "-" : ""));
       }
     } catch (UnknownHostException e) {
       sb.append(":ip{UnknownHostException:" + e.getMessage() + "}");

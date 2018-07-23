@@ -1,7 +1,7 @@
 package org.immregistries.smm.transform.forecast;
 
 public enum ForecastTestPanel {
-  
+
   AIRA_INTEROP_TESTING(72, "AIRA Interop Testing"),
   TCH_INITIAL(2, "TCH Initial"),
   CDSI_TEST_CASES_V2_1(71, "CDSI v2.1"),
@@ -36,32 +36,33 @@ public enum ForecastTestPanel {
   ENVISION_TYPHOID(30, "Envision Typhoid"),
   ENVISION_YELLOW_FEVER(34, "Envision Yellow Fever"),
   ENVISION_ZOSTER(31, "Envision Zoster"),
-  
+
   LOCAL_DEV_TESTING(54, "Development"),
   MCIR_FULL_SAMPLE_JULY_TRY_III_2016(106, "MCIR Full Sample July (TRY III) 2016");
   ;
-  
+
   private int id = 0;
   private String label = "";
   boolean standard = false;
-  
+
   public boolean isStandard() {
     return standard;
   }
+
   public int getId() {
     return id;
   }
+
   public String getLabel() {
     return label;
   }
-  private ForecastTestPanel(int id, String label)
-  {
+
+  private ForecastTestPanel(int id, String label) {
     this.id = id;
     this.label = label;
   }
 
-  private ForecastTestPanel(int id, String label, boolean standard)
-  {
+  private ForecastTestPanel(int id, String label, boolean standard) {
     this.id = id;
     this.label = label;
     this.standard = standard;

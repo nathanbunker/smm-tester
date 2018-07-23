@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 
 package org.immregistries.smm.tester.connectors;
@@ -22,8 +21,7 @@ import javax.net.ssl.SSLSocketFactory;
  * 
  * @author nathan
  */
-public class NDSoapConnector extends HttpConnector
-{
+public class NDSoapConnector extends HttpConnector {
 
   public NDSoapConnector(String label, String url) {
     super(label, url, "ND SOAP");
@@ -87,12 +85,14 @@ public class NDSoapConnector extends HttpConnector
       urlConn.setDoOutput(true);
       urlConn.setUseCaches(false);
       urlConn.setRequestProperty("Content-Type", "text/xml;charset=utf-8");
-      urlConn.setRequestProperty("SOAPAction", "\"https://ndiisioptest.noridian.com/submitSingleMessage\"");
+      urlConn.setRequestProperty("SOAPAction",
+          "\"https://ndiisioptest.noridian.com/submitSingleMessage\"");
       printout = new DataOutputStream(urlConn.getOutputStream());
       StringWriter stringWriter = new StringWriter();
       PrintWriter out = new PrintWriter(stringWriter);
       out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-      out.println("<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
+      out.println(
+          "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
       out.println("  <soap:Body>");
       out.println("    <submitSingleMessage xmlns=\"https://ndiisioptest.noridian.com/\"> ");
       out.println("      <username>" + conn.getUserId() + "</username>");
@@ -135,29 +135,31 @@ public class NDSoapConnector extends HttpConnector
   public String connectivityTest(String message) throws Exception {
     StringBuilder response = new StringBuilder();
 
-     StringBuilder debugLog = new StringBuilder();
+    StringBuilder debugLog = new StringBuilder();
     String messageBeingSent = null;
     try {
-       SSLSocketFactory factory = setupSSLSocketFactory(false, debugLog);
+      SSLSocketFactory factory = setupSSLSocketFactory(false, debugLog);
       URLConnection urlConn;
       DataOutputStream printout;
       InputStreamReader input = null;
       URL url = new URL(this.url);
       urlConn = url.openConnection();
-       if (factory != null && urlConn instanceof HttpsURLConnection) {
-         ((HttpsURLConnection) urlConn).setSSLSocketFactory(factory);
-       }
+      if (factory != null && urlConn instanceof HttpsURLConnection) {
+        ((HttpsURLConnection) urlConn).setSSLSocketFactory(factory);
+      }
 
       urlConn.setDoInput(true);
       urlConn.setDoOutput(true);
       urlConn.setUseCaches(false);
       urlConn.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
-      urlConn.setRequestProperty("SOAPAction", "\"https://ndiisioptest.noridian.com/connectivityTest\"");
+      urlConn.setRequestProperty("SOAPAction",
+          "\"https://ndiisioptest.noridian.com/connectivityTest\"");
       printout = new DataOutputStream(urlConn.getOutputStream());
       StringWriter stringWriter = new StringWriter();
       PrintWriter out = new PrintWriter(stringWriter);
       out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-      out.println("<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
+      out.println(
+          "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
       out.println("  <soap:Body>");
       out.println("    <connectivityTest xmlns=\"https://ndiisioptest.noridian.com/\"> ");
       out.println("      <echoBack>" + message + "</echoBack>");
@@ -176,14 +178,14 @@ public class NDSoapConnector extends HttpConnector
         response.append('\r');
       }
       input.close();
-      
+
     } catch (IOException ioe) {
       response.append("Unable to relay message, received this error: " + ioe.getMessage());
     }
     return response.toString();
   }
 
- 
+
   @Override
   protected void makeScriptAdditions(StringBuilder sb) {
     // do nothing

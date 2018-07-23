@@ -1,7 +1,6 @@
 package org.immregistries.smm.transform.forecast;
 
-public class ForecastExpected
-{
+public class ForecastExpected {
   private int forecastExpectedId;
   private String doseNumber = "";
   private String validDate = "";

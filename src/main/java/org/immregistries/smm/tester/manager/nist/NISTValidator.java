@@ -4,8 +4,7 @@ import org.immregistries.smm.SoftwareVersion;
 
 import gov.nist.healthcare.hl7ws.client.MessageValidationV2SoapClient;
 
-public class NISTValidator
-{
+public class NISTValidator {
   private static MessageValidationV2SoapClient soapClient = null;
 
   private static synchronized MessageValidationV2SoapClient getSoapClient() {

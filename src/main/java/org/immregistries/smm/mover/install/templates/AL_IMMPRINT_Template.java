@@ -4,13 +4,10 @@ import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.ALSoapConnector;
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.connectors.ConnectorFactory;
-import org.immregistries.smm.tester.connectors.HttpConnector;
-import org.immregistries.smm.tester.connectors.SoapConnector;
 import org.immregistries.smm.tester.connectors.Connector.TransferType;
+import org.immregistries.smm.tester.connectors.ConnectorFactory;
 
-public class AL_IMMPRINT_Template extends ConnectionTemplate
-{
+public class AL_IMMPRINT_Template extends ConnectionTemplate {
   public AL_IMMPRINT_Template() {
     super("AL ImmPRINT");
   }
@@ -33,11 +30,12 @@ public class AL_IMMPRINT_Template extends ConnectionTemplate
     // Password
     cc.setPasswordShow(true);
     cc.setPasswordRequired(true);
-    cc.setInstructions("You must first register with ADPH and follow instructions on Portal to gain access. "
-        + "This interface will require configuring a client certificate. The following command can be used "
-        + "as a template to show you how to import the certificate into the Java Key Store (JKS) so that "
-        + "SMM is able to connect. <br/><pre>keytool -import -trustcacerts -alias test-adph2 -file "
-        + "hie.adph.state.al.us.crt -keystore \"C:\\Program Files\\Java\\jdk1.8.0_25\\jre\\lib\\security\\cacerts\"</pre>");
+    cc.setInstructions(
+        "You must first register with ADPH and follow instructions on Portal to gain access. "
+            + "This interface will require configuring a client certificate. The following command can be used "
+            + "as a template to show you how to import the certificate into the Java Key Store (JKS) so that "
+            + "SMM is able to connect. <br/><pre>keytool -import -trustcacerts -alias test-adph2 -file "
+            + "hie.adph.state.al.us.crt -keystore \"C:\\Program Files\\Java\\jdk1.8.0_25\\jre\\lib\\security\\cacerts\"</pre>");
   }
 
   @Override

@@ -14,8 +14,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class ValidationReport
-{
+public class ValidationReport {
   private HeaderReport headerReport = null;
   private List<Assertion> assertionList = new ArrayList<Assertion>();
 
@@ -72,8 +71,8 @@ public class ValidationReport
       // }
     } else {
       // read as XML
-//      System.out.println("Processing this: ");
-//      System.out.println(xml);
+      // System.out.println("Processing this: ");
+      // System.out.println(xml);
       try {
 
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -83,7 +82,8 @@ public class ValidationReport
         NodeList nList = doc.getChildNodes();
         for (int i = 0; i < nList.getLength(); i++) {
           Node nNode = nList.item(i);
-          if (nNode.getNodeType() == Node.ELEMENT_NODE && nNode.getNodeName().indexOf("HL7V2MessageValidationReport") != -1) {
+          if (nNode.getNodeType() == Node.ELEMENT_NODE
+              && nNode.getNodeName().indexOf("HL7V2MessageValidationReport") != -1) {
             NodeList documentNodeList = nNode.getChildNodes();
             for (int d = 0; d < documentNodeList.getLength(); d++) {
               Node documentNode = documentNodeList.item(d);
@@ -125,14 +125,18 @@ public class ValidationReport
                       } else if (headerNode.getNodeName().indexOf("TimeOfTest") != -1) {
                         headerReport.setTimeOfTest(headerNode.getTextContent());
                         // <mes:TimeOfTest>10:13:50.546-05:00</mes:TimeOfTest>
-                      } else if (headerNode.getNodeName().indexOf("ValidationObjectReferenceList") != -1) {
+                      } else if (headerNode.getNodeName()
+                          .indexOf("ValidationObjectReferenceList") != -1) {
                         headerReport.setValidationObjectReferenceList(headerNode.getTextContent());
                         // <mes:ValidationObjectReferenceList/>
-                      } else if (headerNode.getNodeName().indexOf("TestObjectReferenceList") != -1) {
+                      } else if (headerNode.getNodeName()
+                          .indexOf("TestObjectReferenceList") != -1) {
                         headerReport.setTestObjectReferenceList(headerNode.getTextContent());
                         // <mes:TestObjectReferenceList/>
-                      } else if (headerNode.getNodeName().indexOf("PositiveAssertionIndicator") != -1) {
-                        headerReport.setPositiveAssertionIndicator(makeBoolean(headerNode.getTextContent()));
+                      } else if (headerNode.getNodeName()
+                          .indexOf("PositiveAssertionIndicator") != -1) {
+                        headerReport.setPositiveAssertionIndicator(
+                            makeBoolean(headerNode.getTextContent()));
                         // <mes:PositiveAssertionIndicator>true</mes:PositiveAssertionIndicator>
                       } else if (headerNode.getNodeName().indexOf("ResultOfTest") != -1) {
                         headerReport.setResultOfTest(headerNode.getTextContent());
@@ -166,9 +170,12 @@ public class ValidationReport
                         if (assertionListNode.getNodeName().indexOf("Assertion") != -1) {
                           Assertion assertion = new Assertion();
                           assertionList.add(assertion);
-                          assertion.setType(makeString(assertionListNode.getAttributes().getNamedItem("Type")));
-                          assertion.setResult(makeString(assertionListNode.getAttributes().getNamedItem("Result")));
-                          assertion.setSeverity(makeString(assertionListNode.getAttributes().getNamedItem("Severity")));
+                          assertion.setType(
+                              makeString(assertionListNode.getAttributes().getNamedItem("Type")));
+                          assertion.setResult(
+                              makeString(assertionListNode.getAttributes().getNamedItem("Result")));
+                          assertion.setSeverity(makeString(
+                              assertionListNode.getAttributes().getNamedItem("Severity")));
                           NodeList assertionNodeList = assertionListNode.getChildNodes();
                           for (int i5 = 0; i5 < assertionNodeList.getLength(); i5++) {
                             Node assertionNode = assertionNodeList.item(i5);
@@ -184,25 +191,27 @@ public class ValidationReport
                                   assertion.setColumn(makeInt(locationNode.getTextContent()));
                                 } else if (locationNode.getNodeName().indexOf("Path") != -1) {
                                   assertion.setPath(locationNode.getTextContent());
-                                } else if (locationNode.getNodeName().indexOf("ProfileElement") != -1) {
+                                } else if (locationNode.getNodeName()
+                                    .indexOf("ProfileElement") != -1) {
                                   NodeList profileElementNodeList = locationNode.getChildNodes();
                                   for (int i7 = 0; i7 < profileElementNodeList.getLength(); i7++) {
                                     Node profileElementNode = profileElementNodeList.item(i7);
                                     if (profileElementNode.getNodeName().indexOf("Segment") != -1) {
-                                      assertion.setSegment(
-                                          makeString(profileElementNode.getAttributes().getNamedItem("Name")));
+                                      assertion.setSegment(makeString(
+                                          profileElementNode.getAttributes().getNamedItem("Name")));
                                       NodeList segmentNodeList = profileElementNode.getChildNodes();
                                       for (int i8 = 0; i8 < segmentNodeList.getLength(); i8++) {
                                         Node segmentNode = segmentNodeList.item(i8);
                                         if (segmentNode.getNodeName().indexOf("Field") != -1) {
-                                          assertion
-                                              .setField(makeString(segmentNode.getAttributes().getNamedItem("Name")));
+                                          assertion.setField(makeString(
+                                              segmentNode.getAttributes().getNamedItem("Name")));
                                           NodeList fieldNodeList = segmentNode.getChildNodes();
                                           for (int i9 = 0; i9 < fieldNodeList.getLength(); i9++) {
                                             Node fieldNode = fieldNodeList.item(i9);
-                                            if (fieldNode.getNodeName().indexOf("Component") != -1) {
-                                              assertion.setComponent(
-                                                  makeString(fieldNode.getAttributes().getNamedItem("Name")));
+                                            if (fieldNode.getNodeName()
+                                                .indexOf("Component") != -1) {
+                                              assertion.setComponent(makeString(
+                                                  fieldNode.getAttributes().getNamedItem("Name")));
                                             }
                                           }
                                         }

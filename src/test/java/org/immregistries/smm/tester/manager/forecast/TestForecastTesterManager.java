@@ -1,11 +1,9 @@
 package org.immregistries.smm.tester.manager.forecast;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
-import org.immregistries.smm.tester.manager.forecast.ForecastActual;
-import org.immregistries.smm.tester.manager.forecast.ForecastTesterManager;
 import org.immregistries.smm.transform.TestCaseMessage;
 import org.junit.Test;
 

@@ -24,7 +24,6 @@ import org.immregistries.smm.tester.transform.IssueCreator;
 import org.immregistries.smm.tester.transform.Patient;
 import org.immregistries.smm.transform.procedure.ProcedureFactory;
 import org.immregistries.smm.transform.procedure.ProcedureInterface;
-import org.springframework.util.WeakReferenceMonitor.ReleaseListener;
 
 /**
  * 
@@ -459,6 +458,10 @@ public class Transformer {
     String message = testCaseMessage.getMessageText();
     String scenarioTransforms =
         connector.getScenarioTransformationsMap().get(testCaseMessage.getScenario());
+    if (scenarioTransforms == null) {
+      scenarioTransforms =
+          connector.getScenarioTransformationsMap().get(testCaseMessage.getTestCaseNumber());
+    }
     String additionalTransformations = testCaseMessage.getAdditionalTransformations();
     if (additionalTransformations.equals("")) {
       additionalTransformations = null;
@@ -667,6 +670,7 @@ public class Transformer {
         } else if (extra.equals("MOTHER")) {
           quickTransforms += "PID-6=~50%[MOTHER_MAIDEN]:[LAST_DIFFERENT]\n";
           quickTransforms += "PID-6.2=[MOTHER]\n";
+          quickTransforms += "PID-6.7=M\n";
           quickTransforms += "NK1-2.1=~60%[LAST]:[LAST_DIFFERENT]\n";
           quickTransforms += "NK1-2.2=[MOTHER]\n";
           quickTransforms += "NK1-2.7=L\n";
@@ -815,19 +819,11 @@ public class Transformer {
         } else if (extra.equals("RACE")) {
           quickTransforms += "PID-10.1=[RACE]\n";
           quickTransforms += "PID-10.2=[RACE_LABEL]\n";
-          if (testCaseMessage.getReleaseVersion().equals("1.4")) {
-            quickTransforms += "PID-10.3=HL70005\n";
-          } else {
-            quickTransforms += "PID-10.3=CDCREC\n";
-          }
+          quickTransforms += "PID-10.3=CDCREC\n";
         } else if (extra.equals("ETHNICITY")) {
           quickTransforms += "PID-22.1=[ETHNICITY]\n";
           quickTransforms += "PID-22.2=[ETHNICITY_LABEL]\n";
-          if (testCaseMessage.getReleaseVersion().equals("1.4")) {
-            quickTransforms += "PID-22.3=HL70005\n";
-          } else {
-            quickTransforms += "PID-22.3=CDCREC\n";
-          }
+          quickTransforms += "PID-22.3=CDCREC\n";
         } else if (extra.equals("2.5.1")) {
           quickTransforms += "MSH-2=^~\\&\n";
           quickTransforms += "MSH-7=[NOW]\n";
@@ -838,12 +834,11 @@ public class Transformer {
               + makeBase62Number(System.currentTimeMillis() % 10000) + "\n";
           quickTransforms += "MSH-11=P\n";
           quickTransforms += "MSH-12=2.5.1\n";
-          if (testCaseMessage.getReleaseVersion().equals("1.5")) {
-            quickTransforms += "MSH-15=ER\n";
-            quickTransforms += "MSH-16=A\n";
-            quickTransforms += "MSH-21.1=Z22\n";
-            quickTransforms += "MSH-21.2=CDCPHINVS\n";
-          }
+          quickTransforms += "MSH-15=ER\n";
+          quickTransforms += "MSH-16=AL\n";
+          quickTransforms += "MSH-21.1=Z22\n";
+          quickTransforms += "MSH-21.2=CDCPHINVS\n";
+          quickTransforms += "PID-1=1\n";
           quickTransforms += "MSH-23\n";
           if (actualTestCase.length() > 15) {
             quickTransforms +=
@@ -1191,13 +1186,10 @@ public class Transformer {
     BufferedReader inResult = new BufferedReader(new StringReader(resultText));
     resultText = "";
     String lineResult;
-    int repeatCount = 0;
     while ((lineResult = inResult.readLine()) != null) {
       lineResult = lineResult.trim();
       if (lineResult.length() > 0) {
         String finalLine = "";
-        int writtenPos = 0;
-        String possibleLine = "";
 
         String headerStart = null;
         if (lineResult.startsWith("MSH|^~\\&|") || lineResult.startsWith("BHS|^~\\&|")
@@ -1385,7 +1377,6 @@ public class Transformer {
 
   public void doRunProcedure(TransformRequest transformRequest) throws IOException {
     String line = transformRequest.getLine();
-    String resultText = transformRequest.getResultText();
     line = line.substring(RUN_PROCEDURE.length()).trim();
     if (line.length() >= 3) {
       int nextSpace = line.indexOf(" ");
@@ -2431,18 +2422,6 @@ public class Transformer {
     return "";
   }
 
-  private boolean hasSegment(String segmentName, final String resultText) throws IOException {
-    BufferedReader inResult = new BufferedReader(new StringReader(resultText));
-    String lineResult;
-    while ((lineResult = inResult.readLine()) != null) {
-      lineResult = lineResult.trim();
-      if (lineResult.startsWith(segmentName)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   public static Transform readHL7Reference(String ref) {
     return readHL7Reference(ref, ref.length());
   }
@@ -2468,8 +2447,7 @@ public class Transformer {
         all = true;
       }
     }
-    if (!all)
-    {
+    if (!all) {
       int posStar = line.indexOf("*");
       if (posStar >= 0 && posStar < endOfInput) {
         line = line.substring(0, posStar) + line.substring(posStar + 1);

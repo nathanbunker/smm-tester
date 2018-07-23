@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.transform;
 
@@ -25,8 +24,7 @@ import org.immregistries.smm.transform.forecast.ForecastTestPanel;
  * 
  * @author nathan
  */
-public class TestCaseMessage
-{
+public class TestCaseMessage {
 
   public static final String TEST_CASE_SET = "Test Case Set:";
   public static final String TEST_CASE_NUMBER = "Test Case Number:";
@@ -34,8 +32,10 @@ public class TestCaseMessage
   public static final String FIELD_NAME = "Field Name:";
   public static final String EXPECTED_RESULT = "Expected Result:";
   public static final String ASSERT_RESULT = "Assert Result:";
+  public static final String ASSERT_RESULT_PARAMETER = "Assert Result Parameter:";
   public static final String MESSAGE_TYPE = "Message Type:";
   public static final String DERIVED_FROM_TEST_CASE_NUMBER = "Derived From Test Case Number:";
+  public static final String ORIGINAL_TEST_CASE_NUMBER = "Original Test Case Number:";
   public static final String ORIGINAL_MESSAGE = "Original Message:";
   public static final String ACTUAL_RESPONSE_MESSAGE = "Actual Response Message:";
   public static final String DERIVED_FROM_VXU_MESSAGE = "Derived From VXU Message:";
@@ -47,6 +47,8 @@ public class TestCaseMessage
   public static final String COMMENT = "Comment:";
   public static final String PATIENT_TYPE = "Patient Type:";
   public static final String SCENARIO = "Scenario:";
+  public static final String TEST_TYPE = "Test Type:";
+  public static final String TEST_CASE_MODE = "Test Case Mode:";
 
   public static void main(String[] args) {
     for (int i = 0; i < args.length; i++) {
@@ -93,7 +95,8 @@ public class TestCaseMessage
     }
 
     for (int i = 0; i < testCaseMessageList.size(); i++) {
-      if (testCaseMessage.getTestCaseNumber().equals(testCaseMessageList.get(i).getTestCaseNumber())) {
+      if (testCaseMessage.getTestCaseNumber()
+          .equals(testCaseMessageList.get(i).getTestCaseNumber())) {
         testCaseMessageList.get(i).merge(testCaseMessage);
         testCaseMessage = null;
         break;
@@ -113,9 +116,10 @@ public class TestCaseMessage
   private String messageText = "";
   private String messageTextSent = "";
   private String assertResult = "";
-  private String messageType = "";
+  private String assertResultParameter = "";
   private String derivedFromTestCaseNumber = "";
   private String fieldName = "";
+  private String originalTestCaseNumber = "";
   private String originalMessage = "";
   private String originalMessageResponse = "";
   private String preparedMessage = null;
@@ -133,7 +137,6 @@ public class TestCaseMessage
   private String actualResultAckMessage = "";
   private String actualMessageResponseType = "";
   private PatientType patientType = PatientType.ANY_CHILD;
-  private String releaseVersion = "";
   private boolean hasIssue = false;
   private Throwable exception = null;
   private String actualResponseMessage = "";
@@ -157,7 +160,6 @@ public class TestCaseMessage
   private String validationProblem = "";
   private ValidationResource validationResource = null;
   private boolean validationReportPass = false;
-  private String resultStoreStatus = "";
   private boolean originalAccepted = false;
   private String resultForecastStatus = "";
   private TestCaseMessage updateTestCaseMessage = null;
@@ -171,8 +173,26 @@ public class TestCaseMessage
   private String patientDob = null;
   private String patientSex = null;
   private TestCaseMode testCaseMode = TestCaseMode.DEFAULT;
-  private transient Map<String, TestCaseMessage> testCaseMessageMap = null;
+  private Map<String, TestCaseMessage> testCaseMessageMap = null;
   private long totalRunTime = 0;
+  private StringBuilder log = new StringBuilder();
+
+  public String getOriginalTestCaseNumber() {
+    return originalTestCaseNumber;
+  }
+  
+  public void setOriginalTestCaseNumber(String originalTestCaseNumber) {
+    this.originalTestCaseNumber = originalTestCaseNumber;
+  }
+  
+  public void log(String s) {
+    log.append(s);
+    log.append("\n");
+  }
+
+  public String getLog() {
+    return log.toString();
+  }
 
   public String getValidationProblem() {
     return validationProblem;
@@ -204,14 +224,6 @@ public class TestCaseMessage
 
   public void setDerivedFromTestCaseNumber(String derivedFromTestCaseNumber) {
     this.derivedFromTestCaseNumber = derivedFromTestCaseNumber;
-  }
-
-  public String getMessageType() {
-    return messageType;
-  }
-
-  public void setMessageType(String messageType) {
-    this.messageType = messageType;
   }
 
   public Map<String, TestCaseMessage> getTestCaseMessageMap() {
@@ -373,14 +385,6 @@ public class TestCaseMessage
     this.originalMessageResponse = originalMessageAck;
   }
 
-  public String getResultStoreStatus() {
-    return resultStoreStatus;
-  }
-
-  public void setResultStoreStatus(String resultStoreStatus) {
-    this.resultStoreStatus = resultStoreStatus;
-  }
-
   public boolean isValidationReportPass() {
     return validationReportPass;
   }
@@ -403,14 +407,6 @@ public class TestCaseMessage
 
   public void setValidationReport(ValidationReport validationReport) {
     this.validationReport = validationReport;
-  }
-
-  public String getReleaseVersion() {
-    return releaseVersion;
-  }
-
-  public void setReleaseVersion(String releaseVersion) {
-    this.releaseVersion = releaseVersion;
   }
 
   public String getTestType() {
@@ -626,10 +622,11 @@ public class TestCaseMessage
     this.expectedResult = copy.expectedResult;
     this.messageText = copy.messageText;
     this.assertResult = copy.assertResult;
-    this.messageType = copy.messageType;
+    this.assertResultParameter = copy.assertResultParameter;
     this.originalMessage = copy.originalMessage;
     this.quickTransformations = new String[copy.quickTransformations.length];
-    System.arraycopy(copy.quickTransformations, 0, this.quickTransformations, 0, copy.quickTransformations.length);
+    System.arraycopy(copy.quickTransformations, 0, this.quickTransformations, 0,
+        copy.quickTransformations.length);
     this.quickTransformationsConverted = copy.quickTransformationsConverted;
     this.excludeTransformations = copy.excludeTransformations;
     this.customTransformations = copy.customTransformations;
@@ -643,6 +640,8 @@ public class TestCaseMessage
     this.patientType = copy.patientType;
     this.actualResponseMessage = copy.actualResponseMessage;
     this.scenario = copy.scenario;
+    this.testType = copy.testType;
+    this.derivedFromTestCaseNumber = copy.derivedFromTestCaseNumber;
   }
 
   public void merge(TestCaseMessage updated) {
@@ -664,7 +663,8 @@ public class TestCaseMessage
     if (!updated.getOriginalMessage().equals("")) {
       originalMessage = updated.getOriginalMessage();
     }
-    if (updated.getQuickTransformations().length > 0 && !updated.getQuickTransformations()[0].equals("")) {
+    if (updated.getQuickTransformations().length > 0
+        && !updated.getQuickTransformations()[0].equals("")) {
       quickTransformations = updated.getQuickTransformations();
     }
     if (!updated.getQuickTransformationsConverted().equals("")) {
@@ -697,6 +697,9 @@ public class TestCaseMessage
     if (!updated.getScenario().equals("")) {
       scenario = updated.getScenario();
     }
+    if (!updated.getTestType().equals("")) {
+      testType = updated.getTestType();
+    }
   }
 
   public String getActualResultStatus() {
@@ -707,6 +710,7 @@ public class TestCaseMessage
     this.actualResultStatus = actualResultStatus;
   }
 
+  @Deprecated
   public String getActualResultAckMessage() {
     return actualResultAckMessage;
   }
@@ -734,8 +738,7 @@ public class TestCaseMessage
     comments.add(comment);
   }
 
-  public class Comment
-  {
+  public class Comment {
 
     private String name = "";
     private String text = "";
@@ -765,6 +768,7 @@ public class TestCaseMessage
     this.description = description;
   }
 
+  @Deprecated
   public String getExpectedResult() {
     return expectedResult;
   }
@@ -803,6 +807,14 @@ public class TestCaseMessage
 
   public void setAssertResult(String assertResult) {
     this.assertResult = assertResult;
+  }
+
+  public String getAssertResultParameter() {
+    return assertResultParameter;
+  }
+
+  public void setAssertResultParameter(String assertResultParameter) {
+    this.assertResultParameter = assertResultParameter;
   }
 
   public String getCustomTransformations() {
@@ -888,7 +900,8 @@ public class TestCaseMessage
     StringWriter stringWriter = new StringWriter();
     PrintWriter stringOut = new PrintWriter(stringWriter);
     try {
-      stringOut.println("--------------------------------------------------------------------------------");
+      stringOut.println(
+          "--------------------------------------------------------------------------------");
       stringOut.println(TEST_CASE_NUMBER + " " + testCaseNumber);
       stringOut.println(TEST_CASE_SET + " " + testCaseSet);
       stringOut.println(DESCRIPTION + " " + description);
@@ -896,11 +909,14 @@ public class TestCaseMessage
       if (!assertResult.equals("")) {
         stringOut.println(ASSERT_RESULT + " " + assertResult);
       }
-      if (!messageType.equals("")) {
-        stringOut.println(MESSAGE_TYPE + " " + messageType);
+      if (!assertResultParameter.equals("")) {
+        stringOut.println(ASSERT_RESULT_PARAMETER + " " + assertResultParameter);
       }
       if (!derivedFromTestCaseNumber.equals("")) {
         stringOut.println(DERIVED_FROM_TEST_CASE_NUMBER + " " + derivedFromTestCaseNumber);
+      }
+      if (!originalTestCaseNumber.equals("")) {
+        stringOut.println(ORIGINAL_TEST_CASE_NUMBER + " " + originalTestCaseNumber);
       }
       for (Comment comment : comments) {
         stringOut.println(COMMENT + " " + comment.getName() + " - " + comment.getText());
@@ -939,7 +955,8 @@ public class TestCaseMessage
       }
       if (additionalTransformations != null && !additionalTransformations.equals("")) {
         stringOut.println(ADDITIONAL_TRANSFORMATIONS + " ");
-        BufferedReader inTransform = new BufferedReader(new StringReader(additionalTransformations));
+        BufferedReader inTransform =
+            new BufferedReader(new StringReader(additionalTransformations));
         String line;
         while ((line = inTransform.readLine()) != null) {
           line = line.trim();
@@ -968,7 +985,16 @@ public class TestCaseMessage
       if (!scenario.equals("")) {
         stringOut.println(SCENARIO + " " + scenario);
       }
-      stringOut.println("--------------------------------------------------------------------------------");
+      if (!testType.equals(""))
+      {
+        stringOut.println(TEST_TYPE + " " + testType);
+      }
+      if (testCaseMode != TestCaseMode.DEFAULT)
+      {
+        stringOut.println(TEST_CASE_MODE + " " + testCaseMode);
+      }
+      stringOut.println(
+          "--------------------------------------------------------------------------------");
       stringOut.print(messageText);
     } catch (Exception ioe) {
       stringOut.println("Exception occured: " + ioe);
@@ -979,7 +1005,8 @@ public class TestCaseMessage
     return stringWriter.toString();
   }
 
-  private void printHL7(boolean forHtml, PrintWriter stringOut, String fieldName, String message) throws IOException {
+  private void printHL7(boolean forHtml, PrintWriter stringOut, String fieldName, String message)
+      throws IOException {
     stringOut.print(fieldName + " ");
     BufferedReader inBase = new BufferedReader(new StringReader(message));
     String line;

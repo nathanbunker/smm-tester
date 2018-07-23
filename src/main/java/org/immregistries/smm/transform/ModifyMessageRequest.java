@@ -1,7 +1,6 @@
 package org.immregistries.smm.transform;
 
-public class ModifyMessageRequest
-{
+public class ModifyMessageRequest {
   private String messageOriginal = "";
   private String transformScript = "";
   private String messageFinal = "";

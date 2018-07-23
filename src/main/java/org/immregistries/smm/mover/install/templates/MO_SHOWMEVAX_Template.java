@@ -3,13 +3,11 @@ package org.immregistries.smm.mover.install.templates;
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.connectors.ConnectorFactory;
-import org.immregistries.smm.tester.connectors.EnvisionConnector;
-import org.immregistries.smm.tester.connectors.MOConnector;
 import org.immregistries.smm.tester.connectors.Connector.TransferType;
+import org.immregistries.smm.tester.connectors.ConnectorFactory;
+import org.immregistries.smm.tester.connectors.MOConnector;
 
-public class MO_SHOWMEVAX_Template extends ConnectionTemplate
-{
+public class MO_SHOWMEVAX_Template extends ConnectionTemplate {
   public MO_SHOWMEVAX_Template() {
     super("MO ShowMeVax");
   }
@@ -23,7 +21,8 @@ public class MO_SHOWMEVAX_Template extends ConnectionTemplate
     // URL
     cc.setUrlShow(true);
     if (templateName.endsWith(_TEST)) {
-      cc.setUrl("https://hl7smv.dhss.mo.gov/Services/SMVAX_ProviderInterface_EXT_WS/ProviderInterface_EXT_WS.asmx");
+      cc.setUrl(
+          "https://hl7smv.dhss.mo.gov/Services/SMVAX_ProviderInterface_EXT_WS/ProviderInterface_EXT_WS.asmx");
     } else if (templateName.endsWith(_PROD)) {
       cc.setUrl("");
     }

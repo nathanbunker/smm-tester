@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester;
 
@@ -15,7 +14,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletException;
@@ -30,16 +28,12 @@ import org.immregistries.smm.tester.manager.TestCaseMessageManager;
 import org.immregistries.smm.tester.run.TestRunner;
 import org.immregistries.smm.transform.TestCaseMessage;
 import org.immregistries.smm.transform.Transformer;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * 
  * @author nathan
  */
-public class StressTestServlet extends ClientServlet
-{
+public class StressTestServlet extends ClientServlet {
 
   /**
    * 
@@ -47,19 +41,15 @@ public class StressTestServlet extends ClientServlet
   private static final long serialVersionUID = 1L;
 
   /**
-   * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-   * methods.
+   * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
@@ -136,7 +126,8 @@ public class StressTestServlet extends ClientServlet
     doGet(request, response, session, problem);
   }
 
-  protected static Set<String> setTestCaseNumberSelectedSet(HttpServletRequest request, HttpSession session) {
+  protected static Set<String> setTestCaseNumberSelectedSet(HttpServletRequest request,
+      HttpSession session) {
     Set<String> testCaseNumberSelectedSet = new HashSet<String>();
     String[] testCaseNumberSelected = request.getParameterValues("testCaseNumber");
     if (testCaseNumberSelected != null) {
@@ -177,43 +168,14 @@ public class StressTestServlet extends ClientServlet
     out.println("        else if (document.layers) ");
     out.println("          elem = document.layers[whichLayer]");
     out.println("        vis = elem.style;");
-    out.println("        if (vis.display == '' && elem.offsetWidth != undefined && elem.offsetHeight != undefined) ");
-    out.println("          vis.display = (elem.offsetWidth != 0 && elem.offsetHeight != 0) ? 'block' : 'none';");
-    out.println("        vis.display = (vis.display == '' || vis.display == 'block') ? 'none' : 'block';");
+    out.println(
+        "        if (vis.display == '' && elem.offsetWidth != undefined && elem.offsetHeight != undefined) ");
+    out.println(
+        "          vis.display = (elem.offsetWidth != 0 && elem.offsetHeight != 0) ? 'block' : 'none';");
+    out.println(
+        "        vis.display = (vis.display == '' || vis.display == 'block') ? 'none' : 'block';");
     out.println("      }");
     out.println("    </script>");
-  }
-
-  private static String readSubParts(Map<String, String> expectedStatusMap, NodeList nodes) {
-    String testScript = null;
-    for (int i = 0; i < nodes.getLength(); i++) {
-      Node node = nodes.item(i);
-      if (node.getNodeType() == Node.ELEMENT_NODE && "report-template".equals(node.getNodeName())) {
-        nodes = nodes.item(i).getChildNodes();
-        for (i = 0; i < nodes.getLength(); i++) {
-          node = nodes.item(i);
-          if ("base-profile".equals(node.getNodeName())) {
-            readExpectedIssues(expectedStatusMap, nodes.item(i).getChildNodes());
-          } else if ("test-case-script".equals(node.getNodeName())) {
-            testScript = node.getTextContent();
-          }
-        }
-        break;
-      }
-    }
-    return testScript;
-  }
-
-  private static void readExpectedIssues(Map<String, String> expectedStatusMap, NodeList nodes) {
-    for (int i = 0; i < nodes.getLength(); i++) {
-      Node node = nodes.item(i);
-      if (node.getNodeType() == Node.ELEMENT_NODE) {
-        NamedNodeMap map = node.getAttributes();
-        if ("potential-issue-status".equals(node.getNodeName())) {
-          expectedStatusMap.put(safe(map.getNamedItem("issue")), safe(map.getNamedItem("actionCode")));
-        }
-      }
-    }
   }
 
   protected static void sortTestCaseMessageList(List<TestCaseMessage> testCaseMessageList) {
@@ -230,17 +192,14 @@ public class StressTestServlet extends ClientServlet
   /**
    * Handles the HTTP <code>GET</code> method.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     HttpSession session = request.getSession(true);
     String username = (String) session.getAttribute("username");
@@ -251,8 +210,8 @@ public class StressTestServlet extends ClientServlet
     }
   }
 
-  private void doGet(HttpServletRequest request, HttpServletResponse response, HttpSession session, String problem)
-      throws IOException {
+  private void doGet(HttpServletRequest request, HttpServletResponse response, HttpSession session,
+      String problem) throws IOException {
     PrintWriter out = response.getWriter();
     try {
       printHtmlHead(out, MENU_HEADER_HOME, request);
@@ -286,8 +245,9 @@ public class StressTestServlet extends ClientServlet
           out.println("    <td class=\"boxed\">" + stressRunner.getCountErrored() + "</td>");
           out.println("    <td class=\"boxed\">" + stressRunner.getCountException() + "</td>");
           out.println("    <td class=\"boxed\">" + ((int) stressRunner.getRate()) + "</td>");
-          out.println("    <td class=\"boxed\"><input type=\"submit\" value=\"Stop\" name=\"action\"/><input type=\"hidden\" name=\"pos\" value=\""
-              + pos + "\"><input type=\"submit\" value=\"Refresh\" name=\"action\"/></td>");
+          out.println(
+              "    <td class=\"boxed\"><input type=\"submit\" value=\"Stop\" name=\"action\"/><input type=\"hidden\" name=\"pos\" value=\""
+                  + pos + "\"><input type=\"submit\" value=\"Refresh\" name=\"action\"/></td>");
           out.println("  </tr>");
           out.println("</form>");
           pos++;
@@ -323,10 +283,11 @@ public class StressTestServlet extends ClientServlet
         for (Connector connector : connectors) {
           i++;
           if (id == i) {
-            out.println("              <option value=\"" + i + "\" selected=\"true\">" + connector.getLabelDisplay()
-                + "</option>");
+            out.println("              <option value=\"" + i + "\" selected=\"true\">"
+                + connector.getLabelDisplay() + "</option>");
           } else {
-            out.println("              <option value=\"" + i + "\">" + connector.getLabelDisplay() + "</option>");
+            out.println("              <option value=\"" + i + "\">" + connector.getLabelDisplay()
+                + "</option>");
           }
         }
         out.println("            </select>");
@@ -368,7 +329,9 @@ public class StressTestServlet extends ClientServlet
   }
 
   private List<StressRunner> getStressRunnerList(HttpSession session) {
-    List<StressRunner> stressRunnerList = (List<StressRunner>) session.getAttribute("stressRunnerList");
+    @SuppressWarnings("unchecked")
+    List<StressRunner> stressRunnerList =
+        (List<StressRunner>) session.getAttribute("stressRunnerList");
     if (stressRunnerList == null) {
       stressRunnerList = new ArrayList<StressTestServlet.StressRunner>();
       session.setAttribute("stressRunnerList", stressRunnerList);
@@ -376,19 +339,9 @@ public class StressTestServlet extends ClientServlet
     return stressRunnerList;
   }
 
-  private static String safe(Node n) {
-    if (n == null) {
-      return "";
-    }
-    String s = n.getNodeValue();
-    if (s == null) {
-      return "";
-    }
-    return s;
-  }
-
-  public class StressRunnerList extends ArrayList<StressRunner> implements HttpSessionBindingListener
-  {
+  @SuppressWarnings("serial")
+  public class StressRunnerList extends ArrayList<StressRunner>
+      implements HttpSessionBindingListener {
 
     public void valueBound(HttpSessionBindingEvent event) {
       // TODO Auto-generated method stub
@@ -403,8 +356,7 @@ public class StressTestServlet extends ClientServlet
 
   }
 
-  public class StressRunner extends Thread
-  {
+  public class StressRunner extends Thread {
     private Transformer transformer = null;
     private TestRunner testRunner = null;
     private long pause = 0;
@@ -547,7 +499,8 @@ public class StressTestServlet extends ClientServlet
     public void run() {
       log("Starting test runner");
       try {
-        String filenameBase = (testCaseMessageBase == null ? "TCM" : testCaseMessageBase.getTestCaseNumber());
+        String filenameBase =
+            (testCaseMessageBase == null ? "TCM" : testCaseMessageBase.getTestCaseNumber());
         File generatedDir = user.getSendData().getGeneratedDir();
         File file = new File(generatedDir, filenameBase + "-" + (pos + 1) + " Stress Messages.txt");
         fileOut = new PrintWriter(new FileWriter(file));

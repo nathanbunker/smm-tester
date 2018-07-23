@@ -1,14 +1,10 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringReader;
-import java.util.Arrays;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -16,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.immregistries.smm.transform.ModifyMessageRequest;
 import org.immregistries.smm.transform.ModifyMessageService;
-import org.immregistries.smm.transform.PatientType;
 import org.immregistries.smm.transform.ScenarioManager;
 import org.immregistries.smm.transform.TestCaseMessage;
 import org.immregistries.smm.transform.Transformer;
@@ -25,35 +20,20 @@ import org.immregistries.smm.transform.Transformer;
  * 
  * @author nathan
  */
+@SuppressWarnings("serial")
 public class ModifyMessageServlet extends ClientServlet {
-
-  private static final String COMMAND_QUICK_TRANSFORMS = "QUICK TRANSFORMS";
-  private static final String COMMAND_QUICK_TRANSFORM = "QUICK TRANSFORM";
-  private static final String COMMAND_QUICK_TRANFORM = "QUICK TRANFORM";
-  private static final String COMMAND_QUICK_TRANFORMS = "QUICK TRANFORMS";
-  private static final String COMMAND_SET_PATIENT_TYPE = "PATIENT TYPE";
-  private static final String COMMAND_SET_CONTEXT = "CONTEXT ";
-  private static final String COMMAND_SELECT_SCENARIO = "SCENARIO ";
-  private static final String COMMAND_ADD = "ADD ";
-  private static final String COMMAND_SET = "SET ";
-  private static final String COMMAND_SELECT = "SELECT ";
   public static final String IIS_TEST_REPORT_FILENAME_PREFIX = "IIS Test Report";
 
   /**
-   * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-   * methods.
+   * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
-  protected void processRequest(HttpServletRequest request, HttpServletResponse response, ModifyMessageRequest mmr) throws ServletException,
-      IOException {
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response,
+      ModifyMessageRequest mmr) throws ServletException, IOException {
     response.setContentType("text/html;charset=UTF-8");
     PrintWriter out = response.getWriter();
 
@@ -66,8 +46,10 @@ public class ModifyMessageServlet extends ClientServlet {
       originalMessage = "";
     }
 
-    if (request.getParameter("action") != null && request.getParameter("action").equals("Load Example")) {
-      TestCaseMessage testCaseMessage = ScenarioManager.createTestCaseMessage(ScenarioManager.SCENARIO_1_R_ADMIN_CHILD);
+    if (request.getParameter("action") != null
+        && request.getParameter("action").equals("Load Example")) {
+      TestCaseMessage testCaseMessage =
+          ScenarioManager.createTestCaseMessage(ScenarioManager.SCENARIO_1_R_ADMIN_CHILD);
       Transformer transformer = new Transformer();
       transformer.transform(testCaseMessage);
       originalMessage = testCaseMessage.getMessageText();
@@ -84,14 +66,17 @@ public class ModifyMessageServlet extends ClientServlet {
       out.println("          <td valign=\"top\">Original Message</td>");
       out.println("        </tr>");
       out.println("        <tr>");
-      out.println("          <td colspan=\"2\"><textarea name=\"originalMessage\" cols=\"120\" rows=\"15\" wrap=\"off\">" + originalMessage
-          + "</textarea></td>");
+      out.println(
+          "          <td colspan=\"2\"><textarea name=\"originalMessage\" cols=\"120\" rows=\"15\" wrap=\"off\">"
+              + originalMessage + "</textarea></td>");
       out.println("        </tr>");
       out.println("        <tr>");
       out.println("          <td valign=\"top\">Script</td>");
       out.println("        </tr>");
       out.println("        <tr>");
-      out.println("          <td colspan=\"2\"><textarea name=\"script\" cols=\"120\" rows=\"15\" wrap=\"off\">" + script + "</textarea></td>");
+      out.println(
+          "          <td colspan=\"2\"><textarea name=\"script\" cols=\"120\" rows=\"15\" wrap=\"off\">"
+              + script + "</textarea></td>");
       out.println("        </tr>");
       out.println("        <tr>");
       out.println("          <td align=\"right\">");
@@ -108,13 +93,16 @@ public class ModifyMessageServlet extends ClientServlet {
         out.println("</pre>");
       }
       out.println("<h3>Explanation</h3>");
-      out.println("<p>This web page was created to show the original Message Modify software. It is an integrated ability "
-          + "of the Simple Message Mover and was partially extracted to be used by an NIST project. The proposal linked below "
-          + "is the original proposal last year to extract the functionality for this project.</p>");
-      out.println("<p>Link to original document: <a href=\"https://www.dropbox.com/s/4osx52uphsvh0lu/Modify%20Message%20Recommendation.docx?dl=0\">Message Modifier Recommendations</a></p>");
-      out.println("<p>Now in 2016, the next step is to create a more generalized solution that does what this solution does "
-          + "but with improvements to the language and the ability to support other domain knowledge areas. The proposal "
-          + "listed above is now out-dated and is only being listed for reference purposes. </p>");
+      out.println(
+          "<p>This web page was created to show the original Message Modify software. It is an integrated ability "
+              + "of the Simple Message Mover and was partially extracted to be used by an NIST project. The proposal linked below "
+              + "is the original proposal last year to extract the functionality for this project.</p>");
+      out.println(
+          "<p>Link to original document: <a href=\"https://www.dropbox.com/s/4osx52uphsvh0lu/Modify%20Message%20Recommendation.docx?dl=0\">Message Modifier Recommendations</a></p>");
+      out.println(
+          "<p>Now in 2016, the next step is to create a more generalized solution that does what this solution does "
+              + "but with improvements to the language and the ability to support other domain knowledge areas. The proposal "
+              + "listed above is now out-dated and is only being listed for reference purposes. </p>");
 
       ClientServlet.printHtmlFoot(out);
     } catch (Exception e) {
@@ -131,17 +119,14 @@ public class ModifyMessageServlet extends ClientServlet {
   /**
    * Handles the HTTP <code>GET</code> method.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     processRequest(request, response, null);
 
   }
@@ -149,17 +134,14 @@ public class ModifyMessageServlet extends ClientServlet {
   /**
    * Handles the HTTP <code>POST</code> method.
    * 
-   * @param request
-   *          servlet request
-   * @param response
-   *          servlet response
-   * @throws ServletException
-   *           if a servlet-specific error occurs
-   * @throws IOException
-   *           if an I/O error occurs
+   * @param request servlet request
+   * @param response servlet response
+   * @throws ServletException if a servlet-specific error occurs
+   * @throws IOException if an I/O error occurs
    */
   @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     String script = request.getParameter("script");
     if (script != null) {
       ModifyMessageRequest mmr = new ModifyMessageRequest();

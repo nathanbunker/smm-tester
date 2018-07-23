@@ -4,8 +4,7 @@ import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 
-public class ME_PHCHUB_Template extends ConnectionTemplate
-{
+public class ME_PHCHUB_Template extends ConnectionTemplate {
   public ME_PHCHUB_Template() {
     super("ME Maine");
   }

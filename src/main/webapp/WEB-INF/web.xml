@@ -42,7 +42,7 @@
     </init-param>
     <init-param>
       <param-name>software.dir</param-name>
-      <param-value>/home/oisptorg/ois-pt.org/data/dist</param-value>
+      <param-value>/var/www/vhosts/app.immregistries.org/data/tester</param-value>
       <!-- /home/oisptorg/ois-pt.org/data/dist C:\data\work\product\smm\dist -->
     </init-param>
     <init-param>
@@ -72,10 +72,6 @@
     <servlet-class>org.immregistries.smm.tester.CatchServlet</servlet-class>
   </servlet>
   <servlet>
-    <servlet-name>VerifyServlet</servlet-name>
-    <servlet-class>org.immregistries.smm.tester.VerifyServlet</servlet-class>
-  </servlet>
-  <servlet>
     <servlet-name>DashboardServlet</servlet-name>
     <servlet-class>org.immregistries.smm.tester.DashboardServlet</servlet-class>
   </servlet>
@@ -88,32 +84,12 @@
     <servlet-class>org.immregistries.smm.tester.ModifyMessageServlet</servlet-class>
   </servlet>
   <servlet>
-    <servlet-name>CertifyServlet</servlet-name>
-    <servlet-class>org.immregistries.smm.tester.CertifyServlet</servlet-class>
-  </servlet>
-  <servlet>
-    <servlet-name>QueryServlet</servlet-name>
-    <servlet-class>org.immregistries.smm.tester.QueryServlet</servlet-class>
-  </servlet>
-  <servlet>
-    <servlet-name>DocumentServlet</servlet-name>
-    <servlet-class>org.immregistries.smm.tester.DocumentServlet</servlet-class>
-  </servlet>
-  <servlet>
-    <servlet-name>ConformanceServlet</servlet-name>
-    <servlet-class>org.immregistries.smm.tester.ConformanceServlet</servlet-class>
-  </servlet>
-  <servlet>
     <servlet-name>DownloadServlet</servlet-name>
     <servlet-class>org.immregistries.smm.tester.DownloadServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>TestCaseMessageViewerServlet</servlet-name>
     <servlet-class>org.immregistries.smm.tester.TestCaseMessageViewerServlet</servlet-class>
-  </servlet>
-  <servlet>
-    <servlet-name>CompareServlet</servlet-name>
-    <servlet-class>org.immregistries.smm.tester.CompareServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>HomeServlet</servlet-name>
@@ -126,6 +102,18 @@
   <servlet>
     <servlet-name>StressTestServlet</servlet-name>
     <servlet-class>org.immregistries.smm.tester.StressTestServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>ManualQueryServlet</servlet-name>
+    <servlet-class>org.immregistries.smm.tester.ManualQueryServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>BulkQueryServlet</servlet-name>
+    <servlet-class>org.immregistries.smm.tester.BulkQueryServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>MessageViewerServlet</servlet-name>
+    <servlet-class>org.immregistries.smm.tester.MessageViewerServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>SubmitServlet</servlet-name>
@@ -180,28 +168,8 @@
     <url-pattern>/CreateTestCaseServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-    <servlet-name>VerifyServlet</servlet-name>
-    <url-pattern>/VerifyServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>CertifyServlet</servlet-name>
-    <url-pattern>/CertifyServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>QueryServlet</servlet-name>
-    <url-pattern>/QueryServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
     <servlet-name>GenerateDataServlet</servlet-name>
     <url-pattern>/GenerateDataServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>DocumentServlet</servlet-name>
-    <url-pattern>/DocumentServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>ConformanceServlet</servlet-name>
-    <url-pattern>/ConformanceServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>DownloadServlet</servlet-name>
@@ -210,10 +178,6 @@
   <servlet-mapping>
     <servlet-name>TestCaseMessageViewerServlet</servlet-name>
     <url-pattern>/TestCaseMessageViewerServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>CompareServlet</servlet-name>
-    <url-pattern>/CompareServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>TestCaseServlet</servlet-name>
@@ -230,6 +194,18 @@
   <servlet-mapping>
     <servlet-name>StressTestServlet</servlet-name>
     <url-pattern>/StressTestServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>ManualQueryServlet</servlet-name>
+    <url-pattern>/ManualQueryServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>BulkQueryServlet</servlet-name>
+    <url-pattern>/BulkQueryServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>MessageViewerServlet</servlet-name>
+    <url-pattern>/MessageViewerServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>LoginServlet</servlet-name>

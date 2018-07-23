@@ -1,7 +1,6 @@
 package org.immregistries.smm.tester.manager.forecast;
 
-public class EvaluationActual
-{
+public class EvaluationActual {
   private String componentCvx = "";
   private String vaccineDate = "";
   private String vaccineCvx = "";

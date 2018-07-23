@@ -5,8 +5,7 @@ import org.immregistries.smm.tester.connectors.CASoapConnector;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 
-public class CA_CAIR_Template extends ConnectionTemplate
-{
+public class CA_CAIR_Template extends ConnectionTemplate {
   public CA_CAIR_Template() {
     super("CA CAIR");
   }
@@ -15,7 +14,8 @@ public class CA_CAIR_Template extends ConnectionTemplate
   public void setupConfiguration(String templateName, ConnectionConfiguration cc) {
     if (templateName.endsWith(_TEST)) {
       cc.setType(ConnectorFactory.TYPE_CA_SOAP);
-      cc.setUrl("https://igsstag.cdph.ca.gov/submit/services/client_Service.client_ServiceHttpsSoap11Endpoint");
+      cc.setUrl(
+          "https://igsstag.cdph.ca.gov/submit/services/client_Service.client_ServiceHttpsSoap11Endpoint");
       cc.setFacilityidShow(true);
       cc.setFacilityidRequired(true);
       cc.setTypeShow(false);
@@ -54,9 +54,10 @@ public class CA_CAIR_Template extends ConnectionTemplate
   @Override
   public void setupConnection(String templateName, Connector connector) {
     CASoapConnector caSoapConnector = (CASoapConnector) connector;
-    caSoapConnector.setCustomTransformations("MSH-4=[USERID]\n" + "MSH-6=[OTHERID]\n"
-        + "insert segment PD1 after PID if missing\n" + "PD1-12=[MAP ''=>'N']\n" + "MSH-7=[TRUNC 14]\n"
-        + "RXA-9=[MAP ''=>'01']\n" + "run procedure Remove_Vaccination_Groups where RXA-20 equals 'RE'\n");
+    caSoapConnector.setCustomTransformations(
+        "MSH-4=[USERID]\n" + "MSH-6=[OTHERID]\n" + "insert segment PD1 after PID if missing\n"
+            + "PD1-12=[MAP ''=>'N']\n" + "MSH-7=[TRUNC 14]\n" + "RXA-9=[MAP ''=>'01']\n"
+            + "run procedure Remove_Vaccination_Groups where RXA-20 equals 'RE'\n");
   }
 
 }

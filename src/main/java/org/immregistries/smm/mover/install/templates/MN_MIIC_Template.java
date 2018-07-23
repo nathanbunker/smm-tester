@@ -3,12 +3,11 @@ package org.immregistries.smm.mover.install.templates;
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
+import org.immregistries.smm.tester.connectors.Connector.TransferType;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 import org.immregistries.smm.tester.connectors.SoapConnector;
-import org.immregistries.smm.tester.connectors.Connector.TransferType;
 
-public class MN_MIIC_Template extends ConnectionTemplate
-{
+public class MN_MIIC_Template extends ConnectionTemplate {
   public MN_MIIC_Template() {
     super("MN MIIC");
   }
@@ -37,8 +36,8 @@ public class MN_MIIC_Template extends ConnectionTemplate
   @Override
   public void setupConnection(String templateName, Connector connector) {
     SoapConnector soapConnector = (SoapConnector) connector;
-    soapConnector.setCustomTransformations(
-        "MSH-4=[OTHERID]\n" + "MSH-5=MIIC \n" + "MSH-6=MIIC \n" + "fix missing mother maiden first \n");
+    soapConnector.setCustomTransformations("MSH-4=[OTHERID]\n" + "MSH-5=MIIC \n" + "MSH-6=MIIC \n"
+        + "fix missing mother maiden first \n");
     soapConnector.setAckType(AckAnalyzer.AckType.MIIC);
     soapConnector.setTransferType(TransferType.NEAR_REAL_TIME_LINK);
   }

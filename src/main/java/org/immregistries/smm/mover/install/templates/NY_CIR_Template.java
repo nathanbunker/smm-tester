@@ -4,8 +4,7 @@ import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 
-public class NY_CIR_Template extends ConnectionTemplate
-{
+public class NY_CIR_Template extends ConnectionTemplate {
   public NY_CIR_Template() {
     super("NY CIR");
   }
@@ -19,7 +18,7 @@ public class NY_CIR_Template extends ConnectionTemplate
     // URL
     cc.setUrlShow(true);
     if (templateName.endsWith(_TEST)) {
-      cc.setUrl("http://ois-pt.org/tester/VerifyServlet");
+      cc.setUrl("");
     } else if (templateName.endsWith(_PROD)) {
       cc.setUrl("");
     }

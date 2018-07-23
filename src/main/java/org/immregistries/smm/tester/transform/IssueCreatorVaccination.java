@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in the editor.
  */
 package org.immregistries.smm.tester.transform;
 
@@ -10,10 +9,10 @@ import org.immregistries.smm.transform.TestCaseMessage;
  * 
  * @author nathan
  */
-public class IssueCreatorVaccination extends IssueCreator
-{
+public class IssueCreatorVaccination extends IssueCreator {
 
-  public static String createTransforms(TestCaseMessage testCaseMessage, Issue issue, String transforms, boolean not) {
+  public static String createTransforms(TestCaseMessage testCaseMessage, Issue issue,
+      String transforms, boolean not) {
     boolean is = !not;
     if (issue == Issue.VACCINATION_ACTION_CODE_IS_UNRECOGNIZED) {
       if (is) {
@@ -118,9 +117,9 @@ public class IssueCreatorVaccination extends IssueCreator
       }
     } else if (issue == Issue.VACCINATION_ADMIN_CODE_MAY_BE_VARIATION_OF_PREVIOUSLY_REPORTED_CODES) {
       // TODO
-    }  else if (issue == Issue.VACCINATION_ADMIN_DATE_IS_REPORTED_LATE) {
+    } else if (issue == Issue.VACCINATION_ADMIN_DATE_IS_REPORTED_LATE) {
       // TODO
-    }else if (issue == Issue.VACCINATION_ADMIN_DATE_IS_AFTER_LOT_EXPIRATION_DATE) {
+    } else if (issue == Issue.VACCINATION_ADMIN_DATE_IS_AFTER_LOT_EXPIRATION_DATE) {
       if (is) {
         testCaseMessage.setHasIssue(true);
         transforms += "RXA-16=[DOB]\n";
@@ -634,7 +633,7 @@ public class IssueCreatorVaccination extends IssueCreator
         transforms += "remove segment OBX#1\n";
         transforms += "RXA-20=RE\n";
         transforms += "clear RXA-18\n";
-        
+
 
       }
       if (not) {

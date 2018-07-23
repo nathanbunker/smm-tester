@@ -52,7 +52,8 @@ public class ForecastTesterManager {
     this.forecastTesterUrl = forecastTesterUrl;
   }
 
-  public List<ForecastTestCase> getForecastTestCaseList(ForecastTestPanel testPanel) throws IOException {
+  public List<ForecastTestCase> getForecastTestCaseList(ForecastTestPanel testPanel)
+      throws IOException {
 
     List<ForecastTestCase> forecastTestCaseList = new ArrayList<ForecastTestCase>();
     HttpURLConnection urlConn;
@@ -197,11 +198,11 @@ public class ForecastTesterManager {
   private static final String POST_DUE_DATE = "dueDate";
   private static final String POST_VALID_DATE = "validDate";
   private static final String POST_DOSE_NUMBER = "doseNumber";
-  private static final String POST_SCHEDULE_NAME = "scheduleName";
   private static final String POST_FORECAST_CVX = "forecastCvx";
   private static final String POST_SERIES_STATUS = "seriesStatus";
 
-  public String reportForecastResults(TestCaseMessage queryTestCaseMessage, Connector connector) throws IOException {
+  public String reportForecastResults(TestCaseMessage queryTestCaseMessage, Connector connector)
+      throws IOException {
     StringBuilder submittedResults = new StringBuilder();
 
     int softwareId = connector.getTchForecastTesterSoftwareId();
@@ -218,7 +219,8 @@ public class ForecastTesterManager {
 
     StringBuilder sb = new StringBuilder();
     if (queryTestCaseMessage.getForecastTestCase() != null) {
-      sb.append(POST_TEST_CASE_ID + "=" + queryTestCaseMessage.getForecastTestCase().getTestCaseId());
+      sb.append(
+          POST_TEST_CASE_ID + "=" + queryTestCaseMessage.getForecastTestCase().getTestCaseId());
       sb.append("&");
     }
     sb.append(POST_SOFTWARE_ID + "=" + softwareId);
@@ -234,11 +236,13 @@ public class ForecastTesterManager {
     }
     if (queryTestCaseMessage.getTchForecastTesterTestCaseNumber() != null) {
       sb.append("&");
-      sb.append(POST_TEST_CASE_NUMBER + "=" + queryTestCaseMessage.getTchForecastTesterTestCaseNumber());
+      sb.append(
+          POST_TEST_CASE_NUMBER + "=" + queryTestCaseMessage.getTchForecastTesterTestCaseNumber());
     }
     if (queryTestCaseMessage.getTchForecastTesterTestPanelLabel() != null) {
       sb.append("&");
-      sb.append(POST_TEST_PANEL_LABEL + "=" + queryTestCaseMessage.getTchForecastTesterTestPanelLabel());
+      sb.append(
+          POST_TEST_PANEL_LABEL + "=" + queryTestCaseMessage.getTchForecastTesterTestPanelLabel());
     }
     if (queryTestCaseMessage.getPatientDob() != null) {
       sb.append("&");
@@ -250,7 +254,8 @@ public class ForecastTesterManager {
     }
     sb.append("&");
     sb.append(POST_LOG_TEXT + "=");
-    BufferedReader buffReader = new BufferedReader(new StringReader(queryTestCaseMessage.getActualResponseMessage()));
+    BufferedReader buffReader =
+        new BufferedReader(new StringReader(queryTestCaseMessage.getActualResponseMessage()));
     String line;
     while ((line = buffReader.readLine()) != null) {
       if (line.startsWith("OBX") || line.startsWith("RXA")) {
@@ -322,7 +327,8 @@ public class ForecastTesterManager {
         queryTestCaseMessage.setPatientDob(reader.getValue(7));
         queryTestCaseMessage.setPatientSex(reader.getValue(8));
       } else if (reader.getSegmentName().equals("RXA")) {
-        addToList(forecastActualList, evaluationActualList, forecastActual, evaluationActual, addEvaluationToList, addForecastToList);
+        addToList(forecastActualList, evaluationActualList, forecastActual, evaluationActual,
+            addEvaluationToList, addForecastToList);
         addEvaluationToList = false;
         addForecastToList = false;
         forecastActual = null;
@@ -342,9 +348,11 @@ public class ForecastTesterManager {
         String obsValue = reader.getValue(5);
         String obsTable = reader.getValue(5, 3);
         if (isForecast) {
-          if (obs.equals("30956-7") || (obs.equals("30979-9") && obs2.equals("")) || obs.equals("38890-0")) {
+          if (obs.equals("30956-7") || (obs.equals("30979-9") && obs2.equals(""))
+              || obs.equals("38890-0")) {
             if (forecastActual != null) {
-              addToList(forecastActualList, evaluationActualList, forecastActual, evaluationActual, false, addForecastToList);
+              addToList(forecastActualList, evaluationActualList, forecastActual, evaluationActual,
+                  false, addForecastToList);
             }
             forecastActual = new ForecastActual();
             forecastActual.setVaccineCvx(obsValue);
@@ -384,17 +392,18 @@ public class ForecastTesterManager {
               // + W: waivered
               // + X: contraindicated
               // + Z: recommend, but not required
-              /*MCIR Specific Codes: 
-                    ID  CD    NAME        PROT  DESCRIPTION
-                    1   C     Complete    Y     All doses are complete at this time. If a series level evaluation no more doses are required
-                    2   U     Up-To-Date  Y     Doses are up-to-date.  Future doses are required
-                    3   I     Incomplete  N     This child can receive a vaccination today but is not yet overdue
-                    4   O     Overdue     N     This child is not protected.  Vaccinations are overdue
-                    5   D     Immune      Y     Specific to a series.  This child has documented immunity for this disease. Vaccination is not required
-                    6   W     Waivered    N     Specific to a series.  A waiver has been requested for this series
-                    7   S     Consider    N     Specific to a series.  A non-mandatory evaluation result that the provider should consider
-                    8   R     Recommended N     A recommended dose is due. However, this does is not required.
-              */
+              /*
+               * MCIR Specific Codes: ID CD NAME PROT DESCRIPTION 1 C Complete Y All doses are
+               * complete at this time. If a series level evaluation no more doses are required 2 U
+               * Up-To-Date Y Doses are up-to-date. Future doses are required 3 I Incomplete N This
+               * child can receive a vaccination today but is not yet overdue 4 O Overdue N This
+               * child is not protected. Vaccinations are overdue 5 D Immune Y Specific to a series.
+               * This child has documented immunity for this disease. Vaccination is not required 6
+               * W Waivered N Specific to a series. A waiver has been requested for this series 7 S
+               * Consider N Specific to a series. A non-mandatory evaluation result that the
+               * provider should consider 8 R Recommended N A recommended dose is due. However, this
+               * does is not required.
+               */
               if (obsTable.equals("eval_result_id")) {
                 if (obsValue.equals("1")) {
                   obsValue = "C";
@@ -448,11 +457,13 @@ public class ForecastTesterManager {
         }
       }
     }
-    addToList(forecastActualList, evaluationActualList, forecastActual, evaluationActual, addEvaluationToList, addForecastToList);
+    addToList(forecastActualList, evaluationActualList, forecastActual, evaluationActual,
+        addEvaluationToList, addForecastToList);
 
   }
 
-  public static void addToList(List<ForecastActual> forecastActualList, List<EvaluationActual> evaluationActualList, ForecastActual forecastActual,
+  public static void addToList(List<ForecastActual> forecastActualList,
+      List<EvaluationActual> evaluationActualList, ForecastActual forecastActual,
       EvaluationActual evaluationActual, boolean addEvaluationToList, boolean addForecastToList) {
     if (addEvaluationToList) {
       evaluationActualList.add(evaluationActual);

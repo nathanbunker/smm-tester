@@ -5,8 +5,7 @@ import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 import org.immregistries.smm.tester.connectors.HttpConnector;
 
-public class RI_KIDSNET_Template extends ConnectionTemplate
-{
+public class RI_KIDSNET_Template extends ConnectionTemplate {
   public RI_KIDSNET_Template() {
     super("RI KIDSNET");
   }

@@ -2,14 +2,12 @@ package org.immregistries.smm.mover.install.templates;
 
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.mover.install.ConnectionConfiguration;
-import org.immregistries.smm.tester.connectors.ALSoapConnector;
 import org.immregistries.smm.tester.connectors.COSoapConnector;
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.connectors.ConnectorFactory;
 import org.immregistries.smm.tester.connectors.Connector.TransferType;
+import org.immregistries.smm.tester.connectors.ConnectorFactory;
 
-public class CO_CIIS_Template extends ConnectionTemplate
-{
+public class CO_CIIS_Template extends ConnectionTemplate {
   public CO_CIIS_Template() {
     super("CO CIIS");
   }

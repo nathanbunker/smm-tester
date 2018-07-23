@@ -5,8 +5,7 @@ import java.io.StringWriter;
 
 import org.apache.commons.codec.binary.Base64;
 
-public class ProcessorBase64 extends Processor
-{
+public class ProcessorBase64 extends Processor {
 
   public ProcessorBase64(CDCWSDLServer server) {
     super(server);
@@ -40,7 +39,8 @@ public class ProcessorBase64 extends Processor
     out.println("<Envelope xmlns=\"http://www.w3.org/2003/05/soap-envelope\">");
     out.println("  <Body>");
     out.println("    <connectivityTestResponse xmlns=\"urn:cdc:iisb:2011\">");
-    out.println("      <return>" + new String(Base64.encodeBase64(server.getEchoBackMessage(echoBack).getBytes()))
+    out.println("      <return>"
+        + new String(Base64.encodeBase64(server.getEchoBackMessage(echoBack).getBytes()))
         + "</return>   ");
     out.println("    </connectivityTestResponse>");
     out.println("  </Body>");

@@ -4,8 +4,7 @@ import org.immregistries.smm.mover.install.ConnectionConfiguration;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.ConnectorFactory;
 
-public class AK_VACTRAK_Template extends ConnectionTemplate
-{
+public class AK_VACTRAK_Template extends ConnectionTemplate {
   public AK_VACTRAK_Template() {
     super("AK VacTrAK");
   }

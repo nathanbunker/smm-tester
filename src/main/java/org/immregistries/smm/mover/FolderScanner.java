@@ -4,14 +4,11 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.List;
 
-public class FolderScanner extends Thread
-{
+public class FolderScanner extends Thread {
   private static final int SCAN_PAUSE = 15 * 1000;
   private List<File> foldersToScan = null;
   private String scanningStatus = "";
   private boolean scanning = false;
-  private boolean keepRunning = true;
-  private ConnectionManager managerServlet = null;
 
   public List<File> getFoldersToScan() {
     return foldersToScan;
@@ -27,7 +24,6 @@ public class FolderScanner extends Thread
 
   public FolderScanner(List<File> foldersToScan, ConnectionManager managerServlet) {
     this.foldersToScan = foldersToScan;
-    this.managerServlet = managerServlet;
   }
 
   public void setFoldersToScan(List<File> foldersToScan) {
@@ -76,13 +72,11 @@ public class FolderScanner extends Thread
       // already found, don't look here again
       return;
     }
-    if (folder.getName().equals("_gsdata_"))
-    {
+    if (folder.getName().equals("_gsdata_")) {
       // this folder should not be scanned
       return;
     }
-    if (folder.getName().equals("_global"))
-    {
+    if (folder.getName().equals("_global")) {
       // register the folder
       ConnectionManager.getGlobalFolders().add(folder);
     }
