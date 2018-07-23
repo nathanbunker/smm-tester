@@ -59,6 +59,8 @@ public abstract class Connector {
         connector = new SoapConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_POST)) {
         connector = new HttpConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_MLLP)) {
+            connector = new MLLPConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_RAW)) {
         connector = new HttpRawConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_HI_SOAP)) {
@@ -194,6 +196,10 @@ public abstract class Connector {
 
   public boolean isRxaFilter() {
     return rxaFilterFacilityId != null && !rxaFilterFacilityId.equals("");
+  }
+  
+  public void shutdown() {
+	  System.out.println("Shutting down " + label);
   }
 
   public Connector(Connector copy) {

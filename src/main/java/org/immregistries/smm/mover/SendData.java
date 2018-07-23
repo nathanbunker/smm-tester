@@ -106,6 +106,9 @@ public class SendData extends Thread {
       statusLogger.close();
       statusLogger = null;
     }
+    if (connector != null) {
+    	connector.shutdown();
+    }
   }
 
   @Override
@@ -259,6 +262,14 @@ public class SendData extends Thread {
       t.printStackTrace();
     }
   }
+  
+  private void connectorShutdown() {
+	    try {
+	      this.connector.shutdown();
+	    } catch (Throwable t) {
+	      t.printStackTrace();
+	    }
+	  }
 
   private ScanStatus scanStatus = ScanStatus.STARTING;
 
@@ -557,6 +568,7 @@ public class SendData extends Thread {
       }
       deleteRequestFile(lastRequestFilename, "");
     }
+    connector.shutdown();
   }
 
   public void send(String messageText, Connector c) throws Exception, IOException {

@@ -118,6 +118,11 @@ public class MAConnector extends HttpConnector {
       sb.append("</soap:Envelope>");
 
       content = sb.toString();
+      
+      if (debug)
+      {
+        debugLog.append("SOAP Submitted: \n" + sb);
+      }
 
       printout = new DataOutputStream(urlConn.getOutputStream());
       printout.writeBytes(content);
@@ -133,6 +138,11 @@ public class MAConnector extends HttpConnector {
       }
       input.close();
       String responseString = response.toString();
+      if (debug)
+      {
+        debugLog.append("\nResponse returned \n" + responseString);
+      }
+
       int startPos = responseString.indexOf(HL7_REQUEST_RESULT_START_TAG);
       int endPos = responseString.indexOf(HL7_REQUEST_RESULT_END_TAG);
       if (startPos > 0 && endPos > startPos) {
