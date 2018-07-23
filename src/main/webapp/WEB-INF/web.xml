@@ -104,8 +104,12 @@
     <servlet-class>org.immregistries.smm.tester.StressTestServlet</servlet-class>
   </servlet>
   <servlet>
-    <servlet-name>QueryServlet</servlet-name>
-    <servlet-class>org.immregistries.smm.tester.QueryServlet</servlet-class>
+    <servlet-name>ManualQueryServlet</servlet-name>
+    <servlet-class>org.immregistries.smm.tester.ManualQueryServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>BulkQueryServlet</servlet-name>
+    <servlet-class>org.immregistries.smm.tester.BulkQueryServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>MessageViewerServlet</servlet-name>
@@ -192,8 +196,12 @@
     <url-pattern>/StressTestServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-    <servlet-name>QueryServlet</servlet-name>
-    <url-pattern>/QueryServlet</url-pattern>
+    <servlet-name>ManualQueryServlet</servlet-name>
+    <url-pattern>/ManualQueryServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>BulkQueryServlet</servlet-name>
+    <url-pattern>/BulkQueryServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>MessageViewerServlet</servlet-name>

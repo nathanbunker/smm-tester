@@ -26,7 +26,7 @@ import org.immregistries.smm.transform.Transformer;
  * 
  * @author nathan
  */
-public class QueryServlet extends ClientServlet {
+public class ManualQueryServlet extends ClientServlet {
 
   public static final String PARAM_ACTION = "action";
   public static final String ACTION_UPDATE = "Send Update";
@@ -206,7 +206,7 @@ public class QueryServlet extends ClientServlet {
       }
 
       out.println("<h2>Patient</h2>");
-      out.println("<form action=\"QueryServlet\" method=\"POST\">");
+      out.println("<form action=\"ManualQueryServlet\" method=\"POST\">");
       out.println("<table class=\"boxed\">");
       out.println("  <tr>");
       out.println("    <th class=\"boxed\">Id</th>");

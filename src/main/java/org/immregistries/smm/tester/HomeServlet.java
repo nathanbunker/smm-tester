@@ -75,7 +75,11 @@ public class HomeServlet extends ClientServlet {
           out.println("    <td>Install certificate for use on a particular connection.</td>");
           out.println("  </tr>");
           out.println("  <tr>");
-          out.println("    <td><a href=\"QueryServlet\">Query IIS</a></td>");
+          out.println("    <td><a href=\"ManualQueryServlet\">Query IIS</a></td>");
+          out.println("    <td>Query and read response from IIS.</td>");
+          out.println("  </tr>");
+          out.println("  <tr>");
+          out.println("    <td><a href=\"BulkQueryServlet\">Bulk Query IIS</a></td>");
           out.println("    <td>Query and read response from IIS.</td>");
           out.println("  </tr>");
         }
