@@ -209,7 +209,7 @@ public class TestRunner {
                 queryType = VALUE_RESULT_QUERY_TYPE_TOO_MANY;
               } else if (responseStatus.equals("AE")) {
                 queryType = VALUE_RESULT_QUERY_TYPE_ERROR_Z33;
-              } else  {
+              } else {
                 queryType = VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
               }
             } else {
@@ -310,8 +310,8 @@ public class TestRunner {
       if (!errorIndicatedReader.advanceToSegment("ERR")) {
         errorIndicatedReader = null;
       } else {
-        testCaseMessage.log(
-            "Will be looking for ERR segment that matches this one: " + assertResultParameter);
+        testCaseMessage
+            .log("Will be looking for ERR segment that matches this one: " + assertResultParameter);
       }
     }
     if (!assertResult.equalsIgnoreCase("")) {
@@ -344,12 +344,9 @@ public class TestRunner {
             testCaseMessage.log("Analyzing acknowledgement");
             AckAnalyzer ackAnalyzer =
                 new AckAnalyzer(ackMessageText, connector.getAckType(), null, testCaseMessage);
-            if (ackAnalyzer.isPositive())
-            {
+            if (ackAnalyzer.isPositive()) {
               testCaseMessage.log("Positive acknowledgement detected");
-            }
-            else
-            {
+            } else {
               testCaseMessage.log("Negative acknowledgement detected");
             }
             testCaseMessage.setAccepted(ackAnalyzer.isPositive());
@@ -518,8 +515,19 @@ public class TestRunner {
       throws Exception {
     startTime = System.currentTimeMillis();
     ackMessageText = connector.submitMessage(message, false);
+    ackMessageText = cleanMessage(ackMessageText);
     endTime = System.currentTimeMillis();
     testCaseMessage.setActualResponseMessage(ackMessageText);
+  }
+
+  private String cleanMessage(String message) {
+    if (message == null) {
+      return "";
+    }
+    while (message.length() > 0 && message.charAt(0) <= ' ') {
+      message = message.substring(1);
+    }
+    return message;
   }
 
   private void setupForRunTest(TestCaseMessage testCaseMessage, String message) {
