@@ -263,14 +263,6 @@ public class CertifyClient extends Thread {
           }
         }
 
-        if (aartAction == null
-            || !aartAction.startsWith(RecordServletInterface.PARAM_TESTER_ACTION_RUN)) {
-          try {
-            TimeUnit.SECONDS.sleep(30);
-          } catch (InterruptedException ie) {
-            // just keep going
-          }
-        }
       } catch (IOException e) {
         e.printStackTrace();
         return;
