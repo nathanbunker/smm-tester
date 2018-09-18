@@ -331,8 +331,7 @@ public class CertifyClient extends Thread {
     for (AartUrl aartUrl : aartUrlList) {
       if (aartUrl.getSectionTypeList().size() > 0) {
         int count = 0;
-        for (String sectionTypes : aartUrl.getSectionTypeList())
-        {
+        for (String sectionTypes : aartUrl.getSectionTypeList()) {
           count++;
           CertifyClient cc = new CertifyClient(aartUrl.getUrl());
           cc.sectionTypes = sectionTypes;

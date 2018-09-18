@@ -119,7 +119,7 @@ public class CertifyRunner implements RecordServletInterface {
       r.append("=");
       r.append(URLEncoder.encode(connector.getAartAccessPasscode(), "UTF-8"));
     }
-    
+
     String line = null;
 
     {
@@ -143,6 +143,9 @@ public class CertifyRunner implements RecordServletInterface {
           if (disconnected) {
             disconnected = false;
             certifyClient.setAartConnectStatus("Reconnected");
+            synchronized (certifyClient.getAartUrl()) {
+              certifyClient.getAartUrl().notifyAll();
+            }
             System.err
                 .println("  + " + certifyClient.getAartConnectStatus() + " URL=" + r.toString());
           } else {
@@ -170,8 +173,8 @@ public class CertifyRunner implements RecordServletInterface {
             }
             System.err
                 .println("  + " + certifyClient.getAartConnectStatus() + " URL=" + r.toString());
-            synchronized (connectException) {
-              connectException.wait(timeoutWait);
+            synchronized (certifyClient.getAartUrl()) {
+              certifyClient.getAartUrl().wait(timeoutWait);
             }
           } catch (InterruptedException e) {
             break;
