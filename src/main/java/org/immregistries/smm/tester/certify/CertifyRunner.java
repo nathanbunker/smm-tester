@@ -12,7 +12,6 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-
 import org.immregistries.smm.RecordServletInterface;
 import org.immregistries.smm.mover.SendData;
 import org.immregistries.smm.tester.CertifyClient;
@@ -119,13 +118,13 @@ public class CertifyRunner implements RecordServletInterface {
       r.append("=");
       r.append(URLEncoder.encode(connector.getAartAccessPasscode(), "UTF-8"));
     }
-    
+
     String line = null;
 
     {
       boolean disconnected = false;
       long timeoutWait = 10 * 1000;
-      certifyClient.setAartConnectStatus("Connecting...");
+      certifyClient.setAartConnectStatus("Waiting for command");
       while (line == null) {
         try {
           URL url = new URL(r.toString());
@@ -136,17 +135,30 @@ public class CertifyRunner implements RecordServletInterface {
           urlConn.setDoInput(true);
           urlConn.setDoOutput(false);
           urlConn.setUseCaches(false);
+          urlConn.setConnectTimeout(1000 * 60 * 4); // wait four minutes then time out
+          urlConn.setReadTimeout(1000 * 60 * 4); // wait four minutes then time out
           input = new InputStreamReader(urlConn.getInputStream());
           BufferedReader in = new BufferedReader(input);
           line = in.readLine();
           input.close();
           if (disconnected) {
             disconnected = false;
-            certifyClient.setAartConnectStatus("Reconnected");
+            if (line == null) {
+              certifyClient.setAartConnectStatus(
+                  "(Reconnected) Response received - no commands to run at this time");
+            } else {
+              certifyClient
+                  .setAartConnectStatus("(Reconnected) Response received - command received");
+            }
             System.err
                 .println("  + " + certifyClient.getAartConnectStatus() + " URL=" + r.toString());
           } else {
-            certifyClient.setAartConnectStatus("Connected");
+            if (line == null) {
+              certifyClient
+                  .setAartConnectStatus("Response received - no commands to run at this time");
+            } else {
+              certifyClient.setAartConnectStatus("Response received - command received");
+            }
           }
           if (line == null) {
             return "";
@@ -154,7 +166,7 @@ public class CertifyRunner implements RecordServletInterface {
           return line;
         } catch (ConnectException connectException) {
           disconnected = true;
-          certifyClient.setAartConnectStatus("Connecting...Unable to Connect...Trying again...");
+          certifyClient.setAartConnectStatus("Unable to connect, trying again");
           try {
             if (timeoutWait < MINUTE) {
               timeoutWait *= 2;

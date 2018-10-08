@@ -10,11 +10,12 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
-
 import org.immregistries.smm.RecordServletInterface;
 import org.immregistries.smm.SoftwareVersion;
 import org.immregistries.smm.mover.ConnectionManager;
@@ -45,6 +46,11 @@ public class CertifyClient extends Thread {
   private static List<StatusLog> statusLogList = new ArrayList<CertifyClient.StatusLog>();
   private String status = "";
   private String aartConnectStatus = "";
+  private Date aartConnectStatusDate = null;
+
+  public Date getAartConnectStatusDate() {
+    return aartConnectStatusDate;
+  }
 
   public String getSectionTypes() {
     return sectionTypes;
@@ -76,6 +82,7 @@ public class CertifyClient extends Thread {
 
   public void setAartConnectStatus(String aartConnectStatus) {
     this.aartConnectStatus = aartConnectStatus;
+    this.aartConnectStatusDate = new Date();
   }
 
   public static String getAartName() {
@@ -278,7 +285,7 @@ public class CertifyClient extends Thread {
         e.printStackTrace();
       }
     }
-    System.out.println("Shutdown confirmed: " + aartUrl);
+    System.out.println("Shutdown confirmed: " + aartUrl + " #" + threadId);
   }
 
   public static void main(String[] args) throws Exception {
@@ -339,8 +346,7 @@ public class CertifyClient extends Thread {
     for (AartUrl aartUrl : aartUrlList) {
       if (aartUrl.getSectionTypeList().size() > 0) {
         int count = 0;
-        for (String sectionTypes : aartUrl.getSectionTypeList())
-        {
+        for (String sectionTypes : aartUrl.getSectionTypeList()) {
           count++;
           CertifyClient cc = new CertifyClient(aartUrl.getUrl());
           cc.sectionTypes = sectionTypes;
@@ -354,7 +360,7 @@ public class CertifyClient extends Thread {
     }
     System.out.println("Connecting to:");
     for (CertifyClient cc : certifyClientList) {
-      System.out.println("  + " + cc.getAartUrl());
+      System.out.println("  + " + cc.getAartUrl() + " #" + cc.getThreadId());
       cc.start();
     }
     System.out.println("Ready to go, available commands: ");
@@ -369,11 +375,14 @@ public class CertifyClient extends Thread {
         break;
       } else if (command.equalsIgnoreCase("status")) {
         for (CertifyClient cc : certifyClientList) {
-          System.out.println("   " + cc.aartUrl);
-          System.out.println("     " + cc.getAartConnectStatus());
-          if (cc.statusLog == null) {
-            System.out.println("     No commands received");
-          } else {
+          System.out.print("   " + cc.aartUrl + " #" + cc.threadId);
+          SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+          System.out
+              .println(" - "
+                  + (cc.getAartConnectStatusDate() == null ? ""
+                      : sdf.format(cc.getAartConnectStatusDate()))
+                  + " - " + cc.getAartConnectStatus());
+          if (cc.statusLog != null) {
             printOutStatusLog(cc.statusLog);
           }
           if (cc.sendCount > 0) {
@@ -406,7 +415,7 @@ public class CertifyClient extends Thread {
     System.out.println("Shutting down senders...");
     for (CertifyClient cc : certifyClientList) {
       cc.stopRunning();
-      System.out.println("  + " + cc.aartUrl);
+      System.out.println("  + " + cc.aartUrl + " #" + cc.threadId);
     }
     System.out.println("Shutting down connection manager...");
     ShutdownInterceptor shutdown = new ShutdownInterceptor();

@@ -317,10 +317,6 @@ public class ConnectionManager {
     if (sunSecuritySslAllowUnsafeRenegotiation) {
       System.setProperty("sun.security.ssl.allowUnsafeRenegotiation", "true");
     }
-    if (false) {
-      System.out.println("Setting option to stop TLSv1 hello ");
-      System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2,SSLv2Hello");
-    }
 
     ShutdownInterceptor shutdownInterceptor = new ShutdownInterceptor();
     Runtime.getRuntime().addShutdownHook(shutdownInterceptor);
