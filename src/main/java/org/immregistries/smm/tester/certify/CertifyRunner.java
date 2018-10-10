@@ -5,13 +5,15 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import org.immregistries.smm.RecordServletInterface;
 import org.immregistries.smm.mover.SendData;
 import org.immregistries.smm.tester.CertifyClient;
@@ -164,7 +166,7 @@ public class CertifyRunner implements RecordServletInterface {
             return "";
           }
           return line;
-        } catch (ConnectException connectException) {
+        } catch (IOException connectException) {
           disconnected = true;
           certifyClient.setAartConnectStatus("Unable to connect, trying again");
           try {
@@ -248,10 +250,13 @@ public class CertifyRunner implements RecordServletInterface {
 
 
       StringBuilder out = new StringBuilder();
-      out.append("----- " + (connector.getLabel()
-          + " --------------------------------------------------------------------------------")
-              .substring(0, 80)
-          + "\n");
+      {
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+        out.append("----- " + (connector.getLabel()
+            + " --------------------------------------------------------------------------------")
+                .substring(0, 80)
+            + " " + sdf.format(new Date()) + "\n");
+      }
       out.append("  URL: " + connector.getUrl() + "\n");
       if (testCaseMessage == null) {
         addField(sb, PARAM_TM_RESULT_EXECEPTION_TEXT, "SMM/Tester was unable to load test case #"
