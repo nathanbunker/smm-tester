@@ -136,6 +136,7 @@ public class TestRunner {
     testCaseMessage.setHasRun(false);
 
     String message = Transformer.transform(connector, testCaseMessage);
+    System.out.println("--> message = " + message);
     wasRun = false;
     return runTest(connector, testCaseMessage, message);
   }

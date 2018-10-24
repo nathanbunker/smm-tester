@@ -7,9 +7,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.ConnectException;
 import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
@@ -265,7 +263,7 @@ public class CertifyRunner implements RecordServletInterface {
             + createTestCaseMessageUrl(certifyClient) + "\n");
         System.err.println(out);
       } else {
-        out.append("  Test Case Number: " + testCaseMessage.getTestCaseCategoryId() + "\n");
+        out.append("  Test Case Number: " + testCaseMessage.getTestCaseNumber() + "\n");
         out.append("  Test Description: " + testCaseMessage.getDescription() + "\n");
         out.append("  Test Type:        " + testCaseMessage.getTestType() + "\n");
         out.append("  Result Status:    " + testCaseMessage.getActualResultStatus() + "\n");

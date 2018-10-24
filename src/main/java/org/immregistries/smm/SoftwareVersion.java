@@ -10,14 +10,14 @@ public class SoftwareVersion {
   // http://hl7v2.ws.nist.gov/hl7v2ws//services/soap/MessageValidationV2
 
 
-  public static String VERSION = "2.05";
-  public static String VERSION_FOR_SMM_DOWNLOAD = "1.68";
-  public static String VERSION_FOR_TESTER_DOWNLOAD = "2.05";
+  public static String VERSION = "2.06";
+  public static String VERSION_FOR_SMM_DOWNLOAD = "2.06";
+  public static String VERSION_FOR_TESTER_DOWNLOAD = "2.06";
 
   public static String SOFTWARE_VENDOR = "AIRA";
   public static String SOFTWARE_PRODUCT_NAME = "SMM/Tester";
-  public static String SOFTWARE_BINARY_ID = "139038";
-  public static String SOFTWARE_RELEASE_DATE = "20181008";
+  public static String SOFTWARE_BINARY_ID = "139039";
+  public static String SOFTWARE_RELEASE_DATE = "20181024";
 
 
 }
