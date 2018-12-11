@@ -226,7 +226,7 @@ public class CertifyClient extends Thread {
                 }
                 if (connector == null) {
                   statusLog.setProblemMessage("Connector was not intialized");
-                  System.err.println("  + Connectoion information can not be found: "
+                  System.err.println("  + Connection information can not be found: "
                       + statusLog.getAartPublicIdCode());
                   continue;
                 } else if (sendData.getTestParticipant() == null) {

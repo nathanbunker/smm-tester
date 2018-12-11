@@ -199,6 +199,8 @@ public class CertifyRunner implements RecordServletInterface {
   public static void reportProgress(TestCaseMessage testCaseMessage, CertifyClient certifyClient) {
     String testMessageId = certifyClient.getStatusLog().getTestMessageId();
     SendData sendData = certifyClient.getSendData();
+    String actualResponseMessage =
+        testCaseMessage == null ? "" : testCaseMessage.getActualResponseMessage();
     try {
 
       HttpURLConnection urlConn;
@@ -263,6 +265,18 @@ public class CertifyRunner implements RecordServletInterface {
             + createTestCaseMessageUrl(certifyClient) + "\n");
         System.err.println(out);
       } else {
+        // last minute replace for weird characters
+        {
+          String r1 = "“";
+          String r2 = "”";
+          actualResponseMessage = actualResponseMessage.replaceAll("\\Q" + r1 + "\\E", "\"");
+          actualResponseMessage = actualResponseMessage.replaceAll("\\Q" + r2 + "\\E", "\"");
+          for (byte b : actualResponseMessage.getBytes()) {
+            if (b >= 256) {
+              System.err.print("--> found weird character: " + b);
+            }
+          }
+        }
         out.append("  Test Case Number: " + testCaseMessage.getTestCaseNumber() + "\n");
         out.append("  Test Description: " + testCaseMessage.getDescription() + "\n");
         out.append("  Test Type:        " + testCaseMessage.getTestType() + "\n");
@@ -279,7 +293,7 @@ public class CertifyRunner implements RecordServletInterface {
         addField(sb, PARAM_TM_PREP_MESSAGE_ORIGINAL_RESPONSE,
             testCaseMessage.getOriginalMessageResponse());
         addField(sb, PARAM_TM_PREP_MESSAGE_ACTUAL, testCaseMessage.getMessageTextSent());
-        addField(sb, PARAM_TM_RESULT_MESSAGE_ACTUAL, testCaseMessage.getActualResponseMessage());
+        addField(sb, PARAM_TM_RESULT_MESSAGE_ACTUAL, actualResponseMessage);
         addField(sb, PARAM_TM_RESULT_STATUS, testCaseMessage.getActualResultStatus());
         addField(sb, PARAM_TM_RESULT_QUERY_TYPE, testCaseMessage.getActualResultQueryType());
         addField(sb, PARAM_TM_RESULT_FORECAST_STATUS, testCaseMessage.getResultForecastStatus());
@@ -300,6 +314,7 @@ public class CertifyRunner implements RecordServletInterface {
       printout.writeBytes(content);
       printout.flush();
       printout.close();
+
       input = new InputStreamReader(urlConn.getInputStream());
       StringBuilder response = new StringBuilder();
       BufferedReader in = new BufferedReader(input);
@@ -316,6 +331,7 @@ public class CertifyRunner implements RecordServletInterface {
         System.err.println("Problem! Unable to report to central server: " + responseString);
       }
     } catch (IOException e) {
+      System.out.println("Unable to send this message: " + actualResponseMessage);
       e.printStackTrace();
     }
 
