@@ -53,7 +53,7 @@ public class TestRunnerTest extends TestCase {
 
   private void verifyErrorLocationCheck(boolean pass, String field, String message) throws Exception {
     TestRunner testRunner = new TestRunner();
-    testRunner.ackMessageText = message;
+    testRunner.actualResponseMessage = message;
     Connector connector = new SoapConnector("Test", "http://localhost");
     TestCaseMessage testCaseMessage = new TestCaseMessage();
     testCaseMessage.setAssertResult(TestRunner.ASSERT_RESULT_ERROR_LOCATION_IS_ + field);

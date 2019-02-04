@@ -18,7 +18,6 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.List;
-
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -228,6 +227,11 @@ public class HttpRawConnector extends Connector {
   @Override
   public String connectivityTest(String message) throws Exception {
     return "Connectivity test not supported for HTTPS POST connections";
+  }
+
+  @Override
+  public boolean connectivityTestSupported() {
+    return false;
   }
 
   @Override

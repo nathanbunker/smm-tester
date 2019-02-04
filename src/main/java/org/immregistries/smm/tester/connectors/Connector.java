@@ -473,6 +473,8 @@ public abstract class Connector {
   public abstract String submitMessage(String message, boolean debug) throws Exception;
 
   public abstract String connectivityTest(String message) throws Exception;
+  
+  public abstract boolean connectivityTestSupported();
 
   public String getScript() {
     StringBuilder sb = new StringBuilder();

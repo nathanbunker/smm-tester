@@ -27,6 +27,11 @@ public class SoapConnector extends HttpConnector {
     super(label, url, ConnectorFactory.TYPE_SOAP);
     clientService = new Client_ServiceStub(this.url);
   }
+  
+  @Override
+  public boolean connectivityTestSupported() {
+    return true;
+  }
 
   @Override
   public String submitMessage(String message, boolean debug) throws Exception {

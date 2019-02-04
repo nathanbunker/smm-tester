@@ -54,7 +54,7 @@ public class TestRunner {
   public static final String ACTUAL_RESULT_STATUS_FAIL = "FAIL";
   public static final String ACTUAL_RESULT_STATUS_PASS = "PASS";
 
-  protected String ackMessageText = null;
+  protected String actualResponseMessage = null;
   private boolean passedTest = false;
   private String status = "";
   private List<TestError> errorList = null;
@@ -115,11 +115,11 @@ public class TestRunner {
   }
 
   public String getAckMessageText() {
-    return ackMessageText;
+    return actualResponseMessage;
   }
 
   public void setAckMessageText(String ack) {
-    this.ackMessageText = ack;
+    this.actualResponseMessage = ack;
   }
 
   public boolean isPassedTest() {
@@ -136,7 +136,6 @@ public class TestRunner {
     testCaseMessage.setHasRun(false);
 
     String message = Transformer.transform(connector, testCaseMessage);
-    System.out.println("--> message = " + message);
     wasRun = false;
     return runTest(connector, testCaseMessage, message);
   }
@@ -163,7 +162,7 @@ public class TestRunner {
     testCaseMessage.setTotalRunTime(getTotalRunTime());
     evaluateRunTest(connector, testCaseMessage);
     if (validateResponse) {
-      validateResponseWithNIST(testCaseMessage, ackMessageText);
+      validateResponseWithNIST(testCaseMessage, actualResponseMessage);
     }
     return passedTest;
   }
@@ -277,6 +276,7 @@ public class TestRunner {
     String assertResult = testCaseMessage.getAssertResult();
     HL7Reader errorIndicatedReader = null;
     testCaseMessage.log("  + Assert Result = " + assertResult);
+    testCaseMessage.log("  + Test Type     = " + testCaseMessage.getTestType());
     if (testCaseMessage.getTestType().equals("VXU")) {
       evaluateVXU(connector, testCaseMessage, assertResult, errorIndicatedReader);
     } else if (testCaseMessage.getTestType().equals("QBP")) {
@@ -286,7 +286,7 @@ public class TestRunner {
           + "' not recognized, unable to evaluate");
       passedTest = false;
     }
-    testCaseMessage.setActualResponseMessage(ackMessageText);
+    testCaseMessage.setActualResponseMessage(actualResponseMessage);
     testCaseMessage.setPassedTest(passedTest);
     testCaseMessage.setHasRun(true);
     wasRun = true;
@@ -316,7 +316,7 @@ public class TestRunner {
       }
     }
     if (!assertResult.equalsIgnoreCase("")) {
-      if (ackMessageText == null || ackMessageText.equals("")) {
+      if (actualResponseMessage == null || actualResponseMessage.equals("")) {
         testCaseMessage.log("No acknowledgment was returned");
         if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ACCEPT)) {
           passedTest = false;
@@ -336,7 +336,7 @@ public class TestRunner {
         }
         testCaseMessage.log("  + Passed Test = " + passedTest);
       } else {
-        ackMessageReader = AckAnalyzer.getMessageReader(ackMessageText, connector.getAckType());
+        ackMessageReader = AckAnalyzer.getMessageReader(actualResponseMessage, connector.getAckType());
         if (ackMessageReader != null) {
           testCaseMessage.setActualMessageResponseType(ackMessageReader.getValue(9));
         }
@@ -344,7 +344,7 @@ public class TestRunner {
           if (ackMessageReader != null || !connector.getAckType().isInHL7Format()) {
             testCaseMessage.log("Analyzing acknowledgement");
             AckAnalyzer ackAnalyzer =
-                new AckAnalyzer(ackMessageText, connector.getAckType(), null, testCaseMessage);
+                new AckAnalyzer(actualResponseMessage, connector.getAckType(), null, testCaseMessage);
             if (ackAnalyzer.isPositive()) {
               testCaseMessage.log("Positive acknowledgement detected");
             } else {
@@ -515,10 +515,10 @@ public class TestRunner {
   private void doRunTest(Connector connector, TestCaseMessage testCaseMessage, String message)
       throws Exception {
     startTime = System.currentTimeMillis();
-    ackMessageText = connector.submitMessage(message, false);
-    ackMessageText = cleanMessage(ackMessageText);
+    actualResponseMessage = connector.submitMessage(message, false);
+    actualResponseMessage = cleanMessage(actualResponseMessage);
     endTime = System.currentTimeMillis();
-    testCaseMessage.setActualResponseMessage(ackMessageText);
+    testCaseMessage.setActualResponseMessage(actualResponseMessage);
   }
 
   private String cleanMessage(String message) {
@@ -534,7 +534,7 @@ public class TestRunner {
   private void setupForRunTest(TestCaseMessage testCaseMessage, String message) {
     wasRun = false;
     passedTest = false;
-    ackMessageText = null;
+    actualResponseMessage = null;
     testCaseMessage.setMessageTextSent(message);
   }
 

@@ -141,6 +141,13 @@ public class ILSoapConnector extends Connector {
 
 
   @Override
+  public boolean connectivityTestSupported() {
+    return true;
+  }
+
+
+
+  @Override
   protected void makeScriptAdditions(StringBuilder sb) {
     // do nothing
   }

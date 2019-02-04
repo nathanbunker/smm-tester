@@ -101,7 +101,11 @@ public class SimpleSoapConnector extends Connector {
   public String connectivityTest(String message) throws Exception {
     return "Connectivity test not supported for HTTPS POST connections";
   }
-
+  
+  @Override
+  public boolean connectivityTestSupported() {
+    return false;
+  }
 
   @Override
   protected void makeScriptAdditions(StringBuilder sb) {
