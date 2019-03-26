@@ -9,7 +9,7 @@
     <servlet-class>org.immregistries.smm.mover.ManagerServlet</servlet-class>
     <init-param>
       <param-name>scan.start.folders</param-name>
-      <param-value>/home/oisptorg/ois-pt.org/data/tester;C:/test/smm;/Tools/dqa-tester/</param-value>
+      <param-value>C:/Users/FlorenceAdmin/Google Drive/smm</param-value>
       <!--  
       <param-value>/home/oisptorg/ois-pt.org/data/tester;C:/test/smm;</param-value>
       <param-value>C:/test/smm/UT USIIS/dev</param-value>
