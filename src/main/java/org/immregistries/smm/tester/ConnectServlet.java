@@ -324,7 +324,7 @@ public class ConnectServlet extends ClientServlet {
     }
   }
 
-  protected static void setupKeystore(SendData sendData) throws IOException {
+  public static void setupKeystore(SendData sendData) throws IOException {
     if (sendData.getConnector().getKeyStorePassword() != null
         && !sendData.getConnector().getKeyStorePassword().equals("")) {
       File keyStoreFile = new File(sendData.getRootDir(), SendData.KEYSTORE_FILE_NAME);

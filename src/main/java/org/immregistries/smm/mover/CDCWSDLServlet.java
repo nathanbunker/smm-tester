@@ -20,6 +20,7 @@ import org.immregistries.smm.cdc.SecurityFault;
 import org.immregistries.smm.cdc.SubmitSingleMessage;
 import org.immregistries.smm.cdc.UnknownFault;
 import org.immregistries.smm.tester.ClientServlet;
+import org.immregistries.smm.tester.ConnectServlet;
 import org.immregistries.smm.tester.connectors.Connector;
 
 @SuppressWarnings("serial")
@@ -71,6 +72,15 @@ public class CDCWSDLServlet extends ClientServlet {
         @Override
         public void process(SubmitSingleMessage ssm, PrintWriter out) throws Fault {
           SendData sendData = (SendData) ssm.getAttribute(SEND_DATA);
+          if (sendData.getConnector().isSetupGlobalKeyStore()) {
+            try {
+              ConnectServlet.setupKeystore(sendData);
+            } catch (IOException ioe) {
+              ioe.printStackTrace();
+            }
+          } else {
+            sendData.readKeyStore();
+          }
           Connector connector;
           try {
             connector = sendData.createTempConnector();
