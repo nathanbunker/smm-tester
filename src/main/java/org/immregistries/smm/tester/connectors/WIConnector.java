@@ -6,6 +6,7 @@ package org.immregistries.smm.tester.connectors;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -13,7 +14,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
-
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -140,17 +140,19 @@ public class WIConnector extends HttpConnector {
     } catch (IOException e) {
       e.printStackTrace(System.out);
       if (urlConn != null) {
-        try {
-          InputStreamReader input =
-              new InputStreamReader(((HttpURLConnection) urlConn).getErrorStream());
-          BufferedReader in = new BufferedReader(input);
-          String line;
-          while ((line = in.readLine()) != null) {
-            System.out.println(line);
+        InputStream errorStream = ((HttpURLConnection) urlConn).getErrorStream();
+        if (errorStream != null) {
+          try {
+            InputStreamReader input = new InputStreamReader(errorStream);
+            BufferedReader in = new BufferedReader(input);
+            String line;
+            while ((line = in.readLine()) != null) {
+              System.out.println(line);
+            }
+            input.close();
+          } catch (Exception ei) {
+            ei.printStackTrace(System.err);
           }
-          input.close();
-        } catch (Exception ei) {
-          ei.printStackTrace(System.err);
         }
       }
       if (debug) {
@@ -255,7 +257,7 @@ public class WIConnector extends HttpConnector {
 
   @Override
   protected void setupFields(List<String> fields) {
-      // nothing to do
+    // nothing to do
   }
 
   @Override
