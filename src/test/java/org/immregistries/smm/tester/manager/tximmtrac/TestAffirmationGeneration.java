@@ -24,7 +24,7 @@ public class TestAffirmationGeneration {
           + "RXR|IM^Intramuscular^HL70162|\r";
 
   private static String EXAMPLE_RESPONSE =
-      "C           Dundy               Bennett             A                            M           20110614Aldora                                  Comanche                                                                        Y177 Schoolcraft Ave                                 Flint               MI48556       US810509-954MCIR3943959000  A OIS-TEST                 20180612TR";
+      "C           Dundy               Bennett             A                            M           20110614Aldora                                  Comanche                                                                        Y177 Schoolcraft Ave                                 Flint               MI48556       US810509-954MCIR3943959000  A OIS-TEST                 20190627TR";
 
   @Test
   public void test() {
@@ -33,8 +33,7 @@ public class TestAffirmationGeneration {
     ImmunizationUpdate immunizationUpdate = (ImmunizationUpdate) immunizationMessage;
     assertEquals(immunizationUpdate.getPatient().getNameFirst(), "Bennett");
     assertEquals(immunizationUpdate.getPatient().getMotherNameFirst(), "Aldora");
-    AffirmationMessage affirmationMessage = new AffirmationMessage(immunizationUpdate.getPatient());
-    assertEquals(EXAMPLE_RESPONSE, affirmationMessage.serialize());
+    AffirmationMessage affirmationMessage = new AffirmationMessage(immunizationUpdate.getPatient(), "OIS-TEST"); assertEquals(EXAMPLE_RESPONSE, affirmationMessage.serialize());
   }
 
 }
