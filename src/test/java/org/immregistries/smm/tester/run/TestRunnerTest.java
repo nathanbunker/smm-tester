@@ -56,6 +56,7 @@ public class TestRunnerTest extends TestCase {
     testRunner.actualResponseMessage = message;
     Connector connector = new SoapConnector("Test", "http://localhost");
     TestCaseMessage testCaseMessage = new TestCaseMessage();
+    testCaseMessage.setTestType("VXU");
     testCaseMessage.setAssertResult(TestRunner.ASSERT_RESULT_ERROR_LOCATION_IS_ + field);
     testRunner.evaluateRunTest(connector, testCaseMessage);
     if (pass) {

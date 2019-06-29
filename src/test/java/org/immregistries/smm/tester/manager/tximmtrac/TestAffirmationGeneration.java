@@ -5,6 +5,8 @@ import org.immregistries.smm.tester.manager.response.ImmunizationMessage;
 import org.immregistries.smm.tester.manager.response.ResponseReader;
 import org.junit.Test;
 import static org.junit.Assert.assertTrue;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import static org.junit.Assert.assertEquals;
 
 
@@ -28,12 +30,15 @@ public class TestAffirmationGeneration {
 
   @Test
   public void test() {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyMMdd");
+    String today=sdf.format(new Date());
+    EXAMPLE_RESPONSE=EXAMPLE_RESPONSE.replaceAll("20180612", today);
     ImmunizationMessage immunizationMessage = ResponseReader.readMessage(EXAMPLE);
     assertTrue(immunizationMessage instanceof ImmunizationUpdate);
     ImmunizationUpdate immunizationUpdate = (ImmunizationUpdate) immunizationMessage;
     assertEquals(immunizationUpdate.getPatient().getNameFirst(), "Bennett");
     assertEquals(immunizationUpdate.getPatient().getMotherNameFirst(), "Aldora");
-    AffirmationMessage affirmationMessage = new AffirmationMessage(immunizationUpdate.getPatient());
+    AffirmationMessage affirmationMessage = new AffirmationMessage(immunizationUpdate.getPatient(),"OIS-TEST");
     assertEquals(EXAMPLE_RESPONSE, affirmationMessage.serialize());
   }
 
