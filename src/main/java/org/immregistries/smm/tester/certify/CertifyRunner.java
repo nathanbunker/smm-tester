@@ -267,8 +267,8 @@ public class CertifyRunner implements RecordServletInterface {
       } else {
         // last minute replace for weird characters
         {
-          String r1 = "“";
-          String r2 = "”";
+          String r1 = "ï¿½";
+          String r2 = "ï¿½";
           actualResponseMessage = actualResponseMessage.replaceAll("\\Q" + r1 + "\\E", "\"");
           actualResponseMessage = actualResponseMessage.replaceAll("\\Q" + r2 + "\\E", "\"");
           for (byte b : actualResponseMessage.getBytes()) {
