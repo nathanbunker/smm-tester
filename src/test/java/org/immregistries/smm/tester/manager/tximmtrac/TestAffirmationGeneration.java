@@ -26,20 +26,18 @@ public class TestAffirmationGeneration {
           + "RXR|IM^Intramuscular^HL70162|\r";
 
   private static String EXAMPLE_RESPONSE =
-      "C           Dundy               Bennett             A                            M           20110614Aldora                                  Comanche                                                                        Y177 Schoolcraft Ave                                 Flint               MI48556       US810509-954MCIR3943959000  A OIS-TEST                 20180612TR";
+      "C           Dundy               Bennett             A                            M           20110614Aldora                                  Comanche                                                                        Y177 Schoolcraft Ave                                 Flint               MI48556       US810509-954MCIR3943959000  A OIS-TEST                 20190627TR";
 
   @Test
   public void test() {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyMMdd");
     String today=sdf.format(new Date());
-    EXAMPLE_RESPONSE=EXAMPLE_RESPONSE.replaceAll("20180612", today);
+    EXAMPLE_RESPONSE=EXAMPLE_RESPONSE.replaceAll("20190627", today);
     ImmunizationMessage immunizationMessage = ResponseReader.readMessage(EXAMPLE);
     assertTrue(immunizationMessage instanceof ImmunizationUpdate);
     ImmunizationUpdate immunizationUpdate = (ImmunizationUpdate) immunizationMessage;
     assertEquals(immunizationUpdate.getPatient().getNameFirst(), "Bennett");
     assertEquals(immunizationUpdate.getPatient().getMotherNameFirst(), "Aldora");
-    AffirmationMessage affirmationMessage = new AffirmationMessage(immunizationUpdate.getPatient(),"OIS-TEST");
     assertEquals(EXAMPLE_RESPONSE, affirmationMessage.serialize());
-  }
 
 }
