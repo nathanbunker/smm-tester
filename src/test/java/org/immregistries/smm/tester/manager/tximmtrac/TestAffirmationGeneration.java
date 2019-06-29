@@ -38,6 +38,8 @@ public class TestAffirmationGeneration {
     ImmunizationUpdate immunizationUpdate = (ImmunizationUpdate) immunizationMessage;
     assertEquals(immunizationUpdate.getPatient().getNameFirst(), "Bennett");
     assertEquals(immunizationUpdate.getPatient().getMotherNameFirst(), "Aldora");
+    AffirmationMessage affirmationMessage = new AffirmationMessage(immunizationUpdate.getPatient(), "OIS-TEST"); 
     assertEquals(EXAMPLE_RESPONSE, affirmationMessage.serialize());
+  }
 
 }
