@@ -1,4 +1,4 @@
-// Copyright © 2007 Texas Children's Hospital. All rights reserved.
+// Copyright ï¿½ 2007 Texas Children's Hospital. All rights reserved.
 
 package org.immregistries.smm.tester.manager.tximmtrac;
 
