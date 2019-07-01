@@ -275,6 +275,11 @@ public class TestRunner {
     errorList = new ArrayList<TestError>();
     String assertResult = testCaseMessage.getAssertResult();
     HL7Reader errorIndicatedReader = null;
+    if (assertResult == null || assertResult.equals(""))
+    {
+      assertResult = ASSERT_RESULT_ACCEPT;
+      testCaseMessage.log("  + Assert Result was empty !!!!! assuming message should have been accepted");
+    }
     testCaseMessage.log("  + Assert Result = " + assertResult);
     testCaseMessage.log("  + Test Type     = " + testCaseMessage.getTestType());
     if (testCaseMessage.getTestType().equals("VXU")) {

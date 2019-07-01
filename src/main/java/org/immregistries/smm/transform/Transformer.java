@@ -735,6 +735,7 @@ public class Transformer {
           quickTransforms += "RXA-9.1=01\n";
           quickTransforms += "RXA-9.2=Historical\n";
           quickTransforms += "RXA-9.3=NIP001\n";
+          quickTransforms += "RXA-20=CP\n";
           quickTransforms += "RXA-21=A\n";
         } else if (extra.equals("VAC2_HIST")) {
           int count = 3;
@@ -749,6 +750,7 @@ public class Transformer {
           quickTransforms += "RXA#2-6=999\n";
           quickTransforms += "RXA#2-9.2=Historical\n";
           quickTransforms += "RXA#2-9.3=NIP001\n";
+          quickTransforms += "RXA#2-20=CP\n";
           quickTransforms += "RXA#2-21=A\n";
         } else if (extra.equals("VAC3_HIST")) {
           quickTransforms += "ORC#2-3=[VAC3_ID]\n";
@@ -760,6 +762,7 @@ public class Transformer {
           quickTransforms += "RXA#3-6=999\n";
           quickTransforms += "RXA#3-9.2=Historical\n";
           quickTransforms += "RXA#3-9.3=NIP001\n";
+          quickTransforms += "RXA#3-20=CP\n";
           quickTransforms += "RXA#3-21=A\n";
         } else if (extra.equals("VAC2_NA")) {
           int count = 3;
@@ -954,11 +957,13 @@ public class Transformer {
     quickTransforms += front + "-10.3=Donna\n";
     quickTransforms += front + "-10.4=A\n";
     quickTransforms += front + "-10.9=NIST-AA-1\n";
+    quickTransforms += front + "-10.13=PRN\n";
     quickTransforms += front + "-12.1=57422\n";
     quickTransforms += front + "-12.2=RADON\n";
     quickTransforms += front + "-12.3=NICHOLAS\n";
     quickTransforms += front + "-12.9=NIST-AA-1\n";
     quickTransforms += front + "-12.10=L\n";
+    quickTransforms += front + "-12.13=PRN\n";
     front = "RXA#" + vaccineNumber;
     quickTransforms += front + "-3=[VAC" + count + "_DATE]\n";
     quickTransforms += front + "-9.1=00\n";
@@ -975,10 +980,11 @@ public class Transformer {
     quickTransforms += front + "-17.1=[VAC" + count + "_MVX]\n";
     quickTransforms += front + "-17.2=[VAC" + count + "_MVX_LABEL]\n";
     quickTransforms += front + "-17.3=MVX\n";
+    quickTransforms += front + "-20=CP\n";
     quickTransforms += front + "-21=A\n";
     quickTransforms += front + ":RXR-1.1=[VAC" + count + "_ROUTE]\n";
     quickTransforms += front + ":RXR-1.2=\n";
-    quickTransforms += front + ":RXR-1.3=HL70162\n";
+    quickTransforms += front + ":RXR-1.3=NCIT\n";
     quickTransforms += front + ":RXR-2.1=[VAC" + count + "_SITE]\n";
     quickTransforms += front + ":RXR-2.2=\n";
     quickTransforms += front + ":RXR-2.3=HL70163\n";
