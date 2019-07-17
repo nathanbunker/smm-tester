@@ -75,7 +75,7 @@ public class BulkQueryServlet extends ClientServlet {
 
     PrintWriter out = response.getWriter();
     try {
-      printHtmlHead(out, MENU_HEADER_TEST, request);
+      printHtmlHead(out, MENU_HEADER_HOME, request);
       out.println("<h2>Query IIS</h2>");
       out.println("<form id=\"queryForm\" action=\"BulkQueryServlet\" method=\"POST\">");
       out.println("  <table border=\"0\">");

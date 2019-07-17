@@ -97,20 +97,10 @@ public class HomeServlet extends ClientServlet {
             "    <td>This is a deprecated function that is now covered by the Test IIS. </td>");
         out.println("  </tr>");
         out.println("  <tr>");
-        out.println("    <td><a href=\"ProfileServlet\">View Profile</a></td>");
-        out.println("    <td>View test settings for a particular connection. </td>");
-        out.println("  </tr>");
-        out.println("  <tr>");
         out.println("    <td><a href=\"interfaceProfile\">Profile Interface</a></td>");
         out.println(
             "    <td>This is a deprecated function that is now covered by the Test IIS. </td>");
-        out.println("  </tr>");
-        if (user.isAdmin()) {
-          out.println("  <tr>");
-          out.println("    <td><a href=\"CertifyHistoryServlet\">Test IIS Results</a></td>");
-          out.println("    <td>Review previously run Test IIS reports.</td>");
-          out.println("  </tr>");
-        }
+        out.println("  </tr>");        
         out.println("</table>");
       }
       printHtmlFoot(out);

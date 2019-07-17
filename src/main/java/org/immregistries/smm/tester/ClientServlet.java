@@ -25,8 +25,7 @@ public class ClientServlet extends HttpServlet {
   protected static final String MENU_HEADER_SETUP = "Manage Test Cases";
   protected static final String MENU_HEADER_EDIT = "Edit Test Case";
   protected static final String MENU_HEADER_SEND = "Send Message";
-  protected static final String MENU_HEADER_TEST = "Test";
-
+  
   protected static void printHtmlHead(PrintWriter out, String title, HttpServletRequest request) {
     out.println("<html>");
     out.println("  <head>");
@@ -70,7 +69,7 @@ public class ClientServlet extends HttpServlet {
   private static final String[][] MENU_LOGGED_IN =
       {{Authenticate.APP_DEFAULT_HOME, MENU_HEADER_HOME}, {"ConnectServlet", MENU_HEADER_CONNECT},
           {"SetupServlet", MENU_HEADER_SETUP}, {"CreateTestCaseServlet", MENU_HEADER_EDIT},
-          {"SubmitServlet", MENU_HEADER_SEND}, {"CertifyServlet", MENU_HEADER_TEST},
+          {"SubmitServlet", MENU_HEADER_SEND},
           {"LoginServlet?action=Logout", "Logout"}};
 
   public static String makeMenu(HttpServletRequest request, String title) {
