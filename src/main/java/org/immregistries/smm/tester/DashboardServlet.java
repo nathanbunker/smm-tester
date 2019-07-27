@@ -39,7 +39,7 @@ public class DashboardServlet extends ClientServlet {
     PrintWriter out = response.getWriter();
 
     try {
-      printHtmlHead(out, MENU_HEADER_TEST, request);
+      printHtmlHead(out, MENU_HEADER_HOME, request);
 
       printHtmlFoot(out);
     } finally {
