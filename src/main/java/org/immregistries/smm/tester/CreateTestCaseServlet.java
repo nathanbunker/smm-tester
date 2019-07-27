@@ -321,7 +321,9 @@ public class CreateTestCaseServlet extends ClientServlet {
         printQueryOption(out, testCaseMessage,
             RecordServletInterface.VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33);
         printQueryOption(out, testCaseMessage,
-            RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR_Z33);
+                RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR_Z33);
+        printQueryOption(out, testCaseMessage,
+            RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR_Z33_QUERY_REJECTED);
         printQueryOption(out, testCaseMessage,
             RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY);
         printQueryOption(out, testCaseMessage,

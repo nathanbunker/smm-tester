@@ -19,7 +19,7 @@ import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TY
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_PROFILE_ID_UNEXPECTED;
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_TOO_MANY;
 import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
-
+import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TYPE_ERROR_Z33_QUERY_REJECTED;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -209,6 +209,8 @@ public class TestRunner {
                 queryType = VALUE_RESULT_QUERY_TYPE_TOO_MANY;
               } else if (responseStatus.equals("AE")) {
                 queryType = VALUE_RESULT_QUERY_TYPE_ERROR_Z33;
+              } else if (responseStatus.equals("AR")) {
+                queryType = VALUE_RESULT_QUERY_TYPE_ERROR_Z33_QUERY_REJECTED;
               } else {
                 queryType = VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
               }
