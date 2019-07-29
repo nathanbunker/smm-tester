@@ -23,7 +23,6 @@ import static org.immregistries.smm.RecordServletInterface.VALUE_RESULT_QUERY_TY
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.manager.HL7Reader;
@@ -252,7 +251,8 @@ public class TestRunner {
       passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_ERROR);
     } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_MULTIPLE_Z31_Z33)) {
       passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_LIST)
-          || queryType.equals(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33);
+          || queryType.equals(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33)
+          || queryType.equals(VALUE_RESULT_QUERY_TYPE_TOO_MANY);
     } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_OR_TOO_MANY)) {
       passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_TOO_MANY)
           || queryType.equals(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33);
@@ -277,10 +277,10 @@ public class TestRunner {
     errorList = new ArrayList<TestError>();
     String assertResult = testCaseMessage.getAssertResult();
     HL7Reader errorIndicatedReader = null;
-    if (assertResult == null || assertResult.equals(""))
-    {
+    if (assertResult == null || assertResult.equals("")) {
       assertResult = ASSERT_RESULT_ACCEPT;
-      testCaseMessage.log("  + Assert Result was empty !!!!! assuming message should have been accepted");
+      testCaseMessage
+          .log("  + Assert Result was empty !!!!! assuming message should have been accepted");
     }
     testCaseMessage.log("  + Assert Result = " + assertResult);
     testCaseMessage.log("  + Test Type     = " + testCaseMessage.getTestType());
@@ -343,15 +343,16 @@ public class TestRunner {
         }
         testCaseMessage.log("  + Passed Test = " + passedTest);
       } else {
-        ackMessageReader = AckAnalyzer.getMessageReader(actualResponseMessage, connector.getAckType());
+        ackMessageReader =
+            AckAnalyzer.getMessageReader(actualResponseMessage, connector.getAckType());
         if (ackMessageReader != null) {
           testCaseMessage.setActualMessageResponseType(ackMessageReader.getValue(9));
         }
         {
           if (ackMessageReader != null || !connector.getAckType().isInHL7Format()) {
             testCaseMessage.log("Analyzing acknowledgement");
-            AckAnalyzer ackAnalyzer =
-                new AckAnalyzer(actualResponseMessage, connector.getAckType(), null, testCaseMessage);
+            AckAnalyzer ackAnalyzer = new AckAnalyzer(actualResponseMessage, connector.getAckType(),
+                null, testCaseMessage);
             if (ackAnalyzer.isPositive()) {
               testCaseMessage.log("Positive acknowledgement detected");
             } else {
