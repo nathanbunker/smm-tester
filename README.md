@@ -2,9 +2,10 @@
 *The American Immunization Registry Association (AIRA) supports the Simple Message Mover / Tester (SMM/Tester) to support connections and testing with Immunization Information Systems (IIS).* 
 
 ## Installation Instructions for Windows Environments:
-- Create the following folder:
+- Create the following folders:
   + `C:\smm`
-- Inside the `smm` folder we will place the `smm.config.txt` file that will be configured later
+  + `C:\smm\[YOUR IIS NAME]`
+- Inside the `[YOUR ISS NAME]` folder we will place the `smm.config.txt` file that will be configured later
 
 ### Software Needed:
 
@@ -44,6 +45,8 @@ Ensure that you have Java SE version 6.0 (also displayed as 1.6) or later instal
 The configuration of an SMM connection to an IIS is defined by a configuration file named `smm.config.txt` located in the IIS Transfer Folder. This file is key to SMM operation as the SMM will not send data unless this file is present.
 
 The format of this file is both human and SMM readable. Changes can be made by the SMM user, but normally this file is created in the installation process and is not changed during operation. Here is a a quick explanation of some of the common configuration items:
+
+Link to `smm.config.txt` configuration tool: [https://app.immregistries.org/tester/install/PrepareServlet](https://app.immregistries.org/tester/install/PrepareServlet)
 
 - **Label:** This is a short label or description for this interface that makes sense to the SMM user.
 - **Type:** Indicates what basic type of transport is to be used.
