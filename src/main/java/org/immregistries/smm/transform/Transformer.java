@@ -2919,15 +2919,15 @@ public class Transformer {
     patient.setWic("" + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
         + random.nextInt(10) + random.nextInt(10) + random.nextInt(10) + random.nextInt(10)
         + random.nextInt(10) + random.nextInt(10));
-    patient.setBoyName(getRandomValue("BOY"));
-    patient.setGirlName(getRandomValue("GIRL"));
-    patient.setAliasBoy(getRandomValue("BOY"));
-    patient.setAliasGirl(getRandomValue("GIRL"));
-    patient.setMotherName(getRandomValue("GIRL"));
-    patient.setMotherMaidenName(getRandomValue("LAST_NAME"));
-    patient.setFatherName(getRandomValue("BOY"));
-    patient.setLastName(getRandomValue("LAST_NAME"));
-    patient.setDifferentLastName(getRandomValue("LAST_NAME"));
+    patient.setBoyName(getRandomValue("BOY") + "AIRA");
+    patient.setGirlName(getRandomValue("GIRL") + "AIRA");
+    patient.setAliasBoy(getRandomValue("BOY")+ "AIRA");
+    patient.setAliasGirl(getRandomValue("GIRL") + "AIRA");
+    patient.setMotherName(getRandomValue("GIRL") + "AIRA");
+    patient.setMotherMaidenName(getRandomValue("LAST_NAME") + "AIRA");
+    patient.setFatherName(getRandomValue("BOY") + "AIRA");
+    patient.setLastName(getRandomValue("LAST_NAME") + "AIRA");
+    patient.setDifferentLastName(getRandomValue("LAST_NAME") + "AIRA");
     patient.setMiddleNameBoy(getRandomValue("BOY"));
     patient.setMiddleNameGirl(getRandomValue("GIRL"));
     patient.setRace(getValueArray("RACE", 2));
@@ -2935,7 +2935,7 @@ public class Transformer {
     patient.setLanguage(getValueArray("LANGUAGE", 2));
     patient.setAddress(getValueArray("ADDRESS", 4));
     patient.setSuffix(getRandomValue("SUFFIX"));
-    patient.setStreet((random.nextInt(400) + 1) + " " + getRandomValue("LAST_NAME") + " "
+    patient.setStreet((random.nextInt(1000) + 1000) + " " + getRandomValue("STREET_NAME") + " "
         + getRandomValue("STREET_ABBREVIATION"));
     patient.setStreet2("APT #" + (random.nextInt(400) + 1));
     patient.setCity(patient.getAddress()[0]);
