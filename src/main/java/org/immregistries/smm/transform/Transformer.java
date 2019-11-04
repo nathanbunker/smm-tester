@@ -18,7 +18,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.transform.IssueCreator;
 import org.immregistries.smm.tester.transform.Patient;
@@ -702,17 +701,20 @@ public class Transformer {
           quickTransforms = addDelete(quickTransforms, "2", count);
         } else if (extra.equals("VAC2_ADMIN")) {
           int count = 3;
-          count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST")
-              ? 1 : 0;
+          count -=
+              alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1
+                  : 0;
           quickTransforms = addAdmin(quickTransforms, "2", count);
         } else if (extra.equals("VAC3_ADMIN")) {
           quickTransforms = addAdmin(quickTransforms, "3", 3);
         } else if (extra.equals("VAC1_NA")) {
           int count = 3;
-          count -= alsoHas(testCaseMessage, "VAC2_ADMIN") || alsoHas(testCaseMessage, "VAC2_HIST")
-              ? 1 : 0;
-          count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST")
-              ? 1 : 0;
+          count -=
+              alsoHas(testCaseMessage, "VAC2_ADMIN") || alsoHas(testCaseMessage, "VAC2_HIST") ? 1
+                  : 0;
+          count -=
+              alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1
+                  : 0;
           quickTransforms += "ORC-3=[VAC" + count + "_ID]\n";
           quickTransforms += "RXA-3=[VAC" + count + "_DATE]\n";
           quickTransforms += "RXA-5.1=[VAC" + count + "_CVX]\n";
@@ -722,10 +724,12 @@ public class Transformer {
           quickTransforms += "RXA-21=A\n";
         } else if (extra.equals("VAC1_HIST")) {
           int count = 3;
-          count -= alsoHas(testCaseMessage, "VAC2_ADMIN") || alsoHas(testCaseMessage, "VAC2_HIST")
-              ? 1 : 0;
-          count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST")
-              ? 1 : 0;
+          count -=
+              alsoHas(testCaseMessage, "VAC2_ADMIN") || alsoHas(testCaseMessage, "VAC2_HIST") ? 1
+                  : 0;
+          count -=
+              alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1
+                  : 0;
           quickTransforms += "ORC-3=[VAC" + count + "_ID]\n";
           quickTransforms += "RXA-3=[VAC2_DATE]\n";
           quickTransforms += "RXA-5.1=[VAC" + count + "_CVX]\n";
@@ -739,8 +743,9 @@ public class Transformer {
           quickTransforms += "RXA-21=A\n";
         } else if (extra.equals("VAC2_HIST")) {
           int count = 3;
-          count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST")
-              ? 1 : 0;
+          count -=
+              alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1
+                  : 0;
           quickTransforms += "ORC#2-3=[VAC" + count + "_ID]\n";
           quickTransforms += "RXA#2-3=[VAC" + count + "_DATE]\n";
           quickTransforms += "RXA#2-5.1=[VAC" + count + "_CVX]\n";
@@ -766,8 +771,9 @@ public class Transformer {
           quickTransforms += "RXA#3-21=A\n";
         } else if (extra.equals("VAC2_NA")) {
           int count = 3;
-          count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST")
-              ? 1 : 0;
+          count -=
+              alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1
+                  : 0;
           quickTransforms += "ORC#2-3=[VAC" + count + "_ID]\n";
           quickTransforms += "RXA#2-3=[VAC" + count + "_DATE]\n";
           quickTransforms += "RXA#2-5.1=[VAC" + count + "_CVX]\n";
@@ -1040,10 +1046,8 @@ public class Transformer {
   public void transform(TransformRequest transformRequest) {
     try {
 
-      if (transformRequest.getPatientType() != PatientType.NONE) {
-        Patient patient = setupPatient(transformRequest.getPatientType());
-        transformRequest.setPatient(patient);
-      }
+      Patient patient = setupPatient(transformRequest.getPatientType());
+      transformRequest.setPatient(patient);
 
       BufferedReader inTransform =
           new BufferedReader(new StringReader(transformRequest.getTransformText()));
@@ -2548,12 +2552,9 @@ public class Transformer {
   }
 
   private void doReplacements(Transform t, TransformRequest transformRequest) throws IOException {
-    PatientType patientType = transformRequest.getPatientType();
     Connector connector = transformRequest.getConnector();
     String resultText = transformRequest.getResultText();
-    if (patientType != PatientType.NONE) {
-      doPatientReplacements(transformRequest.getPatient(), t);
-    }
+    doPatientReplacements(transformRequest.getPatient(), t);
     if (connector != null) {
       doConnectionReplacements(connector, t);
     }
@@ -2902,9 +2903,7 @@ public class Transformer {
 
   public Patient setupPatient(PatientType patientType) {
     Patient patient = new Patient();
-    if (patientType == PatientType.NONE) {
-      return patient;
-    }
+
     medicalRecordNumberInc++;
     patient.setMedicalRecordNumber("" + (char) (random.nextInt(26) + 'A') + random.nextInt(10)
         + random.nextInt(10) + (char) (random.nextInt(26) + 'A') + medicalRecordNumberInc);
@@ -2931,27 +2930,10 @@ public class Transformer {
     patient.setDifferentLastName(getRandomValue("LAST_NAME"));
     patient.setMiddleNameBoy(getRandomValue("BOY"));
     patient.setMiddleNameGirl(getRandomValue("GIRL"));
-    String[] dates = new String[4];
-    patient.setDates(dates);
-    patient.setVaccineType(createDates(dates, patientType));
-    patient.setMotherDob(makeMotherDob(dates[0]));
-    patient.setGender(random.nextBoolean() ? "F" : "M");
-    patient.setVaccine1(
-        getValueArray("VACCINE_" + patient.getVaccineType(), VACCINE_VIS_PUB_DATE + 1));
-    patient.setVaccine2(
-        getValueArray("VACCINE_" + patient.getVaccineType(), VACCINE_VIS_PUB_DATE + 1));
-    patient.setVaccine3(
-        getValueArray("VACCINE_" + patient.getVaccineType(), VACCINE_VIS_PUB_DATE + 1));
-    patient.setCombo(getValueArray("VACCINE_COMBO", VACCINE_VIS3_PUB_DATE + 1));
     patient.setRace(getValueArray("RACE", 2));
     patient.setEthnicity(getValueArray("ETHNICITY", 2));
     patient.setLanguage(getValueArray("LANGUAGE", 2));
     patient.setAddress(getValueArray("ADDRESS", 4));
-    if (PatientType.ADULT == patientType) {
-      patient.setVfc(new String[] {"V01", "Not VFC eligible"});
-    } else {
-      patient.setVfc(getValueArray("VFC", 2));
-    }
     patient.setSuffix(getRandomValue("SUFFIX"));
     patient.setStreet((random.nextInt(400) + 1) + " " + getRandomValue("LAST_NAME") + " "
         + getRandomValue("STREET_ABBREVIATION"));
@@ -2980,6 +2962,28 @@ public class Transformer {
           + patient.getLastName().toLowerCase() + "@madeupemailaddress.com");
     }
     patient.setBirthCount(makeBirthCount());
+
+    if (patientType == PatientType.NONE) {
+      return patient;
+    }
+    
+    String[] dates = new String[4];
+    patient.setDates(dates);
+    patient.setVaccineType(createDates(dates, patientType));
+    patient.setMotherDob(makeMotherDob(dates[0]));
+    patient.setGender(random.nextBoolean() ? "F" : "M");
+    patient.setVaccine1(
+        getValueArray("VACCINE_" + patient.getVaccineType(), VACCINE_VIS_PUB_DATE + 1));
+    patient.setVaccine2(
+        getValueArray("VACCINE_" + patient.getVaccineType(), VACCINE_VIS_PUB_DATE + 1));
+    patient.setVaccine3(
+        getValueArray("VACCINE_" + patient.getVaccineType(), VACCINE_VIS_PUB_DATE + 1));
+    patient.setCombo(getValueArray("VACCINE_COMBO", VACCINE_VIS3_PUB_DATE + 1));
+    if (PatientType.ADULT == patientType) {
+      patient.setVfc(new String[] {"V01", "Not VFC eligible"});
+    } else {
+      patient.setVfc(getValueArray("VFC", 2));
+    }
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
     Calendar calendar = Calendar.getInstance();
     calendar.add(Calendar.YEAR, 1);
