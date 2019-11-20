@@ -54,16 +54,16 @@ public class QueryConverterQBPZ44 extends QueryConverter {
         sb.append("Z44^Request Evaluated History and Forecast^CDCPHINVS|");
         sb.append(messageId + "|");
         sb.append(pidFields.get(3) + "|");
-        sb.append(pidFields.get(5) + "|");
-        sb.append(pidFields.get(6) + "|");
-        sb.append(pidFields.get(7) + "|");
-        sb.append(pidFields.get(8) + "|");
-        sb.append(pidFields.get(11) + "|");
-        sb.append(pidFields.get(13) + "|");
-        sb.append(pidFields.get(24) + "|");
-        sb.append(pidFields.get(25) + "|");
-        sb.append(pidFields.get(33) + "|");
-        sb.append(pidFields.get(34) + "|");
+        sb.append(stripRepeats(pidFields.get(5)) + "|");
+        sb.append(stripRepeats(pidFields.get(6)) + "|");
+        sb.append(stripRepeats(pidFields.get(7)) + "|");
+        sb.append(stripRepeats(pidFields.get(8)) + "|");
+        sb.append(stripRepeats(pidFields.get(11)) + "|");
+        sb.append(stripRepeats(pidFields.get(13)) + "|");
+        sb.append(stripRepeats(pidFields.get(24)) + "|");
+        sb.append(stripRepeats(pidFields.get(25)) + "|");
+        sb.append(stripRepeats(pidFields.get(33)) + "|");
+        sb.append(stripRepeats(pidFields.get(34)) + "|");
         sb.append('\r');
       }
       sb.append("RCP|I|1^RD&Records&HL70126");

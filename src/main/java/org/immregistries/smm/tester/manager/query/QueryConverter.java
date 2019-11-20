@@ -43,6 +43,16 @@ public abstract class QueryConverter {
   }
 
 
+  protected String stripRepeats(String s) {
+    if (s == null) {
+      return s;
+    }
+    int i = s.indexOf("~");
+    if (i >= 0) {
+      return s.substring(0, i);
+    }
+    return s;
+  }
 
   protected static void readFields(List<String> fields, String line) {
     int startPos = 0;
