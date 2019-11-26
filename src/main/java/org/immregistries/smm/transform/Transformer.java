@@ -461,6 +461,7 @@ public class Transformer {
       scenarioTransforms =
           connector.getScenarioTransformationsMap().get(testCaseMessage.getTestCaseNumber());
     }
+    testCaseMessage.setScenarioTransforms(scenarioTransforms);
     String additionalTransformations = testCaseMessage.getAdditionalTransformations();
     if (additionalTransformations.equals("")) {
       additionalTransformations = null;
@@ -588,7 +589,7 @@ public class Transformer {
     }
   }
 
-  public void transform(TestCaseMessage testCaseMessage) {
+  public String transform(TestCaseMessage testCaseMessage) {
     String actualTestCase = testCaseMessage.getTestCaseNumber();
     if (actualTestCase.equals("")) {
       actualTestCase = REP_PAT_MRN;
@@ -609,6 +610,7 @@ public class Transformer {
     String result = transformRequest.getResultText();
     testCaseMessage.setMessageText(result);
     testCaseMessage.setQuickTransformationsConverted(quickTransforms);
+    return transforms;
   }
 
   public String transformAddition(TestCaseMessage testCaseMessage, String additionTransformations) {

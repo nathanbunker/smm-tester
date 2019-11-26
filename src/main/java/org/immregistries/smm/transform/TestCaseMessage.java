@@ -139,6 +139,7 @@ public class TestCaseMessage {
   private PatientType patientType = PatientType.ANY_CHILD;
   private boolean hasIssue = false;
   private Throwable exception = null;
+  private String actualRequestMessage = "";
   private String actualResponseMessage = "";
   private List<TestError> errorList = null;
   private String derivedFromVXUMessage = "";
@@ -176,6 +177,7 @@ public class TestCaseMessage {
   private Map<String, TestCaseMessage> testCaseMessageMap = null;
   private long totalRunTime = 0;
   private StringBuilder log = new StringBuilder();
+  private String scenarioTransforms = null;
 
   public String getOriginalTestCaseNumber() {
     return originalTestCaseNumber;
@@ -1089,5 +1091,21 @@ public class TestCaseMessage {
         }
       }
     }
+  }
+
+  public String getScenarioTransforms() {
+    return scenarioTransforms;
+  }
+
+  public void setScenarioTransforms(String scenarioTransforms) {
+    this.scenarioTransforms = scenarioTransforms;
+  }
+
+  public String getActualRequestMessage() {
+    return actualRequestMessage;
+  }
+
+  public void setActualRequestMessage(String actualRequestMessage) {
+    this.actualRequestMessage = actualRequestMessage;
   }
 }

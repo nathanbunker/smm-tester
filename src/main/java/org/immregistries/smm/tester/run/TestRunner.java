@@ -523,6 +523,7 @@ public class TestRunner {
   private void doRunTest(Connector connector, TestCaseMessage testCaseMessage, String message)
       throws Exception {
     startTime = System.currentTimeMillis();
+    testCaseMessage.setActualRequestMessage(message);
     actualResponseMessage = connector.submitMessage(message, false);
     actualResponseMessage = cleanMessage(actualResponseMessage);
     endTime = System.currentTimeMillis();
