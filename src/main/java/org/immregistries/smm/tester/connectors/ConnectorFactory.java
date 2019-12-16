@@ -33,7 +33,7 @@ public class ConnectorFactory {
       {TYPE_ND_SOAP, "ND SOAP"}, {TYPE_NJ_SOAP, "NJ SOAP"}, {TYPE_NM_SOAP, "NM SOAP"},
       {TYPE_ENVISION_SOAP, "Envision SOAP"}, {TYPE_ENVISION_SOAP, "Envision SOAP 1.1"},
       {TYPE_HI_SOAP, "HI SOAP (same standard as SOAP)"}, {TYPE_IL_WS, "IL WS"},
-      {TYPE_WI_SOAP, "WS SOAP"}};
+      {TYPE_WI_SOAP, "WS SOAP"}, {TYPE_SC_SOAP, "SC SOAP"}};
 
   public static Connector getConnector(String type, String label, String url) throws Exception {
     Connector connector = null;
