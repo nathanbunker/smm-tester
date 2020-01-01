@@ -67,6 +67,24 @@ public class HL7Reader {
     return segmentList != null ? segmentList.size() : 0;
   }
 
+  public int getFieldCount() {
+    if (fieldList == null) {
+      return 0;
+    } else
+      return fieldList.size();
+  }
+
+  public int getComponentCount(int fieldNum) {
+    String value = getOriginalField(fieldNum);
+    int count = 1;
+    for (char c : value.toCharArray()) {
+      if (c == '^') {
+        count++;
+      }
+    }
+    return count;
+  }
+
   public String getSegmentName() {
     if (fieldList != null && fieldList.size() > 0) {
       return fieldList.get(0);

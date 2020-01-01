@@ -172,7 +172,7 @@ public class TestCaseMessageManager {
           }
         }
       }
-      // couldn't find it htere, now looking in PID-3
+      // couldn't find it there, now looking in PID-3
       if (testCaseMessage.getTestCaseNumber().equals("")) {
         // try to find in message
         int pos = messageText.indexOf("PID|");

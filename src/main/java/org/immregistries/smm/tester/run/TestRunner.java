@@ -49,6 +49,7 @@ public class TestRunner {
   public static final String ASSERT_RESULT_ACCEPT = "Accept";
   public static final String ASSERT_RESULT_ERROR_LOCATION_IS_ = "Error Location is ";
   public static final String ASSERT_RESULT_ERROR_INDICATED = "Error Indicated";
+  public static final String ASSERT_RESULT_SEGMENT_RETURNED = "Segment Returned";
 
   public static final String ACTUAL_RESULT_STATUS_FAIL = "FAIL";
   public static final String ACTUAL_RESULT_STATUS_PASS = "PASS";
@@ -223,6 +224,12 @@ public class TestRunner {
         }
       } else {
         q.log("  + No MSH segment found!");
+        if (actualResponseMessage.length() > 50) {
+          q.log("    Actual message: '" + q.getActualResponseMessage().substring(0, 50) + "...'");
+        } else {
+          q.log("    Actual message: '" + q.getActualResponseMessage() + "'");
+        }
+
         queryType = VALUE_RESULT_QUERY_TYPE_UNEXPECTED_IIS_RESPONSE;
       }
     }
@@ -256,6 +263,15 @@ public class TestRunner {
     } else if (ar.equalsIgnoreCase(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_OR_TOO_MANY)) {
       passed = queryType.equals(VALUE_RESULT_QUERY_TYPE_TOO_MANY)
           || queryType.equals(VALUE_RESULT_QUERY_TYPE_NOT_FOUND_Z33);
+    } else if (ar.equalsIgnoreCase(ASSERT_RESULT_SEGMENT_RETURNED)) {
+      HL7Reader segmentReturnedReader = null;
+      segmentReturnedReader = setupSegmentReturnedReader(q);
+      if (segmentReturnedReader != null) {
+        boolean foundMatch = checkForMatch(q, segmentReturnedReader);
+        if (foundMatch) {
+          passed = true;
+        }
+      }
     }
 
     if (passed) {
@@ -276,7 +292,7 @@ public class TestRunner {
     testCaseMessage.log("EVALUATING TEST RUN");
     errorList = new ArrayList<TestError>();
     String assertResult = testCaseMessage.getAssertResult();
-    HL7Reader errorIndicatedReader = null;
+
     if (assertResult == null || assertResult.equals("")) {
       assertResult = ASSERT_RESULT_ACCEPT;
       testCaseMessage
@@ -285,7 +301,7 @@ public class TestRunner {
     testCaseMessage.log("  + Assert Result = " + assertResult);
     testCaseMessage.log("  + Test Type     = " + testCaseMessage.getTestType());
     if (testCaseMessage.getTestType().equals("VXU")) {
-      evaluateVXU(connector, testCaseMessage, assertResult, errorIndicatedReader);
+      evaluateVXU(connector, testCaseMessage, assertResult);
     } else if (testCaseMessage.getTestType().equals("QBP")) {
       evaluateQBP(testCaseMessage);
     } else {
@@ -311,7 +327,8 @@ public class TestRunner {
   }
 
   private void evaluateVXU(Connector connector, TestCaseMessage testCaseMessage,
-      String assertResult, HL7Reader errorIndicatedReader) {
+      String assertResult) {
+    HL7Reader errorIndicatedReader = null;
     if (assertResult.equalsIgnoreCase(ASSERT_RESULT_ERROR_INDICATED)) {
       String assertResultParameter = testCaseMessage.getAssertResultParameter();
       errorIndicatedReader = new HL7Reader(assertResultParameter);
@@ -321,6 +338,10 @@ public class TestRunner {
         testCaseMessage
             .log("Will be looking for ERR segment that matches this one: " + assertResultParameter);
       }
+    }
+    HL7Reader segmentReturnedReader = null;
+    if (assertResult.equalsIgnoreCase(ASSERT_RESULT_SEGMENT_RETURNED)) {
+      segmentReturnedReader = setupSegmentReturnedReader(testCaseMessage);
     }
     if (!assertResult.equalsIgnoreCase("")) {
       if (actualResponseMessage == null || actualResponseMessage.equals("")) {
@@ -486,6 +507,12 @@ public class TestRunner {
             }
           }
         }
+        if (segmentReturnedReader != null) {
+          boolean foundMatch = checkForMatch(testCaseMessage, segmentReturnedReader);
+          if (foundMatch) {
+            passedTest = true;
+          }
+        }
 
         if (passedTest) {
           status = "A";
@@ -504,6 +531,55 @@ public class TestRunner {
         }
       }
     }
+  }
+
+  public boolean checkForMatch(TestCaseMessage testCaseMessage, HL7Reader segmentReturnedReader) {
+    boolean foundMatch = false;
+    HL7Reader hl7Reader = new HL7Reader(actualResponseMessage);
+    String segmentName = segmentReturnedReader.getSegmentName();
+    int fieldCount = segmentReturnedReader.getFieldCount();
+    testCaseMessage.log("Will search these segments to find a match: " + segmentName);
+    while (hl7Reader.advanceToSegment(segmentName)) {
+      boolean matches = true;
+      testCaseMessage.log("  + Found segment at position: " + hl7Reader.getSegmentPosition());
+      for (int fieldNum = 1; fieldNum <= fieldCount; fieldNum++) {
+        int componentCount = segmentReturnedReader.getComponentCount(fieldNum);
+        for (int componentNum = 1; componentNum <= componentCount; componentNum++) {
+          String valueCheck = segmentReturnedReader.getValue(fieldNum, componentNum);
+          if (!valueCheck.equals("")) {
+            String valueActual = hl7Reader.getValue(fieldNum, componentNum);
+            if (!valueActual.equalsIgnoreCase(valueCheck)) {
+              matches = false;
+              testCaseMessage.log("    Not a match, value in " + segmentName + "-" + fieldNum + "."
+                  + componentNum + " '" + valueActual + "' <> '" + valueCheck + "'");
+              break;
+            }
+          }
+        }
+        if (!matches) {
+          break;
+        }
+      }
+      if (matches) {
+        foundMatch = true;
+        testCaseMessage.log("    Match found");
+        break;
+      }
+    }
+    return foundMatch;
+  }
+
+  public HL7Reader setupSegmentReturnedReader(TestCaseMessage testCaseMessage) {
+    HL7Reader segmentReturnedReader;
+    String assertResultParameter = testCaseMessage.getAssertResultParameter();
+    segmentReturnedReader = new HL7Reader(assertResultParameter);
+    if (!segmentReturnedReader.advance()) {
+      segmentReturnedReader = null;
+    } else {
+      testCaseMessage
+          .log("Will be looking for a segment that matches this one: " + assertResultParameter);
+    }
+    return segmentReturnedReader;
   }
 
   private void readForecastActual(TestCaseMessage queryTestCaseMessage) {
