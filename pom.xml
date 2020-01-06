@@ -203,6 +203,7 @@
 					<target>1.7</target>
 					<optimize>true</optimize>
 					<debug>true</debug>
+                    <encoding>iso-8859-1</encoding>
 				</configuration>
 			</plugin>
 			<plugin>
