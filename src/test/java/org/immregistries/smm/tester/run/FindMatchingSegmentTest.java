@@ -23,7 +23,6 @@ public class FindMatchingSegmentTest extends TestCase {
 
   @Test
   public void test() throws Exception {
-    System.out.println(EXAMPLE_01);
     TestCaseMessage testCaseMessage = new TestCaseMessage();
     testCaseMessage.setActualResponseMessage(EXAMPLE_01);
     testCaseMessage.setAssertResult(TestRunner.ASSERT_RESULT_SEGMENT_RETURNED);
@@ -44,7 +43,7 @@ public class FindMatchingSegmentTest extends TestCase {
     assertMatch(testCaseMessage, "ERR||OBX^2^3^0| -or- ERR||PID|");
     assertNotMatch(testCaseMessage, "ERR||OBX^2^3^0| -and- ERR||PID|");
   }
-  
+
   @Test
   public void testNotReturned() throws Exception {
     TestCaseMessage testCaseMessage = new TestCaseMessage();
@@ -67,7 +66,7 @@ public class FindMatchingSegmentTest extends TestCase {
     assertNotMatch(testCaseMessage, "ERR||OBX^2^3^0| -or- ERR||PID|");
     assertMatch(testCaseMessage, "ERR||OBX^2^3^0| -and- ERR||PID|");
   }
-  
+
   @Test
   public void testEmpty() throws Exception {
     TestCaseMessage testCaseMessage = new TestCaseMessage();

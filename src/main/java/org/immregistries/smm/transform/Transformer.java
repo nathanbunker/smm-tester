@@ -2071,7 +2071,7 @@ public class Transformer {
 
               if (newValue.toUpperCase().startsWith("[MAP ")) {
                 String oldValue = lineResult.substring(pos, endPos);
-                newValue = mapValue(t, oldValue);
+                newValue = mapValue(t, oldValue, transformRequest);
               } else if (newValue.toUpperCase().startsWith("[TRUNC")) {
                 String oldValue = lineResult.substring(pos, endPos);
                 newValue = truncate(lineResult, newValue, oldValue);
@@ -2526,7 +2526,8 @@ public class Transformer {
     return t;
   }
 
-  private String mapValue(Transform t, String oldValue) {
+  private String mapValue(Transform t, String oldValue, TransformRequest transformRequest)
+      throws IOException {
     int mapPos = t.value.toUpperCase().indexOf("'" + oldValue.toUpperCase() + "'=>");
     if (mapPos == -1) {
       mapPos = t.value.toUpperCase().indexOf("DEFAULT=>");
@@ -2546,6 +2547,13 @@ public class Transformer {
       }
       if (newValue.endsWith("'")) {
         newValue = newValue.substring(0, newValue.length() - 1);
+      }
+
+      if (newValue.startsWith("[") && newValue.endsWith("]")) {
+        Transform tNew = new Transform();
+        tNew.value = newValue;
+        doReplacements(tNew, transformRequest);
+        newValue = tNew.value;
       }
       return newValue;
     } else {
@@ -2923,7 +2931,7 @@ public class Transformer {
         + random.nextInt(10) + random.nextInt(10));
     patient.setBoyName(getRandomValue("BOY") + "AIRA");
     patient.setGirlName(getRandomValue("GIRL") + "AIRA");
-    patient.setAliasBoy(getRandomValue("BOY")+ "AIRA");
+    patient.setAliasBoy(getRandomValue("BOY") + "AIRA");
     patient.setAliasGirl(getRandomValue("GIRL") + "AIRA");
     patient.setMotherName(getRandomValue("GIRL") + "AIRA");
     patient.setMotherMaidenName(getRandomValue("LAST_NAME") + "AIRA");
@@ -2968,7 +2976,7 @@ public class Transformer {
     if (patientType == PatientType.NONE) {
       return patient;
     }
-    
+
     String[] dates = new String[4];
     patient.setDates(dates);
     patient.setVaccineType(createDates(dates, patientType));
