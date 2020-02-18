@@ -31,27 +31,32 @@ public class ProcessorFactory {
     return new Processor(server);
   }
 
+
   public static void printExplanations(PrintWriter out) {
-    Processor.printExplanation(out, PROCESSOR_DEFAULT);
-    addLink(out, PROCESSOR_DEFAULT);
-    ProcessorNoWhitespace.printExplanation(out, PROCESSOR_NO_WHITESPACE);
-    addLink(out, PROCESSOR_NO_WHITESPACE);
-    ProcessorMistakes.printExplanation(out, PROCESSOR_MISTAKES);
-    addLink(out, PROCESSOR_MISTAKES);
-    ProcessorBadXml.printExplanation(out, PROCESSOR_BAD_XML);
-    addLink(out, PROCESSOR_BAD_XML);
-    ProcessorIncorrectImplementation.printExplanation(out, PROCESSOR_INCORRECT_IMPLEMENTATION);
-    addLink(out, PROCESSOR_INCORRECT_IMPLEMENTATION);
-    ProcessorAdditionalTag.printExplanation(out, PROCESSOR_ADDITIONAL_TAG);
-    addLink(out, PROCESSOR_ADDITIONAL_TAG);
-    ProcessorBase64.printExplanation(out, PROCESSOR_BASE_64);
-    addLink(out, PROCESSOR_BASE_64);
-    ProcessorUrlEncoded.printExplanation(out, PROCESSOR_URL_ENCODED);
-    addLink(out, PROCESSOR_URL_ENCODED);
+    printExplanations(out, "wsdl-demo");
   }
 
-  public static void addLink(PrintWriter out, String processorName) {
-    String link = "wsdl-demo/" + processorName + "?wsdl=true";
+  public static void printExplanations(PrintWriter out, String baseUrl) {
+    Processor.printExplanation(out, PROCESSOR_DEFAULT);
+    addLink(out, PROCESSOR_DEFAULT, baseUrl);
+    ProcessorNoWhitespace.printExplanation(out, PROCESSOR_NO_WHITESPACE);
+    addLink(out, PROCESSOR_NO_WHITESPACE, baseUrl);
+    ProcessorMistakes.printExplanation(out, PROCESSOR_MISTAKES);
+    addLink(out, PROCESSOR_MISTAKES, baseUrl);
+    ProcessorBadXml.printExplanation(out, PROCESSOR_BAD_XML);
+    addLink(out, PROCESSOR_BAD_XML, baseUrl);
+    ProcessorIncorrectImplementation.printExplanation(out, PROCESSOR_INCORRECT_IMPLEMENTATION);
+    addLink(out, PROCESSOR_INCORRECT_IMPLEMENTATION, baseUrl);
+    ProcessorAdditionalTag.printExplanation(out, PROCESSOR_ADDITIONAL_TAG);
+    addLink(out, PROCESSOR_ADDITIONAL_TAG, baseUrl);
+    ProcessorBase64.printExplanation(out, PROCESSOR_BASE_64);
+    addLink(out, PROCESSOR_BASE_64, baseUrl);
+    ProcessorUrlEncoded.printExplanation(out, PROCESSOR_URL_ENCODED);
+    addLink(out, PROCESSOR_URL_ENCODED, baseUrl);
+  }
+
+  public static void addLink(PrintWriter out, String processorName, String baseUrl) {
+    String link = baseUrl + "/" + processorName + "?wsdl=true";
     out.println("<p><a href=\"" + link + "\">wsdl-demo/" + processorName + "</a></p>");
   }
 

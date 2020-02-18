@@ -1,11 +1,9 @@
 package org.immregistries.smm.tester.run;
 
-import org.immregistries.smm.RecordServletInterface;
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.connectors.SoapConnector;
 import org.immregistries.smm.transform.TestCaseMessage;
 import org.junit.Test;
-
 import junit.framework.TestCase;
 
 public class TestRunnerTest extends TestCase {
