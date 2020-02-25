@@ -15,10 +15,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-
 import org.immregistries.smm.mover.AckAnalyzer;
 import org.immregistries.smm.tester.PasswordEncryptUtil;
 
@@ -51,8 +49,8 @@ public abstract class Connector {
       String assesmentTransformations, List<Connector> connectors, String purpose,
       int tchForecastTesterSoftwareId, int tchForecastTesterTaskGroupId, String rxaFilterFacilityId,
       Set<String> queryResponseFieldsNotReturnedSet, Map<String, String> scenarioTransformationsMap,
-      boolean disableServerCertificateCheck, String aartPublicIdCode, String aartAccessPasscode)
-      throws Exception {
+      boolean disableServerCertificateCheck, String aartPublicIdCode, String aartAccessPasscode,
+      String badUserid, String badPassword, String badFacilityid) throws Exception {
     if (!label.equals("") && !type.equals("")) {
       Connector connector = null;
       if (type.equals(ConnectorFactory.TYPE_SOAP)) {
@@ -60,7 +58,7 @@ public abstract class Connector {
       } else if (type.equals(ConnectorFactory.TYPE_POST)) {
         connector = new HttpConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_MLLP)) {
-            connector = new MLLPConnector(label, url);
+        connector = new MLLPConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_RAW)) {
         connector = new HttpRawConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_HI_SOAP)) {
@@ -107,6 +105,9 @@ public abstract class Connector {
       connector.setOtherid(otherid);
       connector.setFacilityid(facilityid);
       connector.setPassword(password);
+      connector.setBadUserid(badUserid);
+      connector.setBadFacilityid(badFacilityid);
+      connector.setBadPassword(badPassword);
       connector.setupFields(fields);
       connector.setCustomTransformations(customTransformations);
       connector.setAssessmentTransformations(assesmentTransformations);
@@ -131,7 +132,9 @@ public abstract class Connector {
   }
 
   public static enum TransferType {
-    NEAR_REAL_TIME_LINK, RECIPROCAL_BATCH_UPDATE, MANUAL
+                                   NEAR_REAL_TIME_LINK,
+                                   RECIPROCAL_BATCH_UPDATE,
+                                   MANUAL
   };
 
   protected String label = "";
@@ -139,6 +142,9 @@ public abstract class Connector {
   protected String userid = "";
   protected String otherid = "";
   protected String password = "";
+  protected String badUserid = "";
+  protected String badFacilityid = "";
+  protected String badPassword = "";
   protected String facilityid = "";
   protected String url = "";
   protected String currentFilename = "";
@@ -161,6 +167,30 @@ public abstract class Connector {
   private String rxaFilterFacilityId = "";
   private String aartPublicIdCode = "";
   private String aartAccessPasscode = "";
+
+  public String getBadUserid() {
+    return badUserid;
+  }
+
+  public void setBadUserid(String badUserid) {
+    this.badUserid = badUserid;
+  }
+
+  public String getBadFacilityid() {
+    return badFacilityid;
+  }
+
+  public void setBadFacilityid(String badFacilityid) {
+    this.badFacilityid = badFacilityid;
+  }
+
+  public String getBadPassword() {
+    return badPassword;
+  }
+
+  public void setBadPassword(String badPassword) {
+    this.badPassword = badPassword;
+  }
 
   public String getAssessmentTransformations() {
     return assessmentTransformations;
@@ -197,9 +227,9 @@ public abstract class Connector {
   public boolean isRxaFilter() {
     return rxaFilterFacilityId != null && !rxaFilterFacilityId.equals("");
   }
-  
+
   public void shutdown() {
-	  System.out.println("Shutting down " + label);
+    System.out.println("Shutting down " + label);
   }
 
   public Connector(Connector copy) {
@@ -209,6 +239,9 @@ public abstract class Connector {
     this.otherid = copy.otherid;
     this.password = copy.password;
     this.facilityid = copy.facilityid;
+    this.badUserid = copy.badUserid;
+    this.badPassword = copy.badPassword;
+    this.badFacilityid = copy.badFacilityid;
     this.url = copy.url;
     this.currentFilename = copy.currentFilename;
     this.currentControlId = copy.currentControlId;
@@ -473,7 +506,7 @@ public abstract class Connector {
   public abstract String submitMessage(String message, boolean debug) throws Exception;
 
   public abstract String connectivityTest(String message) throws Exception;
-  
+
   public abstract boolean connectivityTestSupported();
 
   public String getScript() {
@@ -497,6 +530,15 @@ public abstract class Connector {
       e.printStackTrace();
     }
     sb.append("Facility Id: " + facilityid + "\n");
+    if (badUserid != null && !badUserid.equals("")) {
+      sb.append("Bad User Id: " + badUserid + "\n");
+    }
+    if (badPassword != null && !badPassword.equals("")) {
+      sb.append("Bad Password: " + badUserid + "\n");
+    }
+    if (badFacilityid != null && !badFacilityid.equals("")) {
+      sb.append("Bad Facility Id: " + badFacilityid + "\n");
+    }
     if (keyStorePassword != null && keyStorePassword.length() > 0) {
       try {
         sb.append("Key Store Password: " + PasswordEncryptUtil.encrypt(keyStorePassword) + "\n");
@@ -569,6 +611,9 @@ public abstract class Connector {
     String otherid = "";
     String password = "";
     String facilityid = "";
+    String badUserid = "";
+    String badPassword = "";
+    String badFacilityid = "";
     String url = "";
     String customTransformations = "";
     String assesmentTransformations = "";
@@ -597,7 +642,7 @@ public abstract class Connector {
             assesmentTransformations, connectors, purpose, tchForecastTesterSoftwareId,
             tchForecastTesterTaskGroupId, rxaFilterFacilityId, queryResponseFieldsNotReturnedSet,
             scenarioTransformationsMap, disableServerCertificateCheck, aartPublicIdCode,
-            aartAccessPasscode);
+            aartAccessPasscode, badUserid, badPassword, badFacilityid);
         label = "";
         purpose = "";
         type = "";
@@ -605,7 +650,9 @@ public abstract class Connector {
         userid = "";
         otherid = "";
         facilityid = "";
-        password = "";
+        badUserid = "";
+        badFacilityid = "";
+        badPassword = "";
         enableTimeStart = "";
         enableTimeEnd = "";
         ackType = AckAnalyzer.AckType.DEFAULT;
@@ -627,6 +674,8 @@ public abstract class Connector {
         purpose = readValue(line);
       } else if (line.startsWith("User Id:")) {
         userid = readValue(line);
+      } else if (line.startsWith("Bad User Id:")) {
+        badUserid = readValue(line);
       } else if (line.startsWith("Other Id:")) {
         otherid = readValue(line);
       } else if (line.startsWith("Ack Type:")) {
@@ -639,12 +688,16 @@ public abstract class Connector {
         transferType = TransferType.valueOf(readValue(line));
       } else if (line.startsWith("Password:")) {
         password = PasswordEncryptUtil.decrypt(readValue(line));
+      } else if (line.startsWith("Bad Password:")) {
+        badPassword = PasswordEncryptUtil.decrypt(readValue(line));
       } else if (line.startsWith("AART Public Id Code:")) {
         aartPublicIdCode = readValue(line);
       } else if (line.startsWith("AART Access Passcode:")) {
         aartAccessPasscode = readValue(line);
       } else if (line.startsWith("Facility Id:")) {
         facilityid = readValue(line);
+      } else if (line.startsWith("Bad Facility Id:")) {
+        badFacilityid = readValue(line);
       } else if (line.startsWith("Disable Certificate Check:")) {
         String s = readValue(line);
         disableServerCertificateCheck =
@@ -719,7 +772,7 @@ public abstract class Connector {
         assesmentTransformations, connectors, purpose, tchForecastTesterSoftwareId,
         tchForecastTesterTaskGroupId, rxaFilterFacilityId, queryResponseFieldsNotReturnedSet,
         scenarioTransformationsMap, disableServerCertificateCheck, aartPublicIdCode,
-        aartAccessPasscode);
+        aartAccessPasscode, badUserid, badPassword, badFacilityid);
     return connectors;
   }
 
@@ -769,18 +822,17 @@ public abstract class Connector {
     s2 = s2 + s;
     return s2;
   }
-  
+
   public StringBuilder extractResponse(StringBuilder response, String startTag, String stopTag) {
 
     String responseString = response.toString();
     int startPos = responseString.indexOf(startTag);
     int endPos = responseString.indexOf(stopTag);
     if (startPos > 0 && endPos > startPos) {
-      responseString =
-          responseString.substring(startPos + startTag.length(), endPos);
+      responseString = responseString.substring(startPos + startTag.length(), endPos);
       responseString = responseString.replaceAll("\\Q&amp;\\E", "&");
       response = new StringBuilder(responseString);
-      
+
     }
     return response;
   }
