@@ -536,7 +536,7 @@ public abstract class Connector {
       sb.append("Bad User Id: " + badUserid + "\n");
     }
     if (badPassword != null && !badPassword.equals("")) {
-      sb.append("Bad Password: " + badUserid + "\n");
+      sb.append("Bad Password: " + badPassword + "\n");
     }
     if (badFacilityid != null && !badFacilityid.equals("")) {
       sb.append("Bad Facility Id: " + badFacilityid + "\n");
