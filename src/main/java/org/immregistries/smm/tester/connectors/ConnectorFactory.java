@@ -11,6 +11,7 @@ public class ConnectorFactory {
   public static final String TYPE_FL_SOAP = "FL SOAP";
   public static final String TYPE_CO_SOAP = "CO SOAP";
   public static final String TYPE_KS_SOAP = "KS SOAP";
+  public static final String TYPE_KY_KHIE = "KY KHIE";
   public static final String TYPE_IL_WS = "IL WS";
   public static final String TYPE_IL_SOAP = "IL SOAP";
   public static final String TYPE_MA_SOAP = "MA SOAP";
@@ -29,11 +30,11 @@ public class ConnectorFactory {
   public static final String[][] TYPES = {{TYPE_SOAP, "SOAP"}, {TYPE_POST, "POST"},
       {TYPE_MLLP, "MLLP"}, {TYPE_AL_SOAP, "AL SOAP"}, {TYPE_AZ_SOAP, "AZ SOAP"},
       {TYPE_CA_SOAP, "CA SOAP"}, {TYPE_CO_SOAP, "CO SOAP"}, {TYPE_KS_SOAP, "KS SOAP"},
-      {TYPE_FL_SOAP, "FL SOAP"}, {TYPE_MA_SOAP, "MA SOAP"}, {TYPE_MO_SOAP, "MO SOAP"},
-      {TYPE_ND_SOAP, "ND SOAP"}, {TYPE_NJ_SOAP, "NJ SOAP"}, {TYPE_NM_SOAP, "NM SOAP"},
-      {TYPE_ENVISION_SOAP, "Envision SOAP"}, {TYPE_ENVISION_SOAP, "Envision SOAP 1.1"},
-      {TYPE_HI_SOAP, "HI SOAP"}, {TYPE_IL_WS, "IL WS"},{TYPE_IL_SOAP, "IL SOAP"},
-      {TYPE_WI_SOAP, "WS SOAP"}, {TYPE_SC_SOAP, "SC SOAP"}};
+      {TYPE_KY_KHIE, "KY KHIE"}, {TYPE_FL_SOAP, "FL SOAP"}, {TYPE_MA_SOAP, "MA SOAP"},
+      {TYPE_MO_SOAP, "MO SOAP"}, {TYPE_ND_SOAP, "ND SOAP"}, {TYPE_NJ_SOAP, "NJ SOAP"},
+      {TYPE_NM_SOAP, "NM SOAP"}, {TYPE_ENVISION_SOAP, "Envision SOAP"},
+      {TYPE_ENVISION_SOAP, "Envision SOAP 1.1"}, {TYPE_HI_SOAP, "HI SOAP"}, {TYPE_IL_WS, "IL WS"},
+      {TYPE_IL_SOAP, "IL SOAP"}, {TYPE_WI_SOAP, "WS SOAP"}, {TYPE_SC_SOAP, "SC SOAP"}};
 
   public static Connector getConnector(String type, String label, String url) throws Exception {
     Connector connector = null;
@@ -79,6 +80,8 @@ public class ConnectorFactory {
       connector = new FLSoapConnector(label, url);
     } else if (type.equals(TYPE_KS_SOAP)) {
       connector = new KSSoapConnector(label, url);
+    } else if (type.equals(TYPE_KY_KHIE)) {
+      connector = new KYKHIEConnector(label, url);
     } else if (type.equals(TYPE_AZ_SOAP)) {
       connector = new AZSoapConnector(label, url);
     } else if (type.equals(TYPE_ND_SOAP)) {

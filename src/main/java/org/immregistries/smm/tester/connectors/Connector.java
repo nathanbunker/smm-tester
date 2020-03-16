@@ -93,6 +93,8 @@ public abstract class Connector {
         connector = new FLSoapConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_KS_SOAP)) {
         connector = new KSSoapConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_KY_KHIE)) {
+        connector = new KYKHIEConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_AZ_SOAP)) {
         connector = new AZSoapConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_ND_SOAP)) {
