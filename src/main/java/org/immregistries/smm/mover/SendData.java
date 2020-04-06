@@ -1215,7 +1215,7 @@ public class SendData extends Thread {
         }
       } else if (line.startsWith(HL7.MSH)) {
         statusLogger
-            .logDebug("File does not start with FHS segment as expected: " + inFile.getName());
+            .logDebug("File starts with first message (FHS check mode not enabled) and is ready to be processed: " + inFile.getName());
         okay = true;
       } else {
         okay = false;

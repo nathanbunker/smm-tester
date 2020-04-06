@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+	xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+	xmlns:tns="http://ACS.HIE.ServiceContracts/2009/10"
+	xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing"
+	xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex"
+	xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy"
+	xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
+	xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract"
+	xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+	xmlns:wsa10="http://www.w3.org/2005/08/addressing"
+	xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
+	name="PartnerHIEService"
+	targetNamespace="http://ACS.HIE.ServiceContracts/2009/10">
+	<wsp:Policy wsu:Id="WSHttpBinding_IPartnerHIEService_policy">
+		<wsp:ExactlyOne>
+			<wsp:All>
+				<sp:TransportBinding
+					xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+					<wsp:Policy>
+						<sp:TransportToken>
+							<wsp:Policy>
+								<sp:HttpsToken RequireClientCertificate="true" />
+							</wsp:Policy>
+						</sp:TransportToken>
+						<sp:AlgorithmSuite>
+							<wsp:Policy>
+								<sp:Basic256 />
+							</wsp:Policy>
+						</sp:AlgorithmSuite>
+						<sp:Layout>
+							<wsp:Policy>
+								<sp:Strict />
+							</wsp:Policy>
+						</sp:Layout>
+					</wsp:Policy>
+				</sp:TransportBinding>
+				<wsaw:UsingAddressing />
+			</wsp:All>
+		</wsp:ExactlyOne>
+	</wsp:Policy>
+	<wsdl:types>
+		<xsd:schema elementFormDefault="qualified"
+			targetNamespace="http://ACS.HIE.ServiceContracts/2009/10">
+			<xsd:element name="SendHIEMessage">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element minOccurs="0" name="EMRSystemOID"
+							nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0" name="PartnerLocationID"
+							nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0" name="LocationNPI"
+							nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0" name="UserNPI"
+							nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0"
+							name="RequestingSystemUserID" nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0" name="BusinessName"
+							nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0" name="MessageSystem"
+							nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0" name="MessageType"
+							nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0" name="Message"
+							nillable="true" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="SendHIEMessageResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element minOccurs="0" name="SendHIEMessageResult"
+							nillable="true" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="SendHIEMessageWithTimeInsensitivity">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element minOccurs="0" name="EMRSystemOID"
+							nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0" name="PartnerLocationID"
+							nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0" name="LocationNPI"
+							nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0" name="UserNPI"
+							nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0"
+							name="RequestingSystemUserID" nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0" name="BusinessName"
+							nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0" name="MessageSystem"
+							nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0" name="MessageType"
+							nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0" name="Message"
+							nillable="true" type="xsd:string" />
+						<xsd:element minOccurs="0"
+							name="InsensitivityInSeconds" type="xsd:unsignedInt" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element
+				name="SendHIEMessageWithTimeInsensitivityResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element minOccurs="0"
+							name="SendHIEMessageWithTimeInsensitivityResult" nillable="true"
+							type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:schema>
+		<xsd:schema
+			xmlns:tns="http://ACS.CCD.Facade.FaultContracts/2008/02"
+			xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/"
+			elementFormDefault="qualified"
+			targetNamespace="http://ACS.CCD.Facade.FaultContracts/2008/02">
+			<xsd:complexType name="DefaultFaultContract">
+				<xsd:sequence>
+					<xsd:element name="ErrorId" type="xsd:int" />
+					<xsd:element name="ErrorMessage" nillable="true"
+						type="xsd:string" />
+					<xsd:element name="CorrelationId" type="ser:guid" />
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:element name="DefaultFaultContract" nillable="true"
+				type="tns:DefaultFaultContract" />
+		</xsd:schema>
+		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+			xmlns:tns="http://schemas.microsoft.com/2003/10/Serialization/"
+			attributeFormDefault="qualified" elementFormDefault="qualified"
+			targetNamespace="http://schemas.microsoft.com/2003/10/Serialization/">
+			<xs:element name="anyType" nillable="true"
+				type="xs:anyType" />
+			<xs:element name="anyURI" nillable="true" type="xs:anyURI" />
+			<xs:element name="base64Binary" nillable="true"
+				type="xs:base64Binary" />
+			<xs:element name="boolean" nillable="true"
+				type="xs:boolean" />
+			<xs:element name="byte" nillable="true" type="xs:byte" />
+			<xs:element name="dateTime" nillable="true"
+				type="xs:dateTime" />
+			<xs:element name="decimal" nillable="true"
+				type="xs:decimal" />
+			<xs:element name="double" nillable="true" type="xs:double" />
+			<xs:element name="float" nillable="true" type="xs:float" />
+			<xs:element name="int" nillable="true" type="xs:int" />
+			<xs:element name="long" nillable="true" type="xs:long" />
+			<xs:element name="QName" nillable="true" type="xs:QName" />
+			<xs:element name="short" nillable="true" type="xs:short" />
+			<xs:element name="string" nillable="true" type="xs:string" />
+			<xs:element name="unsignedByte" nillable="true"
+				type="xs:unsignedByte" />
+			<xs:element name="unsignedInt" nillable="true"
+				type="xs:unsignedInt" />
+			<xs:element name="unsignedLong" nillable="true"
+				type="xs:unsignedLong" />
+			<xs:element name="unsignedShort" nillable="true"
+				type="xs:unsignedShort" />
+			<xs:element name="char" nillable="true" type="tns:char" />
+			<xs:simpleType name="char">
+				<xs:restriction base="xs:int" />
+			</xs:simpleType>
+			<xs:element name="duration" nillable="true"
+				type="tns:duration" />
+			<xs:simpleType name="duration">
+				<xs:restriction base="xs:duration">
+					<xs:pattern
+						value="\-?P(\d*D)?(T(\d*H)?(\d*M)?(\d*(\.\d*)?S)?)?" />
+					<xs:minInclusive
+						value="-P10675199DT2H48M5.4775808S" />
+					<xs:maxInclusive value="P10675199DT2H48M5.4775807S" />
+				</xs:restriction>
+			</xs:simpleType>
+			<xs:element name="guid" nillable="true" type="tns:guid" />
+			<xs:simpleType name="guid">
+				<xs:restriction base="xs:string">
+					<xs:pattern
+						value="[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}" />
+				</xs:restriction>
+			</xs:simpleType>
+			<xs:attribute name="FactoryType" type="xs:QName" />
+			<xs:attribute name="Id" type="xs:ID" />
+			<xs:attribute name="Ref" type="xs:IDREF" />
+		</xs:schema>
+	</wsdl:types>
+	<wsdl:message
+		name="IPartnerHIEService_SendHIEMessage_InputMessage">
+		<wsdl:part name="parameters" element="tns:SendHIEMessage" />
+	</wsdl:message>
+	<wsdl:message
+		name="IPartnerHIEService_SendHIEMessage_OutputMessage">
+		<wsdl:part name="parameters"
+			element="tns:SendHIEMessageResponse" />
+	</wsdl:message>
+	<wsdl:message
+		name="IPartnerHIEService_SendHIEMessage_DefaultFaultContractFault_FaultMessage">
+		<wsdl:part
+			xmlns:q1="http://ACS.CCD.Facade.FaultContracts/2008/02" name="detail"
+			element="q1:DefaultFaultContract" />
+	</wsdl:message>
+	<wsdl:message
+		name="IPartnerHIEService_SendHIEMessageWithTimeInsensitivity_InputMessage">
+		<wsdl:part name="parameters"
+			element="tns:SendHIEMessageWithTimeInsensitivity" />
+	</wsdl:message>
+	<wsdl:message
+		name="IPartnerHIEService_SendHIEMessageWithTimeInsensitivity_OutputMessage">
+		<wsdl:part name="parameters"
+			element="tns:SendHIEMessageWithTimeInsensitivityResponse" />
+	</wsdl:message>
+	<wsdl:message
+		name="IPartnerHIEService_SendHIEMessageWithTimeInsensitivity_DefaultFaultContractFault_FaultMessage">
+		<wsdl:part
+			xmlns:q2="http://ACS.CCD.Facade.FaultContracts/2008/02" name="detail"
+			element="q2:DefaultFaultContract" />
+	</wsdl:message>
+	<wsdl:portType name="IPartnerHIEService">
+		<wsdl:operation name="SendHIEMessage">
+			<wsdl:input wsaw:Action="SendHIEMessage"
+				message="tns:IPartnerHIEService_SendHIEMessage_InputMessage" />
+			<wsdl:output
+				wsaw:Action="http://ACS.HIE.ServiceContracts/2009/10/IPartnerHIEService/SendHIEMessageResponse"
+				message="tns:IPartnerHIEService_SendHIEMessage_OutputMessage" />
+			<wsdl:fault
+				wsaw:Action="http://ACS.HIE.ServiceContracts/2009/10/IPartnerHIEService/SendHIEMessageDefaultFaultContractFault"
+				name="DefaultFaultContractFault"
+				message="tns:IPartnerHIEService_SendHIEMessage_DefaultFaultContractFault_FaultMessage" />
+		</wsdl:operation>
+		<wsdl:operation
+			name="SendHIEMessageWithTimeInsensitivity">
+			<wsdl:input
+				wsaw:Action="SendHIEMessageWithTimeInsensitivity"
+				message="tns:IPartnerHIEService_SendHIEMessageWithTimeInsensitivity_InputMessage" />
+			<wsdl:output
+				wsaw:Action="http://ACS.HIE.ServiceContracts/2009/10/IPartnerHIEService/SendHIEMessageWithTimeInsensitivityResponse"
+				message="tns:IPartnerHIEService_SendHIEMessageWithTimeInsensitivity_OutputMessage" />
+			<wsdl:fault
+				wsaw:Action="http://ACS.HIE.ServiceContracts/2009/10/IPartnerHIEService/SendHIEMessageWithTimeInsensitivityDefaultFaultContractFault"
+				name="DefaultFaultContractFault"
+				message="tns:IPartnerHIEService_SendHIEMessageWithTimeInsensitivity_DefaultFaultContractFault_FaultMessage" />
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="WSHttpBinding_IPartnerHIEService"
+		type="tns:IPartnerHIEService">
+		<wsp:PolicyReference
+			URI="#WSHttpBinding_IPartnerHIEService_policy" />
+		<soap12:binding
+			transport="http://schemas.xmlsoap.org/soap/http" />
+		<wsdl:operation name="SendHIEMessage">
+			<soap12:operation soapAction="SendHIEMessage"
+				style="document" />
+			<wsdl:input>
+				<soap12:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap12:body use="literal" />
+			</wsdl:output>
+			<wsdl:fault name="DefaultFaultContractFault">
+				<soap12:fault name="DefaultFaultContractFault"
+					use="literal" />
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation
+			name="SendHIEMessageWithTimeInsensitivity">
+			<soap12:operation
+				soapAction="SendHIEMessageWithTimeInsensitivity" style="document" />
+			<wsdl:input>
+				<soap12:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap12:body use="literal" />
+			</wsdl:output>
+			<wsdl:fault name="DefaultFaultContractFault">
+				<soap12:fault name="DefaultFaultContractFault"
+					use="literal" />
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="PartnerHIEService">
+		<wsdl:port name="WSHttpBinding_IPartnerHIEService"
+			binding="tns:WSHttpBinding_IPartnerHIEService">
+			<soap12:address
+				location="https://localhost:8443/PartnerHIEHTTPSService/HIEServicePort/PartnerHIEHTTPSService.wsdl" />
+			<wsa10:EndpointReference>
+				<wsa10:Address>
+					https://localhost:8443/PartnerHIEHTTPSService/HIEServicePort/PartnerHIEHTTPSService.wsdl
+				</wsa10:Address>
+			</wsa10:EndpointReference>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>
