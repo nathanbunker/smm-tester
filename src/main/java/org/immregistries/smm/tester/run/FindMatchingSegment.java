@@ -59,22 +59,35 @@ public class FindMatchingSegment {
       testCaseMessage.log("  + Found segment at position: " + hl7Reader.getSegmentPosition());
       for (int fieldNum = 1; fieldNum <= fieldCount; fieldNum++) {
         int componentCount = segmentReturnedReader.getComponentCount(fieldNum);
-        for (int componentNum = 1; componentNum <= componentCount; componentNum++) {
-          String valueCheck = segmentReturnedReader.getValue(fieldNum, componentNum);
-          if (!valueCheck.equals("")) {
-            if (valueCheck.equalsIgnoreCase("<EMPTY>")) {
-              valueCheck = "";
-            }
-            String valueActual = hl7Reader.getValue(fieldNum, componentNum);
-            if (!valueActual.equalsIgnoreCase(valueCheck)) {
-              matches = false;
-              testCaseMessage.log("    Not a match, value in " + segmentName + "-" + fieldNum + "."
-                  + componentNum + " '" + valueActual + "' <> '" + valueCheck + "'");
-              break;
+
+
+        boolean foundMatchingRepeat = false;
+        int repeatCount = hl7Reader.getRepeatCount(fieldNum);
+        for (int repeatNum = 1; repeatNum <= repeatCount; repeatNum++) {
+          boolean foundMatchInRepeatComponents = true;
+          for (int componentNum = 1; componentNum <= componentCount; componentNum++) {
+            String valueCheck = segmentReturnedReader.getValue(fieldNum, componentNum);
+            if (!valueCheck.equals("")) {
+              if (valueCheck.equalsIgnoreCase("<EMPTY>")) {
+                valueCheck = "";
+              }
+              String valueActual = hl7Reader.getValueRepeat(fieldNum, componentNum, repeatNum);
+              if (!valueActual.equalsIgnoreCase(valueCheck)) {
+                foundMatchInRepeatComponents = false;
+                testCaseMessage.log("    Not a match, value in " + segmentName + "-" + fieldNum
+                    + (repeatNum == 1 ? "" : ("[" + repeatNum + "]")) + "." + componentNum + " '"
+                    + valueActual + "' <> '" + valueCheck + "'");
+                break;
+              }
             }
           }
+          if (foundMatchInRepeatComponents) {
+            foundMatchingRepeat = true;
+            break;
+          }
         }
-        if (!matches) {
+        if (!foundMatchingRepeat) {
+          matches = false;
           break;
         }
       }
