@@ -827,7 +827,7 @@ public abstract class Connector {
     return s2;
   }
 
-  public StringBuilder extractResponse(StringBuilder response, String startTag, String stopTag) {
+  public static StringBuilder extractResponse(StringBuilder response, String startTag, String stopTag) {
 
     String responseString = response.toString();
     int startPos = responseString.indexOf(startTag);

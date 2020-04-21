@@ -28,14 +28,17 @@ public class KY_KHIE_Template extends ConnectionTemplate {
     // User Id
     cc.setUseridShow(true);
     cc.setUseridRequired(true);
+    cc.setUseridLabel("Location NPI");
     // Facility Id
     cc.setFacilityidShow(true);
     cc.setFacilityidRequired(true);
+    cc.setFacilityidLabel("Business Name");
     // Other Id
     cc.setOtheridLabel("HL7 Facility ID (MSH-4)");
     cc.setOtheridShow(true);
     cc.setOtheridRequired(true);
     // Password
+    cc.setPasswordLabel("Partner Location ID");
     cc.setPasswordShow(true);
     cc.setPasswordRequired(true);
     cc.setInstructions("");
