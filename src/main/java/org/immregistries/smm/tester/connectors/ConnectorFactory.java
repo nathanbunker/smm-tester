@@ -29,7 +29,7 @@ public class ConnectorFactory {
   public static final String TYPE_WI_SOAP = "WI SOAP";
 
   public static final String[][] TYPES = {{TYPE_SOAP, "SOAP"}, {TYPE_POST, "POST"},
-      {TYPE_MLLP, "MLLP"}, {TYPE_AL_SOAP, "AL SOAP"}, {TYPE_AZ_SOAP, "AZ SOAP"},
+      {TYPE_RAW, "Raw"}, {TYPE_MLLP, "MLLP"}, {TYPE_AL_SOAP, "AL SOAP"}, {TYPE_AZ_SOAP, "AZ SOAP"},
       {TYPE_CA_SOAP, "CA SOAP"}, {TYPE_CO_SOAP, "CO SOAP"}, {TYPE_KS_SOAP, "KS SOAP"},
       {TYPE_KY_KHIE, "KY KHIE"}, {TYPE_FL_SOAP, "FL SOAP"}, {TYPE_MA_SOAP, "MA SOAP"},
       {TYPE_MA_SOAP_2020, "MA SOAP 2020"}, {TYPE_MO_SOAP, "MO SOAP"}, {TYPE_ND_SOAP, "ND SOAP"},
