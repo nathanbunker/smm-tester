@@ -42,6 +42,7 @@ public class FindMatchingSegment {
     segmentReturnedReader = new HL7Reader(assertResultParameter);
     if (!segmentReturnedReader.advance()) {
       segmentReturnedReader = null;
+      testCaseMessage.log("Unable to find any segments in this: " + assertResultParameter);
     } else {
       testCaseMessage
           .log("Will be looking for a segment that matches this one: " + assertResultParameter);
@@ -51,6 +52,9 @@ public class FindMatchingSegment {
   public boolean checkForMatch() {
     boolean foundMatch = false;
     HL7Reader hl7Reader = new HL7Reader(testCaseMessage.getActualResponseMessage());
+    if (segmentReturnedReader == null) {
+      return false;
+    }
     String segmentName = segmentReturnedReader.getSegmentName();
     int fieldCount = segmentReturnedReader.getFieldCount();
     testCaseMessage.log("Will search these segments to find a match: " + segmentName);

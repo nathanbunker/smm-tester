@@ -18,7 +18,7 @@ public class HL7Reader {
   public String getFieldSeparator() {
     return fieldSeparator;
   }
-
+  
   public HL7Reader(String message) {
     if (message != null) {
       try {
@@ -235,7 +235,33 @@ public class HL7Reader {
     field = cutoff(field, "~");
     field = cutoff(field, "^");
     field = cutoff(field, "&");
-    return field;
+
+    return replaceEscapes(field);
+  }
+
+  protected static String replaceEscapes(String s) {
+    int posA = s.indexOf("\\");
+    if (posA > -1) {
+      int posB = s.indexOf("\\", posA + 1);
+      if (posB > posA) {
+        String escape = s.substring(posA + 1, posB);
+        if (escape.equals("E")) {
+          escape = "\\";
+        } else if (escape.equals("F")) {
+          escape = "|";
+        } else if (escape.equals("R")) {
+          escape = "~";
+        } else if (escape.equals("S")) {
+          escape = "^";
+        } else if (escape.equals("T")) {
+          escape = "&";
+        } else {
+          escape = "\\" + escape + "\\";
+        }
+        return s.substring(0, posA) + escape + replaceEscapes(s.substring(posB + 1));
+      }
+    }
+    return s;
   }
 
   public String getValue(int fieldNum, int componentNum) {
@@ -261,7 +287,7 @@ public class HL7Reader {
     field = cutoff(field, "~");
     field = cutoff(field, "^");
     field = cutoff(field, "&");
-    return field;
+    return replaceEscapes(field);
   }
 
   private String getValueInternal(int componentNum, String field, int subcomponentNum) {
@@ -286,7 +312,7 @@ public class HL7Reader {
       i++;
     }
     field = cutoff(field, "&");
-    return field;
+    return replaceEscapes(field);
   }
 
   public int getRepeatCount(int fieldNum) {
@@ -353,7 +379,7 @@ public class HL7Reader {
     }
     field = cutoff(field, "^");
     field = cutoff(field, "&");
-    return field;
+    return replaceEscapes(field);
 
   }
 
