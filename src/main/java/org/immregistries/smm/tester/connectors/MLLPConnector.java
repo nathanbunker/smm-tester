@@ -21,6 +21,54 @@ import org.immregistries.smm.mover.HL7;
  * @author Josh Hull
  */
 public class MLLPConnector extends Connector {
+
+
+  private static String EXAMPLE_MESSAGE =
+      "MSH|^~\\&|||||20200617073733.994-0500||VXU^V04^VXU_V04|MYy-GM-1.1|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS\r"
+          + "PID|1||B79Q4^^^NIST-MPI-1^MR||ComalAIRA^WoodrowAIRA^Kardos^^^^L|CarlisleAIRA^^^^^^M|20200408|M||1002-5^American Indian or Alaska Native^CDCREC|1877 Hook en Middelaar Ln^^Waterford^MI^48327^USA^P||^PRN^PH^^^248^5536331|||||||||2186-5^Not Hispanic or Latino^CDCREC||N|1|||||N\r"
+          + "PD1|||||||||||02^Reminder/recall - any method^HL70215|N|20200617|||A|20200408|20200617\r"
+          + "NK1|1|ComalAIRA^CarlisleAIRA^Elizabeth^^^^L|MTH^Mother^HL70063|1877 Hook en Middelaar Ln^^Waterford^MI^48327^USA^P|^PRN^PH^^^248^5536331\r"
+          + "NK1|2|ComalAIRA^LeonardAIRA^William^^^^L|FTH^Father^HL70063|1877 Hook en Middelaar Ln^^Waterford^MI^48327^USA^P|^PRN^CP^^^248^5536331\r"
+          + "ORC|RE|AB79Q4.1^NIST-AA-IZ-2|BB79Q4.1^NIST-AA-IZ-2|||||||7824^Jackson^Lily^Suzanne^^^^^NIST-PI-1^L^^^PRN||654^Thomas^Wilma^Elizabeth^^^^^NIST-PI-1^L^^^MD\r"
+          + "RXA|0|1|20200617||49281-0560-05^Pentacel^NDC|0.5|mL^mL^UCUM||00^New Record^NIP001|7824^Jackson^Lily^Suzanne^^^^^NIST-PI-1^L^^^PRN|^^^NIST-Clinic-1||||526434|20200715|PMC^Sanofi Pasteur^MVX|||CP|A\r"
+          + "RXR|C28161^Intramuscular^NCIT|RT^Right Thigh^HL70163\r"
+          + "OBX|1|CE|30963-3^Vaccine Funding Source^LN|1|VXC50^Public^CDCPHINVS||||||F|||20200617\r"
+          + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V04^VFC Eligible - American Indian/Alaska Native^HL70064||||||F|||20200617|||VXC40^per immunization^CDCPHINVS\r"
+          + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300017211160720^Polio VIS^cdcgs1vis||||||F|||20200617\r"
+          + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20200617||||||F|||20200617\r"
+          + "OBX|5|CE|69764-9^Document Type^LN|4|253088698300006611150402^Haemophilus Influenzae type b VIS^cdcgs1vis||||||F|||20200617\r"
+          + "OBX|6|DT|29769-7^Date Vis Presented^LN|4|20200617||||||F|||20200617\r"
+          + "OBX|7|CE|69764-9^Document Type^LN|5|253088698300003511070517^Diphtheria/Tetanus/Pertussis (DTaP) VIS^cdcgs1vis||||||F|||20200617\r"
+          + "OBX|8|DT|29769-7^Date Vis Presented^LN|5|20200617||||||F|||20200617\r"
+          + "ORC|RE|AB79Q4.2^NIST-AA-IZ-2|BB79Q4.2^NIST-AA-IZ-2|||||||7824^Jackson^Lily^Suzanne^^^^^NIST-PI-1^L^^^PRN||654^Thomas^Wilma^Elizabeth^^^^^NIST-PI-1^L^^^MD|||||NISTEHRFAC^NISTEHRFacility^HL70362\r"
+          + "RXA|0|1|20200617||00006-4047-20^RotaTeq^NDC|2.0|mL^mL^UCUM||00^New Record^NIP001|7824^Jackson^Lily^Suzanne^^^^^NIST-PI-1^L^^^PRN|^^^NIST-Clinic-1||||297961|20200909|MSD^Merck and Co., Inc.^MVX|||CP|A\r"
+          + "RXR|C38288^Oral^NCIT\r"
+          + "OBX|1|CE|30963-3^Vaccine Funding Source^LN|1|VXC50^Public^CDCPHINVS||||||F|||20200617\r"
+          + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V04^VFC Eligible - American Indian/Alaska Native^HL70064||||||F|||20200617|||VXC40^per immunization^CDCPHINVS\r"
+          + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300019611150415^Rotavirus VIS^cdcgs1vis||||||F|||20200617\r"
+          + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20200617||||||F|||20200617\r"
+          + "ORC|RE|AB79Q4.3^NIST-AA-IZ-2|BB79Q4.3^NIST-AA-IZ-2|||||||7824^Jackson^Lily^Suzanne^^^^^NIST-PI-1^L^^^PRN||654^Thomas^Wilma^Elizabeth^^^^^NIST-PI-1^L^^^MD\r"
+          + "RXA|0|1|20200617||00005-1971-01^Prevnar 13^NDC|0.5|mL^mL^UCUM||00^New Record^NIP001|7824^Jackson^Lily^Suzanne^^^^^NIST-PI-1^L^^^PRN|^^^NIST-Clinic-1||||353480|20200722|PFR^Pfizer, Inc^MVX|||CP|A\r"
+          + "RXR|C28161^Intramuscular^NCIT|LT^Left Thigh^HL70163\r"
+          + "OBX|1|CE|30963-3^Vaccine Funding Source^LN|1|VXC50^Public^CDCPHINVS||||||F|||20200617\r"
+          + "OBX|2|CE|64994-7^Vaccine Funding Program Eligibility^LN|2|V04^VFC Eligible - American Indian/Alaska Native^HL70064||||||F|||20200617|||VXC40^per immunization^CDCPHINVS\r"
+          + "OBX|3|CE|69764-9^Document Type^LN|3|253088698300015811151105^Pneumococcal Conjugate (PCV13) VIS^cdcgs1vis||||||F|||20200617\r"
+          + "OBX|4|DT|29769-7^Date Vis Presented^LN|3|20200617||||||F|||20200617\r"
+          + "ORC|RE||BB79Q4.4^NIST-AA-IZ-2|||||||7824^Jackson^Lily^Suzanne^^^^^NIST-PI-1^L^^^PRN\r"
+          + "RXA|0|1|20200409||45^Hep B, unspecified formulation^CVX|999|||01^Historical Administration^NIP001|||||||||||CP|A\r"
+          + "ORC|RE||BB79Q4.5^NIST-AA-IZ-2|||||||7824^Jackson^Lily^Suzanne^^^^^NIST-PI-1^L^^^PRN\r"
+          + "RXA|0|1|20200508||45^Hep B, unspecified formulation^CVX|999|||01^Historical Administration^NIP001|||||||||||CP|A";
+
+  public static void main(String[] args) throws Exception {
+    if (args.length == 0) {
+      System.err.println(
+          "Usage: java org.immregistries.smm.tester.connectors.MLLPConnector [http://URL:Port]");
+    }
+    MLLPConnector conn = new MLLPConnector("MLLP", args[0]);
+    String ack = conn.submitMessage(EXAMPLE_MESSAGE, false);
+    System.out.println(ack);
+  }
+
   /**
    * This socket is kept open for this instance, until the "shutdown" method
    * is called.
@@ -44,7 +92,6 @@ public class MLLPConnector extends Connector {
 
   public MLLPConnector(String label, String urlPlusPort) throws IOException {
     super(label, "MLLP");
-    System.out.println("Creating connector for MLLP for url: " + urlPlusPort + " Label: " + label);
     URL aURL = new URL(urlPlusPort);
     this.port = aURL.getPort();
     this.url = aURL.getHost();
@@ -73,7 +120,7 @@ public class MLLPConnector extends Connector {
     System.out.println("message in has control id: " + controlId);
     boolean sent = this.sendAnMLLPMessage(message, socketOutputStream);
 
-    // wait for a reponse.  
+    // wait for a response.  
     byte[] byteBuffer = new byte[5000];
     // if you wait too long, figure out how to handle that problem, and
     // recover.
@@ -90,8 +137,17 @@ public class MLLPConnector extends Connector {
 
       //This will block the thread until something is received back from the server. 
       socketInputStream.read(byteBuffer);
-      String responseString = new String(byteBuffer);
-      System.out.println("Received a response[" + responseString + "]");
+      String responseString = "";
+      for (byte b : byteBuffer) {
+        if (b == 13) {
+          responseString += "\n\r";
+        } else if (b >= 32) {
+          responseString += (char) b;
+        }
+      }
+
+      System.out.println("Received a response: ");
+      System.out.println(responseString);
       // Will it always be the whole message? Could it be partial??? Not
       // sure.  Could be sure by reading for the MLLP start/stop.  This doesn't appear to be necessary at the moment.
       // In the future, this could be added and tested
@@ -113,6 +169,11 @@ public class MLLPConnector extends Connector {
 
 
     String ack = this.ackMap.remove(controlId);
+    if (ack == null) {
+      System.out.println("No ACK returned");
+    } else {
+      System.out.println("ACK returned");
+    }
     System.out.println("MLLP Ack Map size - " + this.ackMap.size());
     // Get message-control-id from sent message, and pull it from the map.
     return ack;
