@@ -94,8 +94,7 @@ public class MLLPConnector extends Connector {
     super(label, "MLLP");
     URL aURL = new URL(urlPlusPort);
     this.port = aURL.getPort();
-    this.url = aURL.getHost();
-    this.host = InetAddress.getByName(this.url);
+    this.host = InetAddress.getByName(aURL.getHost());
   }
 
   @Override
