@@ -6,6 +6,15 @@ public class ClientConnection {
   private String password = "";
   private String facilityId = "";
   private String otherId = "";
+  private String destinationId = "";
+
+  public String getDestinationId() {
+    return destinationId;
+  }
+
+  public void setDestinationId(String destinationId) {
+    this.destinationId = destinationId;
+  }
 
   public String getOtherId() {
     return otherId;

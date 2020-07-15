@@ -43,14 +43,15 @@ public abstract class Connector {
   protected abstract void setupFields(List<String> fields);
 
   protected static Connector addConnector(String label, String type, String url, String userid,
-      String otherid, String facilityid, String password, String keyStorePassword,
-      String enableTimeStart, String enableTimeEnd, AckAnalyzer.AckType ackType,
-      TransferType transferType, List<String> fields, String customTransformations,
-      String assesmentTransformations, List<Connector> connectors, String purpose,
-      int tchForecastTesterSoftwareId, int tchForecastTesterTaskGroupId, String rxaFilterFacilityId,
-      Set<String> queryResponseFieldsNotReturnedSet, Map<String, String> scenarioTransformationsMap,
-      boolean disableServerCertificateCheck, String aartPublicIdCode, String aartAccessPasscode,
-      String badUserid, String badPassword, String badFacilityid) throws Exception {
+      String otherid, String facilityid, String destinationid, String password,
+      String keyStorePassword, String enableTimeStart, String enableTimeEnd,
+      AckAnalyzer.AckType ackType, TransferType transferType, List<String> fields,
+      String customTransformations, String assesmentTransformations, List<Connector> connectors,
+      String purpose, int tchForecastTesterSoftwareId, int tchForecastTesterTaskGroupId,
+      String rxaFilterFacilityId, Set<String> queryResponseFieldsNotReturnedSet,
+      Map<String, String> scenarioTransformationsMap, boolean disableServerCertificateCheck,
+      String aartPublicIdCode, String aartAccessPasscode, String badUserid, String badPassword,
+      String badFacilityid) throws Exception {
     if (!label.equals("") && !type.equals("")) {
       Connector connector = null;
       if (type.equals(ConnectorFactory.TYPE_SOAP)) {
@@ -101,6 +102,8 @@ public abstract class Connector {
         connector = new AZSoapConnector(label, url);
       } else if (type.equals(ConnectorFactory.TYPE_ND_SOAP)) {
         connector = new NDSoapConnector(label, url);
+      } else if (type.equals(ConnectorFactory.TYPE_IZ_GATEWAY)) {
+        connector = new IZGatewayConnector(label, url);
       } else {
         connector = new HttpConnector(label, url);
       }
@@ -108,6 +111,7 @@ public abstract class Connector {
       connector.setPurpose(purpose);
       connector.setOtherid(otherid);
       connector.setFacilityid(facilityid);
+      connector.setDestinationid(destinationid);
       connector.setPassword(password);
       connector.setBadUserid(badUserid);
       connector.setBadFacilityid(badFacilityid);
@@ -150,6 +154,7 @@ public abstract class Connector {
   protected String badFacilityid = "";
   protected String badPassword = "";
   protected String facilityid = "";
+  protected String destinationid = "";
   protected String url = "";
   protected String currentFilename = "";
   protected String currentControlId = "";
@@ -243,6 +248,7 @@ public abstract class Connector {
     this.otherid = copy.otherid;
     this.password = copy.password;
     this.facilityid = copy.facilityid;
+    this.destinationid = copy.destinationid;
     this.badUserid = copy.badUserid;
     this.badPassword = copy.badPassword;
     this.badFacilityid = copy.badFacilityid;
@@ -482,6 +488,14 @@ public abstract class Connector {
     this.facilityid = facilityid;
   }
 
+  public String getDestinationid() {
+    return destinationid;
+  }
+
+  public void setDestinationid(String destinationid) {
+    this.destinationid = destinationid;
+  }
+
   public String getPassword() {
     return password;
   }
@@ -534,6 +548,9 @@ public abstract class Connector {
       e.printStackTrace();
     }
     sb.append("Facility Id: " + facilityid + "\n");
+    if (!destinationid.equals("")) {
+      sb.append("Destination Id: " + destinationid + "\n");
+    }
     if (badUserid != null && !badUserid.equals("")) {
       sb.append("Bad User Id: " + badUserid + "\n");
     }
@@ -615,6 +632,7 @@ public abstract class Connector {
     String otherid = "";
     String password = "";
     String facilityid = "";
+    String destinationid = "";
     String badUserid = "";
     String badPassword = "";
     String badFacilityid = "";
@@ -641,12 +659,13 @@ public abstract class Connector {
     while ((line = in.readLine()) != null) {
       line = line.trim();
       if (line.startsWith("Connection")) {
-        addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword,
-            enableTimeStart, enableTimeEnd, ackType, transferType, fields, customTransformations,
-            assesmentTransformations, connectors, purpose, tchForecastTesterSoftwareId,
-            tchForecastTesterTaskGroupId, rxaFilterFacilityId, queryResponseFieldsNotReturnedSet,
-            scenarioTransformationsMap, disableServerCertificateCheck, aartPublicIdCode,
-            aartAccessPasscode, badUserid, badPassword, badFacilityid);
+        addConnector(label, type, url, userid, otherid, facilityid, destinationid, password,
+            keyStorePassword, enableTimeStart, enableTimeEnd, ackType, transferType, fields,
+            customTransformations, assesmentTransformations, connectors, purpose,
+            tchForecastTesterSoftwareId, tchForecastTesterTaskGroupId, rxaFilterFacilityId,
+            queryResponseFieldsNotReturnedSet, scenarioTransformationsMap,
+            disableServerCertificateCheck, aartPublicIdCode, aartAccessPasscode, badUserid,
+            badPassword, badFacilityid);
         label = "";
         purpose = "";
         type = "";
@@ -654,6 +673,7 @@ public abstract class Connector {
         userid = "";
         otherid = "";
         facilityid = "";
+        destinationid = "";
         badUserid = "";
         badFacilityid = "";
         badPassword = "";
@@ -700,6 +720,8 @@ public abstract class Connector {
         aartAccessPasscode = readValue(line);
       } else if (line.startsWith("Facility Id:")) {
         facilityid = readValue(line);
+      } else if (line.startsWith("Destination Id:")) {
+        destinationid = readValue(line);
       } else if (line.startsWith("Bad Facility Id:")) {
         badFacilityid = readValue(line);
       } else if (line.startsWith("Disable Certificate Check:")) {
@@ -771,12 +793,13 @@ public abstract class Connector {
       }
 
     }
-    addConnector(label, type, url, userid, otherid, facilityid, password, keyStorePassword,
-        enableTimeStart, enableTimeEnd, ackType, transferType, fields, customTransformations,
-        assesmentTransformations, connectors, purpose, tchForecastTesterSoftwareId,
-        tchForecastTesterTaskGroupId, rxaFilterFacilityId, queryResponseFieldsNotReturnedSet,
-        scenarioTransformationsMap, disableServerCertificateCheck, aartPublicIdCode,
-        aartAccessPasscode, badUserid, badPassword, badFacilityid);
+    addConnector(label, type, url, userid, otherid, facilityid, destinationid, password,
+        keyStorePassword, enableTimeStart, enableTimeEnd, ackType, transferType, fields,
+        customTransformations, assesmentTransformations, connectors, purpose,
+        tchForecastTesterSoftwareId, tchForecastTesterTaskGroupId, rxaFilterFacilityId,
+        queryResponseFieldsNotReturnedSet, scenarioTransformationsMap,
+        disableServerCertificateCheck, aartPublicIdCode, aartAccessPasscode, badUserid, badPassword,
+        badFacilityid);
     return connectors;
   }
 
@@ -827,11 +850,12 @@ public abstract class Connector {
     return s2;
   }
 
-  public static StringBuilder extractResponse(StringBuilder response, String startTag, String stopTag) {
+  public static StringBuilder extractResponse(StringBuilder response, String startTag,
+      String stopTag) {
 
     String responseString = response.toString();
     int startPos = responseString.indexOf(startTag);
-    int endPos = responseString.indexOf(stopTag);
+    int endPos = responseString.indexOf(stopTag, startPos > 0 ? startPos : 0);
     if (startPos > 0 && endPos > startPos) {
       responseString = responseString.substring(startPos + startTag.length(), endPos);
       responseString = responseString.replaceAll("\\Q&amp;\\E", "&");

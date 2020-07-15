@@ -27,6 +27,7 @@ public class ConnectorFactory {
   public static final String TYPE_SC_SOAP = "SC SOAP";
   public static final String TYPE_ND_SOAP = "ND SOAP";
   public static final String TYPE_WI_SOAP = "WI SOAP";
+  public static final String TYPE_IZ_GATEWAY = "IZ Gateway";
 
   public static final String[][] TYPES = {{TYPE_SOAP, "SOAP"}, {TYPE_POST, "POST"},
       {TYPE_RAW, "Raw"}, {TYPE_MLLP, "MLLP"}, {TYPE_AL_SOAP, "AL SOAP"}, {TYPE_AZ_SOAP, "AZ SOAP"},
@@ -35,7 +36,8 @@ public class ConnectorFactory {
       {TYPE_MA_SOAP_2020, "MA SOAP 2020"}, {TYPE_MO_SOAP, "MO SOAP"}, {TYPE_ND_SOAP, "ND SOAP"},
       {TYPE_NJ_SOAP, "NJ SOAP"}, {TYPE_NM_SOAP, "NM SOAP"}, {TYPE_ENVISION_SOAP, "Envision SOAP"},
       {TYPE_ENVISION_SOAP, "Envision SOAP 1.1"}, {TYPE_HI_SOAP, "HI SOAP"}, {TYPE_IL_WS, "IL WS"},
-      {TYPE_IL_SOAP, "IL SOAP"}, {TYPE_WI_SOAP, "WS SOAP"}, {TYPE_SC_SOAP, "SC SOAP"}};
+      {TYPE_IL_SOAP, "IL SOAP"}, {TYPE_WI_SOAP, "WS SOAP"}, {TYPE_SC_SOAP, "SC SOAP"},
+      {TYPE_IZ_GATEWAY, "IZ Gateway"}};
 
   public static Connector getConnector(String type, String label, String url) throws Exception {
     Connector connector = null;
@@ -89,6 +91,8 @@ public class ConnectorFactory {
       connector = new AZSoapConnector(label, url);
     } else if (type.equals(TYPE_ND_SOAP)) {
       connector = new NDSoapConnector(label, url);
+    } else if (type.equals(TYPE_IZ_GATEWAY)) {
+      connector = new IZGatewayConnector(label, url);
     }
     return connector;
   }
