@@ -436,17 +436,17 @@ public abstract class Connector {
 
   public void addCustomTransformation(String customTransformation) {
     if (this.customTransformations == null) {
-      this.customTransformations = customTransformation + "/n";
+      this.customTransformations = customTransformation + "\n";
     } else {
-      this.customTransformations += customTransformation + "/n";
+      this.customTransformations += customTransformation + "\n";
     }
   }
 
   public void addAsssementTransformation(String assessmentTransformation) {
     if (this.assessmentTransformations == null) {
-      this.assessmentTransformations = assessmentTransformations + "/n";
+      this.assessmentTransformations = assessmentTransformations + "\n";
     } else {
-      this.assessmentTransformations += assessmentTransformations + "/n";
+      this.assessmentTransformations += assessmentTransformations + "\n";
     }
   }
 

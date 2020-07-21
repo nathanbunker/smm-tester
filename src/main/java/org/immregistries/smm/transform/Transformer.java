@@ -590,6 +590,10 @@ public class Transformer {
   }
 
   public String transform(TestCaseMessage testCaseMessage) {
+    return transform(testCaseMessage, null);
+  }
+
+  public String transform(TestCaseMessage testCaseMessage, Connector connector) {
     String actualTestCase = testCaseMessage.getTestCaseNumber();
     if (actualTestCase.equals("")) {
       actualTestCase = REP_PAT_MRN;
@@ -601,7 +605,7 @@ public class Transformer {
     String transforms = quickTransforms + "\n" + testCaseMessage.getCustomTransformations() + "\n"
         + causeIssueTransforms + testCaseMessage.getAdditionalTransformations();
     TransformRequest transformRequest = new TransformRequest(testCaseMessage.getPreparedMessage());
-    transformRequest.setConnector(null);
+    transformRequest.setConnector(connector);
     transformRequest.setPatientType(testCaseMessage.getPatientType());
     transformRequest.setTransformText(transforms);
     transformRequest.setSegmentSeparator(testCaseMessage.getLineEnding());
