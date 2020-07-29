@@ -18,7 +18,7 @@ import java.util.Set;
 import org.immregistries.smm.mover.SendData;
 import org.immregistries.smm.tester.CreateTestCaseServlet;
 import org.immregistries.smm.tester.connectors.Connector;
-import org.immregistries.smm.tester.manager.CvsReader;
+import org.immregistries.smm.tester.manager.CsvReader;
 import org.immregistries.smm.tester.manager.forecast.EvaluationActual;
 import org.immregistries.smm.tester.manager.forecast.ForecastActual;
 import org.immregistries.smm.tester.manager.forecast.ForecastTesterManager;
@@ -321,15 +321,15 @@ public class QueryRunner extends Thread {
             sdf.format(new Date(queryFile.lastModified())) + "-" + lineNumber;
         queryTestCaseMessage.setTchForecastTesterTestCaseNumber(tchForecastTesterTestCaseNumber);
       }
-      valueList = CvsReader.readValuesFromCsv(line);
-      String id = CvsReader.readValue(POS_ID, valueList);
-      String idAa = CvsReader.readValue(POS_ID_AA, valueList);
-      String idType = CvsReader.readValue(POS_ID_TYPE, valueList);
-      String lastName = CvsReader.readValue(POS_LAST_NAME, valueList);
-      String firstName = CvsReader.readValue(POS_FIRST_NAME, valueList);
-      String middleName = CvsReader.readValue(POS_MIDDLE_NAME, valueList);
-      String dob = CvsReader.readValue(POS_DOB, valueList);
-      String sex = CvsReader.readValue(POS_SEX, valueList);
+      valueList = CsvReader.readValuesFromCsv(line);
+      String id = CsvReader.readValue(POS_ID, valueList);
+      String idAa = CsvReader.readValue(POS_ID_AA, valueList);
+      String idType = CsvReader.readValue(POS_ID_TYPE, valueList);
+      String lastName = CsvReader.readValue(POS_LAST_NAME, valueList);
+      String firstName = CsvReader.readValue(POS_FIRST_NAME, valueList);
+      String middleName = CsvReader.readValue(POS_MIDDLE_NAME, valueList);
+      String dob = CsvReader.readValue(POS_DOB, valueList);
+      String sex = CsvReader.readValue(POS_SEX, valueList);
       if (id.equals("")) {
         goodToGo = false;
       } else {

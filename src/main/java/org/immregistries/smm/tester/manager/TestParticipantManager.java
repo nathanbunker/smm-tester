@@ -10,29 +10,29 @@ public class TestParticipantManager {
     BufferedReader in = new BufferedReader(new StringReader(response));
     String line = in.readLine();
     if (line != null) {
-      List<String> valueList = CvsReader.readValuesFromCsv(line);
+      List<String> valueList = CsvReader.readValuesFromCsv(line);
 
-      int posOrganizationName = CvsReader.findPosition("Organization Name", valueList);
-      int posFolderName = CvsReader.findPosition("Folder Name", valueList);
+      int posOrganizationName = CsvReader.findPosition("Organization Name", valueList);
+      int posFolderName = CsvReader.findPosition("Folder Name", valueList);
       int posRecordRequirementsStatus =
-          CvsReader.findPosition("Record Requirements Status", valueList);
-      int posConnecttoIISStatus = CvsReader.findPosition("Connect to IIS Status", valueList);
-      int posGuideName = CvsReader.findPosition("Guide Name", valueList);
-      int posTransport = CvsReader.findPosition("Transport", valueList);
-      int posPublicIdCode = CvsReader.findPosition("Public Id Code", valueList);
+          CsvReader.findPosition("Record Requirements Status", valueList);
+      int posConnecttoIISStatus = CsvReader.findPosition("Connect to IIS Status", valueList);
+      int posGuideName = CsvReader.findPosition("Guide Name", valueList);
+      int posTransport = CsvReader.findPosition("Transport", valueList);
+      int posPublicIdCode = CsvReader.findPosition("Public Id Code", valueList);
 
       while ((line = in.readLine()) != null) {
-        valueList = CvsReader.readValuesFromCsv(line);
+        valueList = CsvReader.readValuesFromCsv(line);
         TestParticipant testParticipant = new TestParticipant();
-        testParticipant.setOrganizationName(CvsReader.readValue(posOrganizationName, valueList));
-        testParticipant.setFolderName(CvsReader.readValue(posFolderName, valueList));
+        testParticipant.setOrganizationName(CsvReader.readValue(posOrganizationName, valueList));
+        testParticipant.setFolderName(CsvReader.readValue(posFolderName, valueList));
         testParticipant.setRecordRequirementsStatus(
-            CvsReader.readValue(posRecordRequirementsStatus, valueList));
+            CsvReader.readValue(posRecordRequirementsStatus, valueList));
         testParticipant
-            .setConnecttoIISStatus(CvsReader.readValue(posConnecttoIISStatus, valueList));
-        testParticipant.setProfileUsageId(CvsReader.readValue(posGuideName, valueList));
-        testParticipant.setTransport(CvsReader.readValue(posTransport, valueList));
-        testParticipant.setPublicIdCode(CvsReader.readValue(posPublicIdCode, valueList));
+            .setConnecttoIISStatus(CsvReader.readValue(posConnecttoIISStatus, valueList));
+        testParticipant.setProfileUsageId(CsvReader.readValue(posGuideName, valueList));
+        testParticipant.setTransport(CsvReader.readValue(posTransport, valueList));
+        testParticipant.setPublicIdCode(CsvReader.readValue(posPublicIdCode, valueList));
         return testParticipant;
       }
     }

@@ -1,9 +1,66 @@
 package org.immregistries.smm.tester.manager;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CvsReader {
+public class CsvReader {
+
+  private boolean inQuote = false;
+  private String value = "";
+  private ArrayList<String> valueList;
+  private char prevChar = 0;
+
+  public List<String> readValuesFromCsv(BufferedReader in) throws IOException {
+    String line = in.readLine();
+    if (line == null) {
+      return null;
+    }
+    valueList = new ArrayList<String>();
+    inQuote = false;
+    value = "";
+    prevChar = 0;
+    readLineOfCsv(line);
+    while (inQuote && (line = in.readLine()) != null) {
+      value += "\n";
+      readLineOfCsv(line);
+    }
+    valueList.add(value.trim());
+    return valueList;
+  }
+
+  private void readLineOfCsv(String line) {
+    for (int i = 0; i < line.length(); i++) {
+      char curr = line.charAt(i);
+      if (prevChar == ',' && curr == ' ') {
+        continue;
+      }
+      char peak = (i + 1) < line.length() ? line.charAt(i + 1) : 0;
+      if (curr == '"') {
+        if (inQuote) {
+          if (peak == '"') {
+            value += curr;
+            i++;
+            continue;
+          } else {
+            inQuote = false;
+          }
+        } else if (value.length() > 0) {
+          value += curr;
+        } else {
+          inQuote = true;
+        }
+      } else if (curr == ',' && !inQuote) {
+        valueList.add(value.trim());
+        value = "";
+      } else {
+        value += curr;
+      }
+      prevChar = curr;
+    }
+  }
+
   public static List<String> readValuesFromCsv(String line) {
     ArrayList<String> valueList = new ArrayList<String>();
     String value = "";
