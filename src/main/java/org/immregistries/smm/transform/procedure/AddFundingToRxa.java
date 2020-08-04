@@ -61,46 +61,48 @@ public class AddFundingToRxa implements ProcedureInterface {
     int obxId = 1;
     while ((lineResult = inResult.readLine()) != null) {
       lineResult = lineResult.trim();
-      if (needToAddObx) {
-        if (lineResult.startsWith("OBX|")) {
-          if (lineResult.indexOf(lookingForObx) > 0) {
+      if (lineResult.length() > 3) {
+        if (needToAddObx) {
+          if (lineResult.startsWith("OBX|")) {
+            if (lineResult.indexOf(lookingForObx) > 0) {
+              needToAddObx = false;
+            }
+            try {
+              String s = lineResult.substring(4);
+              int pos = s.indexOf('|');
+              if (pos > 0) {
+                s = s.substring(0, pos);
+                obxId = Integer.parseInt(s) + 1;
+              }
+            } catch (NumberFormatException nfe) {
+              obxId++;
+            }
+          } else if (lineResult.startsWith("ORC|") || lineResult.startsWith("RXA|")) {
+            finalMessage = addObx(transformRequest, finalMessage, obxId);
             needToAddObx = false;
           }
-          try {
-            String s = lineResult.substring(4);
-            int pos = s.indexOf('|');
-            if (pos > 0) {
-              s = s.substring(0, pos);
-              obxId = Integer.parseInt(s) + 1;
+        } else {
+          if (lineResult.startsWith("RXA|")) {
+            switch (vaccinationGroups) {
+              case ADMINISTERED_ONLY:
+                int fieldCount = 9;
+                String s = lineResult;
+                int barPos;
+                while (fieldCount > 0 && (barPos = s.indexOf('|')) >= 0) {
+                  s = s.substring(barPos + 1);
+                  fieldCount--;
+                }
+                needToAddObx = fieldCount == 0 && s.startsWith("00^");
+                break;
+              case ALL:
+                needToAddObx = true;
+                break;
             }
-          } catch (NumberFormatException nfe) {
-            obxId++;
+            obxId = 1;
           }
-        } else if (lineResult.startsWith("ORC|") || lineResult.startsWith("RXA|")) {
-          finalMessage = addObx(transformRequest, finalMessage, obxId);
-          needToAddObx = false;
         }
-      } else {
-        if (lineResult.startsWith("RXA|")) {
-          switch (vaccinationGroups) {
-            case ADMINISTERED_ONLY:
-              int fieldCount = 9;
-              String s = lineResult;
-              int barPos;
-              while (fieldCount > 0 && (barPos = s.indexOf('|')) >= 0) {
-                s = s.substring(barPos + 1);
-                fieldCount--;
-              }
-              needToAddObx = fieldCount == 0 && s.startsWith("00^");
-              break;
-            case ALL:
-              needToAddObx = true;
-              break;
-          }
-          obxId = 1;
-        }
+        finalMessage += lineResult + transformRequest.getSegmentSeparator();
       }
-      finalMessage += lineResult + transformRequest.getSegmentSeparator();
     }
     if (needToAddObx) {
       finalMessage = addObx(transformRequest, finalMessage, obxId);
@@ -110,7 +112,8 @@ public class AddFundingToRxa implements ProcedureInterface {
   }
 
   private String addObx(TransformRequest transformRequest, String finalMessage, int pos) {
-    finalMessage += String.format(obxSegmentToInsert, pos, pos) + transformRequest.getSegmentSeparator();
+    finalMessage +=
+        String.format(obxSegmentToInsert, pos, pos) + transformRequest.getSegmentSeparator();
     return finalMessage;
   }
 }
