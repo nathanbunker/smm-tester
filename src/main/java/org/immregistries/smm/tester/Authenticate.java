@@ -167,12 +167,13 @@ public class Authenticate {
       addUser("Grape", "5w005eeg707388P", "Pam Kowalske", "pkowalsk@mphi.org");
       addUser("Guava", "72F3NJym543TL6r", "Karen McGettigan", "kmcgetti@mphi.org");
       addUser("Jackfruit", "13vG71f41233S7q");
-      // http://ois-pt.org/tester/LoginServlet?username=Jujube&password=rqK275tcM2Cfi6w&action=Login
+      // https://app.immregistries.org/tester/LoginServlet?username=Jujube&password=rqK275tcM2Cfi6w&action=Login
       addUser("Jujube", "rqK275tcM2Cfi6w", "Kevin Murset", "kevinmurset@gmail.com", true);
       addUser("Kiwifruit", "d4UGV51c4POgt1l", "Nichole Lambrecht", "nlambrecht@immregistries.org",
           true);
       addUser("Longan", "26Cau26Rd7DcUSb");
       addUser("Lychee", "26Cau26Rd7DcUSb");
+      // https://app.immregistries.org/tester/LoginServlet?username=Mafai&password=LU0Z23LJlqW1bQR&action=Login
       addUser("Mafai", "LU0Z23LJlqW1bQR", "Nathan Bunker", "Nathan.Bunker@gmail.com", true);
       addUser("Mango", "6Y847F1EL2W55fr", "Tony Mack", "tmack1@health.nyc.gov");
       addUser("Mangosteen", "25O5rk7BB84k9cF", "Angel Aponte", "aaponte@health.nyc.gov");
