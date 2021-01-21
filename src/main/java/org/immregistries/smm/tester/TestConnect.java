@@ -24,13 +24,6 @@ public class TestConnect {
     ConnectionManager.setScanDirectories(false);
     if (args.length < 1) {
       System.err.println("Usage: java  org.immregistries.smm.tester.TestConnect <file root>");
-      System.err.println("The following options are supported in the config file: ");
-      System.err
-          .println("  + AART Name: [Required: Name of this service as it will appear in AART]");
-      System.err
-          .println("  + Scan Folder: [Required: Root folder location to look for configurations]");
-      System.err.println("  + Key Store: [Optional: Location of keystore]");
-      System.err.println("  + Sun Security Allow Unsafe Renegotiation: [Optional: true | false]");
       return;
     }
     File file = new File(args[0]);

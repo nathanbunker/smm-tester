@@ -6,7 +6,7 @@ import org.junit.Test;
 
 public class SendViaCDCWsdl {
   
-  private static final String SANDBOX_URL = "http://florence.immregistries.org/iis-sandbox/soap";
+  private static final String SANDBOX_URL = "https://florence.immregistries.org/iis-sandbox/soap";
   
   private static final String EXAMPLE_HL7 = "MSH|^~\\&|||||20200603101019-0600||VXU^V04^VXU_V04|A04U12.2wd|P|2.5.1|||ER|AL|||||Z22^CDCPHINVS|\r" + 
       "PID|1||A04U12^^^AIRA-TEST^MR||SalineAIRA^JezebelAIRA^Udaya^^^^L|LaenAIRA^KarsynAIRA^^^^^M|20160528|F||1002-5^American Indian or Alaska Native^CDCREC|1375 Mcheemda Ave^^Saginaw^MI^48638^USA^P||^PRN^PH^^^989^4571715|||||||||2186-5^not Hispanic or Latino^CDCREC|\r" + 
