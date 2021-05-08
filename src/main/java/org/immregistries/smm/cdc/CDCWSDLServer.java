@@ -42,24 +42,24 @@ public abstract class CDCWSDLServer {
     } catch (MessageTooLargeFault mtlf) {
       out = quitelyResetBuffer(resp, out);
       processor.doPrintException(out, mtlf);
-      resp.sendError(500);
+      resp.setStatus(500);
     } catch (SecurityFault sf) {
       out = quitelyResetBuffer(resp, out);
       processor.doPrintException(out, sf);
-      resp.sendError(500);
+      resp.setStatus(500);
     } catch (UnsupportedOperationFault uof) {
       out = quitelyResetBuffer(resp, out);
       processor.doPrintException(out, uof);
-      resp.sendError(500);
+      resp.setStatus(500);
     } catch (UnknownFault uf) {
       out = quitelyResetBuffer(resp, out);
       processor.doPrintException(out, uf);
-      resp.sendError(500);
+      resp.setStatus(500);
     } catch (Exception e) {
       UnknownFault uf = new UnknownFault("Exception ocurred", e);
       out = quitelyResetBuffer(resp, out);
       processor.doPrintException(out, uf);
-      resp.sendError(500);
+      resp.setStatus(500);
     } finally {
       out.close();
     }
