@@ -42,7 +42,7 @@
     </init-param>
     <init-param>
       <param-name>software.dir</param-name>
-      <param-value>/var/www/vhosts/app.immregistries.org/data/tester</param-value>
+      <param-value>C:\data\tester</param-value>
       <!-- /home/oisptorg/ois-pt.org/data/dist C:\data\work\product\smm\dist -->
     </init-param>
     <init-param>

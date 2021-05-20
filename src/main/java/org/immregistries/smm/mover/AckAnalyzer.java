@@ -5,18 +5,31 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.apache.commons.lang3.StringUtils;
 import org.immregistries.smm.tester.manager.HL7Reader;
 import org.immregistries.smm.transform.TestCaseMessage;
 
 public class AckAnalyzer {
 
   public static enum ErrorType {
-    UNKNOWN, AUTHENTICATION, SENDER_PROBLEM, RECEIVER_PROBLEM
+                                UNKNOWN,
+                                AUTHENTICATION,
+                                SENDER_PROBLEM,
+                                RECEIVER_PROBLEM
   };
 
   public static enum AckType {
-    DEFAULT, NMSIIS, ALERT, WEBIZ, MIIC, IRIS_IA, VIIS, NJSIIS, IRIS_ID, NESIIS, HP_WIR_DEFAULT;
+                              DEFAULT,
+                              NMSIIS,
+                              ALERT,
+                              WEBIZ,
+                              MIIC,
+                              IRIS_IA,
+                              VIIS,
+                              NJSIIS,
+                              IRIS_ID,
+                              NESIIS,
+                              HP_WIR_DEFAULT;
 
     private boolean inHL7Format = true;
     protected String description = null;
@@ -445,36 +458,37 @@ public class AckAnalyzer {
   }
 
   private String[] getFieldValues(String segmentName, int segmentCount, int pos) {
-    if (!segmentName.equals("MSH")) {
-      pos++;
+    if (segmentName.equals("MSH") || segmentName.equals("BHS") || segmentName.equals("FHS")) {
+      pos--;
     }
+    int currentSegmentIndex = 0;
     for (String segment : segments) {
-      if (segment.startsWith(segmentName + "|")) {
-        segmentCount--;
-        if (segmentCount == 0) {
-          int startPos = -1;
-          int endPos = -1;
-          while (pos > 0) {
-            pos--;
-            if (endPos < segment.length()) {
-              startPos = endPos + 1;
-              endPos = segment.indexOf("|", startPos);
-              if (endPos == -1) {
-                endPos = segment.length();
-              }
-            }
-          }
-          String value = segment.substring(startPos, endPos);
-          int repeatPos = value.indexOf("~");
-          if (repeatPos != -1) {
-            value = value.substring(0, repeatPos);
-          }
-          return value.split("\\^");
+
+      if (!segment.startsWith(segmentName + "|")) {
+        continue;
+      }
+
+      currentSegmentIndex++;
+      if (currentSegmentIndex != segmentCount) {
+        continue;
+      }
+
+      String[] split = segment.split("\\|");
+      if (split == null || split.length <= pos) {
+        return null;
+      }
+
+      if (StringUtils.isNotBlank(split[pos])) {
+        String value = split[pos];
+        int repeatPos = value.indexOf("~");
+        if (repeatPos != -1) {
+          value = value.substring(0, repeatPos);
         }
+        return value.split("\\^");
       }
     }
-
     return null;
   }
+
 
 }

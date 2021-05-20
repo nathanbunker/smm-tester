@@ -103,6 +103,14 @@ public class TestAckAnalyzer {
           + "ERR||PID^1^11^1^7|101^Required field missing^HL70357|W||Address Type~1||Address Type is required\r"
           + "ERR||RXA^1^9^1|102^Data type error^HL70357|W|4^Invalid value^HL70533|||IZ-47: If RXA-20 is NOT valued 'CP' or 'PA' then the first occurrence of RXA-9.1 (admin notes) SHALL be empty and the following repetitions should be empty or valued with text notes.\r";
 
+  private static final String PA_ERR_4_MISSING_1 =
+      "MSH|^~\\&|PHIS-IZ|PA-SIIS|||202012281844||ACK|637447778778467647|P^T|2.5.1|||NE|AL|USA\r"
+          + "MSA|AE\r" + "ERR|^^^207&Application internal error&HL70357";
+
+  private static final String PA_ERR_4_MISSING_2 =
+      "MSH|^~\\&|AvanzaPHISIZ|Avanza|||202012281731||ACK|637447734694842729|P^T|2.5.1|||NE|AL|USA\r"
+          + "MSA|AE\r" + "ERR|||207^Application internal error^HL70357";
+
   @Test
   public void testAckAnalyzer() {
     AckAnalyzer ackAnalyzer;
@@ -179,6 +187,18 @@ public class TestAckAnalyzer {
       assertTrue(ackAnalyzer.isPositive());
       assertEquals("AE", ackAnalyzer.getAckCode());
     }
+
+    ackAnalyzer = new AckAnalyzer(PA_ERR_4_MISSING_1, AckAnalyzer.AckType.DEFAULT);
+    assertTrue(ackAnalyzer.isAckMessage());
+    assertFalse(ackAnalyzer.isPositive());
+    assertEquals("AE", ackAnalyzer.getAckCode());
+
+
+    ackAnalyzer = new AckAnalyzer(PA_ERR_4_MISSING_2, AckAnalyzer.AckType.DEFAULT);
+    assertTrue(ackAnalyzer.isAckMessage());
+    assertFalse(ackAnalyzer.isPositive());
+    assertEquals("AE", ackAnalyzer.getAckCode());
+
 
   }
 
