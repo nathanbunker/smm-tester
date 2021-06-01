@@ -3,13 +3,11 @@ package org.immregistries.smm.tester.manager.nist;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-
-// import org.json.JSONArray;
-// import org.json.JSONException;
-// import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -30,45 +28,47 @@ public class ValidationReport {
     headerReport = new HeaderReport();
     if (xml.startsWith("{")) {
 
-      // try {
-      // // read as Json
-      // JSONObject obj = new JSONObject(xml);
-      // JSONObject metaData = obj.getJSONObject("metaData");
-      // {
-      // JSONObject counts = metaData.getJSONObject("counts");
-      // headerReport.setAlertCount(counts.getInt("alert"));
-      // headerReport.setWarningCount(counts.getInt("warning"));
-      // headerReport.setInformCount(counts.getInt("informational"));
-      // headerReport.setErrorCount(counts.getInt("error"));
-      // headerReport.setAffirmCount(counts.getInt("affirmative"));
-      // }
-      // {
-      // JSONObject detections = obj.getJSONObject("detections");
-      // String[] detectionNames = JSONObject.getNames(detections);
-      // for (String detectionName : detectionNames) {
-      // JSONObject detection = detections.getJSONObject(detectionName);
-      // String[] usageNames = JSONObject.getNames(detection);
-      // for (String usageName : usageNames) {
-      // JSONArray usageArray = detection.getJSONArray(usageName);
-      // for (int i = 0; i < usageArray.length(); i++) {
-      // JSONObject usage = usageArray.getJSONObject(i);
-      // Assertion assertion = new Assertion();
-      // assertionList.add(assertion);
-      // assertion.setPath(usage.getString("path"));
-      // assertion.setLine(usage.getInt("line"));
-      // assertion.setColumn(usage.getInt("column"));
-      // assertion.setDescription(usage.getString("description"));
-      // assertion.setResult(detectionName);
-      // assertion.setType(usageName);
-      // }
-      // }
-      // }
-      // }
-      //
-      // headerReport.setValidationStatus("Complete");
-      // } catch (JSONException je) {
-      // je.printStackTrace();
-      // }
+      try {
+        // read as Json
+        JSONObject obj = new JSONObject(xml);
+        String jsonString = (String) obj.get("json");
+        JSONObject jsonObj = new JSONObject(jsonString);
+        JSONObject metaData = jsonObj.getJSONObject("metaData");
+        {
+          JSONObject counts = metaData.getJSONObject("counts");
+          headerReport.setAlertCount(counts.getInt("alert"));
+          headerReport.setWarningCount(counts.getInt("warning"));
+          headerReport.setInformCount(counts.getInt("informational"));
+          headerReport.setErrorCount(counts.getInt("error"));
+          headerReport.setAffirmCount(counts.getInt("affirmative"));
+        }
+        {
+          JSONObject detections = jsonObj.getJSONObject("detections");
+          String[] detectionNames = JSONObject.getNames(detections);
+          for (String detectionName : detectionNames) {
+            JSONObject detection = detections.getJSONObject(detectionName);
+            String[] usageNames = JSONObject.getNames(detection);
+            for (String usageName : usageNames) {
+              JSONArray usageArray = detection.getJSONArray(usageName);
+              for (int i = 0; i < usageArray.length(); i++) {
+                JSONObject usage = usageArray.getJSONObject(i);
+                Assertion assertion = new Assertion();
+                assertionList.add(assertion);
+                assertion.setPath(usage.getString("path"));
+                assertion.setLine(usage.getInt("line"));
+                assertion.setColumn(usage.getInt("column"));
+                assertion.setDescription(usage.getString("description"));
+                assertion.setResult(detectionName);
+                assertion.setType(usageName);
+              }
+            }
+          }
+        }
+
+        headerReport.setValidationStatus("Complete");
+      } catch (JSONException je) {
+        je.printStackTrace();
+      }
     } else {
       // read as XML
       // System.out.println("Processing this: ");
@@ -99,7 +99,8 @@ public class ValidationReport {
                         headerReport.setValidationStatusInfo(headerNode.getTextContent());
                       } else if (headerNode.getNodeName().indexOf("ServiceName") != -1) {
                         headerReport.setServiceName(headerNode.getTextContent());
-                        // <mes:ServiceName>NIST HL7V2 Message
+                        // <mes:ServiceName>NIST HL7V2
+                        // Message
                         // Validation</mes:ServiceName>
                       } else if (headerNode.getNodeName().indexOf("ServiceProvider") != -1) {
                         headerReport.setServiceProvider(headerNode.getTextContent());
@@ -109,7 +110,8 @@ public class ValidationReport {
                         // <mes:ServiceVersion>1.0</mes:ServiceVersion>
                       } else if (headerNode.getNodeName().indexOf("StandardType") != -1) {
                         headerReport.setStandardType(headerNode.getTextContent());
-                        // <mes:StandardType>HL7 V2</mes:StandardType>
+                        // <mes:StandardType>HL7
+                        // V2</mes:StandardType>
                       } else if (headerNode.getNodeName().indexOf("StandardVersion") != -1) {
                         headerReport.setStandardVersion(headerNode.getTextContent());
                         // <mes:StandardVersion>2.5.1</mes:StandardVersion>
