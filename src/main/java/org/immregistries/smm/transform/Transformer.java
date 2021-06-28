@@ -614,6 +614,8 @@ public class Transformer {
     String result = transformRequest.getResultText();
     testCaseMessage.setMessageText(result);
     testCaseMessage.setQuickTransformationsConverted(quickTransforms);
+    testCaseMessage.setHasIssue(transformRequest.hasException());
+    testCaseMessage.setException(transformRequest.getException());
     return transforms;
   }
 
@@ -625,6 +627,8 @@ public class Transformer {
     transformRequest.setSegmentSeparator(testCaseMessage.getLineEnding());
     transformRequest.setTestCaseMessageMap(testCaseMessage.getTestCaseMessageMap());
     transform(transformRequest);
+    testCaseMessage.setHasIssue(transformRequest.hasException());
+    testCaseMessage.setException(transformRequest.getException());
     return transformRequest.getResultText();
   }
 
@@ -707,20 +711,17 @@ public class Transformer {
           quickTransforms = addDelete(quickTransforms, "2", count);
         } else if (extra.equals("VAC2_ADMIN")) {
           int count = 3;
-          count -=
-              alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1
-                  : 0;
+          count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST")
+              ? 1 : 0;
           quickTransforms = addAdmin(quickTransforms, "2", count);
         } else if (extra.equals("VAC3_ADMIN")) {
           quickTransforms = addAdmin(quickTransforms, "3", 3);
         } else if (extra.equals("VAC1_NA")) {
           int count = 3;
-          count -=
-              alsoHas(testCaseMessage, "VAC2_ADMIN") || alsoHas(testCaseMessage, "VAC2_HIST") ? 1
-                  : 0;
-          count -=
-              alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1
-                  : 0;
+          count -= alsoHas(testCaseMessage, "VAC2_ADMIN") || alsoHas(testCaseMessage, "VAC2_HIST")
+              ? 1 : 0;
+          count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST")
+              ? 1 : 0;
           quickTransforms += "ORC-3=[VAC" + count + "_ID]\n";
           quickTransforms += "RXA-3=[VAC" + count + "_DATE]\n";
           quickTransforms += "RXA-5.1=[VAC" + count + "_CVX]\n";
@@ -730,12 +731,10 @@ public class Transformer {
           quickTransforms += "RXA-21=A\n";
         } else if (extra.equals("VAC1_HIST")) {
           int count = 3;
-          count -=
-              alsoHas(testCaseMessage, "VAC2_ADMIN") || alsoHas(testCaseMessage, "VAC2_HIST") ? 1
-                  : 0;
-          count -=
-              alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1
-                  : 0;
+          count -= alsoHas(testCaseMessage, "VAC2_ADMIN") || alsoHas(testCaseMessage, "VAC2_HIST")
+              ? 1 : 0;
+          count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST")
+              ? 1 : 0;
           quickTransforms += "ORC-3=[VAC" + count + "_ID]\n";
           quickTransforms += "RXA-3=[VAC2_DATE]\n";
           quickTransforms += "RXA-5.1=[VAC" + count + "_CVX]\n";
@@ -749,9 +748,8 @@ public class Transformer {
           quickTransforms += "RXA-21=A\n";
         } else if (extra.equals("VAC2_HIST")) {
           int count = 3;
-          count -=
-              alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1
-                  : 0;
+          count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST")
+              ? 1 : 0;
           quickTransforms += "ORC#2-3=[VAC" + count + "_ID]\n";
           quickTransforms += "RXA#2-3=[VAC" + count + "_DATE]\n";
           quickTransforms += "RXA#2-5.1=[VAC" + count + "_CVX]\n";
@@ -777,9 +775,8 @@ public class Transformer {
           quickTransforms += "RXA#3-21=A\n";
         } else if (extra.equals("VAC2_NA")) {
           int count = 3;
-          count -=
-              alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST") ? 1
-                  : 0;
+          count -= alsoHas(testCaseMessage, "VAC3_ADMIN") || alsoHas(testCaseMessage, "VAC3_HIST")
+              ? 1 : 0;
           quickTransforms += "ORC#2-3=[VAC" + count + "_ID]\n";
           quickTransforms += "RXA#2-3=[VAC" + count + "_DATE]\n";
           quickTransforms += "RXA#2-5.1=[VAC" + count + "_CVX]\n";
@@ -1050,8 +1047,8 @@ public class Transformer {
   }
 
   public void transform(TransformRequest transformRequest) {
+    String resultTextOriginal = transformRequest.getResultText();
     try {
-
       Patient patient = setupPatient(transformRequest.getPatientType());
       transformRequest.setPatient(patient);
 
@@ -1061,6 +1058,7 @@ public class Transformer {
       while ((transformCommand = inTransform.readLine()) != null) {
         transformCommand = transformCommand.trim();
         transformRequest.setLine(transformCommand);
+
         if (transformCommand.length() > 0) {
           {
             boolean shouldSkipTransform = checkForAgeSkip(transformRequest);
@@ -1095,8 +1093,9 @@ public class Transformer {
       StringWriter stringWriter = new StringWriter();
       PrintWriter out = new PrintWriter(stringWriter);
       e.printStackTrace(out);
-      transformRequest
-          .setResultText("Unable to transform: " + e.getMessage() + "\n" + stringWriter.toString());
+      transformRequest.setResultText(resultTextOriginal);
+      transformRequest.setHasException(true);
+      transformRequest.setException(e);
     }
   }
 
@@ -1639,6 +1638,7 @@ public class Transformer {
     String resultText = transformRequest.getResultText();
     String line = transformRequest.getLine();
     line = line.substring(INSERT_SEGMENT.length()).trim();
+
     if (line.length() > 3) {
       int endOfSegmentNamePos = line.indexOf(" ");
       if (endOfSegmentNamePos == -1) {

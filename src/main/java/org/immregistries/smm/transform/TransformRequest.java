@@ -4,7 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
-
 import org.immregistries.smm.tester.connectors.Connector;
 import org.immregistries.smm.tester.transform.Patient;
 
@@ -25,6 +24,8 @@ public class TransformRequest {
   private String line = null;
   private String segmentSeparator = "\r";
   private Map<String, TestCaseMessage> testCaseMessageMap = null;
+  private boolean hasException = false;
+  private Throwable exception = null;
 
   public Map<String, TestCaseMessage> getTestCaseMessageMap() {
     return testCaseMessageMap;
@@ -120,6 +121,23 @@ public class TransformRequest {
     now = sdf.format(new Date());
     sdf = new SimpleDateFormat("yyyyMMddHHmmss");
     nowNoTimezone = sdf.format(new Date());
+  }
+
+
+  public boolean hasException() {
+    return hasException;
+  }
+
+  public void setHasException(boolean hasException) {
+    this.hasException = hasException;
+  }
+
+  public Throwable getException() {
+    return exception;
+  }
+
+  public void setException(Throwable exception) {
+    this.exception = exception;
   }
 
   public PatientType getPatientType() {
